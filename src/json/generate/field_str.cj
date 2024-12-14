@@ -4,8 +4,8 @@ import std.ast.*
 import std.collection.Map
 
 class StringJsonFieldGenerator <: JsonFieldGenerator {
-   init(vd: VarDecl, fieldInfos: Map<String, JsonFieldInfo>) { 
-      super(vd, fieldInfos)
+   init(vd: VarDecl, info: JsonFieldInfo) { 
+      super(vd, info)
    }
 
    public override func genSerializeTokens(): Tokens {

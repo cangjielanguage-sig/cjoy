@@ -18,7 +18,7 @@ public class JsonFieldInfo {
         if (ignore) {
             return ""
         }
-        if ( newName != "") {
+        if (newName != "") {
             return newName
         }
         return originName
@@ -48,7 +48,7 @@ public class JsonFieldInfo {
                 case "ignore" => this.ignore = "true" == value.value
                 case "omitempty" => this.omitempty = "true" == value.value
                 case "timeformat" => this.timeformat = value.value
-                case _ => ()
+                case _ => throw Exception("JsonField attriable should be name, ignore, omitempty, timeformat")
             }
         }
     }
@@ -59,6 +59,7 @@ public class JsonFieldInfo {
 
         let info = JsonFieldInfo(varId)
         info.parseAttr(attr)
+        JsonInfoCache.addCache(varId, info)
         
         input
     }
@@ -69,10 +70,10 @@ open class JsonFieldGenerator {
     protected let varType: TypeNode
     protected let info: JsonFieldInfo
 
-    init(vd: VarDecl, fieldInfos: Map<String, JsonFieldInfo>){
+    init(vd: VarDecl, info: JsonFieldInfo){
         this.varId = vd.identifier
         this.varType = vd.declType
-        this.info = fieldInfos.get(vd.identifier.value).getOrDefault({=> JsonFieldInfo(vd.identifier.value)})
+        this.info = info
     }
     
     public open func genSerializeTokens(): Tokens {
