@@ -1,11 +1,12 @@
-package cjoy.json
+macro package cjoy.json
 
 import std.ast.Tokens
+import cjoy.json.generate.{JsonClassInfo, JsonFieldInfo}
 
 public macro Json(input: Tokens): Tokens {
-    input
+    JsonClassInfo.parse(input)
 }
 
 public macro JsonField(attr: Tokens, input: Tokens): Tokens {
-    input
+    JsonFieldInfo.parse(attr, input)
 }

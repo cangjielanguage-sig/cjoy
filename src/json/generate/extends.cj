@@ -1,4 +1,4 @@
-package cjoy.json
+package cjoy.json.generate
 
 import std.io.ByteBuffer
 import std.collection.{ArrayList, HashMap}
@@ -8,6 +8,14 @@ public interface JsonAdapter<T> {
     func toJson() : String
 
     static func fromJson(jsonStr: String) : T
+
+    static func readRune(reader: JsonReader): Rune {
+        let str = reader.readValue<String>()
+        if (str.toRuneArray().size != 1) {
+            throw Exception("the json value is not Rune")
+        }
+        Rune(str[0])
+    }
 }
 
 private func toJsonStr<T>(val: T) : String where T <: JsonSerializable {
