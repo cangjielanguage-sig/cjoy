@@ -37,6 +37,16 @@ public struct SRename {
     var str2: String = "str2"
 }
 
+@Json
+public struct SOmitempty {
+    @JsonField[omitempty=true]
+    var strOption: ?String = None
+    @JsonField[omitempty=true]
+    var strEmtpy: String = ""
+    var str1: String = "str1"
+    var strNull: ?String = None
+}
+
 @Test
 public class TestCaseSuit {
     @TestCase
@@ -70,5 +80,16 @@ public class TestCaseSuit {
         let s1 = SRename.fromJson(str)
         @Assert(s1.str, s.str)
         @Assert(s1.str2, s.str2)
+    }
+
+    @TestCase
+    public func testOmitempty() {
+        let s = SOmitempty()
+        let str = s.toJson()
+        let expect = #"{"str1":"str1","strNull":null}"#
+        @Assert(str, expect)
+        let s1 = SOmitempty.fromJson(str)
+        @Assert(s1.str1, s.str1)
+        @Assert(s1.strNull, s.strNull)
     }
 }

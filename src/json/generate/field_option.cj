@@ -11,7 +11,7 @@ class OptionJsonFieldGenerator <: JsonFieldGenerator {
    public override func genSerializeTokens(): Tokens {
       if (info.omitempty) {
          return quote(
-            if (let Some(_) <- $(varId) ) {
+            if (let Some(_) <- $(varId)) {
                writer.writeName($(info.jsonKeyName())).writeValue($(varId))
             }
          )

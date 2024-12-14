@@ -13,6 +13,10 @@ class ClassVarDeclVisitor <: Visitor {
     override public func visit(varDecl: VarDecl) {
         varDecls.append(varDecl)
     }
+
+    override public func visit(_: FuncDecl) {
+        breakTraverse()
+    }
 }
 
 public class JsonClassInfo {
@@ -79,7 +83,7 @@ public class JsonClassInfo {
     public static func parse(input: Tokens): Tokens {
         let decl: Decl  = parseDecl(input)
         if (!(decl is StructDecl) && !(decl is ClassDecl)) {
-            throw Exception("Json march only using for struct or class")
+            throw Exception("Json macro only using for struct or class")
         }
 
         let ident = decl.identifier

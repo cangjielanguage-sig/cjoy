@@ -20,7 +20,7 @@ class JsonInfoCache {
         let fieldInfo = FIELD_INFOS.get(vd.identifier.value).getOrDefault({=> JsonFieldInfo(vd.identifier.value)})
         match (vtypeName) {
             case "String" => StringJsonFieldGenerator(vd, fieldInfo)
-            case "Option" => OptionJsonFieldGenerator(vd, fieldInfo)
+            case "Option" | "?" => OptionJsonFieldGenerator(vd, fieldInfo)
             case "Rune" => RuneJsonFieldGenerator(vd, fieldInfo)
             case "DateTime" => DateTimeJsonFieldGenerator(vd, fieldInfo)
             case _ => JsonFieldGenerator(vd, fieldInfo)
