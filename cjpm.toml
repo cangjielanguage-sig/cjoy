@@ -3,7 +3,7 @@
 [package]
   cjc-version = "0.57.3"
   compile-option = ""
-  description = "a fast and agile web framework"
+  description = "a fast and joy web framework"
   link-option = ""
   name = "cjoy"
   output-type = "dynamic"
