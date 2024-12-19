@@ -1,4 +1,4 @@
-package jsonm.route
+package cjoy
 
 public interface Queue<T> {
     func offer(item: T): Unit
