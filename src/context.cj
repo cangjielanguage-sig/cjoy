@@ -5,7 +5,7 @@ import net.http.{HttpContext, RedirectHandler}
 import encoding.json.stream.{JsonDeserializable, JsonSerializable}
 
 public class JoyContext {
-    private let httpContxt: HttpContext
+    public let httpContxt: HttpContext
     private let config: JoyConfig
 
     public init(httpContxt: HttpContext, config: JoyConfig) {
@@ -13,7 +13,6 @@ public class JoyContext {
         this.config = config
     }
     
-
     public func fullPath(): String {
         ""
     }

@@ -12,7 +12,7 @@ public interface Queue<T> {
 /**
 * Refer to Java implementation
 */
-public class PriorityQueue<T> <: Queue<T> where T<: Comparable<T> & Equatable<T> {
+public class PriorityQueue<T> <: Queue<T> where T<: Comparable<T> {
     private static let DEFAULT_INITIAL_CAPACITY: Int64 = 11
     private static let MAX_ARRAY_SIZE = Int64.Max - 8;
     private var queue: Array<T>

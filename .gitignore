@@ -9,3 +9,4 @@ target/
 */*.exe
 */*.bchir2
 */*.cjo
+src/test/*.cj.macrocall
