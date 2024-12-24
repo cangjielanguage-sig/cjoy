@@ -11,3 +11,15 @@ public class JoyFuncHandler <: JoyRequestHandler {
         this.handler(ctx)
     }
 }
+
+public interface JoyMiddlewareHandler {
+    func next(handler: JoyRequestHandler): JoyRequestHandler
+}
+
+public class JoyMiddlewareFuncHandler <: JoyMiddlewareHandler {
+    public JoyMiddlewareFuncHandler(let handler: (JoyRequestHandler) -> JoyRequestHandler) {}
+
+    public func next(handler: JoyRequestHandler): JoyRequestHandler {
+        this.next(handler)
+    }
+}

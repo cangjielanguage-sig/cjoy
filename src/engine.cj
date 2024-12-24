@@ -7,16 +7,19 @@ public struct JoyConfig {
     var redirectTrailingSlash: Bool = false
     var remoteIPHeaders: Array<String> = []
     var enableDebugLog: Bool = false
+    var caseInsensitive: Bool = false
+    var headCanUseGet: Bool = false
+    var escapeAddedRoutes: Bool = false
 }
 
 public class Joy {
-    private var server: ?Server = None
-    private let config: JoyConfig
-    
-    public let router: JoyRouters = JoyRouteGroup()
+    private var _server: ?Server = None
+    private let _config: JoyConfig
+    public let router: JoyRouteGroup
 
     init(config: JoyConfig) {
-        this.config = config
+        _config = config
+        router = JoyRouteGroup(config)
     }
 
     public static func create(): Joy {
@@ -31,19 +34,11 @@ public class Joy {
     * run http server at address:port
     */
     public func run(addr: String, port: UInt16): Unit {
-        let sr = ServerBuilder().addr(addr).port(port).build()
-        if (config.enableDebugLog) {
-            sr.logger.enabled(LogLevel.DEBUG)
-        }
-        this.server = Some(sr)
-        sr.serve()
-    }
-
-    public func run(server: Server): Unit {
-        this.server = Some(server)
-        if (config.enableDebugLog && server.logger.level < LogLevel.DEBUG) {
+        let server = ServerBuilder().addr(addr).port(port).distributor(router._mux).build()
+        if (_config.enableDebugLog) {
             server.logger.enabled(LogLevel.DEBUG)
         }
+        _server = Some(server)
         server.serve()
-    } 
+    }
 }

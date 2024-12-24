@@ -1,6 +1,6 @@
 package cjoy
 
-import std.collection.{ArrayList, HashMap}
+import std.collection.{ArrayList, HashMap, forEach}
 import std.regex.Regex
 
 enum NodeType {
@@ -22,65 +22,67 @@ enum NodeType {
 }
 
 class Node<T> {
-    var path: String = ""
-    var fullPath: String = ""
-    var nodeType: NodeType = STATIC
+    var _path: String = ""
+    var _fullPath: String = ""
+    var _nodeType: NodeType = STATIC
     
-    var priority: Int32 = 0
+    var _priority: Int32 = 0
 
-    var staticIndices: ArrayList<Byte> = ArrayList()
-    var staticChild: ArrayList<Node<T>> = ArrayList()
+    var _staticIndices: ArrayList<Byte> = ArrayList()
+    var _staticChild: ArrayList<Node<T>> = ArrayList()
 
-    var wildcardChild: Option<Node<T>> = None
+    var _addSlash: Bool = false
 
-    var regexChild: ArrayList<Node<T>> = ArrayList()
-    var regExper: ?Regex = None
+    var _wildcardChild: Option<Node<T>> = None
 
-    var catchAllChild: Option<Node<T>> = None
-    var implicitHead: Bool = false
+    var _regexChild: ArrayList<Node<T>> = ArrayList()
+    var _regExper: ?Regex = None
 
-    var leafHandlers: HashMap<String, T> = HashMap()
-    var leafParamNames: ArrayList<String> = ArrayList()
+    var _catchAllChild: Option<Node<T>> = None
+    var _implicitHead: Bool = false
+
+    var _leafHandlers: HashMap<String, T> = HashMap()
+    var _leafParamNames: ArrayList<String> = ArrayList()
 
     init(path: String, nodeType: NodeType) {
-        this.path = path
-        this.nodeType = nodeType
+        _path = path
+        _nodeType = nodeType
     }
 
     func isCatchAll(): Bool {
-        this.nodeType == CATCH_ALL
+        _nodeType == CATCH_ALL
     }
 
     func sortStaticChild(idx: Int64): Unit {
         var i = idx
-        while (i > 0 && staticChild[i].priority > staticChild[i-1].priority) {
-            (staticChild[i], staticChild[i-1]) = (staticChild[i-1], staticChild[i])
-            (staticIndices[i], staticIndices[i-1]) = (staticIndices[i-1], staticIndices[i])
+        while (i > 0 && _staticChild[i]._priority > _staticChild[i-1]._priority) {
+            (_staticChild[i], _staticChild[i-1]) = (_staticChild[i-1], _staticChild[i])
+            (_staticIndices[i], _staticIndices[i-1]) = (_staticIndices[i-1], _staticIndices[i])
             i -= 1
         }
     }
 
     func setHandler(method: String, handler: T, implicitHead: Bool): Unit {
-        let val = leafHandlers.get(method)
+        let val = _leafHandlers.get(method)
         ifSome(val, { v=>
-            if (method != "HEAD" || !this.implicitHead ) {
-                throw IllegalArgumentException("'${path}' already handlers ${method}")
+            if (method != "HEAD" || !_implicitHead ) {
+                throw IllegalArgumentException("'${_path}' already handlers ${method}")
             }
         })
-        leafHandlers[method] = handler
+        _leafHandlers[method] = handler
         if (method == "HEAD") {
-            this.implicitHead = implicitHead
+            _implicitHead = implicitHead
         }
     }
 
-    func checkParamName(paramNames: Array<String>):Unit {
-        if (leafParamNames.size != paramNames.size) {
+    func checkParamName(paramNames: ArrayList<String>):Unit {
+        if (_leafParamNames.size != paramNames.size) {
             throw IllegalArgumentException("Reached leaf node with differing wildcard array length. Please report this as a bug.")
         }
 
         for (idx in 0..paramNames.size) {
-            if (leafParamNames[idx] != paramNames[idx]) {
-                throw IllegalArgumentException("wildcards ${leafParamNames} are ambiguous with wildcards ${paramNames}")
+            if (_leafParamNames[idx] != paramNames[idx]) {
+                throw IllegalArgumentException("wildcards ${_leafParamNames} are ambiguous with wildcards ${paramNames}")
             }
         }
     }
@@ -91,7 +93,7 @@ class Node<T> {
             if (!paramNames.isEmpty()) {
                 checkParamName(paramNames)
             } else {
-                leafParamNames = paramNames
+                _leafParamNames = paramNames
             }
 
             return this
@@ -102,27 +104,24 @@ class Node<T> {
         var thisToken: String = ""
         var tokenEnd = -1
 
-        if (c == b'/') {
-            thisToken = "/"
-            tokenEnd = 1
+        (thisToken, tokenEnd) = if (c == b'/') {
+            ("/", 1)
         } else if (nextSlash == -1) {
-            thisToken = path
-            tokenEnd = path.size
+            (path, path.size)
         } else {
-            thisToken = path[0..nextSlash]
-            tokenEnd = nextSlash
+            (path[0..nextSlash], nextSlash)
         }
 
         let remainingPath = path[tokenEnd..path.size]
         if (c == b'*' && !inStaticToken) {
             // token starts with a "*", it's a catch-all
             thisToken = thisToken[1..thisToken.size]
-            if (this.catchAllChild.isNone()) {
-                this.catchAllChild = Node<T>(path, CATCH_ALL)
+            if (_catchAllChild.isNone()) {
+                _catchAllChild = Node<T>(path, CATCH_ALL)
             }
 
-            if (path[1..path.size] != this.catchAllChild.getOrThrow().path) {
-                throw IllegalArgumentException("Catch-all name in ${path} doesn't match ${catchAllChild.getOrThrow().path}, You probably tried to define overlapping catchalls.")
+            if (path[1..path.size] != _catchAllChild.getOrThrow()._path) {
+                throw IllegalArgumentException("Catch-all name in ${path} doesn't match ${_catchAllChild.getOrThrow()._path}, You probably tried to define overlapping catchalls.")
             }
 
             if (nextSlash != -1) {
@@ -130,29 +129,31 @@ class Node<T> {
             }
             let lpn = ArrayList<String>(paramNames)
             lpn.append(thisToken)
-            catchAllChild.getOrThrow().leafParamNames = lpn
-            return catchAllChild.getOrThrow()
+            _catchAllChild.getOrThrow()._leafParamNames = lpn
+            return _catchAllChild.getOrThrow()
         } else if (c == b'~' && !inStaticToken) {
             thisToken = thisToken[1..thisToken.size]
-            for (child in regexChild) {
-                if ( thisToken == child.path) {
+            for (child in _regexChild) {
+                if ( thisToken == child._path) {
                     return child
                 }
             }
+
             let regex = Regex(thisToken)
             let child = Node<T>(thisToken, REGEXP)
-            child.regExper = regex
-            this.regexChild.append(child)
-            child.leafParamNames = ArrayList<String>(paramNames)
-            child.leafParamNames.appendAll(getRegexParamNames(regex))
+            child._regExper = regex
+            _regexChild.append(child)
+
+            child._leafParamNames = ArrayList<String>(paramNames)
+            child._leafParamNames.appendAll(getRegexParamNames(regex))
             return child
         } else if (c == b':' && !inStaticToken) {
             thisToken = thisToken[1..thisToken.size]
             paramNames.append(thisToken)
-            if (wildcardChild.isNone()) {
-                wildcardChild = Node<T>("wildcard", WILDCARD)
+            if (_wildcardChild.isNone()) {
+                _wildcardChild = Node<T>("wildcard", WILDCARD)
             }
-            return wildcardChild.getOrThrow().addPath(remainingPath, paramNames, false)
+            return _wildcardChild.getOrThrow().addPath(remainingPath, paramNames, false)
         } else {
             var unesaceped = false
             if (thisToken.size >= 2 && !inStaticToken) {
@@ -164,9 +165,9 @@ class Node<T> {
             }
 
             let inStaticToken = (c != b'/')
-            for (i in 0..staticIndices.size) {
+            for (i in 0.._staticIndices.size) {
                 var (child, prefixSplit) = splitCommonPrefix(i, thisToken)
-                child.priority +=1
+                child._priority +=1
                 sortStaticChild(i)
                 if (unesaceped) {
                     prefixSplit +=1
@@ -175,65 +176,66 @@ class Node<T> {
             }
 
             let child = Node<T>(thisToken, STATIC)
-            if (nodeType == WILDCARD) {
-                child.nodeType = WILDCARD
+            if (_nodeType == WILDCARD) {
+                child._nodeType = WILDCARD
             }
 
-            if (staticIndices.isEmpty()) {
-                staticIndices = ArrayList([c])
-                staticChild = ArrayList([child])
+            if (_staticIndices.isEmpty()) {
+                _staticIndices = ArrayList([c])
+                _staticChild = ArrayList([child])
             } else {
-                staticIndices.append(c)
-                staticChild.append(child)
+                _staticIndices.append(c)
+                _staticChild.append(child)
             }
-            return child.addPath(remainingPath, paramNamesm, inStaticToken)
+            return child.addPath(remainingPath, paramNames, inStaticToken)
         }
     }
 
     func splitCommonPrefix(existingNodeIndex: Int64, path: String): (Node<T>, Int64) {
-        let childNode = staticChild[existingNodeIndex]
-        if (path.startsWith(childNode.path)) {
-            return (childNode, childNode.path.size)
+        let childNode = _staticChild[existingNodeIndex]
+        if (path.startsWith(childNode._path)) {
+            return (childNode, childNode._path.size)
         }
 
         var i = 0
-        for (i in 0..childNode.path.size) {
+        for (i in 0..childNode._path.size) {
             if (i == path.size) {
                 break
             }
-            if (path[i] == childNode.path[i]) {
+            if (path[i] == childNode._path[i]) {
                 break
             }
         }
 
         let commonPrefix = path[0..i]
-        childNode.path = childNode.path[i..childNode.path.size]
+        childNode._path = childNode._path[i..childNode._path.size]
 
         let newNode = Node<T>(commonPrefix, STATIC)
-        newNode.staticIndices = ArrayList([childNode.path[0]])
-        newNode.staticChild = ArrayList([childNode])
-        staticChild[existingNodeIndex] = newNode
+        newNode._staticIndices = ArrayList([childNode._path[0]])
+        newNode._staticChild = ArrayList([childNode])
+
+        _staticChild[existingNodeIndex] = newNode
         (newNode, i)
     }
 
     func search(method: String, path: String, isValid: (T) -> Bool): (?Node<T>, ?T, Array<String>) {
         let pathLen = path.size
         if (pathLen == 0) {
-            if (leafHandlers.size == 0) {
+            if (_leafHandlers.size == 0) {
                 return (Option<Node<T>>.None, Option<T>.None, Array<String>())
             }
-            return (this, leafHandlers.get(method), Array<String>())
+            return (this, _leafHandlers.get(method), Array<String>())
         }
         let firstChar = path[0]
 
         var found: ?Node<T> = Option<Node<T>>.None
         var handler: ?T = Option<T>.None
         var params: Array<String> = []
-        for (i in 0..staticIndices.size) {
-            if (staticIndices[i] == firstChar) {
-                let child = staticChild[i]
-                let childPathLen = child.path.size
-                if (pathLen >= childPathLen && child.path == path[0..childPathLen]) {
+        for (i in 0.._staticIndices.size) {
+            if (_staticIndices[i] == firstChar) {
+                let child = _staticChild[i]
+                let childPathLen = child._path.size
+                if (pathLen >= childPathLen && child._path == path[0..childPathLen]) {
                     let nextPath = path[childPathLen..path.size]
                     (found, handler, params) = child.search(method, nextPath, isValid)
                 }
@@ -245,7 +247,7 @@ class Node<T> {
             return (found, handler, params)
         }
 
-        if (wildcardChild.isSome()) {
+        if (_wildcardChild.isSome()) {
             var nextSlash = path.indexOf(b'/').getOrDefault({=>-1})
             if (nextSlash <= 0) {
                 nextSlash = pathLen
@@ -255,9 +257,9 @@ class Node<T> {
             let nextToken = path[nextSlash..path.size]
 
             if (!thisToken.isEmpty()) {
-                let (wcfound, wchandler, wcparams) = wildcardChild.getOrThrow().search(method, nextToken, isValid)
+                let (wcfound, wchandler, wcparams) = _wildcardChild.getOrThrow().search(method, nextToken, isValid)
                 let valid = wchandler.isSome() && isValid(wchandler.getOrThrow())
-                if (valid || (found.isNone() && wcfound.isSome())){
+                if (valid || (found.isNone() && wcfound.isSome())) {
                     let unescaped = unescape(thisToken)
                     let newparams = ArrayList(wcparams)
                     newparams.append(unescaped)
@@ -269,10 +271,10 @@ class Node<T> {
             }
         }
 
-        if (regexChild.size > 0) {
+        if (_regexChild.size > 0) {
             let (refound, rehandler, reparams) = searchRegexChild(method, path, isValid)
             let valid = rehandler.isSome() && isValid(rehandler.getOrThrow())
-            if (valid || (found.isNone() && refound.isSome())){
+            if (valid || (found.isNone() && refound.isSome())) {
                 if (valid) {
                     return (refound, rehandler, reparams)
                 }
@@ -280,12 +282,12 @@ class Node<T> {
             }
         }
 
-        if (catchAllChild.isSome()) {
-            let handler = catchAllChild.getOrThrow().leafHandlers.get(method)
+        if (_catchAllChild.isSome()) {
+            let handler = _catchAllChild.getOrThrow()._leafHandlers.get(method)
             let valid = handler.isSome() && isValid(handler.getOrThrow())
             if (valid || found.isNone()) {
                 let unescaped = unescape(path)
-                return (catchAllChild, handler, [unescaped])
+                return (_catchAllChild, handler, [unescaped])
             }
         }
 
@@ -305,23 +307,16 @@ class Node<T> {
     }
 
     func dumpTree(prefix: String, nodeType: String): String {
-        let methods = this.leafHandlers.keys()
+        let methods = _leafHandlers.keys()
         let builder = StringBuilder()
-        let line = "${prefix} ${priority} ${nodeType} ${path}, ${staticChild.size}, ${methods.toArray()} params ${leafParamNames}\n"
+        let line = "${prefix} ${_priority} ${nodeType} ${_path}, ${_staticChild.size}, ${methods.toArray()} params ${_leafParamNames}\n"
         builder.append(line)
-        var prefixStr = prefix + " "
-        for (node in staticChild) {
-            builder.append(node.dumpTree(prefixStr, ""))
-        }
-        if (wildcardChild.isSome()) {
-            builder.append(wildcardChild.getOrThrow().dumpTree(prefix, ":"))
-        }
-        for (child in regexChild) {
-            builder.append(child.dumpTree(prefixStr, "~"))
-        }
-        if (catchAllChild.isSome()) {
-            builder.append(catchAllChild.getOrThrow().dumpTree(prefix, "*"))
-        }
+        
+        let prefixStr = prefix + " "
+        _staticChild |> forEach { val => val.dumpTree(prefixStr, "") }
+        ifSome(_wildcardChild, { val =>  builder.append(val.dumpTree(prefix, ":"))})
+        _regexChild  |> forEach  { val => val.dumpTree(prefixStr, "~") }
+        ifSome(_catchAllChild, { val =>  builder.append(val.dumpTree(prefix, "*"))})
 
         builder.toString()
     }
