@@ -4,6 +4,8 @@ import std.collection.{ArrayList, HashMap}
 import net.http.{HttpRequestDistributor, HttpRequestHandler, NotFoundHandler, HttpStatusCode}
 
 public interface JoyRouters {
+    prop distributor: HttpRequestDistributor
+
     func use(mw: JoyMiddlewareHandler): JoyRouters
     func use(mw: (handler: JoyRequestHandler)-> JoyRequestHandler): JoyRouters{
         use(JoyMiddlewareFuncHandler(mw))
@@ -75,7 +77,7 @@ class TreeMux <: HttpRequestDistributor {
     }
 
     public func register(path: String, handler: HttpRequestHandler): Unit {
-       
+        throw UnsupportedException("unsupported this method")
     }
 
     public func distribute(path: String): HttpRequestHandler {
@@ -102,6 +104,10 @@ class JoyRouteGroup <: JoyRouters {
 
     init(config: JoyConfig) {
         this("", TreeMux(config), ArrayList())
+    }
+
+    public prop distributor: HttpRequestDistributor {
+      get() { _mux }
     }
 
     public func use(mw: JoyMiddlewareHandler): JoyRouters { 

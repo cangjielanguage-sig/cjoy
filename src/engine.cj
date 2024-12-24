@@ -15,7 +15,7 @@ public struct JoyConfig {
 public class Joy {
     private var _server: ?Server = None
     private let _config: JoyConfig
-    public let router: JoyRouteGroup
+    public let router: JoyRouters
 
     init(config: JoyConfig) {
         _config = config
@@ -34,7 +34,7 @@ public class Joy {
     * run http server at address:port
     */
     public func run(addr: String, port: UInt16): Unit {
-        let server = ServerBuilder().addr(addr).port(port).distributor(router._mux).build()
+        let server = ServerBuilder().addr(addr).port(port).distributor(router.distributor).build()
         if (_config.enableDebugLog) {
             server.logger.enabled(LogLevel.DEBUG)
         }
