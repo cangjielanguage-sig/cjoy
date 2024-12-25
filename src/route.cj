@@ -285,7 +285,7 @@ class JoyRouteGroup <: JoyRouters {
 
     private func handlerWithMiddlewares(handler: JoyRequestHandler): JoyRequestHandler {
         var res: JoyRequestHandler = handler
-        for (i in _stack.size..0) {
+        for (i in _stack.size-1..=0:-1) {
             res = _stack[i].next(res)
         }
         return res
