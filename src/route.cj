@@ -1,7 +1,7 @@
 package cjoy
 
-import std.collection.{ArrayList, HashMap}
-import net.http.{HttpRequestDistributor, HttpRequestHandler, NotFoundHandler, HttpStatusCode}
+import std.collection.{ArrayList, HashMap, forEach}
+import net.http.*
 
 public interface JoyRouters {
     prop distributor: HttpRequestDistributor
@@ -53,22 +53,30 @@ public interface JoyRouters {
     func handle(method: Array<String>, relativePath: String, handler: (ctx: JoyContext) -> Unit): JoyRouters {
         handle(method, relativePath, JoyFuncHandler(handler))
     }
-
-    func staticFile(relativePath: String, filePath: String): JoyRouters
-    func staticAll(relativePath: String, rootPath: String): JoyRouters
 }
 
+class JoyRouteHandler <: HttpRequestHandler {
+    public JoyRouteHandler(let handler: JoyRequestHandler, let paramMap: HashMap<String, String>, let config: JoyConfig) {}
 
-class LookupResult  {
-	var statusCode: UInt16 = HttpStatusCode.STATUS_NOT_FOUND
-	var handler: ?JoyRequestHandler = None
-	// Params represents the key value pairs of the path parameters.
-	var params: HashMap<String, String> = HashMap()
-     // Only has a value when StatusCode is MethodNotAllowed.
-	var leafHandler: HashMap<String, JoyRequestHandler> = HashMap()
+    public func handle(ctx: HttpContext) : Unit {
+        let joyCtx = JoyContext(ctx, paramMap, config)
+        this.handler.handle(joyCtx)
+    }
 }
 
-class TreeMux <: HttpRequestDistributor {
+class JoyMethodNotAllowedHandler <: HttpRequestHandler {
+    public JoyMethodNotAllowedHandler(let methods: Collection<String>) {}
+    
+    public func handle(ctx: HttpContext): Unit {
+        let rspBuilder = ctx.responseBuilder
+        methods |> forEach { val => rspBuilder.header("Allow", val) }
+        rspBuilder.status(HttpStatusCode.STATUS_METHOD_NOT_ALLOWED)
+        rspBuilder.build()
+    }
+}
+
+class TreeMux <: HttpRequestDistributor & HttpRequestHandler{
+    private static let HANDLER_VALID: (JoyRequestHandler) -> Bool = { _=> true }
     var _root: Node<JoyRequestHandler> = Node("/", STATIC)
     public let config: JoyConfig
 
@@ -76,18 +84,62 @@ class TreeMux <: HttpRequestDistributor {
         this.config = config
     }
 
-    public func register(path: String, handler: HttpRequestHandler): Unit {
+    public func register(_: String, _: HttpRequestHandler): Unit {
         throw UnsupportedException("unsupported this method")
     }
 
-    public func distribute(path: String): HttpRequestHandler {
-        return NotFoundHandler()
+    public func distribute(_: String): HttpRequestHandler {
+        // redirect to handle method
+        this
     }
 
-    private func lookup(path: String): LookupResult {
-        let result: LookupResult = LookupResult()
+    public func handle(ctx: HttpContext)  {
+        let handler = lookup(ctx.request)
+        handler.handle(ctx)
+    }
 
-        result
+    private func lookup(req: HttpRequest): HttpRequestHandler {
+        var path = if (config.caseInsensitive) {
+            req.url.path.toAsciiLower()
+        } else {
+            req.url.path
+        }
+        var pathLen = path.size
+        var trailingSlash = path[pathLen-1] == b'/' && pathLen > 1
+        if (trailingSlash && config.redirectTrailingSlash) {
+            path = path[0..path.size-1]
+        }
+
+        let (node, handler ,params) = _root.search(req.method, path[1..path.size], HANDLER_VALID)
+        if (node.isNone()) {
+            return NotFoundHandler()
+        }
+        let tnode = node.getOrThrow()
+
+        if (handler.isNone()) {
+            if (req.method == "OPTIONS") {
+                return OptionsHandler()
+            }
+            return JoyMethodNotAllowedHandler(tnode._leafHandlers.keys())
+        }
+
+        if (!tnode.isCatchAll()) {
+            if (trailingSlash != tnode._addSlash) {
+                // something
+            }
+        }
+
+        let paramMap: HashMap<String, String> = HashMap()
+        if (!params.isEmpty()) {
+            if (params.size != tnode._leafParamNames.size) {
+                throw Exception("parameter list length mismatch")
+            }
+            for (idx in 0..params.size) {
+                paramMap[tnode._leafParamNames[params.size - idx -1]] = params[idx]
+            }
+        }
+
+        JoyRouteHandler(handler.getOrThrow(), paramMap, config)
     }
 }
 
@@ -226,7 +278,7 @@ class JoyRouteGroup <: JoyRouters {
         }
 
         for(method in methods) {
-            addFullStackHandler(method, relativePath, handler)
+            addFullStackHandler(method, relativePath, h)
         }
         this
     }
@@ -237,13 +289,5 @@ class JoyRouteGroup <: JoyRouters {
             res = _stack[i].next(res)
         }
         return res
-    }
-
-    public func staticFile(relativePath: String, filePath: String): JoyRouters {
-        this
-    }
-
-    public func staticAll(relativePath: String, rootPath: String): JoyRouters {
-        this
     }
 }

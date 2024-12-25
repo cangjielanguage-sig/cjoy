@@ -6,8 +6,8 @@ public interface JoyRender {
     func render(builder: HttpResponseBuilder): Unit
 }
 
-public class JoyFuncRnder <: JoyRender {
-    public JoyFuncRnder(let builder: (HttpResponseBuilder) -> Unit) {}
+public class JoyFuncRender <: JoyRender {
+    public JoyFuncRender(let builder: (HttpResponseBuilder) -> Unit) {}
 
     public func render(builder: HttpResponseBuilder): Unit {
         this.builder(builder)
