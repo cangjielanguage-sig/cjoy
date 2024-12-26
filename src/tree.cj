@@ -78,7 +78,7 @@ class Node<T> {
 
     private func checkParamName(paramNames: ArrayList<String>):Unit {
         if (_leafParamNames.size != paramNames.size) {
-            throw IllegalArgumentException("Reached leaf node with differing wildcard array length. Please report this as a bug.")
+            throw IllegalArgumentException("reached leaf node with differing wildcard array length(${_leafParamNames.size}, ${paramNames.size}). please report this as a bug.")
         }
 
         for (idx in 0..paramNames.size) {
@@ -90,7 +90,7 @@ class Node<T> {
 
     func addPath(path: String, paramNames: ArrayList<String>, inStaticToken: Bool): Node<T> {
         if (path.isEmpty()) {
-            if (!paramNames.isEmpty()) {
+            if (!_leafParamNames.isEmpty()) {
                 checkParamName(paramNames)
             } else {
                 _leafParamNames = paramNames
@@ -116,19 +116,19 @@ class Node<T> {
 
         // named path 
         if (firstByte == b':' && !inStaticToken) {
-            return addNamedPath(token, remainingPath, paramNames)
+            return addWildcardPath(token, remainingPath, paramNames)
         } 
 
         // other path
         var unesaceped = false
         if (token.size >= 2 && !inStaticToken) {
-            if (token[0] == b'\\' && (token[1] == b'*' || token[1] == b':' || token[1] == b'~' || token[1] == b'\\')) {
+            if (token[0] == b'\\' && (token[1] == b'*' || token[1] == b':' || token[1] == b'\\')) {
                 firstByte = token[1]
                 token = token[1..token.size]
                 unesaceped = true
             }
         }
-        addOtherPath(token, firstByte, path, remainingPath, unesaceped, paramNames)
+        return addOtherPath(token, firstByte, path, remainingPath, unesaceped, paramNames)
     }
 
     private func addOtherPath(token: String, firstByte: Byte, path: String, remainingPath: String, unesaceped: Bool, paramNames: ArrayList<String>): Node<T> {
@@ -164,11 +164,12 @@ class Node<T> {
         // token starts with a "*", it's a catch-all
         let thisToken = token[1..token.size]
         if (_catchAllChild.isNone()) {
-            _catchAllChild = Node<T>(path, CATCH_ALL)
+            _catchAllChild = Node<T>(thisToken, CATCH_ALL)
         }
-
-        if (path[1..path.size] != _catchAllChild.getOrThrow()._path) {
-            throw IllegalArgumentException("catch-all name in ${path} doesn't match ${_catchAllChild.getOrThrow()._path}, you probably tried to define overlapping catchalls.")
+        let catchAllChild = _catchAllChild.getOrThrow()
+        
+        if (path[1..path.size] != catchAllChild._path) {
+            throw IllegalArgumentException("catch-all name in ${path} doesn't match ${catchAllChild._path}, you probably tried to define overlapping catchalls.")
         }
         if (nextSlash != -1) {
             throw IllegalArgumentException("/ after catch-all found in ${path}")
@@ -176,17 +177,20 @@ class Node<T> {
 
         let lpn = ArrayList<String>(paramNames)
         lpn.append(thisToken)
-        _catchAllChild.getOrThrow()._leafParamNames = lpn
-        return _catchAllChild.getOrThrow()
+        catchAllChild._leafParamNames = lpn
+        return catchAllChild
     }
 
-    private func addNamedPath(token: String, remainingPath: String, paramNames: ArrayList<String>): Node<T> {
+    private func addWildcardPath(token: String, remainingPath: String, paramNames: ArrayList<String>): Node<T> {
         let thisToken = token[1..token.size]
         paramNames.append(thisToken)
+        
         if (_wildcardChild.isNone()) {
             _wildcardChild = Node<T>("wildcard", WILDCARD)
         }
-        return _wildcardChild.getOrThrow().addPath(remainingPath, paramNames, false)
+        let wildcardChild = _wildcardChild.getOrThrow()
+
+        return wildcardChild.addPath(remainingPath, paramNames, false)
     }
 
     private func splitCommonPrefix(existingNodeIndex: Int64, path: String): (Node<T>, Int64) {
@@ -196,8 +200,9 @@ class Node<T> {
         }
 
         var idx = 0
+        // find the length of the common prefix of the child node and the new path.
         for (i in 0..childNode._path.size) {
-            if (i == path.size || path[i] == childNode._path[i]) {
+            if (i == path.size || path[i] != childNode._path[i]) {
                 idx = i
                 break
             }
@@ -207,6 +212,7 @@ class Node<T> {
         childNode._path = childNode._path[idx..childNode._path.size]
 
         let newNode = Node<T>(commonPrefix, STATIC)
+        newNode._priority = childNode._priority
         newNode._staticIndices = ArrayList([childNode._path[0]])
         newNode._staticChild = ArrayList([childNode])
 
