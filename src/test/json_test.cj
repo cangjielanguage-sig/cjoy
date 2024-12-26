@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) lanlingx 2024-2024. All rights resvered.
+ */
+
 package cjoy.test
 
 import cjoy.json.*
@@ -48,7 +52,7 @@ public struct SOmitempty {
 }
 
 @Test
-public class TestCaseSuit {
+public class JsonTestCaseSuit {
     @TestCase
     public func testBase() {
         let s0 = S0()
