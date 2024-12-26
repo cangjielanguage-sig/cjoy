@@ -1,0 +1,15 @@
+[dependencies]
+  cjoy = { path = "../../" ,version = "1.0.0"}
+
+[package]
+  cjc-version = "0.57.3"
+  compile-option = ""
+  description = "simple examples"
+  link-option = ""
+  name = "simple"
+  output-type = "executable"
+  override-compile-option = ""
+  src-dir = ""
+  target-dir = ""
+  version = "1.0.0"
+  package-configuration = {}
