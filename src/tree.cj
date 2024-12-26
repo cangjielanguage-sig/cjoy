@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) lanlingx 2024-2024. All rights resvered.
+ */
+
 package cjoy
 
 import std.collection.{ArrayList, HashMap, forEach}
@@ -49,7 +53,7 @@ class Node<T> {
         _nodeType == CATCH_ALL
     }
 
-    func sortStaticChild(idx: Int64): Unit {
+    private func sortStaticChild(idx: Int64): Unit {
         var i = idx
         while (i > 0 && _staticChild[i]._priority > _staticChild[i-1]._priority) {
             (_staticChild[i], _staticChild[i-1]) = (_staticChild[i-1], _staticChild[i])
@@ -65,13 +69,14 @@ class Node<T> {
                 throw IllegalArgumentException("'${_path}' already handlers ${method}")
             }
         })
+
         _leafHandlers[method] = handler
         if (method == "HEAD") {
             _implicitHead = implicitHead
         }
     }
 
-    func checkParamName(paramNames: ArrayList<String>):Unit {
+    private func checkParamName(paramNames: ArrayList<String>):Unit {
         if (_leafParamNames.size != paramNames.size) {
             throw IllegalArgumentException("Reached leaf node with differing wildcard array length. Please report this as a bug.")
         }
@@ -84,23 +89,18 @@ class Node<T> {
     }
 
     func addPath(path: String, paramNames: ArrayList<String>, inStaticToken: Bool): Node<T> {
-        let leaf = path.isEmpty()
-        if (leaf) {
+        if (path.isEmpty()) {
             if (!paramNames.isEmpty()) {
                 checkParamName(paramNames)
             } else {
                 _leafParamNames = paramNames
             }
-
             return this
         }
 
-        var c = path[0]
+        var firstByte = path[0]
         let nextSlash = path.indexOf(b'/').getOrDefault({=>-1})
-        var thisToken: String = ""
-        var tokenEnd = -1
-
-        (thisToken, tokenEnd) = if (c == b'/') {
+        var (token, tokenEnd) = if (firstByte == b'/') {
             ("/", 1)
         } else if (nextSlash == -1) {
             (path, path.size)
@@ -109,114 +109,155 @@ class Node<T> {
         }
 
         let remainingPath = path[tokenEnd..path.size]
-        if (c == b'*' && !inStaticToken) {
-            // token starts with a "*", it's a catch-all
-            thisToken = thisToken[1..thisToken.size]
-            if (_catchAllChild.isNone()) {
-                _catchAllChild = Node<T>(path, CATCH_ALL)
-            }
+        // catch-all path
+        if (firstByte == b'*' && !inStaticToken) {
+            return addCatchAllPath(token, path, nextSlash, paramNames)
+        }
 
-            if (path[1..path.size] != _catchAllChild.getOrThrow()._path) {
-                throw IllegalArgumentException("Catch-all name in ${path} doesn't match ${_catchAllChild.getOrThrow()._path}, You probably tried to define overlapping catchalls.")
-            }
-
-            if (nextSlash != -1) {
-                throw IllegalArgumentException(" / after catch-all found in ${path}")
-            }
-            let lpn = ArrayList<String>(paramNames)
-            lpn.append(thisToken)
-            _catchAllChild.getOrThrow()._leafParamNames = lpn
-            return _catchAllChild.getOrThrow()
-        } 
-        if (c == b':' && !inStaticToken) {
-            thisToken = thisToken[1..thisToken.size]
-            paramNames.append(thisToken)
-            if (_wildcardChild.isNone()) {
-                _wildcardChild = Node<T>("wildcard", WILDCARD)
-            }
-            return _wildcardChild.getOrThrow().addPath(remainingPath, paramNames, false)
+        // named path 
+        if (firstByte == b':' && !inStaticToken) {
+            return addNamedPath(token, remainingPath, paramNames)
         } 
 
+        // other path
         var unesaceped = false
-        if (thisToken.size >= 2 && !inStaticToken) {
-            if (thisToken[0] == b'\\' && (thisToken[1] == b'*' || thisToken[1] == b':' || thisToken[1] == b'~' || thisToken[1] == b'\\')) {
-                c = thisToken[1]
-                thisToken = thisToken[1..thisToken.size]
+        if (token.size >= 2 && !inStaticToken) {
+            if (token[0] == b'\\' && (token[1] == b'*' || token[1] == b':' || token[1] == b'~' || token[1] == b'\\')) {
+                firstByte = token[1]
+                token = token[1..token.size]
                 unesaceped = true
             }
         }
+        addOtherPath(token, firstByte, path, remainingPath, unesaceped, paramNames)
+    }
 
-        let inStaticToken_ = (c != b'/')
+    private func addOtherPath(token: String, firstByte: Byte, path: String, remainingPath: String, unesaceped: Bool, paramNames: ArrayList<String>): Node<T> {
+        let inStaticToken = (firstByte != b'/')
         for (i in 0.._staticIndices.size) {
-            var (child, prefixSplit) = splitCommonPrefix(i, thisToken)
-            child._priority +=1
-            sortStaticChild(i)
-            if (unesaceped) {
-                prefixSplit +=1
+            if (_staticIndices[i] == firstByte) {
+                var (child, prefixSplit) = splitCommonPrefix(i, token)
+                child._priority +=1
+                sortStaticChild(i)
+                if (unesaceped) {
+                    prefixSplit +=1
+                }
+                return child.addPath(path[prefixSplit..path.size], paramNames, inStaticToken)
             }
-            return child.addPath(path[prefixSplit..path.size], paramNames, inStaticToken_)
         }
 
-        let child = Node<T>(thisToken, STATIC)
+        let child = Node<T>(token, STATIC)
         if (_nodeType == WILDCARD) {
             child._nodeType = WILDCARD
         }
 
         if (_staticIndices.isEmpty()) {
-            _staticIndices = ArrayList([c])
+            _staticIndices = ArrayList([firstByte])
             _staticChild = ArrayList([child])
         } else {
-            _staticIndices.append(c)
+            _staticIndices.append(firstByte)
             _staticChild.append(child)
         }
-        return child.addPath(remainingPath, paramNames, inStaticToken_)
+        return child.addPath(remainingPath, paramNames, inStaticToken)
     }
 
-    func splitCommonPrefix(existingNodeIndex: Int64, path: String): (Node<T>, Int64) {
+    private func addCatchAllPath(token: String, path: String, nextSlash: Int64, paramNames: ArrayList<String>): Node<T> {
+        // token starts with a "*", it's a catch-all
+        let thisToken = token[1..token.size]
+        if (_catchAllChild.isNone()) {
+            _catchAllChild = Node<T>(path, CATCH_ALL)
+        }
+
+        if (path[1..path.size] != _catchAllChild.getOrThrow()._path) {
+            throw IllegalArgumentException("catch-all name in ${path} doesn't match ${_catchAllChild.getOrThrow()._path}, you probably tried to define overlapping catchalls.")
+        }
+        if (nextSlash != -1) {
+            throw IllegalArgumentException("/ after catch-all found in ${path}")
+        }
+
+        let lpn = ArrayList<String>(paramNames)
+        lpn.append(thisToken)
+        _catchAllChild.getOrThrow()._leafParamNames = lpn
+        return _catchAllChild.getOrThrow()
+    }
+
+    private func addNamedPath(token: String, remainingPath: String, paramNames: ArrayList<String>): Node<T> {
+        let thisToken = token[1..token.size]
+        paramNames.append(thisToken)
+        if (_wildcardChild.isNone()) {
+            _wildcardChild = Node<T>("wildcard", WILDCARD)
+        }
+        return _wildcardChild.getOrThrow().addPath(remainingPath, paramNames, false)
+    }
+
+    private func splitCommonPrefix(existingNodeIndex: Int64, path: String): (Node<T>, Int64) {
         let childNode = _staticChild[existingNodeIndex]
         if (path.startsWith(childNode._path)) {
             return (childNode, childNode._path.size)
         }
 
-        var i = 0
+        var idx = 0
         for (i in 0..childNode._path.size) {
-            if (i == path.size) {
-                break
-            }
-            if (path[i] == childNode._path[i]) {
+            if (i == path.size || path[i] == childNode._path[i]) {
+                idx = i
                 break
             }
         }
 
-        let commonPrefix = path[0..i]
-        childNode._path = childNode._path[i..childNode._path.size]
+        let commonPrefix = path[0..idx]
+        childNode._path = childNode._path[idx..childNode._path.size]
 
         let newNode = Node<T>(commonPrefix, STATIC)
         newNode._staticIndices = ArrayList([childNode._path[0]])
         newNode._staticChild = ArrayList([childNode])
 
         _staticChild[existingNodeIndex] = newNode
-        (newNode, i)
+        (newNode, idx)
     }
 
     func search(method: String, path: String, isValid: (T) -> Bool): (?Node<T>, ?T, Array<String>) {
         let pathLen = path.size
+        // root
         if (pathLen == 0) {
             if (_leafHandlers.size == 0) {
-                return (Option<Node<T>>.None, Option<T>.None, Array<String>())
+                return (None, None, Array<String>())
             }
             return (this, _leafHandlers.get(method), Array<String>())
         }
-        let firstChar = path[0]
 
-        var found: ?Node<T> = Option<Node<T>>.None
-        var handler: ?T = Option<T>.None
+        // searchStatic
+        var (sflag, found, handler, params) = searchStatic(method, path, isValid)
+        if (sflag) {
+            return (found, handler, params)
+        }
+
+        // searchWildchild
+        let (wflag, wfound, whandler, wparams) = searchWildchild(method, path, found, isValid)
+        if (wflag) {
+            return (wfound, whandler, wparams)
+        } else {
+            if (wfound.isSome()) {
+                (found, handler, params) = (wfound, whandler, wparams)
+            }
+        }
+
+        // searchCatchAll
+        let (cflag, cfound, chandler, cparams) = searchCatchAll(method, path, found, isValid)
+        if (cflag) {
+            return (cfound, chandler, cparams)
+        }
+
+        return (found, handler, params)
+    }
+
+    private func searchStatic(method: String, path: String, isValid: (T) -> Bool): (Bool, ?Node<T>, ?T, Array<String>) {
+        var found: ?Node<T> = None
+        var handler: ?T = None
         var params: Array<String> = []
         for (i in 0.._staticIndices.size) {
-            if (_staticIndices[i] == firstChar) {
+            if (_staticIndices[i] == path[0]) {
                 let child = _staticChild[i]
                 let childPathLen = child._path.size
-                if (pathLen >= childPathLen && child._path == path[0..childPathLen]) {
+                if (path.size >= childPathLen && child._path == path[0..childPathLen]) {
                     let nextPath = path[childPathLen..path.size]
                     (found, handler, params) = child.search(method, nextPath, isValid)
                 }
@@ -225,44 +266,53 @@ class Node<T> {
         }
 
         if (handler.isSome() && isValid(handler.getOrThrow())) {
-            return (found, handler, params)
+            return (true, found, handler, params)
         }
+        return (false, found, handler, params)
+    }
 
+    private func searchWildchild(method: String, path: String, found: ?Node<T>, isValid: (T) -> Bool): (Bool, ?Node<T>, ?T, Array<String>) {
         if (_wildcardChild.isSome()) {
-            var nextSlash = path.indexOf(b'/').getOrDefault({=>-1})
-            if (nextSlash <= 0) {
-                nextSlash = pathLen
-            }
+            return (false, None, None, [])
+        }
 
-            let thisToken = path[0..nextSlash]
-            let nextToken = path[nextSlash..path.size]
+        var nextSlash = path.indexOf(b'/').getOrDefault({=>-1})
+        if (nextSlash <= 0) {
+            nextSlash = path.size
+        }
 
-            if (!thisToken.isEmpty()) {
-                let (wcfound, wchandler, wcparams) = _wildcardChild.getOrThrow().search(method, nextToken, isValid)
-                let valid = wchandler.isSome() && isValid(wchandler.getOrThrow())
-                if (valid || (found.isNone() && wcfound.isSome())) {
-                    let unescaped = unescape(thisToken)
-                    let newparams = ArrayList(wcparams)
-                    newparams.append(unescaped)
-                    if (valid) {
-                        return (wcfound, wchandler, newparams.toArray())
-                    }
-                    (found, handler, params) = (wcfound, wchandler, newparams.toArray())
+        let thisToken = path[0..nextSlash]
+        let nextToken = path[nextSlash..path.size]
+
+        if (!thisToken.isEmpty()) {
+            let (wcfound, wchandler, wcparams) = _wildcardChild.getOrThrow().search(method, nextToken, isValid)
+            let valid = wchandler.isSome() && isValid(wchandler.getOrThrow())
+            if (valid || (found.isNone() && wcfound.isSome())) {
+                let unescaped = unescape(thisToken)
+                let newparams = ArrayList(wcparams)
+                newparams.append(unescaped)
+                if (valid) {
+                    return (true, wcfound, wchandler, newparams.toArray())
                 }
+                return (false, wcfound, wchandler, newparams.toArray())
             }
         }
+        return (false, None, None, [])
+    }
 
-        if (_catchAllChild.isSome()) {
-            let handler = _catchAllChild.getOrThrow()._leafHandlers.get(method)
-            let valid = handler.isSome() && isValid(handler.getOrThrow())
-            if (valid || found.isNone()) {
-                let unescaped = unescape(path)
-                return (_catchAllChild, handler, [unescaped])
-            }
+    private func searchCatchAll(method: String, path: String, found: ?Node<T>, isValid: (T) -> Bool): (Bool, ?Node<T>, ?T, Array<String>) {
+        if (_catchAllChild.isNone()) {
+            return (false, None, None, [])
         }
 
-        return (found, handler, params)
-     }
+        let handler = _catchAllChild.getOrThrow()._leafHandlers.get(method)
+        let valid = handler.isSome() && isValid(handler.getOrThrow())
+        if (valid || found.isNone()) {
+            let unescaped = unescape(path)
+            return (true, _catchAllChild, handler, [unescaped])
+        }
+        (false, None, None, [])
+    }
 
     static func unescape(path: String): String {
 	    return path
