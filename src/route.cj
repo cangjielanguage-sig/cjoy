@@ -80,7 +80,6 @@ class JoyMethodNotAllowedHandler <: HttpRequestHandler {
 }
 
 class TreeMux <: HttpRequestDistributor & HttpRequestHandler{
-    private static let HANDLER_VALID: (JoyRequestHandler) -> Bool = { _=> true }
     var _root: Node<JoyRequestHandler> = Node("/", STATIC)
     public let config: JoyConfig
 
@@ -108,13 +107,14 @@ class TreeMux <: HttpRequestDistributor & HttpRequestHandler{
         } else {
             req.url.path
         }
+
         var pathLen = path.size
         var trailingSlash = path[pathLen-1] == b'/' && pathLen > 1
         if (trailingSlash && config.redirectTrailingSlash) {
             path = path[0..path.size-1]
         }
 
-        let (node, handler ,params) = _root.search(req.method, path[1..path.size], HANDLER_VALID)
+        let (node, handler ,params) = _root.search(req.method, path[1..path.size])
         if (node.isNone()) {
             return NotFoundHandler()
         }
@@ -163,10 +163,11 @@ class JoyRouteGroup <: JoyRouters {
     }
 
     public prop distributor: HttpRequestDistributor {
-      get() { _mux }
+        get() { _mux }
     }
 
     public func use(mw: JoyMiddlewareHandler): JoyRouters { 
+        _stack.append(mw)
         this
     }
 
@@ -195,12 +196,7 @@ class JoyRouteGroup <: JoyRouters {
     }
 
     private func addOne(method: String, path: String, addSlash: Bool, handler: JoyRequestHandler): Unit {
-        let thePath =  if (_mux.config.caseInsensitive) {
-            path.toAsciiLower()
-        } else {
-            path
-        }
-
+        let thePath = if (_mux.config.caseInsensitive) { path.toAsciiLower() } else { path }
         let node = _mux._root.addPath(thePath[1..thePath.size], ArrayList<String>(), false)
         if (addSlash) {
             node._addSlash = true
@@ -236,7 +232,16 @@ class JoyRouteGroup <: JoyRouters {
     }
 
     private static func unescapeSpecial(s:String): String {
-        s
+        var res = s
+        res = res.replace("/%2A", "/*")
+        res = res.replace("/%5C:", "/\\:")
+        // /\\: -> /\:
+        res = res.replace("/%5C%5C:", "/%5C:")
+        // /\* -> /*
+        res = res.replace("/%5C%2A", "/%2A")
+        // /\\* -> /\*
+        res = res.replace("/%5C%5C%2A", "/%5C%2A")
+        res
     }
 
     public func GET(relativePath: String, handler: JoyRequestHandler): JoyRouters {
@@ -290,7 +295,7 @@ class JoyRouteGroup <: JoyRouters {
     private func handlerWithMiddlewares(handler: JoyRequestHandler): JoyRequestHandler {
         var res: JoyRequestHandler = handler
         for (i in _stack.size-1..=0:-1) {
-            res = _stack[i].next(res)
+            res = _stack[i].handle(res)
         }
         return res
     }
