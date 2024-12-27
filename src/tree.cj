@@ -5,27 +5,16 @@
 package cjoy
 
 import std.collection.{ArrayList, HashMap, forEach}
-import std.regex.Regex
+import std.deriving.*
 
+@Derive[Comparable]
 enum NodeType {
-    STATIC | WILDCARD | REGEXP | CATCH_ALL
-
-    public operator func ==(that: NodeType) {
-        match ((this, that)) {
-            case (STATIC, STATIC) => true
-            case (WILDCARD, WILDCARD) => true
-            case (REGEXP, REGEXP) => true
-            case (CATCH_ALL, CATCH_ALL) => true
-            case _ => false
-        }
-    }
-
-    public operator func !=(that: NodeType) {
-        !(this == that)
-    }
+    STATIC | WILDCARD | CATCH_ALL
 }
 
 class Node<T> {
+    private static let HANDLER_VALID_FUNC: (T) -> Bool = { _=> true }
+
     var _path: String = ""
     var _fullPath: String = ""
     var _nodeType: NodeType = STATIC
@@ -50,7 +39,7 @@ class Node<T> {
     }
 
     func isCatchAll(): Bool {
-        _nodeType == CATCH_ALL
+        _nodeType == NodeType.CATCH_ALL
     }
 
     private func sortStaticChild(idx: Int64): Unit {
@@ -145,9 +134,9 @@ class Node<T> {
             }
         }
 
-        let child = Node<T>(token, STATIC)
-        if (_nodeType == WILDCARD) {
-            child._nodeType = WILDCARD
+        let child = Node<T>(token, NodeType.STATIC)
+        if (_nodeType == NodeType.WILDCARD) {
+            child._nodeType = NodeType.WILDCARD
         }
 
         if (_staticIndices.isEmpty()) {
@@ -164,7 +153,7 @@ class Node<T> {
         // token starts with a "*", it's a catch-all
         let thisToken = token[1..token.size]
         if (_catchAllChild.isNone()) {
-            _catchAllChild = Node<T>(thisToken, CATCH_ALL)
+            _catchAllChild = Node<T>(thisToken, NodeType.CATCH_ALL)
         }
         let catchAllChild = _catchAllChild.getOrThrow()
         
@@ -183,14 +172,15 @@ class Node<T> {
 
     private func addWildcardPath(token: String, remainingPath: String, paramNames: ArrayList<String>): Node<T> {
         let thisToken = token[1..token.size]
-        paramNames.append(thisToken)
+        let lpn = ArrayList<String>(paramNames)
+        lpn.append(thisToken)
         
         if (_wildcardChild.isNone()) {
-            _wildcardChild = Node<T>("wildcard", WILDCARD)
+            _wildcardChild = Node<T>("wildcard", NodeType.WILDCARD)
         }
         let wildcardChild = _wildcardChild.getOrThrow()
 
-        return wildcardChild.addPath(remainingPath, paramNames, false)
+        return wildcardChild.addPath(remainingPath, lpn, false)
     }
 
     private func splitCommonPrefix(existingNodeIndex: Int64, path: String): (Node<T>, Int64) {
@@ -211,13 +201,17 @@ class Node<T> {
         let commonPrefix = path[0..idx]
         childNode._path = childNode._path[idx..childNode._path.size]
 
-        let newNode = Node<T>(commonPrefix, STATIC)
+        let newNode = Node<T>(commonPrefix, NodeType.STATIC)
         newNode._priority = childNode._priority
         newNode._staticIndices = ArrayList([childNode._path[0]])
         newNode._staticChild = ArrayList([childNode])
 
         _staticChild[existingNodeIndex] = newNode
         (newNode, idx)
+    }
+
+    func search(method: String, path: String): (?Node<T>, ?T, Array<String>) {
+        search(method, path, HANDLER_VALID_FUNC)
     }
 
     func search(method: String, path: String, isValid: (T) -> Bool): (?Node<T>, ?T, Array<String>) {
@@ -278,7 +272,7 @@ class Node<T> {
     }
 
     private func searchWildchild(method: String, path: String, found: ?Node<T>, isValid: (T) -> Bool): (Bool, ?Node<T>, ?T, Array<String>) {
-        if (_wildcardChild.isSome()) {
+        if (_wildcardChild.isNone()) {
             return (false, None, None, [])
         }
 
@@ -327,13 +321,13 @@ class Node<T> {
     func dumpTree(prefix: String, nodeType: String): String {
         let methods = _leafHandlers.keys()
         let builder = StringBuilder()
-        let line = "${prefix} ${_priority} ${nodeType} ${_path}, ${_staticChild.size}, ${methods.toArray()} params ${_leafParamNames}\n"
+        let line = "${prefix} ${_path} ${nodeType} ${methods.toArray()}, childres[${_staticChild.size}], params ${_leafParamNames}, ${_priority}\n"
         builder.append(line)
         
         let prefixStr = prefix + " "
-        _staticChild |> forEach { val => val.dumpTree(prefixStr, "") }
-        ifSome(_wildcardChild, { val =>  builder.append(val.dumpTree(prefix, ":"))})
-        ifSome(_catchAllChild, { val =>  builder.append(val.dumpTree(prefix, "*"))})
+        _staticChild |> forEach { val => builder.append(val.dumpTree(prefixStr, " ")) }
+        ifSome(_wildcardChild, { val =>  builder.append(val.dumpTree(prefixStr, ":")) })
+        ifSome(_catchAllChild, { val =>  builder.append(val.dumpTree(prefixStr, "*")) })
 
         builder.toString()
     }
