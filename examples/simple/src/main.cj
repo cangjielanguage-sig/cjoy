@@ -15,13 +15,13 @@ main(): Int64 {
     // 注册路由
     joy.router.GET("/:name", {ctx: JoyContext => 
         let name = ctx.getParam("name").getOrDefault({=>"no name"})
-        ctx.writeStr("name in wildcard path, name=${name}")
+        ctx.string("name in wildcard path, name=${name}")
     })
     joy.router.GET("/abc", {ctx: JoyContext => 
-        ctx.writeStr("static path abc")
+        ctx.string("static path abc")
     })
     joy.router.GET("/1234", {ctx: JoyContext => 
-        ctx.writeStr("static path 1234")
+        ctx.string("static path 1234")
     })
    
 
