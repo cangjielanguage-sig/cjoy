@@ -1,0 +1,67 @@
+/*
+* Copyright (c) lanlingx 2024-2024. All rights resvered.
+*/
+
+package cjoy.middleware
+
+import std.collection.HashMap
+import net.http.HttpStatusCode
+import encoding.base64.fromBase64String
+import cjoy.{JoyMiddlewareHandler, JoyRequestHandler, JoyFuncHandler, JoyContext}
+
+public class BasicAuth <: JoyMiddlewareHandler {
+    public BasicAuth(let realm: String, let creads: HashMap<String, String>) { }
+
+    public func handle(next: JoyRequestHandler): JoyRequestHandler {
+        return JoyFuncHandler({ctx: JoyContext => 
+            let (user, pwd, ok) = basicAuth(ctx)
+            if (!ok) {
+                basicAuthFailed(ctx)
+                return
+            }
+
+            let opwd = creads.get(user)
+            if (opwd.isNone()) {
+                basicAuthFailed(ctx)
+                return
+            }
+           
+            if (opwd.getOrThrow() != pwd) {
+                basicAuthFailed(ctx)
+                return
+            }
+            
+            next.handle(ctx)
+        })
+    }
+
+    private func basicAuth(ctx: JoyContext): (String, String, Bool) {
+        let auth = ctx.readHeader("Authorization")
+        if (auth.isNone()) {
+            return ("", "", false)
+        }
+
+        let b64 = auth.getOrThrow().split(" ")
+        if (b64.size != 2 || b64[0].trimAscii() != 'Basic') {
+            return ("", "", false)
+        }
+
+        let decode = fromBase64String(b64[1])
+        if (decode.isNone()) {
+            return ("", "", false)
+        }
+
+        let upStr = String.fromUtf8(decode.getOrThrow())
+        let up = upStr.split(":")
+        if (up.size != 2) {
+            return ("", "", false)
+        }
+
+        (up[0], up[1], true)
+    }
+
+
+    private func basicAuthFailed(ctx: JoyContext) {
+        ctx.header("WWW-Authenticate", "Basic realm=${realm}").error(HttpStatusCode.STATUS_UNAUTHORIZED)
+    }
+}
