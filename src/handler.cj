@@ -17,13 +17,13 @@ public class JoyFuncHandler <: JoyRequestHandler {
 }
 
 public interface JoyMiddlewareHandler {
-    func next(handler: JoyRequestHandler): JoyRequestHandler
+    func handle(next: JoyRequestHandler): JoyRequestHandler
 }
 
 public class JoyMiddlewareFuncHandler <: JoyMiddlewareHandler {
     public JoyMiddlewareFuncHandler(let handler: (JoyRequestHandler) -> JoyRequestHandler) {}
 
-    public func next(handler: JoyRequestHandler): JoyRequestHandler {
-        this.next(handler)
+    public func handle(next: JoyRequestHandler): JoyRequestHandler {
+        this.handler(next)
     }
 }
