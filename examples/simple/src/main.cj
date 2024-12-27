@@ -4,7 +4,9 @@
 
 package simple
 
+import std.collection.*
 import cjoy.*
+import cjoy.middleware.*
 
 main(): Int64 {
     var cfg = JoyConfig()
@@ -13,18 +15,43 @@ main(): Int64 {
     let joy = Joy.create(cfg)
 
     // 注册路由
-    joy.router.GET("/:name", {ctx: JoyContext => 
+    let router = joy.router
+    router.GET("/:name", {ctx: JoyContext => 
         let name = ctx.getParam("name").getOrDefault({=>"no name"})
-        ctx.string("name in wildcard path, name=${name}")
+        ctx.string("/:name, name=${name}")
     })
-    joy.router.GET("/abc", {ctx: JoyContext => 
-        ctx.string("static path abc")
+    router.GET("/abc", {ctx: JoyContext => 
+        ctx.string("/abc")
     })
-    joy.router.GET("/1234", {ctx: JoyContext => 
-        ctx.string("static path 1234")
+
+    // group
+    let v1 = router.group("/v1")
+    v1.GET("/:name", {ctx: JoyContext => 
+        let name = ctx.getParam("name").getOrDefault({=>"no name"})
+        ctx.string("/v1/:name, name=${name}")
+    })
+    v1.GET("/abc", {ctx: JoyContext => 
+        ctx.string("/v1/abc")
+    })
+
+    // sub group
+    let v1user = v1.group("/user")
+    v1user.GET("/:name", {ctx: JoyContext => 
+        let name = ctx.getParam("name").getOrDefault({=>"no name"})
+        ctx.string("/v1/user/:name, name=${name}")
+    })
+    v1user.GET("/abc", {ctx: JoyContext => 
+        ctx.string("/v1/user/abc")
+    })
+
+    // baisc_auth
+    let auth = router.group("/auth")
+    auth.use(BasicAuth("test-realm", HashMap<String, String>([("test", "test")])))
+    auth.GET("/:name", {ctx: JoyContext => 
+        let name = ctx.getParam("name").getOrDefault({=>"no name"})
+        ctx.string("/auth/:name, name=${name}")
     })
    
-
     // 启动服务
     joy.run("127.0.0.1", 18881)
     return 0
