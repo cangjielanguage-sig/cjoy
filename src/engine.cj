@@ -9,6 +9,9 @@ import log.{LogLevel, Logger}
 import logger.SimpleLogger
 import std.console.Console
 
+/**
+* joy config
+*/
 public class JoyConfig {
     public var redirectTrailingSlash: Bool = false
     public var remoteIPHeaders: Array<String> = []
@@ -31,20 +34,29 @@ public class JoyConfig {
     }
 }
 
+/**
+* a wrapper for net.http.Server
+*/
 public class Joy {
     private var _server: ?Server = None
     private var _config: JoyConfig
     public let router: JoyRouters
 
-    init(config: JoyConfig) {
+    private init(config: JoyConfig) {
         _config = config
         router = JoyRouteGroup(config)
     }
 
+    /**
+    * create Joy engine instance by default config
+    */
     public static func create(): Joy {
         create(JoyConfig())
     }
     
+    /**
+    * create Joy engine instance by config
+    */
     public static func create(config: JoyConfig): Joy {
         Joy(config)
     }
@@ -53,7 +65,14 @@ public class Joy {
     * run http server at address:port
     */
     public func run(addr: String, port: UInt16): Unit {
-        let server = ServerBuilder().addr(addr).port(port).distributor(router.distributor).build()
+        run(ServerBuilder().addr(addr).port(port))
+    }
+
+    /**
+    * run http server by ServerBuilder
+    */
+    public func run(serverBuidler: ServerBuilder): Unit {
+        let server = serverBuidler.distributor(router.distributor).build()
         if (_config.enableDebugLog) {
             server.logger.level = LogLevel.DEBUG
         }
