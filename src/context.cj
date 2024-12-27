@@ -93,7 +93,7 @@ public class JoyContext {
         buffer.bytes()
     }
 
-    public func writeJson<T>(status: UInt16, body: T): Unit where T <: JsonSerializable {
+    public func json<T>(status: UInt16, body: T): Unit where T <: JsonSerializable {
         let buffer = ByteBuffer()
         let writer = JsonWriter(buffer)
         writer.writeValue(body)
@@ -103,22 +103,22 @@ public class JoyContext {
             body(buffer).build()
     }
 
-    public func writeJson<T>(body: T): Unit where T <: JsonSerializable{
-        writeJson(HttpStatusCode.STATUS_OK, body)
+    public func json<T>(body: T): Unit where T <: JsonSerializable{
+        json(HttpStatusCode.STATUS_OK, body)
     }
 
-    public func writeStr(status: UInt16, contentType: String, str: String): Unit {
+    public func string(status: UInt16, contentType: String, str: String): Unit {
         _httpContxt.responseBuilder.status(status).
             header("content-type", contentType).
             body(str).build()
     }
 
-    public func writeStr(status: UInt16, str: String): Unit {
-        writeStr(status, "text/plain", str)
+    public func string(status: UInt16, str: String): Unit {
+        string(status, "text/plain", str)
     }
     
-    public func writeStr(str: String): Unit {
-        writeStr(HttpStatusCode.STATUS_OK, "text/plain", str)
+    public func string(str: String): Unit {
+        string(HttpStatusCode.STATUS_OK, "text/plain", str)
     }
 
     public func getClientIP(): String {
@@ -152,12 +152,22 @@ public class JoyContext {
         _httpContxt.request.headers.get(name)
     }
 
-    public func writeStatus(status: UInt16): Unit {
+    public func status(status: UInt16): JoyContext {
         _httpContxt.responseBuilder.status(status)
+        this
     }
 
-    public func writeHeader(name: String, value: String): Unit {
+    public func ok(): Unit {
+        _httpContxt.responseBuilder.status(HttpStatusCode.STATUS_OK).build()
+    }
+
+    public func error(status: UInt16): Unit {
+        _httpContxt.responseBuilder.status(status).build()
+    }
+
+    public func header(name: String, value: String): JoyContext {
         _httpContxt.responseBuilder.header(name, value)
+        this
     }
 
     public func readCookie(name: String): ?String {
@@ -180,8 +190,9 @@ public class JoyContext {
         cache.get(name)
     }
 
-    public func writeCookie(cookie: Cookie): Unit {
+    public func writeCookie(cookie: Cookie): JoyContext {
         _httpContxt.responseBuilder.header("Set-Cookie", cookie.toSetCookieString())
+        this
     }
 
     public func render(r: JoyRender): Unit {
@@ -196,5 +207,3 @@ public class JoyContext {
          RedirectHandler(location, statusCode).handle(_httpContxt)
     }
 }
-
-
