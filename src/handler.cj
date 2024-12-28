@@ -16,14 +16,18 @@ public class JoyFuncHandler <: JoyRequestHandler {
     }
 }
 
+public interface JoyRequestHandlerChain {
+    func next(ctx: JoyContext): Unit
+}
+
 public interface JoyMiddlewareHandler {
-    func handle(next: JoyRequestHandler): JoyRequestHandler
+    func handle(ctx: JoyContext, chain: JoyRequestHandlerChain): Unit
 }
 
 public class JoyMiddlewareFuncHandler <: JoyMiddlewareHandler {
-    public JoyMiddlewareFuncHandler(let handler: (JoyRequestHandler) -> JoyRequestHandler) {}
+    public JoyMiddlewareFuncHandler(let handler: (JoyContext, JoyRequestHandlerChain) -> Unit) {}
 
-    public func handle(next: JoyRequestHandler): JoyRequestHandler {
-        this.handler(next)
+    public func handle(ctx: JoyContext, chain: JoyRequestHandlerChain): Unit {
+        this.handler(ctx, chain)
     }
 }
