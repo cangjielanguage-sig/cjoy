@@ -7,32 +7,30 @@ package cjoy.middleware
 import std.collection.HashMap
 import net.http.HttpStatusCode
 import encoding.base64.fromBase64String
-import cjoy.{JoyMiddlewareHandler, JoyRequestHandler, JoyFuncHandler, JoyContext}
+import cjoy.{JoyMiddlewareHandler, JoyRequestHandlerChain, JoyContext}
 
 public class BasicAuth <: JoyMiddlewareHandler {
     public BasicAuth(let realm: String, let creads: HashMap<String, String>) { }
 
-    public func handle(next: JoyRequestHandler): JoyRequestHandler {
-        return JoyFuncHandler({ctx: JoyContext => 
-            let (user, pwd, ok) = basicAuth(ctx)
-            if (!ok) {
-                basicAuthFailed(ctx)
-                return
-            }
+    public func handle(ctx: JoyContext, chain: JoyRequestHandlerChain): Unit {
+        let (user, pwd, ok) = basicAuth(ctx)
+        if (!ok) {
+            basicAuthFailed(ctx)
+            return
+        }
 
-            let opwd = creads.get(user)
-            if (opwd.isNone()) {
-                basicAuthFailed(ctx)
-                return
-            }
-           
-            if (opwd.getOrThrow() != pwd) {
-                basicAuthFailed(ctx)
-                return
-            }
-            
-            next.handle(ctx)
-        })
+        let opwd = creads.get(user)
+        if (opwd.isNone()) {
+            basicAuthFailed(ctx)
+            return
+        }
+        
+        if (opwd.getOrThrow() != pwd) {
+            basicAuthFailed(ctx)
+            return
+        }
+        
+        chain.next(ctx)
     }
 
     private func basicAuth(ctx: JoyContext): (String, String, Bool) {
