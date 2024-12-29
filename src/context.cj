@@ -1,12 +1,13 @@
 /*
-* Copyright (c) lanlingx 2024-2024. All rights resvered.
-*/
+ * Copyright (c) lanlingx 2024-2024. All rights resvered.
+ */
 
 package cjoy
 
 import std.collection.*
 import std.io.{ByteBuffer, copy}
 import std.net.IPAddress
+import log.Logger
 import net.http.{HttpContext, RedirectHandler, HttpStatusCode, HttpResponseBuilder, Cookie}
 import encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonReader, JsonWriter}
 
@@ -24,9 +25,23 @@ public class JoyContext {
     }
 
     public prop httpContext: HttpContext {
-        get() { _httpContxt }
+        get() {
+            _httpContxt
+        }
     }
-    
+
+    public prop logger: Logger {
+        get() {
+            _config.logger
+        }
+    }
+
+    public prop config: JoyConfig {
+        get() {
+            _config
+        }
+    }
+
     public func setCtxParam(key: String, value: Any): Unit {
         _ctxParamMap.put(key, value)
     }
@@ -37,9 +52,9 @@ public class JoyContext {
             case Some(v) => v as T
             case _ => None
         }
-    } 
+    }
 
-    public func getParam(key: String): ?String  {
+    public func getParam(key: String): ?String {
         _paramMap.get(key)
     }
 
@@ -64,12 +79,12 @@ public class JoyContext {
         _httpContxt.request.form.get(key)
     }
 
-    public func getPostForm(key: String, defaultValue: String): String{
+    public func getPostForm(key: String, defaultValue: String): String {
         let val = _httpContxt.request.form.get(key)
         val.getOrDefault({=> defaultValue})
     }
 
-    public func getPostFormList(key: String): ArrayList<String>  {
+    public func getPostFormList(key: String): ArrayList<String> {
         _httpContxt.request.form.getAll(key)
     }
 
@@ -98,25 +113,26 @@ public class JoyContext {
         let writer = JsonWriter(buffer)
         writer.writeValue(body)
         writer.flush()
-        _httpContxt.responseBuilder.status(status).
-            header("content-type", "application/json;charset=UTF-8").
-            body(buffer).build()
+        _httpContxt
+            .responseBuilder
+            .status(status)
+            .header("content-type", "application/json;charset=UTF-8")
+            .body(buffer)
+            .build()
     }
 
-    public func json<T>(body: T): Unit where T <: JsonSerializable{
+    public func json<T>(body: T): Unit where T <: JsonSerializable {
         json(HttpStatusCode.STATUS_OK, body)
     }
 
     public func string(status: UInt16, contentType: String, str: String): Unit {
-        _httpContxt.responseBuilder.status(status).
-            header("content-type", contentType).
-            body(str).build()
+        _httpContxt.responseBuilder.status(status).header("content-type", contentType).body(str).build()
     }
 
     public func string(status: UInt16, str: String): Unit {
         string(status, "text/plain", str)
     }
-    
+
     public func string(str: String): Unit {
         string(HttpStatusCode.STATUS_OK, "text/plain", str)
     }
@@ -134,7 +150,7 @@ public class JoyContext {
     public func getRemoteIP(): String {
         let remoteAddr = _httpContxt.request.remoteAddr
         let ipPort = remoteAddr.split(":")
-        if (ipPort.size >=1) {
+        if (ipPort.size >= 1) {
             return ipPort[0]
         }
         ""
@@ -204,6 +220,6 @@ public class JoyContext {
     }
 
     public func redirect(statusCode: UInt16, location: String): Unit {
-         RedirectHandler(location, statusCode).handle(_httpContxt)
+        RedirectHandler(location, statusCode).handle(_httpContxt)
     }
 }

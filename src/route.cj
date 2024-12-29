@@ -1,10 +1,11 @@
 /*
-* Copyright (c) lanlingx 2024-2024. All rights resvered.
-*/
+ * Copyright (c) lanlingx 2024-2024. All rights resvered.
+ */
 
 package cjoy
 
 import std.collection.{ArrayList, HashMap, forEach}
+import encoding.url.URL
 import net.http.*
 
 public interface JoyRouters {
@@ -59,13 +60,14 @@ public interface JoyRouters {
     }
 }
 
-class JoyRouteHandler <: HttpRequestHandler  {
+class JoyRouteHandler <: HttpRequestHandler {
     public JoyRouteHandler(
-        let handler: JoyRequestHandler, 
-        let paramMap: HashMap<String, String>, 
-        let config: JoyConfig) {}
+        let handler: JoyRequestHandler,
+        let paramMap: HashMap<String, String>,
+        let config: JoyConfig
+    ) {}
 
-    public func handle(ctx: HttpContext) : Unit {
+    public func handle(ctx: HttpContext): Unit {
         let joyCtx = JoyContext(ctx, paramMap, config)
         handler.handle(joyCtx)
     }
@@ -85,7 +87,7 @@ class JoyRequestHandlerWrapper <: JoyRequestHandlerChain & JoyRequestHandler {
     }
 
     public func next(ctx: JoyContext): Unit {
-        _idx+=1
+        _idx += 1
         if (_idx < mws.size) {
             mws[_idx].handle(ctx, this)
             return
@@ -96,21 +98,21 @@ class JoyRequestHandlerWrapper <: JoyRequestHandlerChain & JoyRequestHandler {
 
 class JoyMethodNotAllowedHandler <: HttpRequestHandler {
     public JoyMethodNotAllowedHandler(let methods: Collection<String>) {}
-    
+
     public func handle(ctx: HttpContext): Unit {
         let rspBuilder = ctx.responseBuilder
-        methods |> forEach { val => rspBuilder.header("Allow", val) }
+        methods |> forEach {val => rspBuilder.header("Allow", val)}
         rspBuilder.status(HttpStatusCode.STATUS_METHOD_NOT_ALLOWED)
         rspBuilder.build()
     }
 }
 
-class TreeRouteDistributor <: HttpRequestDistributor & HttpRequestHandler{
+class TreeRouteDistributor <: HttpRequestDistributor & HttpRequestHandler {
     var _root: Node<JoyRequestHandler> = Node("/", STATIC)
-    public let config: JoyConfig
+    let _config: JoyConfig
 
     init(config: JoyConfig) {
-        this.config = config
+        this._config = config
     }
 
     public func register(_: String, _: HttpRequestHandler): Unit {
@@ -122,21 +124,25 @@ class TreeRouteDistributor <: HttpRequestDistributor & HttpRequestHandler{
         this
     }
 
-    public func handle(ctx: HttpContext)  {
+    public func handle(ctx: HttpContext) {
         let handler = lookup(ctx.request)
         handler.handle(ctx)
     }
 
     private func lookup(req: HttpRequest): HttpRequestHandler {
-        var path = if (config.caseInsensitive) { req.url.path.toAsciiLower() } else { req.url.path }
-
-        var pathLen = path.size
-        var trailingSlash = path[pathLen-1] == b'/' && pathLen > 1
-        if (trailingSlash && config.redirectTrailingSlash) {
-            path = path[0..path.size-1]
+        var path = if (_config.caseInsensitive) {
+            req.url.path.toAsciiLower()
+        } else {
+            req.url.path
         }
 
-        let (node, handler ,params) = _root.search(req.method, path[1..path.size])
+        var pathLen = path.size
+        var trailingSlash = path[pathLen - 1] == b'/' && pathLen > 1
+        if (trailingSlash && _config.redirectTrailingSlash) {
+            path = path[0..path.size - 1]
+        }
+
+        let (node, handler, params) = _root.search(req.method, path[1..path.size])
         if (node.isNone()) {
             return NotFoundHandler()
         }
@@ -150,8 +156,12 @@ class TreeRouteDistributor <: HttpRequestDistributor & HttpRequestHandler{
         }
 
         if (!tnode.isCatchAll()) {
-            if (trailingSlash != tnode._addSlash) {
-                // something
+            if (trailingSlash != tnode._addSlash && _config.redirectTrailingSlash) {
+                if (tnode._addSlash) {
+                    return redirect(req.url, path + "/", HttpStatusCode.STATUS_MOVED_PERMANENTLY)
+                } else {
+                    return redirect(req.url, path, HttpStatusCode.STATUS_MOVED_PERMANENTLY)
+                }
             }
         }
 
@@ -161,11 +171,20 @@ class TreeRouteDistributor <: HttpRequestDistributor & HttpRequestHandler{
                 throw Exception("parameter list length mismatch")
             }
             for (idx in 0..params.size) {
-                paramMap[tnode._leafParamNames[params.size - idx -1]] = params[idx]
+                paramMap[tnode._leafParamNames[params.size - idx - 1]] = params[idx]
             }
         }
 
-        JoyRouteHandler(handler.getOrThrow(), paramMap, config)
+        JoyRouteHandler(handler.getOrThrow(), paramMap, _config)
+    }
+
+    private func redirect(url: URL, newPath: String, code: UInt16): HttpRequestHandler {
+        let newUrl = url.replace(path: newPath)
+        RedirectHandler(newUrl.toString(), code)
+    }
+
+    public func dump(): String {
+        _root.dumpTree("", "")
     }
 }
 
@@ -185,10 +204,12 @@ class JoyRouteGroup <: JoyRouters {
     }
 
     public prop distributor: HttpRequestDistributor {
-        get() { _distributor }
+        get() {
+            _distributor
+        }
     }
 
-    public func use(mw: JoyMiddlewareHandler): JoyRouters { 
+    public func use(mw: JoyMiddlewareHandler): JoyRouters {
         _middlewares.append(mw)
         this
     }
@@ -201,8 +222,8 @@ class JoyRouteGroup <: JoyRouters {
 
         var path = _path + relativePath
         // don't want trailing slash as all sub-paths start with slash
-        if (path[path.size -1] == b'/') {
-            path = path[0..path.size-1]
+        if (path[path.size - 1] == b'/') {
+            path = path[0..path.size - 1]
         }
         JoyRouteGroup(path, _distributor, ArrayList(_middlewares))
     }
@@ -218,14 +239,18 @@ class JoyRouteGroup <: JoyRouters {
     }
 
     private func addOne(method: String, path: String, addSlash: Bool, handler: JoyRequestHandler): Unit {
-        let thePath = if (_distributor.config.caseInsensitive) { path.toAsciiLower() } else { path }
+        let thePath = if (_distributor._config.caseInsensitive) {
+            path.toAsciiLower()
+        } else {
+            path
+        }
         let node = _distributor._root.addPath(thePath[1..thePath.size], ArrayList<String>(), false)
         if (addSlash) {
             node._addSlash = true
         }
         node.setHandler(method, handler, false)
 
-        if (_distributor.config.headCanUseGet && method == "GET" && node._leafHandlers.get("HEAD").isNone()) {
+        if (_distributor._config.headCanUseGet && method == "GET" && node._leafHandlers.get("HEAD").isNone()) {
             node.setHandler("HEAD", handler, true)
         }
     }
@@ -233,27 +258,27 @@ class JoyRouteGroup <: JoyRouters {
     private func addHandler(method: String, path: String, handler: JoyRequestHandler): Unit {
         var addSlash = false
         checkPath(path)
-	    var thePath = _path + path
+        var thePath = _path + path
         if (thePath.isEmpty()) {
             throw IllegalArgumentException("cannot map an empty path")
         }
 
-        if (thePath.size > 1 && thePath[thePath.size-1] == b'/' && _distributor.config.redirectTrailingSlash) {
+        if (thePath.size > 1 && thePath[thePath.size - 1] == b'/' && _distributor._config.redirectTrailingSlash) {
             addSlash = true
-            thePath = thePath[0..thePath.size-1]
+            thePath = thePath[0..thePath.size - 1]
         }
 
-	    if (_distributor.config.escapeAddedRoutes) {
+        if (_distributor._config.escapeAddedRoutes) {
             let escapedPath = unescapeSpecial(thePath)
             if (escapedPath != thePath) {
                 addOne(method, escapedPath, addSlash, handler)
             }
-	    }
+        }
 
-	    addOne(method, thePath, addSlash, handler)
+        addOne(method, thePath, addSlash, handler)
     }
 
-    private static func unescapeSpecial(s:String): String {
+    private static func unescapeSpecial(s: String): String {
         var res = s
         res = res.replace("/%2A", "/*")
         res = res.replace("/%5C:", "/\\:")
@@ -303,7 +328,7 @@ class JoyRouteGroup <: JoyRouters {
 
     public func handle(methods: Array<String>, relativePath: String, handler: JoyRequestHandler): JoyRouters {
         let wrapperHandler = JoyRequestHandlerWrapper(handler, ArrayList(_middlewares))
-        methods |> forEach { method => addHandler(method, relativePath, wrapperHandler) }
+        methods |> forEach {method => addHandler(method, relativePath, wrapperHandler)}
         this
     }
 }

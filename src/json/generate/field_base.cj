@@ -1,6 +1,6 @@
 /*
-* Copyright (c) lanlingx 2024-2024. All rights resvered.
-*/
+ * Copyright (c) lanlingx 2024-2024. All rights resvered.
+ */
 
 package cjoy.json.generate
 
@@ -14,8 +14,8 @@ public class JsonFieldInfo {
     var omitempty: Bool = false
     var timeformat: String = ""
 
-    init (name: String) {
-        this.originName = name; 
+    init(name: String) {
+        this.originName = name
     }
 
     func jsonKeyName(): String {
@@ -29,24 +29,26 @@ public class JsonFieldInfo {
     }
 
     func parseAttr(attr: Tokens): Unit {
-        if ((attr.size +1) % 4 !=0) {
-            diagReport(DiagReportLevel.ERROR , attr , "JsonField attriable should link 'attrname= value'", "")
+        if ((attr.size + 1) % 4 != 0) {
+            diagReport(DiagReportLevel.ERROR, attr, "JsonField attriable should link 'attrname= value'", "")
             throw Exception("JsonField attriable should link 'attrname= value'")
         }
 
         for (idx in 0..attr.size : 4) {
             let ident = attr.get(idx)
             if (ident.kind != TokenKind.IDENTIFIER) {
-                diagReport(DiagReportLevel.ERROR , attr , "JsonField attriable name should be a identitier, but is ${ident.kind}", "")
+                diagReport(DiagReportLevel.ERROR, attr,
+                    "JsonField attriable name should be a identitier, but is ${ident.kind}", "")
                 throw Exception("JsonField attriable name should be a identitier")
             }
-            let assign = attr.get(idx+1)
-             if (assign.kind != TokenKind.ASSIGN) {
-                diagReport(DiagReportLevel.ERROR , attr , "JsonField attriable name should be =, but is ${ident.kind}", "")
+            let assign = attr.get(idx + 1)
+            if (assign.kind != TokenKind.ASSIGN) {
+                diagReport(DiagReportLevel.ERROR, attr, "JsonField attriable name should be =, but is ${ident.kind}", ""
+                )
                 throw Exception("JsonField attriable name should be =")
             }
-            
-            let value = attr.get(idx+2)
+
+            let value = attr.get(idx + 2)
             match (ident.value) {
                 case "name" => this.newName = value.value
                 case "ignore" => this.ignore = "true" == value.value
@@ -60,7 +62,8 @@ public class JsonFieldInfo {
     public static func parse(attr: Tokens, input: Tokens): Tokens {
         let varDecl: Decl = parseDecl(input)
         if (!(varDecl is VarDecl)) {
-            diagReport(DiagReportLevel.ERROR , input , "JsonField macro only using for the var field of struct or class", "")
+            diagReport(DiagReportLevel.ERROR, input, "JsonField macro only using for the var field of struct or class",
+                "")
             throw Exception("JsonField macro only using for the var field of struct or class")
         }
         let varId: String = varDecl.identifier.value
@@ -68,7 +71,7 @@ public class JsonFieldInfo {
         let info = JsonFieldInfo(varId)
         info.parseAttr(attr)
         JsonInfoCache.addCache(varId, info)
-        
+
         input
     }
 }
@@ -78,12 +81,12 @@ open class JsonFieldGenerator {
     protected let varType: TypeNode
     protected let info: JsonFieldInfo
 
-    init(vd: VarDecl, info: JsonFieldInfo){
+    init(vd: VarDecl, info: JsonFieldInfo) {
         this.varId = vd.identifier
         this.varType = vd.declType
         this.info = info
     }
-    
+
     public open func genSerializeTokens(): Tokens {
         quote(writer.writeName($(info.jsonKeyName())).writeValue($(varId))
         )

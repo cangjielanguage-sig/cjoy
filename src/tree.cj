@@ -13,15 +13,15 @@ enum NodeType {
 }
 
 class Node<T> {
-    private static let HANDLER_VALID_FUNC: (T) -> Bool = { _=> true }
+    private static let HANDLER_VALID_FUNC: (T) -> Bool = {_ => true}
 
     var _path: String = ""
     var _fullPath: String = ""
     var _nodeType: NodeType = STATIC
-    
+
     var _priority: Int32 = 0
     var _addSlash: Bool = false
-    
+
     var _staticIndices: ArrayList<Byte> = ArrayList()
     var _staticChild: ArrayList<Node<T>> = ArrayList()
 
@@ -44,20 +44,23 @@ class Node<T> {
 
     private func sortStaticChild(idx: Int64): Unit {
         var i = idx
-        while (i > 0 && _staticChild[i]._priority > _staticChild[i-1]._priority) {
-            (_staticChild[i], _staticChild[i-1]) = (_staticChild[i-1], _staticChild[i])
-            (_staticIndices[i], _staticIndices[i-1]) = (_staticIndices[i-1], _staticIndices[i])
+        while (i > 0 && _staticChild[i]._priority > _staticChild[i - 1]._priority) {
+            (_staticChild[i], _staticChild[i - 1]) = (_staticChild[i - 1], _staticChild[i])
+            (_staticIndices[i], _staticIndices[i - 1]) = (_staticIndices[i - 1], _staticIndices[i])
             i -= 1
         }
     }
 
     func setHandler(method: String, handler: T, implicitHead: Bool): Unit {
         let val = _leafHandlers.get(method)
-        ifSome(val, { _=>
-            if (method != "HEAD" || !_implicitHead ) {
-                throw IllegalArgumentException("'${_path}' already handlers ${method}")
+        ifSome(
+            val,
+            {
+                _ => if (method != "HEAD" || !_implicitHead) {
+                    throw IllegalArgumentException("'${_path}' already handlers ${method}")
+                }
             }
-        })
+        )
 
         _leafHandlers[method] = handler
         if (method == "HEAD") {
@@ -65,14 +68,17 @@ class Node<T> {
         }
     }
 
-    private func checkParamName(paramNames: ArrayList<String>):Unit {
+    private func checkParamName(paramNames: ArrayList<String>): Unit {
         if (_leafParamNames.size != paramNames.size) {
-            throw IllegalArgumentException("reached leaf node with differing wildcard array length(${_leafParamNames.size}, ${paramNames.size}). please report this as a bug.")
+            throw IllegalArgumentException(
+                "reached leaf node with differing wildcard array length(${_leafParamNames.size}, ${paramNames.size}). please report this as a bug."
+            )
         }
 
         for (idx in 0..paramNames.size) {
             if (_leafParamNames[idx] != paramNames[idx]) {
-                throw IllegalArgumentException("wildcards ${_leafParamNames} are ambiguous with wildcards ${paramNames}")
+                throw IllegalArgumentException(
+                    "wildcards ${_leafParamNames} are ambiguous with wildcards ${paramNames}")
             }
         }
     }
@@ -88,7 +94,7 @@ class Node<T> {
         }
 
         var firstByte = path[0]
-        let nextSlash = path.indexOf(b'/').getOrDefault({=>-1})
+        let nextSlash = path.indexOf(b'/').getOrDefault({=> -1})
         var (token, tokenEnd) = if (firstByte == b'/') {
             ("/", 1)
         } else if (nextSlash == -1) {
@@ -106,7 +112,7 @@ class Node<T> {
         // named path 
         if (firstByte == b':' && !inStaticToken) {
             return addWildcardPath(token, remainingPath, paramNames)
-        } 
+        }
 
         // other path
         var unesaceped = false
@@ -120,15 +126,16 @@ class Node<T> {
         return addOtherPath(token, firstByte, path, remainingPath, unesaceped, paramNames)
     }
 
-    private func addOtherPath(token: String, firstByte: Byte, path: String, remainingPath: String, unesaceped: Bool, paramNames: ArrayList<String>): Node<T> {
+    private func addOtherPath(token: String, firstByte: Byte, path: String, remainingPath: String, unesaceped: Bool,
+        paramNames: ArrayList<String>): Node<T> {
         let inStaticToken = (firstByte != b'/')
         for (i in 0.._staticIndices.size) {
             if (_staticIndices[i] == firstByte) {
                 var (child, prefixSplit) = splitCommonPrefix(i, token)
-                child._priority +=1
+                child._priority += 1
                 sortStaticChild(i)
                 if (unesaceped) {
-                    prefixSplit +=1
+                    prefixSplit += 1
                 }
                 return child.addPath(path[prefixSplit..path.size], paramNames, inStaticToken)
             }
@@ -156,9 +163,11 @@ class Node<T> {
             _catchAllChild = Node<T>(thisToken, NodeType.CATCH_ALL)
         }
         let catchAllChild = _catchAllChild.getOrThrow()
-        
+
         if (path[1..path.size] != catchAllChild._path) {
-            throw IllegalArgumentException("catch-all name in ${path} doesn't match ${catchAllChild._path}, you probably tried to define overlapping catchalls.")
+            throw IllegalArgumentException(
+                "catch-all name in ${path} doesn't match ${catchAllChild._path}, you probably tried to define overlapping catchalls."
+            )
         }
         if (nextSlash != -1) {
             throw IllegalArgumentException("/ after catch-all found in ${path}")
@@ -174,7 +183,7 @@ class Node<T> {
         let thisToken = token[1..token.size]
         let lpn = ArrayList<String>(paramNames)
         lpn.append(thisToken)
-        
+
         if (_wildcardChild.isNone()) {
             _wildcardChild = Node<T>("wildcard", NodeType.WILDCARD)
         }
@@ -271,12 +280,13 @@ class Node<T> {
         return (false, found, handler, params)
     }
 
-    private func searchWildchild(method: String, path: String, found: ?Node<T>, isValid: (T) -> Bool): (Bool, ?Node<T>, ?T, Array<String>) {
+    private func searchWildchild(method: String, path: String, found: ?Node<T>, isValid: (T) -> Bool): (Bool, ?Node<T>, 
+        ?T, Array<String>) {
         if (_wildcardChild.isNone()) {
             return (false, None, None, [])
         }
 
-        var nextSlash = path.indexOf(b'/').getOrDefault({=>-1})
+        var nextSlash = path.indexOf(b'/').getOrDefault({=> -1})
         if (nextSlash <= 0) {
             nextSlash = path.size
         }
@@ -300,7 +310,8 @@ class Node<T> {
         return (false, None, None, [])
     }
 
-    private func searchCatchAll(method: String, path: String, found: ?Node<T>, isValid: (T) -> Bool): (Bool, ?Node<T>, ?T, Array<String>) {
+    private func searchCatchAll(method: String, path: String, found: ?Node<T>, isValid: (T) -> Bool): (Bool, ?Node<T>, ?T, 
+        Array<String>) {
         if (_catchAllChild.isNone()) {
             return (false, None, None, [])
         }
@@ -315,7 +326,7 @@ class Node<T> {
     }
 
     static func unescape(path: String): String {
-	    return path
+        return path
     }
 
     func dumpTree(prefix: String, nodeType: String): String {
@@ -323,11 +334,11 @@ class Node<T> {
         let builder = StringBuilder()
         let line = "${prefix} ${_path} ${nodeType} ${methods.toArray()}, childres[${_staticChild.size}], params ${_leafParamNames}, ${_priority}\n"
         builder.append(line)
-        
+
         let prefixStr = prefix + " "
-        _staticChild |> forEach { val => builder.append(val.dumpTree(prefixStr, " ")) }
-        ifSome(_wildcardChild, { val =>  builder.append(val.dumpTree(prefixStr, ":")) })
-        ifSome(_catchAllChild, { val =>  builder.append(val.dumpTree(prefixStr, "*")) })
+        _staticChild |> forEach {val => builder.append(val.dumpTree(prefixStr, " "))}
+        ifSome(_wildcardChild, {val => builder.append(val.dumpTree(prefixStr, ":"))})
+        ifSome(_catchAllChild, {val => builder.append(val.dumpTree(prefixStr, "*"))})
 
         builder.toString()
     }

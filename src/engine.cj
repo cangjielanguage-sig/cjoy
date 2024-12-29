@@ -1,6 +1,6 @@
 /*
-* Copyright (c) lanlingx 2024-2024. All rights resvered.
-*/
+ * Copyright (c) lanlingx 2024-2024. All rights resvered.
+ */
 
 package cjoy
 
@@ -10,33 +10,33 @@ import logger.SimpleLogger
 import std.console.Console
 
 /**
-* joy config
-*/
+ * joy config
+ */
 public class JoyConfig {
-    public var redirectTrailingSlash: Bool = false
+    public var redirectTrailingSlash: Bool = true
     public var remoteIPHeaders: Array<String> = []
     public var enableDebugLog: Bool = false
     public var caseInsensitive: Bool = false
-    public var headCanUseGet: Bool = false
+    public var headCanUseGet: Bool = true
     public var escapeAddedRoutes: Bool = false
     private var _logger: ?Logger = None
 
     mut prop logger: Logger {
-        get () {
+        get() {
             if (_logger.isNone()) {
                 _logger = Some(SimpleLogger(Console.stdOut))
             }
             return _logger.getOrThrow()
         }
-        set (value) {
+        set(value) {
             _logger = Some(value)
         }
     }
 }
 
 /**
-* a wrapper for net.http.Server
-*/
+ * a wrapper for net.http.Server
+ */
 public class Joy {
     private var _server: ?Server = None
     private var _config: JoyConfig
@@ -48,29 +48,29 @@ public class Joy {
     }
 
     /**
-    * create Joy engine instance by default config
-    */
+     * create Joy engine instance by default config
+     */
     public static func create(): Joy {
         create(JoyConfig())
     }
-    
+
     /**
-    * create Joy engine instance by config
-    */
+     * create Joy engine instance by config
+     */
     public static func create(config: JoyConfig): Joy {
         Joy(config)
     }
 
     /**
-    * run http server at address:port
-    */
+     * run http server at address:port
+     */
     public func run(addr: String, port: UInt16): Unit {
         run(ServerBuilder().addr(addr).port(port))
     }
 
     /**
-    * run http server by ServerBuilder
-    */
+     * run http server by ServerBuilder
+     */
     public func run(serverBuidler: ServerBuilder): Unit {
         let server = serverBuidler.distributor(router.distributor).build()
         if (_config.enableDebugLog) {

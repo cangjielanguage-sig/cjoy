@@ -1,6 +1,6 @@
 /*
-* Copyright (c) lanlingx 2024-2024. All rights resvered.
-*/
+ * Copyright (c) lanlingx 2024-2024. All rights resvered.
+ */
 
 package cjoy.json.generate
 
@@ -10,7 +10,7 @@ import std.collection.HashMap
 class JsonInfoCache {
     static let FIELD_INFOS: HashMap<String, JsonFieldInfo> = HashMap()
 
-    public static func clear(): Unit{
+    public static func clear(): Unit {
         FIELD_INFOS.clear()
     }
 
@@ -18,7 +18,7 @@ class JsonInfoCache {
         FIELD_INFOS.put(vid, info)
     }
 
-    public static func create(vd: VarDecl) : JsonFieldGenerator {
+    public static func create(vd: VarDecl): JsonFieldGenerator {
         let vtypeTokens = vd.declType.toTokens()
         let vtypeName = vtypeTokens[0].value
         let fieldInfo = FIELD_INFOS.get(vd.identifier.value).getOrDefault({=> JsonFieldInfo(vd.identifier.value)})

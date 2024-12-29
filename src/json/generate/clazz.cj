@@ -1,6 +1,6 @@
 /*
-* Copyright (c) lanlingx 2024-2024. All rights resvered.
-*/
+ * Copyright (c) lanlingx 2024-2024. All rights resvered.
+ */
 
 package cjoy.json.generate
 
@@ -14,11 +14,11 @@ class ClassVarDeclVisitor <: Visitor {
         return varDecls.toArray()
     }
 
-    override public func visit(varDecl: VarDecl) {
+    public override func visit(varDecl: VarDecl) {
         varDecls.append(varDecl)
     }
 
-    override public func visit(_: FuncDecl) {
+    public override func visit(_: FuncDecl) {
         breakTraverse()
     }
 }
@@ -27,7 +27,7 @@ public class JsonClassInfo {
     let classId: Token
     let fields: ArrayList<JsonFieldGenerator>
 
-    init (classId: Token, vars: Array<VarDecl>) {
+    init(classId: Token, vars: Array<VarDecl>) {
         this.classId = classId
         this.fields = ArrayList<JsonFieldGenerator>()
         for (vd in vars) {
@@ -85,7 +85,7 @@ public class JsonClassInfo {
     }
 
     public static func parse(input: Tokens): Tokens {
-        let decl: Decl  = parseDecl(input)
+        let decl: Decl = parseDecl(input)
         if (!(decl is StructDecl) && !(decl is ClassDecl)) {
             throw Exception("Json macro only using for struct or class")
         }

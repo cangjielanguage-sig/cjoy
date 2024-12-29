@@ -1,7 +1,7 @@
 /*
  * Copyright (c) lanlingx 2024-2024. All rights resvered.
  */
- 
+
 package cjoy
 
 import std.collection.*
@@ -10,7 +10,7 @@ import std.unittest.testmacro.*
 
 @Test
 public class NodeTestCaseSuit {
-    private var tree: Node<Int64>  = Node<Int64>("/", STATIC)
+    private var tree: Node<Int64> = Node<Int64>("/", STATIC)
 
     private func addPath(path: String) {
         let node = tree.addPath(path[1..path.size], ArrayList<String>(), false)
@@ -27,7 +27,7 @@ public class NodeTestCaseSuit {
             @Fail("expected no match for ${path} but got with params ${expectedParams}")
             return
         }
-        
+
         if (node.isNone()) {
             return
         }
@@ -58,10 +58,10 @@ public class NodeTestCaseSuit {
             let xparams = HashMap<String, String>()
             let leafParamNames = node.getOrThrow()._leafParamNames
             for (i in 0..params.size) {
-                xparams.put(leafParamNames[params.size-i-1], params[i])
+                xparams.put(leafParamNames[params.size - i - 1], params[i])
             }
 
-            for ((k,v) in expectedParams) {
+            for ((k, v) in expectedParams) {
                 let e = xparams.get(k)
                 if (e.isNone()) {
                     @Fail("Path ${path} matched without key ${k}")
@@ -70,7 +70,7 @@ public class NodeTestCaseSuit {
                 }
                 xparams.remove(k)
             }
-            for ((k,v) in xparams) {
+            for ((k, v) in xparams) {
                 @Fail("Path ${path} returned unexpected param ${k}=${v}")
             }
         }
@@ -116,7 +116,8 @@ public class NodeTestCaseSuit {
         addPath("/apples/ab*dde")
 
         testPath("/users/abc/updatePassword", "/users/:id/updatePassword", HashMap<String, String>([("id", "abc")]))
-        testPath("/users/all/something", "/users/:pk/:related", HashMap<String, String>([("pk", "all"), ("related", "something")]))
+        testPath("/users/all/something", "/users/:pk/:related",
+            HashMap<String, String>([("pk", "all"), ("related", "something")]))
 
         testPath("/aaa/abc", "/:something/abc", HashMap<String, String>([("something", "aaa")]))
         testPath("/aaa/def", "/:something/def", HashMap<String, String>([("something", "aaa")]))
@@ -141,21 +142,30 @@ public class NodeTestCaseSuit {
         testPath("/post/a/page/2", "/post/:post/page/:page", HashMap<String, String>([("post", "a"), ("page", "2")]))
         testPath("/date/2014/5", "/date/:year/:month", HashMap<String, String>([("year", "2014"), ("month", "5")]))
         testPath("/date/2014/month", "/date/:year/month", HashMap<String, String>([("year", "2014")]))
-        testPath("/date/2014/5/abc", "/date/:year/:month/abc", HashMap<String, String>([("year", "2014"), ("month", "5")]))
-        testPath("/date/2014/5/def", "/date/:year/:month/:post", HashMap<String, String>([("year", "2014"), ("month", "5"), ("post", "def")]))
-        testPath("/date/2014/5/def/hij", "/date/:year/:month/*post", HashMap<String, String>([("year", "2014"), ("month", "5"), ("post", "def/hij")]))
-        testPath("/date/2014/5/def/hij/", "/date/:year/:month/*post", HashMap<String, String>([("year", "2014"), ("month", "5"), ("post", "def/hij/")]))
+        testPath("/date/2014/5/abc", "/date/:year/:month/abc", HashMap<String, String>([("year", "2014"), ("month", "5")]
+        ))
+        testPath("/date/2014/5/def", "/date/:year/:month/:post",
+            HashMap<String, String>([("year", "2014"), ("month", "5"), ("post", "def")]))
+        testPath("/date/2014/5/def/hij", "/date/:year/:month/*post",
+            HashMap<String, String>([("year", "2014"), ("month", "5"), ("post", "def/hij")]))
+        testPath("/date/2014/5/def/hij/", "/date/:year/:month/*post",
+            HashMap<String, String>([("year", "2014"), ("month", "5"), ("post", "def/hij/")]))
 
         testPath("/images/*path", "/images/\\*path", HashMap<String, String>())
         testPath("/images/*patch", "/images/\\*patch", HashMap<String, String>())
         testPath("/date/:year/:month", "/date/\\:year/\\:month", HashMap<String, String>())
 
-        testPath("/apples/ab*cde/lala/baba/dada", "/apples/ab*cde/:fg/*hi", HashMap<String, String>([("fg", "lala"), ("hi", "baba/dada")]))
-        testPath("/apples/ab\\*cde/lala/baba/dada", "/apples/ab\\*cde/:fg/*hi", HashMap<String, String>([("fg", "lala"), ("hi", "baba/dada")]))
+        testPath("/apples/ab*cde/lala/baba/dada", "/apples/ab*cde/:fg/*hi",
+            HashMap<String, String>([("fg", "lala"), ("hi", "baba/dada")]))
+        testPath("/apples/ab\\*cde/lala/baba/dada", "/apples/ab\\*cde/:fg/*hi",
+            HashMap<String, String>([("fg", "lala"), ("hi", "baba/dada")]))
 
-        testPath("/apples/ab:cde/:fg/*hi", "/apples/ab:cde/:fg/*hi", HashMap<String, String>([("fg", ":fg"), ("hi", "*hi")]))
-        testPath("/apples/ab*cde/:fg/*hi", "/apples/ab*cde/:fg/*hi", HashMap<String, String>([("fg", ":fg"), ("hi", "*hi")]))
-        testPath("/apples/ab*cde/one/two/three", "/apples/ab*cde/:fg/*hi", HashMap<String, String>([("fg", "one"), ("hi", "two/three")]))
+        testPath("/apples/ab:cde/:fg/*hi", "/apples/ab:cde/:fg/*hi",
+            HashMap<String, String>([("fg", ":fg"), ("hi", "*hi")]))
+        testPath("/apples/ab*cde/:fg/*hi", "/apples/ab*cde/:fg/*hi",
+            HashMap<String, String>([("fg", ":fg"), ("hi", "*hi")]))
+        testPath("/apples/ab*cde/one/two/three", "/apples/ab*cde/:fg/*hi",
+            HashMap<String, String>([("fg", "one"), ("hi", "two/three")]))
         testPath("/apples/ab*dde", "/apples/ab*dde", HashMap<String, String>())
 
         testPath("/ima/bcd/fgh", "", HashMap<String, String>())

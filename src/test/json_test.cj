@@ -1,6 +1,6 @@
 /*
-* Copyright (c) lanlingx 2024-2024. All rights resvered.
-*/
+ * Copyright (c) lanlingx 2024-2024. All rights resvered.
+ */
 
 package cjoy.test
 
@@ -30,22 +30,22 @@ public struct S0 {
 @Json
 public struct SIngore {
     var str: String = "str"
-    @JsonField[ignore=true]
+    @JsonField[ignore = true]
     var ignore: String = "ignore"
 }
 
 @Json
 public struct SRename {
     var str: String = "str1"
-    @JsonField[name=newName]
+    @JsonField[name = newName]
     var str2: String = "str2"
 }
 
 @Json
 public struct SOmitempty {
-    @JsonField[omitempty=true]
+    @JsonField[omitempty = true]
     var strOption: ?String = None
-    @JsonField[omitempty=true]
+    @JsonField[omitempty = true]
     var strEmtpy: String = ""
     var str1: String = "str1"
     var strNull: ?String = None
