@@ -1,5 +1,6 @@
 CJoy - a fast and joy web framework
 =======
+
 一个高性能、轻量、省事的Web框架。
 
 ## 样例
@@ -27,3 +28,112 @@ main(): Int64 {
     return 0
 }
 ```
+
+## 功能
+
+本项目是基于Cangjie提供http框架，参考了一些go语言httptreemux的设计，在其API进一步封装以简化Web应用开发，增加如下能力：
+
+- 基于patricia树的路由管理，支持静态Path，单参数通配符Path，全路径通配符Path的高效注册与查找，支持路由组
+- 基于拦截器的中间件扩展能力，支持Basic认证等多种能力扩展
+- 基于Context的上下文管理，支持快速获取请求参数与构建Json/Text响应
+- 基于编译宏的Json序列化与反序列，支持对请求与响应消息的Json直接绑定映射
+
+应用场景 ：
+
+- API服务：cjoy可以帮助你快速开发Restful服务并配置路由规则与管理各种资源
+- Web服务：cjoy的patricia树高性能路由查找，让你的Web服务更具有性能优势
+- 微服务框架： cjoy的路由组与内置Json编译宏，可以实现微服务各类接口分组管理与接口实现
+
+## 路由
+
+### 路由规则
+
+注册的path支持三种路由格式，示例如下：
+
+* `/post/all`
+* `/post/:postid`
+* `/post/:postid/page/:page`
+* `/post/:postid/:page`
+* `/images/*path`
+* `/favicon.ico`
+* `/:year/:month/`
+* `/:year/:month/:post`
+* `/:page`
+
+- static路由： 静态路由，路径不以`*`或`：`开头，是path全匹配
+- wildcard路由： 单字段参数通配符匹配，路径中字段以`：`开头，一个参数只匹配路径中一段
+  - 如`/post/:postid`，可以匹配`/post/1`或`/post/1/`，通过上下文接口可以获取参数`postid`值为`1`或`2`，但不能匹配 `/post/1/2`
+  - 如`/post/:postid/:page`，可以匹配`/post/1/2`，参数`postid`值为`1`，`page`值为`2`
+- catchAll路由： 捕获所有字段通配符匹配，路径中字段以`*`开头，可能匹配路径中多段
+ - 如`/images/*path`，可以匹配`/images/abc`，参数`path`值为`abc`，也可以匹配`/images/abc/def`，参数`path`值为`abc/def`，但不能匹配只字符串`/images/`，需要单独注册`/images/`
+
+
+ ### 路由优先级
+
+  - 先找静态完全匹配的
+  - 再找`：`开头命名字段匹配
+  - 再找`*`开头全字段匹配
+
+可以同时存在`/users/:name`与`/users/abc`与`/users/*name`，路由匹配优先级与注册的顺序无关。
+
+```
+joy.router.GET("/users/:name", {ctx: JoyContext => })
+joy.router.GET("/users/abc", {ctx: JoyContext => })
+joy.router.GET("/users/*name", {ctx: JoyContext => })
+```
+
+ - 当路径为`/users/abc`，先匹配到static路由`/users/abc`
+ - 当路径为`/users/xiao`，匹配到wildcard路由`/users/:name`
+ - 当路径为`/users/xiao/abc`，匹配到catchAll路由`/users/*name`
+
+其它的示例
+
+```
+joy.router.GET("/:page", {ctx: JoyContext => })
+joy.router.GET("/:year/:month/:post", {ctx: JoyContext => })
+joy.router.GET("/:year/:month", {ctx: JoyContext => })
+joy.router.GET("/images/*path", {ctx: JoyContext => })
+joy.router.GET("/favicon.ico", {ctx: JoyContext => })
+```
+
+- `/abc` 匹配到 `/:page`
+- `/2024/05` 匹配到 `/:year/:month`
+- `/2024/05/really-great-blog-post` 匹配到 `/:year/:month/:post`
+- `/images/image.gif` 匹配到 `/images/*path`
+- `/images/2014/05/image.jpg` 匹配到 `/images/*path`
+- `/favicon.ico` 匹配到 `/favicon.ico`
+
+### 分组
+
+```
+let router = joy.router
+// group
+let v1 = router.group("/v1")
+v1.GET("/:name", {ctx: JoyContext => })
+v1.GET("/abc", {ctx: JoyContext => })
+v1.GET("/*name", {ctx: JoyContext => })
+```
+
+JoyRouters接口的group方法支持对path进行分组，分组支持多级，分组的特点：
+
+ - 有相同的path前辍
+ - 同一组使用相同的中间件，并继承父一级path注册的中间件
+
+
+### `*`或`：`转义
+
+路由path示例：
+
+```
+router.GET("/foo/\\*starToken", {ctx: JoyContext => }) // matches /foo/*starToken
+router.GET("/foo/star*inTheMiddle", {ctx: JoyContext => }) // matches /foo/star*inTheMiddle
+router.GET("/foo/starBackslash\\*", {ctx: JoyContext => }) // matches /foo/starBackslash\*
+router.GET("/foo/\\\\*backslashWithStar"，{ctx: JoyContext => }) // matches /foo/\*backslashWithStar
+```
+
+ - 在路径字段开头存在`\\`，支持对`*`或`：`转义
+ - 在路径字段中间或结尾存在`*`或`：`，需不要`\\`转义
+
+## 参与贡献
+
+欢迎给我们提交 PR，欢迎给我们提交 Issue，欢迎参与任何形式的贡献。

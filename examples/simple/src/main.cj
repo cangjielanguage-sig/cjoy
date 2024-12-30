@@ -47,6 +47,14 @@ main(): Int64 {
             ctx: JoyContext => ctx.string("/v1/abc")
         }
     )
+    v1.GET(
+        "/*name",
+        {
+            ctx: JoyContext =>
+            let name = ctx.getParam("name").getOrDefault({=> "no name"})
+            ctx.string("/v1/:name, name=${name}")
+        }
+    )
 
     // sub group
     let v1user = v1.group("/user")
