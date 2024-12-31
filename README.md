@@ -60,26 +60,30 @@ main(): Int64 {
 * `/:year/:month/:post`
 * `/:page`
 
+示例说明：
+
 - static路由： 静态路由，路径不以`*`或`：`开头，是path全匹配
 - wildcard路由： 单字段参数通配符匹配，路径中字段以`：`开头，一个参数只匹配路径中一段
-  - 如`/post/:postid`，可以匹配`/post/1`或`/post/1/`，通过上下文接口可以获取参数`postid`值为`1`或`2`，但不能匹配 `/post/1/2`
+  - 如`/post/:postid`，可以匹配`/post/1`或`/post/2`，通过上下文接口可以获取参数`postid`值为`1`或`2`，但不能匹配 `/post/1/2`
   - 如`/post/:postid/:page`，可以匹配`/post/1/2`，参数`postid`值为`1`，`page`值为`2`
 - catchAll路由： 捕获所有字段通配符匹配，路径中字段以`*`开头，可能匹配路径中多段
- - 如`/images/*path`，可以匹配`/images/abc`，参数`path`值为`abc`，也可以匹配`/images/abc/def`，参数`path`值为`abc/def`，但不能匹配只字符串`/images/`，需要单独注册`/images/`
+  - 如`/images/*path`，可以匹配`/images/abc`，参数`path`值为`abc`，也可以匹配`/images/abc/def`，参数`path`值为`abc/def`，但不能匹配只字符串`/images/`，需要单独注册`/images/`
 
 
  ### 路由优先级
 
-  - 先找静态完全匹配的
-  - 再找`：`开头命名字段匹配
-  - 再找`*`开头全字段匹配
+路由查找优先级：
 
-可以同时存在`/users/:name`与`/users/abc`与`/users/*name`，路由匹配优先级与注册的顺序无关。
+  - 先找static路由完全匹配的
+  - 再找`：`开头wildcard路由匹配
+  - 再找`*`开头catchAll路由匹配
+
+可以同时存在`/users/:name`、`/users/abc`与`/users/*name`，路由匹配优先级与注册的顺序无关。
 
 ```
-joy.router.GET("/users/:name", {ctx: JoyContext => })
-joy.router.GET("/users/abc", {ctx: JoyContext => })
-joy.router.GET("/users/*name", {ctx: JoyContext => })
+router.GET("/users/:name", {ctx: JoyContext => })
+router.GET("/users/abc", {ctx: JoyContext => })
+router.GET("/users/*name", {ctx: JoyContext => })
 ```
 
  - 当路径为`/users/abc`，先匹配到static路由`/users/abc`
@@ -89,11 +93,11 @@ joy.router.GET("/users/*name", {ctx: JoyContext => })
 其它的示例
 
 ```
-joy.router.GET("/:page", {ctx: JoyContext => })
-joy.router.GET("/:year/:month/:post", {ctx: JoyContext => })
-joy.router.GET("/:year/:month", {ctx: JoyContext => })
-joy.router.GET("/images/*path", {ctx: JoyContext => })
-joy.router.GET("/favicon.ico", {ctx: JoyContext => })
+router.GET("/:page", {ctx: JoyContext => })
+router.GET("/:year/:month/:post", {ctx: JoyContext => })
+router.GET("/:year/:month", {ctx: JoyContext => })
+router.GET("/images/*path", {ctx: JoyContext => })
+router.GET("/favicon.ico", {ctx: JoyContext => })
 ```
 
 - `/abc` 匹配到 `/:page`
@@ -133,6 +137,46 @@ router.GET("/foo/\\\\*backslashWithStar"，{ctx: JoyContext => }) // matches /fo
 
  - 在路径字段开头存在`\\`，支持对`*`或`：`转义
  - 在路径字段中间或结尾存在`*`或`：`，需不要`\\`转义
+ 
+## Handler
+
+Cjoy支持两种路由处理的Handler实现，一种是实现JoyRequestHandler，一种是Lambda表达式函数。
+
+```
+// 实现JoyRequestHandler
+class UserHandler <: JoyRequestHandler {
+    public func handle(ctx: JoyContext): Unit {
+	   let name = ctx.getParam("name").getOrDefault({=>"no name"})
+	   ...
+    }
+}
+
+router.GET(":/name", UserHandler())
+
+// 直接采用Lambda表达式函数
+router.GET("/:name", {ctx: JoyContext => 
+	let name = ctx.getParam("name").getOrDefault({=>"no name"})
+	...
+})
+```
+
+
+## 中间件
+
+Cjoy提供扩展机制，支持Http请求进行拦截处理，机制似乎于java的servlet的filter，其中chain中为所有MiddlewareHandler链
+
+```
+// 如使用内置的BasicAuth中间件
+router.use(BasicAuth("test-realm", HashMap<String, String>([("test", "test")])))
+```
+
+中间件需要实现JoyMiddlewareHandle接口。
+
+```
+public interface JoyMiddlewareHandler {
+    func handle(ctx: JoyContext, chain: JoyRequestHandlerChain): Unit
+}
+```
 
 ## 参与贡献
 
