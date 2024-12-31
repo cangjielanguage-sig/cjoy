@@ -17,6 +17,7 @@ public class JoyContext {
     private let _paramMap: HashMap<String, String>
     private let _ctxParamMap: HashMap<String, Any> = HashMap()
     private var _cookieCache: ?HashMap<String, String> = None
+    var _handlerIndex: Int = 0
 
     public init(httpContxt: HttpContext, paramMap: HashMap<String, String>, config: JoyConfig) {
         _httpContxt = httpContxt

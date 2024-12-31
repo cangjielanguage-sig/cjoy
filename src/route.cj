@@ -74,22 +74,22 @@ class JoyRouteHandler <: HttpRequestHandler {
 }
 
 class JoyRequestHandlerWrapper <: JoyRequestHandlerChain & JoyRequestHandler {
-    private var _idx: Int = 0
 
     public JoyRequestHandlerWrapper(let handler: JoyRequestHandler, let mws: ArrayList<JoyMiddlewareHandler>) {}
 
     public func handle(ctx: JoyContext): Unit {
+        ctx._handlerIndex = 0
         if (mws.isEmpty()) {
             handler.handle(ctx)
         } else {
-            mws[_idx].handle(ctx, this)
+            mws[ctx._handlerIndex].handle(ctx, this)
         }
     }
 
     public func next(ctx: JoyContext): Unit {
-        _idx += 1
-        if (_idx < mws.size) {
-            mws[_idx].handle(ctx, this)
+        ctx._handlerIndex += 1
+        if (ctx._handlerIndex < mws.size) {
+            mws[ctx._handlerIndex].handle(ctx, this)
             return
         }
         handler.handle(ctx)

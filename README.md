@@ -163,7 +163,7 @@ router.GET("/:name", {ctx: JoyContext =>
 
 ## 中间件
 
-Cjoy提供扩展机制，支持Http请求进行拦截处理，机制似乎于java的servlet的filter，其中chain中为所有MiddlewareHandler链
+Cjoy提供扩展机制，支持Http请求进行拦截处理，机制类似于java的servlet的filter，其中chain中为所有MiddlewareHandler链
 
 ```
 // 如使用内置的BasicAuth中间件
