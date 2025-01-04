@@ -153,8 +153,7 @@ class TreeNode<T> {
         var current = this
         var search = pattern
         while (true) {
-            println("${search}")
-            if (search.size == 0) {
+            if (search.isEmpty()) {
                 setEndpoint(method, pattern, handler)
                 return this
             }
@@ -180,9 +179,10 @@ class TreeNode<T> {
                 let hn = parent.addChild(child, search)
                 hn.setEndpoint(method, pattern, handler)
                 return hn
+            } else {
+                current = edge.getOrThrow()
             }
 
-            current = edge.getOrThrow()
             if (current._type > NT_STATIC) {
                 search = search[segEndIdx..search.size]
                 continue
@@ -292,8 +292,7 @@ class TreeNode<T> {
         }
 
         // recursively find the next node on this branch
-        let fin = xn.findRoute(ri, method, search)
-        fin
+        xn.findRoute(ri, method, search)
     }
 
     func findRoute(ri: RouteInfo, method: String, path: String): ?TreeNode<T> {
@@ -361,10 +360,7 @@ class TreeNode<T> {
             filter {
             it: TreeNode<T> =>
             if (it._label == label && it._tail == tail) {
-                if (nt == NT_REGEXP && it._prefix != prefix) {
-                    return false
-                }
-                return true
+                return !(nt == NT_REGEXP && it._prefix != prefix)
             }
             return false
         } |> first
@@ -401,25 +397,9 @@ class TreeNode<T> {
             return (NT_CATCH_ALL, "*", "", 0, ws, pl)
         }
 
-        var tail = b'/'
+        var tail = b'/'  // default endpoint tail to / byte
         var nt = NT_PARAM
-        var cc = 0
-        var pe = ps
-        let xpat = pattern[ps..pl]
-        for (i in 0..xpat.size) {
-            if (xpat[i] == b'{') {
-                cc += 1
-            } else if (xpat[i] == b'}') {
-                cc -= 1
-                if (cc == 0) {
-                    pe = ps + i
-                    break
-                }
-            }
-        }
-        if (pe == ps) {
-            throw IllegalArgumentException("route param closing delimiter '}' is missing")
-        }
+        var pe = findEndIdx(pattern, ps)
 
         var key = pattern[(ps + 1)..pe]
         pe += 1
@@ -435,15 +415,45 @@ class TreeNode<T> {
             key = key[0..idx_]
         }
 
-        if (rexpat.size > 0) {
-            if (rexpat[0] != b'^') {
-                rexpat = "^" + rexpat
-            }
-            if (rexpat[rexpat.size - 1] != b'$') {
-                rexpat += "$"
+        rexpat = normRexpat(rexpat)
+        return (nt, key, rexpat, tail, ps, pe)
+    }
+
+    private static func findEndIdx(pattern: String, ps: Int): Int {
+        // read to closing } taking into account opens and closes in curl count (cc)
+        var cc = 0
+        var pe = ps
+
+        let xpat = pattern[ps..pattern.size]
+        for (i in 0..xpat.size) {
+            if (xpat[i] == b'{') {
+                cc += 1
+            } else if (xpat[i] == b'}') {
+                cc -= 1
+                if (cc == 0) {
+                    pe = ps + i
+                    break
+                }
             }
         }
-        return (nt, key, rexpat, tail, ps, pe)
+
+        if (pe == ps) {
+            throw IllegalArgumentException("route param closing delimiter '}' is missing")
+        }
+
+        pe
+    }
+
+    private static func normRexpat(rexpat: String): String {
+        if (rexpat.size > 0) {
+            if (rexpat[0] != b'^') {
+                return "^" + rexpat
+            }
+            if (rexpat[rexpat.size - 1] != b'$') {
+                return rexpat + "$"
+            }
+        }
+        return rexpat
     }
 
     private func parseParamKeys(pattern: String): Array<String> {
@@ -469,7 +479,9 @@ type TreeNodes<T> = ArrayList<TreeNode<T>>
 
 extend<T> TreeNodes<T> {
     func sortByLableTail() {
+        // sort the list of nodes by label
         this.sortBy(comparator: {a, b => a._label.compare(b._label)})
+        // pushes nodes with '/' as the tail to the end of the list for param nodes.
         this.sortBy(comparator: {
             a, _ => if (a._type > 0 && a._tail == b'/') {
                 Ordering.GT
@@ -494,7 +506,7 @@ extend<T> TreeNodes<T> {
                 i = num
             }
         }
-        
+
         if (this[idx]._label != label) {
             None
         } else {
