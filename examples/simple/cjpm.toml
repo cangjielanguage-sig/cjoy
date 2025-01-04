@@ -1,5 +1,5 @@
 [dependencies]
-  cjoy = { path = "../../" ,version = "1.0.0"}
+  cjoy = { path = "../../" ,version = "0.1.0"}
 
 [package]
   cjc-version = "0.57.3"
