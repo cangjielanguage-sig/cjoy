@@ -18,11 +18,11 @@ public class TreeNodeTestCaseSuit {
         let node = tree.addRoute(method, pattern, hander)
     }
 
-    private func testPath(tree: TreeNode<Int64>, path: String, expectPath: String, expectedParams: HashMap<String, String>) {
+    private func testPath(tree: TreeNode<Int64>, path: String, expectPath: String, expectedParams: HashMap<String, String>, handler!: Int64=1) {
         let ri: RouteInfo = RouteInfo()
-        let node = tree.findRoute(ri, "GET", path)
-        if (expectPath != "" && node.isNone()) {
-            @Fail("not match for ${path}, expected ${expectPath}")
+        let (node, h) = tree.findRouteHandler(ri, "GET", path)
+        if ((expectPath != "" && node.isNone()) || (expectPath != "" && ri.pattern != expectPath)) {
+            @Fail("not match for ${path}, expected ${expectPath}, acutual=${ri.pattern}")
             return
         } else if (expectPath == "" && node.isSome()) {
             @Fail("expected no match for ${path} but got with params ${expectedParams}")
@@ -33,10 +33,13 @@ public class TreeNodeTestCaseSuit {
             return
         }
 
-        let h = node.getOrThrow()._endpoints.get("GET")
         if (h.isNone()) {
             @Fail("path ${path} returned node without handler")
             return
+        } else {
+            if (handler != h.getOrThrow()) {
+                @Fail("not math handler for path ${path}, expected ${handler}, actual=${h.getOrThrow()}")
+            }
         }
 
         if (expectedParams.isEmpty()) {
@@ -74,11 +77,13 @@ public class TreeNodeTestCaseSuit {
 
     @TestCase
     public func testTree() {
-        let node = TreeNode<Int64>(TreeNode<Int64>.NT_STATIC, b'\0', "")
+        let node = TreeNode<Int64>(NT_STATIC, b'/', "")
         addPath(node, "/", 1)
+        addPath(node, "/favicon.ico", 1)
         addPath(node, "/pages/*", 1)
 
         addPath(node, "/article", 1)
+        addPath(node, "/article2", 1)
         addPath(node, "/article/", 1)
 
         addPath(node, "/article/near", 1)
@@ -116,11 +121,17 @@ public class TreeNodeTestCaseSuit {
 
         addPath(node, "/hubs/{hubID}/*", 1)
         addPath(node, "/hubs/{hubID}/users", 1)
+
+        eprintln(node.dumpTree())
+        //@Fail("xxxx")
+
+        //testPath(node, "/", "/", HashMap(), handler:1)
+        //testPath(node, "/favicon.ico", "/favicon.ico", HashMap(), handler:1)
     }
 
     @TestCase
     public func testTreeMoar() {
-        let node = TreeNode<Int64>(TreeNode<Int64>.NT_STATIC, b'\0', "")
+        let node = TreeNode<Int64>(NT_STATIC, b'\0', "")
 
         addPath(node, "/articlefun", 5)
         addPath(node, "/articles/{id}", 1)
@@ -141,7 +152,7 @@ public class TreeNodeTestCaseSuit {
 
     @TestCase
     public func testTreeRegexp() {
-        let node = TreeNode<Int64>(TreeNode<Int64>.NT_STATIC, b'\0', "")
+        let node = TreeNode<Int64>(NT_STATIC, b'\0', "")
 
         addPath(node, "/articles/{rid:^[0-9]{5,6}}", 7)
         addPath(node, "/articles/{zid:^0[0-9]+}", 3)
@@ -154,7 +165,7 @@ public class TreeNodeTestCaseSuit {
 
     @TestCase
     public func testTreeRegexpRecursive() {
-        let node = TreeNode<Int64>(TreeNode<Int64>.NT_STATIC, b'\0', "")
+        let node = TreeNode<Int64>(NT_STATIC, b'\0', "")
 
         addPath(node, "/one/{firstId:[a-z0-9-]+}/{secondId:[a-z0-9-]+}/first", 1)
         addPath(node, "/one/{firstId:[a-z0-9-_]+}/{secondId:[a-z0-9-_]+}/second", 2)
@@ -162,7 +173,7 @@ public class TreeNodeTestCaseSuit {
 
     @TestCase
     public func testTreeRegexpMatchWholeParam() {
-        let node = TreeNode<Int64>(TreeNode<Int64>.NT_STATIC, b'\0', "")
+        let node = TreeNode<Int64>(NT_STATIC, b'\0', "")
 
         addPath(node, "/{id:[0-9]+}", 1)
         addPath(node, "/{x:.+}/foo", 1)

@@ -7,7 +7,7 @@ package cjoy
 import std.regex.Regex
 import std.collection.*
 
-class Endpoint<T> {
+class Endpoint<T> <: ToString {
     let handler: T
     let pattern: String
     let paramKeys: Array<String>
@@ -16,26 +16,17 @@ class Endpoint<T> {
         this.pattern = pattern
         this.paramKeys = paramKeys
     }
+
+    public func toString(): String {
+        return "Endpoint[pattern:${pattern},paramKeys:${paramKeys}]"
+    }
 }
 
 type Endpoints<T> = HashMap<String, Endpoint<T>>
 
-extend<T> Endpoints<T> {
-    func computeIfAbsent(method: String, initFunc: ?(() -> Endpoint<T>)): Endpoint<T> {
-        let v = this.get(method)
-        match (v) {
-            case Some(val) => val
-            case _ =>
-                let val = initFunc.getOrThrow()()
-                this[method] = val
-                val
-        }
-    }
-}
-
 class RouteInfo {
     public RouteInfo(
-        let pattern!: String = "",
+        var pattern!: String = "",
         let patterns!: ArrayList<String> = ArrayList(),
         let routeParamKeys!: ArrayList<String> = ArrayList(),
         var routeParamValues!: ArrayList<String> = ArrayList(),
@@ -46,14 +37,13 @@ class RouteInfo {
 }
 
 type NodeTyp = Int
+const NT_STATIC: NodeTyp = 0
+const NT_REGEXP: NodeTyp = 1
+const NT_PARAM: NodeTyp = 2
+const NT_CATCH_ALL: NodeTyp = 3
 
 class TreeNode<T> {
-    static const NT_STATIC: NodeTyp = 0
-    static const NT_REGEXP: NodeTyp = 1
-    static const NT_PARAM: NodeTyp = 2
-    static const NT_CATCH_ALL: NodeTyp = 3
-
-    // Regex matcher for regexp nodes
+    // regex matcher for regexp nodes
     var _regex: ?Regex = None
 
     // handler endpoints on the leaf node
@@ -69,9 +59,9 @@ class TreeNode<T> {
     var _type: NodeTyp = 0
 
     // first byte of the prefix
-    var _label: Byte = b'\0'
+    var _label: Byte = b'/'
     // first byte of the child prefix
-    var _tail: Byte = b'\0'
+    var _tail: Byte = b'/'
 
     init(cat: NodeTyp, label: Byte, prefix: String) {
         _type = cat
@@ -86,8 +76,8 @@ class TreeNode<T> {
     }
 
     private func setEndpoint(method: String, pattern: String, handler: T) {
-        let paramKeys = parseParamKeys(pattern)
-        _endpoints.computeIfAbsent(method, {=> Endpoint(handler, pattern, paramKeys)})
+        let paramKeys = Segment.parseParamKeys(pattern)
+        _endpoints.put(method, Endpoint(handler, pattern, paramKeys))
     }
 
     private func replaceChild(label: Byte, tail: Byte, child: TreeNode<T>) {
@@ -100,45 +90,47 @@ class TreeNode<T> {
                 return
             }
         }
+        throw IllegalStateException("replace missing child")
     }
 
     private func addChild(child: TreeNode<T>, prefix: String): TreeNode<T> {
         var search = prefix
         var hn = child
-        var (segCat, _, segRexpat, segTail, segStartIdx, segEndIdx) = parseNexSegment(search)
 
-        if (segCat == NT_REGEXP) {
-            child._prefix = segRexpat
-            child._regex = Regex(segRexpat)
+        // parse next segment
+        let seg = Segment.parseNext(search)
+        if (seg.typ == NT_REGEXP) {
+            child._prefix = seg.rex
+            child._regex = Regex(seg.rex)
         }
 
-        if (segCat != NT_STATIC) {
-            if (segStartIdx == 0) {
+        if (seg.typ != NT_STATIC) {
+            if (seg.startPos == 0) {
                 // route starts with a param
-                child._type = segCat
-                segStartIdx = if (segCat == NT_CATCH_ALL) {
-                    segStartIdx - 1
+                child._type = seg.typ
+                var segStartIdx = if (seg.typ == NT_CATCH_ALL) {
+                    seg.startPos - 1
                 } else {
-                    segEndIdx
+                    seg.endPos
                 }
                 if (segStartIdx < 0) {
                     segStartIdx = search.size
                 }
 
-                child._tail = segTail
+                child._tail = seg.tail
                 if (segStartIdx != search.size) {
                     search = search[segStartIdx..search.size]
                     let nn = TreeNode<T>(NT_STATIC, search[0], search)
                     hn = child.addChild(nn, search)
                 }
-            } else if (segStartIdx > 0) {
+            } else if (seg.startPos > 0) {
                 // route has some param
                 // starts with a static segment
                 child._type = NT_STATIC
-                child._prefix = search[0..segStartIdx]
+                child._prefix = search[0..seg.startPos]
                 // add the param edge node
-                search = search[segStartIdx..search.size]
-                let nn = TreeNode<T>(segCat, search[0], segTail)
+                search = search[seg.startPos..search.size]
+                let nn = TreeNode<T>(seg.typ, search[0], seg.tail)
                 hn = child.addChild(nn, search)
             }
         }
@@ -150,57 +142,57 @@ class TreeNode<T> {
 
     func addRoute(method: String, pattern: String, handler: T): TreeNode<T> {
         var parent = this
-        var current = this
+        var node = this
         var search = pattern
         while (true) {
             if (search.isEmpty()) {
-                setEndpoint(method, pattern, handler)
-                return this
+                node.setEndpoint(method, pattern, handler)
+                return node
             }
 
             var label = search[0]
-            var (segCat, _, segRexpat, segTail, _, segEndIdx) = if (label == b'{' || label == b'*') {
-                parseNexSegment(search)
-            } else {
-                (NT_STATIC, "", "", b'\0', 0, 0)
+            var seg = Segment()
+            if (label == b'{' || label == b'*') {
+                seg = Segment.parseNext(search)
             }
 
-            var prefix = if (segCat == NT_REGEXP) {
-                segRexpat
+            var prefix = if (seg.typ == NT_REGEXP) {
+                seg.rex
             } else {
                 ""
             }
 
-            parent = current
-            let edge = current.getEdge(segCat, label, segTail, prefix)
+            parent = node
+            let edge = node.getEdge(seg.typ, label, seg.tail, prefix)
             if (edge.isNone()) {
-                let child = TreeNode<T>(segCat, label, search)
-                child._tail = segTail
+                let child = TreeNode<T>(seg.typ, label, search)
+                child._tail = seg.tail
                 let hn = parent.addChild(child, search)
                 hn.setEndpoint(method, pattern, handler)
                 return hn
             } else {
-                current = edge.getOrThrow()
+                node = edge.getOrThrow()
             }
 
-            if (current._type > NT_STATIC) {
-                search = search[segEndIdx..search.size]
+            if (node._type > NT_STATIC) {
+                search = search[seg.endPos..search.size]
                 continue
             }
 
-            let nprefix = longestPrefix(search, current._prefix)
-            if (nprefix == current._prefix.size) {
+            // static node
+            let nprefix = longestPrefix(search, node._prefix)
+            if (nprefix == node._prefix.size) {
                 search = search[nprefix..search.size]
                 continue
             }
 
             let child = TreeNode<T>(NT_STATIC, search[0], search[0..nprefix])
-            parent.replaceChild(search[0], segTail, child)
+            parent.replaceChild(search[0], seg.tail, child)
 
             // restorethe existing node 
-            current._label = current._prefix[nprefix]
-            current._prefix = current._prefix[nprefix..current._prefix.size]
-            child.addChild(current, current._prefix)
+            node._label = node._prefix[nprefix]
+            node._prefix = node._prefix[nprefix..node._prefix.size]
+            child.addChild(node, node._prefix)
 
             search = search[nprefix..search.size]
             if (search.isEmpty()) {
@@ -215,30 +207,29 @@ class TreeNode<T> {
             return hn
         }
 
-        unsafe { zeroValue<TreeNode<T>>() }
+        throw IllegalStateException("can run the line")
     }
 
-    private func findStaticRoute(nds: ArrayList<TreeNode<T>>, xsearch: String, label: Byte): (?TreeNode<T>, String) {
+    private func findStaticRoute(nds: ArrayList<TreeNode<T>>, search: String, label: Byte): (?TreeNode<T>, String) {
         let en = nds.findEdge(label)
-        if (en.isNone()) {
+        if (let Some(n) <- en) {
+            if (!search.startsWith(n._prefix)) {
+                return (None, "")
+            }
+            return (en, search[n._prefix.size..search.size])
+        } else {
             return (None, "")
         }
-
-        let n = en.getOrThrow()
-        if (!xsearch.startsWith(n._prefix)) {
-            return (None, "")
-        }
-
-        (en, xsearch[n._prefix.size..xsearch.size])
     }
 
     private func findParamOrRegexRoute(ri: RouteInfo, nds: ArrayList<TreeNode<T>>, nt: NodeTyp, search: String,
-        method: String): (?TreeNode<T>, String) {
+        method: String): (?TreeNode<T>, String, Bool) {
         var xsearch = search
-
+        var ret:?TreeNode<T> = None
         // serially loop through each node grouped by the tail delimiter
         for (n in nds) {
             let xn = n
+            ret = n
 
             // label for param nodes is the delimiter byte
             var p = xsearch.indexOf(xn._tail).getOrDefault({=> -1})
@@ -267,7 +258,7 @@ class TreeNode<T> {
 
             let fin = findRouteByMethod(ri, xn, method, xsearch)
             if (fin.isSome()) {
-                return (fin, xsearch)
+                return (fin, xsearch, true)
             }
 
             // not found on this branch, reset vars
@@ -275,7 +266,8 @@ class TreeNode<T> {
             xsearch = search
         }
 
-        return (None, xsearch)
+        ri.routeParamValues.append("")
+        return (ret, xsearch, false)
     }
 
     private func findRouteByMethod(ri: RouteInfo, xn: TreeNode<T>, method: String, search: String): ?TreeNode<T> {
@@ -296,7 +288,6 @@ class TreeNode<T> {
     }
 
     func findRoute(ri: RouteInfo, method: String, path: String): ?TreeNode<T> {
-        var xn: ?TreeNode<T> = None
         var search = path
         var label = if (search != "") {
             search[0]
@@ -306,6 +297,7 @@ class TreeNode<T> {
 
         for (idx in 0.._children.size) {
             let nt: NodeTyp = idx
+            var node: ?TreeNode<T> = None
             let nds = _children[idx]
             if (nds.isEmpty()) {
                 continue
@@ -313,41 +305,55 @@ class TreeNode<T> {
 
             var xsearch = search
             if (nt == NT_STATIC) {
-                (xn, xsearch) = findStaticRoute(nds, search, label)
-                if (xn.isSome()) {
-                    return xn
-                }
-            } else if (nt == NT_PARAM || nt == NT_REGEXP) {
-                if (search == "") {
+                (node, xsearch) = findStaticRoute(nds, search, label)
+                if (node.isNone()) {
                     continue
                 }
-                (xn, xsearch) = findParamOrRegexRoute(ri, nds, nt, search, method)
-                if (xn.isSome()) {
-                    return xn
+            } else if (nt == NT_PARAM || nt == NT_REGEXP) {
+                if (xsearch == "") {
+                    continue
+                }
+                var ret = false
+                (node, xsearch, ret) = findParamOrRegexRoute(ri, nds, nt, search, method)
+                if (node.isSome() && ret) {
+                    return node
                 }
             } else {
                 ri.routeParamValues.append(search)
-                xn = nds[0]
+                node = nds[0]
                 xsearch = ""
             }
 
-            if (xn.isNone()) {
+            if (node.isNone()) {
                 continue
             }
 
-            let fin = findRouteByMethod(ri, xn.getOrThrow(), method, xsearch)
+            let fin = findRouteByMethod(ri, node.getOrThrow(), method, xsearch)
             if (fin.isSome()) {
                 return fin
             }
 
             // did not find final handler, let's remove the param here if it was set
-            if (xn.getOrThrow()._type > NT_STATIC) {
+            if (node.getOrThrow()._type > NT_STATIC) {
                 if (!ri.routeParamValues.isEmpty()) {
                     ri.routeParamValues = ri.routeParamValues[0..(ri.routeParamValues.size - 1)]
                 }
             }
         }
-        xn
+        None
+    }
+
+    func findRouteHandler(ri: RouteInfo, method: String, path: String): (?TreeNode<T>, ?T) {
+        let rn = findRoute(ri, method, path)
+        if (let Some(node) <- rn) {
+            let ep = node._endpoints[method]
+            if (ep.pattern != "") {
+                ri.pattern = ep.pattern
+                ri.patterns.append(ri.pattern)
+            }
+            return (rn, ep.handler)
+        }
+        (rn, None)
     }
 
     private func isLeaf(): Bool {
@@ -355,16 +361,43 @@ class TreeNode<T> {
     }
 
     private func getEdge(nt: NodeTyp, label: Byte, tail: Byte, prefix: String): ?TreeNode<T> {
-        let ns = _children[nt]
-        let node = ns |>
-            filter {
-            it: TreeNode<T> =>
-            if (it._label == label && it._tail == tail) {
-                return !(nt == NT_REGEXP && it._prefix != prefix)
+        let nds = _children[nt]
+        for (i in 0..nds.size) {
+            let n = nds[i]
+            if (n._label == label && n._tail == tail) {
+                if (nt == NT_REGEXP && n._prefix != prefix) {
+                    continue
+                }
+                return n
             }
-            return false
-        } |> first
-        node
+        }
+        None
+    }
+
+    private static func dumpTreeInner(builder: StringBuilder, layer: Int, prefix: String, node: TreeNode<T>): Unit {
+        var num = 0
+        for (nds in node._children) {
+            num += nds.size
+        }
+       
+        builder.append("${prefix}${layer}[type:${node._type},prefix:${node._prefix},label:${String.fromUtf8([node._label])},tail:${String.fromUtf8([node._tail])},numEdges:${num},isLeaf:${node.isLeaf()}")
+        if (!node._endpoints.isEmpty()) {
+            builder.append(",endpoints:${node._endpoints}")
+        }
+        builder.append("\n")
+
+        for (nds in node._children) {
+            let prefixStr = prefix + " "
+            for (n in nds) {
+                dumpTreeInner(builder, layer+1, prefixStr, n)
+            }
+        }
+    }
+
+    func dumpTree(): String {
+        let builder = StringBuilder()
+        dumpTreeInner(builder, 0, "", this)
+        builder.toString()
     }
 
     private static func longestPrefix(s1: String, s2: String): Int {
@@ -377,46 +410,66 @@ class TreeNode<T> {
         }
         idx
     }
+}
 
-    private static func parseNexSegment(pattern: String): (NodeTyp, String, String, Byte, Int, Int) {
-        let ps = pattern.indexOf(b'{').getOrDefault({=> -1})
-        let ws = pattern.indexOf(b'*').getOrDefault({=> -1})
-        let pl = pattern.size
-        if (ps < 0 && ws < 0) {
-            return (NT_STATIC, "", "", 0, 0, pl)
-        }
-        if (ps >= 0 && ws >= 0 && ws < ps) {
-            throw IllegalArgumentException("wildcard '*' must be the last pattern in a route, otherwise use a '{param}")
-        }
+type TreeNodes<T> = ArrayList<TreeNode<T>>
 
-        if (ps < 0) {
-            if (ws < pl - 1) {
-                throw IllegalArgumentException(
-                    "wildcard '*' must be the last value in a route. trim trailing text or use a '{param}' instead")
+extend<T> TreeNodes<T> {
+    func sortByLableTail() {
+        // sort the list of nodes by label
+        this.sortBy(comparator: {a, b => a._label.compare(b._label)})
+        // pushes nodes with '/' as the tail to the end of the list for param nodes.
+        let last = this.size - 1
+        for (i in last..=0 : -1) {
+            if (this[i]._type > NT_STATIC && this[i]._tail == b'/') {
+                (this[i], this[last]) = (this[last], this[i])
+                return
             }
-            return (NT_CATCH_ALL, "*", "", 0, ws, pl)
+        }
+    }
+
+    func findEdge(label: Byte): ?TreeNode<T> {
+        let num = this.size
+        var idx = 0
+        var i = 0
+        var j = num - 1
+        while (i <= j) {
+            idx = i + (j - i) / 2
+            if (label > this[idx]._label) {
+                i = idx + 1
+            } else if (label < this[idx]._label) {
+                j = idx - 1
+            } else {
+                i = num
+            }
         }
 
-        var tail = b'/'  // default endpoint tail to / byte
-        var nt = NT_PARAM
-        var pe = findEndIdx(pattern, ps)
-
-        var key = pattern[(ps + 1)..pe]
-        pe += 1
-        if (pe < pl) {
-            tail = pattern[pe]
+        if (this[idx]._label != label) {
+            None
+        } else {
+            this[idx]
         }
+    }
+}
 
-        var rexpat = ""
-        if (let idx <- key.indexOf(b':') && idx.isSome()) {
-            nt = NT_REGEXP
-            let idx_ = idx.getOrThrow()
-            rexpat = key[(idx_ + 1)..key.size]
-            key = key[0..idx_]
+class Segment {
+    var typ: NodeTyp = NT_STATIC
+    var key: String = ""
+    var rex: String = ""
+    var tail: Byte = b'/' // default endpoint tail to / byte
+    var startPos: Int = 0
+    var endPos: Int = 0
+
+    private static func normRexpat(rexpat: String): String {
+        if (rexpat.size > 0) {
+            if (rexpat[0] != b'^') {
+                return "^" + rexpat
+            }
+            if (rexpat[rexpat.size - 1] != b'$') {
+                return rexpat + "$"
+            }
         }
-
-        rexpat = normRexpat(rexpat)
-        return (nt, key, rexpat, tail, ps, pe)
+        return rexpat
     }
 
     private static func findEndIdx(pattern: String, ps: Int): Int {
@@ -444,73 +497,69 @@ class TreeNode<T> {
         pe
     }
 
-    private static func normRexpat(rexpat: String): String {
-        if (rexpat.size > 0) {
-            if (rexpat[0] != b'^') {
-                return "^" + rexpat
-            }
-            if (rexpat[rexpat.size - 1] != b'$') {
-                return rexpat + "$"
-            }
-        }
-        return rexpat
+    static func parseNext(pattern: String): Segment {
+        let seg = Segment()
+        seg.parse(pattern)
+        seg
     }
 
-    private func parseParamKeys(pattern: String): Array<String> {
+    private func parse(pattern: String): Unit  {
+        startPos = pattern.indexOf(b'{').getOrDefault({=> -1})
+        let ws = pattern.indexOf(b'*').getOrDefault({=> -1})
+        let pl = pattern.size
+        if (startPos < 0 && ws < 0) {
+            return
+        }
+
+        if (startPos >= 0 && ws >= 0 && ws < startPos) {
+            throw IllegalArgumentException("wildcard '*' must be the last pattern in a route, otherwise use a '{param}")
+        }
+
+        if (startPos < 0) {
+            if (ws < pl - 1) {
+                throw IllegalArgumentException(
+                    "wildcard '*' must be the last value in a route. trim trailing text or use a '{param}' instead")
+            }
+            typ = NT_CATCH_ALL
+            key = "*"
+            startPos = ws
+            endPos = pl
+            return 
+        }
+
+        typ = NT_PARAM
+        endPos = findEndIdx(pattern, startPos)
+        key = pattern[(startPos + 1)..endPos]
+        endPos += 1
+        if (endPos < pl) {
+            tail = pattern[endPos]
+        }
+
+        if (let idx <- key.indexOf(b':') && idx.isSome()) {
+            typ = NT_REGEXP
+            let idx_ = idx.getOrThrow()
+            rex = key[(idx_ + 1)..key.size]
+            key = key[0..idx_]
+        }
+
+        rex = normRexpat(rex)
+    }
+
+    static func parseParamKeys(pattern: String): Array<String> {
         var pat = pattern
         var paramKeys = ArrayList<String>()
         while (true) {
-            let (nt, paramKey, _, _, _, pe) = parseNexSegment(pat)
-            if (nt == NT_STATIC) {
+            let seg = Segment.parseNext(pat)
+            if (seg.typ == NT_STATIC) {
                 return paramKeys.toArray()
             }
-            if (paramKeys.contains(paramKey)) {
+            if (paramKeys.contains(seg.key)) {
                 throw IllegalArgumentException(
-                    "routing pattern '${pattern}' contains duplicate param key, '${paramKey}'")
+                    "routing pattern '${pattern}' contains duplicate param key, '${seg.key}'")
             }
-            paramKeys.append(paramKey)
-            pat = pat[pe..pat.size]
+            paramKeys.append(seg.key)
+            pat = pat[seg.endPos..pat.size]
         }
         paramKeys.toArray()
-    }
-}
-
-type TreeNodes<T> = ArrayList<TreeNode<T>>
-
-extend<T> TreeNodes<T> {
-    func sortByLableTail() {
-        // sort the list of nodes by label
-        this.sortBy(comparator: {a, b => a._label.compare(b._label)})
-        // pushes nodes with '/' as the tail to the end of the list for param nodes.
-        this.sortBy(comparator: {
-            a, _ => if (a._type > 0 && a._tail == b'/') {
-                Ordering.GT
-            } else {
-                Ordering.EQ
-            }
-        })
-    }
-
-    func findEdge(label: Byte): ?TreeNode<T> {
-        let num = this.size
-        var idx = 0
-        var i = 0
-        var j = num - 1
-        while (i <= j) {
-            idx = (i + (j - i) / 2)
-            if (label > this[idx]._label) {
-                i = idx + 1
-            } else if (label < this[idx]._label) {
-                i = idx - 1
-            } else {
-                i = num
-            }
-        }
-
-        if (this[idx]._label != label) {
-            None
-        } else {
-            this[idx]
-        }
     }
 }
