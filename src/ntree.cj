@@ -59,19 +59,14 @@ class TreeNode<T> {
     var _type: NodeTyp = 0
 
     // first byte of the prefix
-    var _label: Byte = b'/'
+    var _label: Byte = b'\0'
     // first byte of the child prefix
-    var _tail: Byte = b'/'
+    var _tail: Byte = b'\0'
 
-    init(cat: NodeTyp, label: Byte, prefix: String) {
+    init(cat: NodeTyp, label: Byte, prefix: String, tail!: Byte = b'\0') {
         _type = cat
         _label = label
         _prefix = prefix
-    }
-
-    init(cat: NodeTyp, label: Byte, tail: Byte) {
-        _type = cat
-        _label = label
         _tail = tail
     }
 
@@ -130,7 +125,7 @@ class TreeNode<T> {
                 child._prefix = search[0..seg.startPos]
                 // add the param edge node
                 search = search[seg.startPos..search.size]
-                let nn = TreeNode<T>(seg.typ, search[0], seg.tail)
+                let nn = TreeNode<T>(seg.typ, search[0], "", tail:seg.tail)
                 hn = child.addChild(nn, search)
             }
         }
@@ -154,7 +149,7 @@ class TreeNode<T> {
             var seg = Segment()
             if (label == b'{' || label == b'*') {
                 seg = Segment.parseNext(search)
-            }
+            } 
 
             var prefix = if (seg.typ == NT_REGEXP) {
                 seg.rex
@@ -165,7 +160,7 @@ class TreeNode<T> {
             parent = node
             let edge = node.getEdge(seg.typ, label, seg.tail, prefix)
             if (edge.isNone()) {
-                let child = TreeNode<T>(seg.typ, label, search)
+                let child = TreeNode<T>(NT_STATIC, label, search)
                 child._tail = seg.tail
                 let hn = parent.addChild(child, search)
                 hn.setEndpoint(method, pattern, handler)
@@ -174,6 +169,7 @@ class TreeNode<T> {
                 node = edge.getOrThrow()
             }
 
+            // found an edge to match the pattern
             if (node._type > NT_STATIC) {
                 search = search[seg.endPos..search.size]
                 continue
@@ -405,7 +401,9 @@ class TreeNode<T> {
         var idx = 0
         for (i in 0..maxLen) {
             if (s1[i] != s2[i]) {
-                return i
+                break
+            } else {
+                idx += 1
             }
         }
         idx
@@ -456,7 +454,7 @@ class Segment {
     var typ: NodeTyp = NT_STATIC
     var key: String = ""
     var rex: String = ""
-    var tail: Byte = b'/' // default endpoint tail to / byte
+    var tail: Byte = b'\0'
     var startPos: Int = 0
     var endPos: Int = 0
 
@@ -485,7 +483,7 @@ class Segment {
                 cc -= 1
                 if (cc == 0) {
                     pe = ps + i
-                    break
+                    return pe
                 }
             }
         }
@@ -493,7 +491,6 @@ class Segment {
         if (pe == ps) {
             throw IllegalArgumentException("route param closing delimiter '}' is missing")
         }
-
         pe
     }
 
@@ -504,34 +501,38 @@ class Segment {
     }
 
     private func parse(pattern: String): Unit  {
-        startPos = pattern.indexOf(b'{').getOrDefault({=> -1})
+        let ps = pattern.indexOf(b'{').getOrDefault({=> -1})
         let ws = pattern.indexOf(b'*').getOrDefault({=> -1})
-        let pl = pattern.size
-        if (startPos < 0 && ws < 0) {
+        let len = pattern.size
+       
+        if (ps < 0 && ws < 0) {
+            endPos = len
             return
         }
 
-        if (startPos >= 0 && ws >= 0 && ws < startPos) {
+        if (ps >= 0 && ws >= 0 && ws < ps) {
             throw IllegalArgumentException("wildcard '*' must be the last pattern in a route, otherwise use a '{param}")
         }
 
-        if (startPos < 0) {
-            if (ws < pl - 1) {
+        if (ps < 0) {
+            if (ws < len - 1) {
                 throw IllegalArgumentException(
                     "wildcard '*' must be the last value in a route. trim trailing text or use a '{param}' instead")
             }
             typ = NT_CATCH_ALL
             key = "*"
             startPos = ws
-            endPos = pl
+            endPos = len
             return 
         }
 
         typ = NT_PARAM
-        endPos = findEndIdx(pattern, startPos)
-        key = pattern[(startPos + 1)..endPos]
+        tail = b'/'
+        startPos = ps
+        endPos = findEndIdx(pattern, ps)
+        key = pattern[(ps + 1)..endPos]
         endPos += 1
-        if (endPos < pl) {
+        if (endPos < len) {
             tail = pattern[endPos]
         }
 
