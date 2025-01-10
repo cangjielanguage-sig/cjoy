@@ -11,11 +11,11 @@ import std.unittest.testmacro.*
 @Test
 public class TreeNodeTestCaseSuit {
     private func addPath(tree: TreeNode<Int64>, pattern: String, hander: Int64) {
-        let node = tree.addRoute("GET", pattern, hander)
+        tree.addRoute("GET", pattern, hander)
     }
 
     private func addPath(tree: TreeNode<Int64>, method: String, pattern: String, hander: Int64) {
-        let node = tree.addRoute(method, pattern, hander)
+        tree.addRoute(method, pattern, hander)
     }
 
     private func testPath(tree: TreeNode<Int64>, path: String, expectPath: String, expectedParams: HashMap<String, String>, handler!: Int64=1) {
@@ -77,7 +77,7 @@ public class TreeNodeTestCaseSuit {
 
     @TestCase
     public func testTree() {
-        let node = TreeNode<Int64>(NT_STATIC, b'/', "")
+        let node = TreeNode<Int64>(NT_STATIC, b'\0', "")
         addPath(node, "/", 1)
         addPath(node, "/favicon.ico", 1)
         addPath(node, "/pages/*", 1)
@@ -122,11 +122,43 @@ public class TreeNodeTestCaseSuit {
         addPath(node, "/hubs/{hubID}/*", 1)
         addPath(node, "/hubs/{hubID}/users", 1)
 
-        eprintln(node.dumpTree())
-        //@Fail("xxxx")
+        println(node.dumpTree())
 
-        //testPath(node, "/", "/", HashMap(), handler:1)
-        //testPath(node, "/favicon.ico", "/favicon.ico", HashMap(), handler:1)
+        testPath(node, "/", "/", HashMap(), handler:1)
+        testPath(node, "/favicon.ico", "/favicon.ico", HashMap(), handler:1)
+
+        testPath(node, "/pages", "", HashMap(), handler:1)
+        testPath(node, "/pages/", "/pages/*", HashMap([("*", "")]), handler:1)
+        testPath(node, "/pages/yes", "/pages/*", HashMap([("*", "yes")]), handler:1)
+
+        testPath(node, "/article", "/article", HashMap(), handler:1)
+        testPath(node, "/article/", "/article/", HashMap(), handler:1)
+        testPath(node, "/article/near", "/article/near", HashMap(), handler:1)
+        testPath(node, "/article/neard", "/article/{id}", HashMap([("id", "neard")]), handler:3)
+        testPath(node, "/article/123", "/article/{id}", HashMap([("id", "123")]), handler:3)
+        testPath(node, "/article/123/456", "/article/{id}/{opts}", HashMap([("id", "123"), ("opts", "456")]), handler:1)
+        testPath(node, "/article/@peter", "/article/@{user}", HashMap([("user", "peter")]), handler:1)
+        testPath(node, "/article/22//related", "/article/{id}//related", HashMap([("id", "22")]), handler:1)
+        testPath(node, "/article/111/edit", "/article/{iffd}/edit", HashMap([("iffd", "111")]), handler:1)
+        testPath(node, "/article/slug/sept/-/4/2015", "/article/slug/{month}/-/{day}/{year}", HashMap([("month", "sept"), ("day", "4"), ("year", "2015")]), handler:1)
+        testPath(node, "/article/:id", "/article/{id}", HashMap([("id", ":id")]), handler:3)
+
+        testPath(node, "/admin/user", "/admin/user", HashMap(), handler:1)
+        testPath(node, "/admin/user/", "/admin/user/", HashMap(), handler:3)
+        testPath(node, "/admin/user/1", "/admin/user/{id}", HashMap([("id", "1")]), handler:1)
+        testPath(node, "/admin/user//1", "/admin/user//{id}", HashMap([("id", "1")]), handler:1)
+        testPath(node, "/admin/hi", "/admin/*", HashMap([("*", "hi")]), handler:2)
+        testPath(node, "/admin/lots/of/:fun", "/admin/*", HashMap([("*", "lots/of/:fun")]), handler:2)
+        testPath(node, "/admin/apps/333", "/admin/apps/{id}", HashMap([("id", "333")]), handler:1)
+        testPath(node, "/admin/apps/333/woot", "/admin/apps/{id}/*", HashMap([("id", "333"), ("*", "woot")]), handler:1)
+
+        testPath(node, "/hubs/123/view", "/hubs/{hubID}/view", HashMap([("hubID", "123")]), handler:1)
+        testPath(node, "/hubs/123/view/index.html", "/hubs/{hubID}/view/*", HashMap([("hubID", "123"), ("*", "index.html")]), handler:1)
+        testPath(node, "/hubs/123/users", "/hubs/{hubID}/users", HashMap([("hubID", "123")]), handler:1)
+
+        testPath(node, "/users/123/profile", "/users/{userID}/profile", HashMap([("userID", "123")]), handler:1)
+        testPath(node, "/users/super/123/okay/yes", "/users/super/*", HashMap([("*", "123/okay/yes")]), handler:1)
+        testPath(node, "/users/123/okay/yes", "/users/*", HashMap([("*", "123/okay/yes")]), handler:1)
     }
 
     @TestCase
@@ -138,7 +170,7 @@ public class TreeNodeTestCaseSuit {
         addPath(node, "DELETE", "/articles/{slug}", 8)
         addPath(node, "/articles/search", 1)
         addPath(node, "/articles/{id}:delete", 8)
-        addPath(node, "/articles/{iidd}!sup", 4)
+        addPath(node, "/articles/{id}!sup", 4)
         addPath(node, "/articles/{id}:{op}", 3)
         addPath(node, "/articles/{id}:{op}", 2)
         addPath(node, "/articles/{slug:^[a-z]+}/posts", 1)
@@ -148,6 +180,42 @@ public class TreeNodeTestCaseSuit {
         addPath(node, "/articles/{id}/data.json", 11)
         addPath(node, "/articles/files/{file}.{ext}", 12)
         addPath(node, "/articles/me", 13)
+        addPath(node, "PUT", "/articles/me", 13)
+
+        addPath(node, "/pages/*", 1)
+        addPath(node, "/pages/*", 2)
+
+        addPath(node, "/users/{id}", 1)
+        addPath(node, "/users/{id}/settings/{key}", 1)
+        addPath(node, "/users/{id}/settings/*", 1)
+
+        println(node.dumpTree())
+
+        testPath(node, "/articles/search", "/articles/search", HashMap(), handler:1)
+        testPath(node, "/articlefun", "/articlefun", HashMap(), handler:5)
+        testPath(node, "/article/123", "/articles/{id}", HashMap([("id", "123")]), handler:1)
+
+        testPath(node, "/articles/789:delete", "/articles/{id}:delete", HashMap([("id", "789")]), handler:8)
+        testPath(node, "/articles/789!sup", "/articles/{id}!sup", HashMap([("id", "789")]), handler:4)
+        testPath(node, "/articles/123:sync", "/articles/{id}:{op}", HashMap([("id", "123"), ("op", "sync")]), handler:2)
+        testPath(node, "/articles/456/posts/1", "/articles/{id}/posts/{pid}", HashMap([("id", "456"), ("pid", "1")]), handler:6)
+        testPath(node, "/articles/456/posts/09/04/1984/juice", "/articles/{id}/posts/{month}/{day}/{year}/{slug}", HashMap([("id", "456"), ("month", "09"), ("day", "04"), ("year", "1984"), ("slug", "juice")]), handler:7)
+        testPath(node, "/articles/456.json", "/articles/{id}.json", HashMap([("id", "456")]), handler:10)
+        testPath(node, "/articles/456/data.json", "/articles/{id}/data.json", HashMap([("id", "456")]), handler:11)
+
+        testPath(node, "/articles/files/file.zip", "/articles/files/{file}.{ext}", HashMap([("file", "file"), ("ext", "zip")]), handler:12)
+        testPath(node, "/articles/files/photos.tar.gz", "/articles/files/{file}.{ext}", HashMap([("file", "photos"), ("ext", "tar.gz")]), handler:12)
+
+        testPath(node, "/articles/me", "/articles/{id}", HashMap([("id", "me")]), handler:1)
+
+        testPath(node, "/pages", "", HashMap(), handler:1)
+        testPath(node, "/pages/", "/pages/*", HashMap([("*", "")]), handler:1)
+        testPath(node, "/pages/yes", "/pages/*", HashMap([("*", "yes")]), handler:1)
+
+        testPath(node, "/users/1", "/users/{id}", HashMap([("id", "1")]), handler:1)
+        testPath(node, "/users", "", HashMap(), handler:1)
+        testPath(node, "/users/2/settings/password", "/users/{id}/settings/{key}", HashMap([("id", "2"), ("key", "password")]), handler:1)
+        testPath(node, "/users/2/settings/", "/users/{id}/settings/*", HashMap([("id", "2"), ("*", "")]), handler:1)
     }
 
     @TestCase
