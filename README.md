@@ -31,7 +31,7 @@ main(): Int64 {
 
 ## 功能
 
-本项目是基于Cangjie提供http框架，参考了一些go语言httptreemux的设计，在其API进一步封装以简化Web应用开发，增加如下能力：
+本项目是基于Cangjie提供http框架，参考了一些其它语言的开源设计，在其API进一步封装以简化Web应用开发，增加如下能力：
 
 - 基于patricia树的路由管理，支持静态Path，单参数通配符Path，全路径通配符Path的高效注册与查找，支持路由组
 - 基于拦截器的中间件扩展能力，支持Basic认证等多种能力扩展
@@ -58,17 +58,16 @@ main(): Int64 {
 * `/favicon.ico`
 * `/{year}/{month}`
 * `/{year}/{month/{post}`
-* `/{page}`
 * `/{page:[0-9]+}`
 * `/{page:[0-9]+}-delete`
 
 示例说明：
 
-- static路由： 静态路由，路径不存在`{}`参数，是path全匹配
+- static路由： 静态路由，路径不存在`{}`或`*`参数，是path全匹配
 - param路由： 单字段参数通配符匹配，路径中字段以`{paramname}`命名
   - 如`/post/{postid}`，可以匹配`/post/1`或`/post/2`，通过上下文接口可以获取参数`postid`值为`1`或`2`，但不能匹配 `/post/1/2`
   - 如`/post/{postid}/{page}`，可以匹配`/post/1/2`，参数`postid`值为`1`，`page`值为`2`
-- regex路由： 单字段参数通配符匹配，路径中字段以`{paramname:regex}`命名，以`:`分隔正则表达式
+- regex路由： 单字段参数正则匹配，路径中字段以`{paramname:regex}`命名，以`:`分隔正则表达式
   - 如`/{page:[0-9]+}`，可以匹配`/post/1`或`/post/2`，
   - 如`/{page:[0-9]+}-delete`，可以匹配`/post/1-delete`或`/post/2-delete`，
 - catchAll路由： 捕获所有字段通配符匹配，路径中字段以`*`开头，可能匹配路径中多段
@@ -78,7 +77,6 @@ main(): Int64 {
 ### 路由优先级
 
 路由查找优先级： static路由 > regex路由 > param路由 > catchAll路由
-
 
 可以同时存在`/users/{name}`、`/users/abc`、`/users/{name:[a-z]{3,4}}`与`/users/*`，路由匹配优先级与注册的顺序无关。
 
@@ -171,8 +169,8 @@ public interface JoyMiddlewareHandler {
 
 欢迎给我们提交 PR，欢迎给我们提交 Issue，欢迎参与任何形式的贡献。
 
-fork时请保留上游仓库地址仓颉SIG（https://gitcode.com/Cangjie-SIG/cjoy）或仓库地址（https://gitcode.com/lanlingx/cjoy）
+fork时请保留上游仓库地址[Cangjie-SIG/cjoy](https://gitcode.com/Cangjie-SIG/cjoy) 或 [lanlingx/cjoy](https://gitcode.com/lanlingx/cjoy)
 
 ## 协议
 
-参考 [LICENSE](LICENSE) 文件
+参考 [LICENSE](LICENSE) 文件。
