@@ -36,11 +36,11 @@ class RouteInfo {
     }
 }
 
-type NodeTyp = Int
-const NT_STATIC: NodeTyp = 0
-const NT_REGEXP: NodeTyp = 1
-const NT_PARAM: NodeTyp = 2
-const NT_CATCH_ALL: NodeTyp = 3
+type NodeType = Int
+const NT_STATIC: NodeType = 0
+const NT_REGEXP: NodeType = 1
+const NT_PARAM: NodeType = 2
+const NT_CATCH_ALL: NodeType = 3
 
 class TreeNode<T> {
     // regex matcher for regexp nodes
@@ -56,14 +56,14 @@ class TreeNode<T> {
     var _children: Array<TreeNodes<T>> = Array<TreeNodes<T>>(NT_CATCH_ALL + 1, {_ => TreeNodes<T>()})
 
     // node type
-    var _type: NodeTyp = 0
+    var _type: NodeType = 0
 
     // first byte of the prefix
     var _label: Byte = b'\0'
     // first byte of the child prefix
     var _tail: Byte = b'\0'
 
-    init(cat: NodeTyp, label: Byte, prefix: String, tail!: Byte = b'\0') {
+    init(cat: NodeType, label: Byte, prefix: String, tail!: Byte = b'\0') {
         _type = cat
         _label = label
         _prefix = prefix
@@ -218,7 +218,7 @@ class TreeNode<T> {
         }
     }
 
-    private func findParamOrRegexRoute(ri: RouteInfo, nds: ArrayList<TreeNode<T>>, nt: NodeTyp, search: String,
+    private func findParamOrRegexRoute(ri: RouteInfo, nds: ArrayList<TreeNode<T>>, nt: NodeType, search: String,
         method: String): (?TreeNode<T>, String, Bool) {
         var xsearch = search
         var ret:?TreeNode<T> = None
@@ -292,7 +292,7 @@ class TreeNode<T> {
         }
 
         for (idx in 0.._children.size) {
-            let nt: NodeTyp = idx
+            let nt: NodeType = idx
             var node: ?TreeNode<T> = None
             let nds = _children[idx]
             if (nds.isEmpty()) {
@@ -356,7 +356,7 @@ class TreeNode<T> {
         return !_endpoints.isEmpty()
     }
 
-    private func getEdge(nt: NodeTyp, label: Byte, tail: Byte, prefix: String): ?TreeNode<T> {
+    private func getEdge(nt: NodeType, label: Byte, tail: Byte, prefix: String): ?TreeNode<T> {
         let nds = _children[nt]
         for (i in 0..nds.size) {
             let n = nds[i]
@@ -451,7 +451,7 @@ extend<T> TreeNodes<T> {
 }
 
 class Segment {
-    var typ: NodeTyp = NT_STATIC
+    var typ: NodeType = NT_STATIC
     var key: String = ""
     var rex: String = ""
     var tail: Byte = b'\0'

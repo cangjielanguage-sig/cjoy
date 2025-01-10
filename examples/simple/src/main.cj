@@ -17,11 +17,11 @@ main(): Int64 {
     // 注册路由
     let router = joy.router
     router.GET(
-        "/:name",
+        "/{name}",
         {
             ctx: JoyContext =>
             let name = ctx.getParam("name").getOrDefault({=> "no name"})
-            ctx.string("/:name, name=${name}")
+            ctx.string("/{name}, name=${name}")
         }
     )
     router.GET(
@@ -34,11 +34,11 @@ main(): Int64 {
     // group
     let v1 = router.group("/v1")
     v1.GET(
-        "/:name",
+        "/{name}",
         {
             ctx: JoyContext =>
             let name = ctx.getParam("name").getOrDefault({=> "no name"})
-            ctx.string("/v1/:name, name=${name}")
+            ctx.string("/v1/{name}, name=${name}")
         }
     )
     v1.GET(
@@ -48,22 +48,22 @@ main(): Int64 {
         }
     )
     v1.GET(
-        "/*name",
+        "/*",
         {
             ctx: JoyContext =>
-            let name = ctx.getParam("name").getOrDefault({=> "no name"})
-            ctx.string("/v1/:name, name=${name}")
+            let name = ctx.getParam("*").getOrDefault({=> "no name"})
+            ctx.string("/v1/*, name=${name}")
         }
     )
 
     // sub group
     let v1user = v1.group("/user")
     v1user.GET(
-        "/:name",
+        "/{name}",
         {
             ctx: JoyContext =>
             let name = ctx.getParam("name").getOrDefault({=> "no name"})
-            ctx.string("/v1/user/:name, name=${name}")
+            ctx.string("/v1/user/{name}, name=${name}")
         }
     )
     v1user.GET(
@@ -77,11 +77,11 @@ main(): Int64 {
     let auth = router.group("/auth")
     auth.use(BasicAuth("test-realm", HashMap<String, String>([("test", "test")])))
     auth.GET(
-        "/:name",
+        "/{name}",
         {
             ctx: JoyContext =>
             let name = ctx.getParam("name").getOrDefault({=> "no name"})
-            ctx.string("/auth/:name, name=${name}")
+            ctx.string("/auth/{name}, name=${name}")
         }
     )
 

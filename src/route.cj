@@ -108,7 +108,8 @@ class JoyMethodNotAllowedHandler <: HttpRequestHandler {
 }
 
 class TreeRouteDistributor <: HttpRequestDistributor & HttpRequestHandler {
-    var _root: Node<JoyRequestHandler> = Node("/", STATIC)
+    var _root: TreeNode<JoyRequestHandler> = TreeNode(NT_STATIC, b'\0', "")
+
     let _config: JoyConfig
 
     init(config: JoyConfig) {
@@ -136,55 +137,37 @@ class TreeRouteDistributor <: HttpRequestDistributor & HttpRequestHandler {
             req.url.path
         }
 
-        var pathLen = path.size
-        var trailingSlash = path[pathLen - 1] == b'/' && pathLen > 1
-        if (trailingSlash && _config.redirectTrailingSlash) {
-            path = path[0..path.size - 1]
-        }
-
-        let (node, handler, params) = _root.search(req.method, path[1..path.size])
+        let ri: RouteInfo = RouteInfo()
+        let (node, handler) = _root.findRouteHandler(ri, req.method, path)
         if (node.isNone()) {
             return NotFoundHandler()
         }
-        let tnode = node.getOrThrow()
 
         if (handler.isNone()) {
             if (req.method == "OPTIONS") {
                 return OptionsHandler()
             }
-            return JoyMethodNotAllowedHandler(tnode._leafHandlers.keys())
-        }
-
-        if (!tnode.isCatchAll()) {
-            if (trailingSlash != tnode._addSlash && _config.redirectTrailingSlash) {
-                if (tnode._addSlash) {
-                    return redirect(req.url, path + "/", HttpStatusCode.STATUS_MOVED_PERMANENTLY)
-                } else {
-                    return redirect(req.url, path, HttpStatusCode.STATUS_MOVED_PERMANENTLY)
-                }
+            if (ri.methodNotAllowed) {
+                return JoyMethodNotAllowedHandler(ri.methodsAllowed)
             }
+            return NotFoundHandler()
         }
 
         let paramMap: HashMap<String, String> = HashMap()
-        if (!params.isEmpty()) {
-            if (params.size != tnode._leafParamNames.size) {
+        if (!ri.routeParamKeys.isEmpty()) {
+            if (ri.routeParamKeys.size != ri.routeParamValues.size) {
                 throw Exception("parameter list length mismatch")
             }
-            for (idx in 0..params.size) {
-                paramMap[tnode._leafParamNames[params.size - idx - 1]] = params[idx]
+            for (idx in 0..ri.routeParamKeys.size) {
+                paramMap[ri.routeParamKeys[idx]] = ri.routeParamValues[idx]
             }
         }
 
         JoyRouteHandler(handler.getOrThrow(), paramMap, _config)
     }
 
-    private func redirect(url: URL, newPath: String, code: UInt16): HttpRequestHandler {
-        let newUrl = url.replace(path: newPath)
-        RedirectHandler(newUrl.toString(), code)
-    }
-
     public func dump(): String {
-        _root.dumpTree("", "")
+        _root.dumpTree()
     }
 }
 
@@ -238,44 +221,30 @@ class JoyRouteGroup <: JoyRouters {
         _path
     }
 
-    private func addOne(method: String, path: String, addSlash: Bool, handler: JoyRequestHandler): Unit {
+    private func addOne(method: String, path: String, handler: JoyRequestHandler): Unit {
         let thePath = if (_distributor._config.caseInsensitive) {
             path.toAsciiLower()
         } else {
             path
         }
-        let node = _distributor._root.addPath(thePath[1..thePath.size], ArrayList<String>(), false)
-        if (addSlash) {
-            node._addSlash = true
-        }
-        node.setHandler(method, handler, false)
-
-        if (_distributor._config.headCanUseGet && method == "GET" && node._leafHandlers.get("HEAD").isNone()) {
-            node.setHandler("HEAD", handler, true)
-        }
+        _distributor._root.addRoute(method, thePath, handler)
     }
 
     private func addHandler(method: String, path: String, handler: JoyRequestHandler): Unit {
-        var addSlash = false
         checkPath(path)
         var thePath = _path + path
         if (thePath.isEmpty()) {
             throw IllegalArgumentException("cannot map an empty path")
         }
 
-        if (thePath.size > 1 && thePath[thePath.size - 1] == b'/' && _distributor._config.redirectTrailingSlash) {
-            addSlash = true
-            thePath = thePath[0..thePath.size - 1]
-        }
-
         if (_distributor._config.escapeAddedRoutes) {
             let escapedPath = unescapeSpecial(thePath)
             if (escapedPath != thePath) {
-                addOne(method, escapedPath, addSlash, handler)
+                addOne(method, escapedPath, handler)
             }
         }
 
-        addOne(method, thePath, addSlash, handler)
+        addOne(method, thePath, handler)
     }
 
     private static func unescapeSpecial(s: String): String {

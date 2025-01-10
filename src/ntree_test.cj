@@ -179,7 +179,6 @@ public class TreeNodeTestCaseSuit {
         addPath(node, "/articles/{id}.json", 10)
         addPath(node, "/articles/{id}/data.json", 11)
         addPath(node, "/articles/files/{file}.{ext}", 12)
-        addPath(node, "/articles/me", 13)
         addPath(node, "PUT", "/articles/me", 13)
 
         addPath(node, "/pages/*", 1)
@@ -193,7 +192,7 @@ public class TreeNodeTestCaseSuit {
 
         testPath(node, "/articles/search", "/articles/search", HashMap(), handler:1)
         testPath(node, "/articlefun", "/articlefun", HashMap(), handler:5)
-        testPath(node, "/article/123", "/articles/{id}", HashMap([("id", "123")]), handler:1)
+        testPath(node, "/articles/123", "/articles/{id}", HashMap([("id", "123")]), handler:1)
 
         testPath(node, "/articles/789:delete", "/articles/{id}:delete", HashMap([("id", "789")]), handler:8)
         testPath(node, "/articles/789!sup", "/articles/{id}!sup", HashMap([("id", "789")]), handler:4)
@@ -209,8 +208,8 @@ public class TreeNodeTestCaseSuit {
         testPath(node, "/articles/me", "/articles/{id}", HashMap([("id", "me")]), handler:1)
 
         testPath(node, "/pages", "", HashMap(), handler:1)
-        testPath(node, "/pages/", "/pages/*", HashMap([("*", "")]), handler:1)
-        testPath(node, "/pages/yes", "/pages/*", HashMap([("*", "yes")]), handler:1)
+        testPath(node, "/pages/", "/pages/*", HashMap([("*", "")]), handler:2)
+        testPath(node, "/pages/yes", "/pages/*", HashMap([("*", "yes")]), handler:2)
 
         testPath(node, "/users/1", "/users/{id}", HashMap([("id", "1")]), handler:1)
         testPath(node, "/users", "", HashMap(), handler:1)
@@ -222,13 +221,25 @@ public class TreeNodeTestCaseSuit {
     public func testTreeRegexp() {
         let node = TreeNode<Int64>(NT_STATIC, b'\0', "")
 
-        addPath(node, "/articles/{rid:^[0-9]{5,6}}", 7)
-        addPath(node, "/articles/{zid:^0[0-9]+}", 3)
-        addPath(node, "/articles/{name:^@[a-z]+}/posts", 4)
-        addPath(node, "/articles/{op:^[0-9]+}/run", 5)
-        addPath(node, "/articles/{id:^[0-9]+}", 1)
+        addPath(node, "/articles/{rid:^[0-9]{5,6}}", 1)
+        addPath(node, "/articles/{zid:^0[0-9]+}", 2)
+        addPath(node, "/articles/{name:^@[a-z]+}/posts", 3)
+        addPath(node, "/articles/{op:^[0-9]+}/run", 4)
+        addPath(node, "/articles/{id:^[0-9]+}", 5)
         addPath(node, "/articles/{id:^[1-9]+}-{aux}", 6)
-        addPath(node, "/articles/{slug}", 2)
+        addPath(node, "/articles/{slug}", 7)
+
+        println(node.dumpTree())
+
+        testPath(node, "/articles", "", HashMap(), handler:1)
+        testPath(node, "/articles/12345", "/articles/{rid:^[0-9]{5,6}}", HashMap([("rid", "12345")]), handler:1)
+        testPath(node, "/articles/123", "/articles/{id:^[0-9]+}", HashMap([("id", "123")]), handler:5)
+        testPath(node, "/articles/how-to-build-a-router", "/articles/{slug}", HashMap([("slug", "how-to-build-a-router")]), handler:7)
+        testPath(node, "/articles/0456", "/articles/{zid:^0[0-9]+}", HashMap([("zid", "0456")]), handler:2)
+        testPath(node, "/articles/@pk/posts", "/articles/{name:^@[a-z]+}/posts", HashMap([("name", "@pk")]), handler:3)
+        testPath(node, "/articles/1/run", "/articles/{op:^[0-9]+}/run", HashMap([("op", "1")]), handler:4)
+        testPath(node, "/articles/1122", "/articles/{id:^[0-9]+}", HashMap([("id", "1122")]), handler:5)
+        testPath(node, "/articles/1122-yes", "/articles/{id:^[1-9]+}-{aux}", HashMap([("id", "1122"), ("aux", "yes")]), handler:6)
     }
 
     @TestCase
@@ -237,6 +248,16 @@ public class TreeNodeTestCaseSuit {
 
         addPath(node, "/one/{firstId:[a-z0-9-]+}/{secondId:[a-z0-9-]+}/first", 1)
         addPath(node, "/one/{firstId:[a-z0-9-_]+}/{secondId:[a-z0-9-_]+}/second", 2)
+
+        println(node.dumpTree())
+
+        testPath(node, "/one/hello/world/first", "/one/{firstId:[a-z0-9-]+}/{secondId:[a-z0-9-]+}/first", 
+            HashMap([("firstId", "hello"), ("secondId", "world")]), handler:1)
+        testPath(node, "/one/hi_there/ok/second", "/one/{firstId:[a-z0-9-_]+}/{secondId:[a-z0-9-_]+}/second", 
+            HashMap([("firstId", "hi_there"), ("secondId", "ok")]), handler:2)
+        testPath(node, "/one///first", "", HashMap(), handler:1)
+        testPath(node, "/one/hi/123/second", "/one/{firstId:[a-z0-9-_]+}/{secondId:[a-z0-9-_]+}/second", 
+            HashMap([("firstId", "hi"), ("secondId", "123")]), handler:2)
     }
 
     @TestCase
@@ -246,5 +267,14 @@ public class TreeNodeTestCaseSuit {
         addPath(node, "/{id:[0-9]+}", 1)
         addPath(node, "/{x:.+}/foo", 1)
         addPath(node, "/{param:[0-9]*}/test", 1)
+
+        println(node.dumpTree())
+
+        testPath(node, "/123", "/{id:[0-9]+}", HashMap([("id", "123")]), handler:1)
+        testPath(node, "/a123", "", HashMap(), handler:1)
+        testPath(node, "/13.jpg", "", HashMap(), handler:1)
+        testPath(node, "/a/foo", "/{x:.+}/foo", HashMap([("x", "a")]), handler:1)
+        testPath(node, "//foo", "", HashMap(), handler:1)
+        testPath(node, "//test", "/{param:[0-9]*}/test", HashMap([("param", "")]), handler:1)
     }
 }

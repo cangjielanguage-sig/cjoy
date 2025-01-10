@@ -13,11 +13,9 @@ import std.console.Console
  * joy config
  */
 public class JoyConfig {
-    public var redirectTrailingSlash: Bool = true
     public var remoteIPHeaders: Array<String> = []
     public var enableDebugLog: Bool = false
     public var caseInsensitive: Bool = false
-    public var headCanUseGet: Bool = true
     public var escapeAddedRoutes: Bool = false
     private var _logger: ?Logger = None
 
