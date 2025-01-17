@@ -84,7 +84,7 @@ main(): Int64 {
 可以同时存在`/users/{name}`、`/users/abc`、`/users/{name:[a-z]{3,4}}`与`/users/*`，路由匹配优先级与注册的顺序无关。
 
 ```
-router.GET("/users/:name", {ctx: JoyContext => })
+router.GET("/users/{name}", {ctx: JoyContext => })
 router.GET("/users/abc", {ctx: JoyContext => })
 router.GET("/users/{name:[a-z]{3,4}}", {ctx: JoyContext => })
 router.GET("/users/*", {ctx: JoyContext => })

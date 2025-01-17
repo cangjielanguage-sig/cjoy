@@ -24,7 +24,7 @@ content-type: application/json
     "gender": 1
 }
 
-### update user
+### delete user
 DELETE  {{host}}/users/lanling HTTP/1.1
 content-type: application/json
 
