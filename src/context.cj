@@ -182,6 +182,10 @@ public class JoyContext {
         _httpContxt.responseBuilder.status(status).build()
     }
 
+    public func succes(status: UInt16): Unit {
+        _httpContxt.responseBuilder.status(status).build()
+    }
+
     public func header(name: String, value: String): JoyContext {
         _httpContxt.responseBuilder.header(name, value)
         this

@@ -1,0 +1,30 @@
+@host=http://127.0.0.1:18881
+
+### create user
+POST {{host}}/users HTTP/1.1
+content-type: application/json
+
+{
+    "name": "lanling",
+    "address": "Shenzhen Guangdong",
+    "gender": 1
+}
+
+### query user
+GET {{host}}/users/lanling HTTP/1.1
+content-type: application/json
+
+### update user
+PUT {{host}}/users/lanling HTTP/1.1
+content-type: application/json
+
+{
+    "name": "lanling",
+    "address": "Guangzhou Guangdong",
+    "gender": 1
+}
+
+### update user
+DELETE  {{host}}/users/lanling HTTP/1.1
+content-type: application/json
+

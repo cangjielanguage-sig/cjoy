@@ -1,5 +1,5 @@
 /*
- * Copyright (c) lanlingx 2024-2024. All rights resvered.
+ * Copyright (c) lanlingx 2024-2025. All rights resvered.
  */
 
 package cjoy.middleware
@@ -8,7 +8,7 @@ import std.collection.HashMap
 import net.http.HttpStatusCode
 import cjoy.{JoyMiddlewareHandler, JoyRequestHandlerChain, JoyContext}
 
-public class ExceptinHandler <: JoyMiddlewareHandler {
+public class ExceptionHandler <: JoyMiddlewareHandler {
     public func handle(ctx: JoyContext, chain: JoyRequestHandlerChain): Unit {
         try {
             chain.next(ctx)

@@ -78,4 +78,17 @@ public class Joy {
         _server = Some(server)
         server.serve()
     }
+
+    /**
+    * shutdown the server
+    */
+    public func shutdown(gracefully!: Bool = true) {
+        if (let Some(server) <- _server) {
+            if (gracefully) {
+                server.closeGracefully()
+            } else {
+                server.close()
+            }
+        }
+    }
 }
