@@ -136,8 +136,8 @@ Cjoy支持两种路由处理的Handler实现，一种是实现JoyRequestHandler�
 // 实现JoyRequestHandler
 class UserHandler <: JoyRequestHandler {
     public func handle(ctx: JoyContext): Unit {
-	   let name = ctx.getParam("name").getOrDefault({=>"no name"})
-	   ...
+	    let name = ctx.getParam("name").getOrDefault({=>"no name"})
+	    ...
     }
 }
 
@@ -150,17 +150,16 @@ router.GET("/{name}", {ctx: JoyContext =>
 })
 ```
 
-
 ## 中间件
 
-Cjoy提供扩展机制，支持Http请求进行拦截处理，机制类似于java的servlet的filter，其中chain中为所有MiddlewareHandler链。
+Cjoy提供扩展机制支持Http请求进行拦截处理，机制类似于java的servlet的filter。
 
 ```
 // 如使用内置的BasicAuth中间件
 router.use(BasicAuth("test-realm", HashMap<String, String>([("test", "test")])))
 ```
 
-中间件需要实现JoyMiddlewareHandle接口。
+中间件需要实现JoyMiddlewareHandle接口，其中chain中为所有MiddlewareHandler链。
 
 ```
 public interface JoyMiddlewareHandler {
@@ -168,11 +167,52 @@ public interface JoyMiddlewareHandler {
 }
 ```
 
+## Json
+
+Cjoy内置支持采用宏对类与结构体标注，简化对HTTP Body的Json序列化与反序列化绑定与映射。
+
+```
+import std.io.ByteBuffer
+import encoding.json.stream.*
+import cjoy.json.*
+import cjoy.json.generate.*
+
+@Json
+class UserInfo {
+    var name: String = ""
+    @JsonField[omitempty = true]
+    var address: String = ""
+    @JsonField[name = gender]
+    var gender: Int = 0
+}
+```
+
+- 宏Json作用于类与结构体上，标注其自动生成Json序列化与反序列化函数，类与结构体需要无参数的构建函数。
+- 宏JsonField，作用类与结构体的成员变量上，变量需要采用var声明，并支持指定类型，宏JsonField有如下属性
+  - name：指定Json的字段名称；
+  - omitempty：值true/false，指定生成Json字符串时是否忽略空字符串或Option的None值，默认为false；
+  - ignore：值true/false，指定是否忽略此字段，默认为false；
+  - timeformat：指定DateTime字段序列化的格式，默认为默认DateTime.toString/parse方法默认格式。
+
+宏展开编译之后，此类与结构体会实现encoding.json.stream包下JsonSerializable与JsonDeserializable接口，也实现cjoy.json.generate.JsonAdapter接口，所以使用者先须import如下包：
+
+ - std.io.ByteBuffer
+ - encoding.json.stream.*
+ - cjoy.json.*
+ - cjoy.json.generate.*
+
+JoyContext提供两个函数支持对HTTP Body的绑定与映射：
+
+ - readJsonBody：对Body内容反序列化为类与结构体
+ - json: 序列化类与结构体对象序列化并设置Body内容
+
+使用示例：[examples/rest](examples/rest/src/main.cj)
+
 ## 参与贡献
 
 欢迎给我们提交 PR，欢迎给我们提交 Issue，欢迎参与任何形式的贡献。
 
-fork时请保留上游仓库地址[Cangjie-SIG/cjoy](https://gitcode.com/Cangjie-SIG/cjoy) 或 [lanlingx/cjoy](https://gitcode.com/lanlingx/cjoy)
+fork时请保留上游仓库地址[Cangjie-SIG/cjoy](https://gitcode.com/Cangjie-SIG/cjoy) 或 [lanlingx/cjoy](https://gitcode.com/lanlingx/cjoy) 。
 
 ## 协议
 

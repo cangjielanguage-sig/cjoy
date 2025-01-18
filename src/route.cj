@@ -11,52 +11,96 @@ import net.http.*
 public interface JoyRouters {
     prop distributor: HttpRequestDistributor
 
+    /**
+    * appends a middleware handler to the middleware stack.
+    *
+    * The middleware stack for any router will execute before searching for a matching
+    * route to a specific handler, which provides opportunity to respond early,
+    * change the course of the request execution.
+    */
     func use(mw: JoyMiddlewareHandler): JoyRouters
     func use(mw: (ctx: JoyContext, chain: JoyRequestHandlerChain) -> Unit): JoyRouters {
         use(JoyMiddlewareFuncHandler(mw))
     }
 
+    /**
+    * adds inline middlewares for an endpoint handler.
+    */
+    func apply(mw: JoyMiddlewareHandler): JoyRouters
+    func apply(mw: (ctx: JoyContext, chain: JoyRequestHandlerChain) -> Unit): JoyRouters {
+        apply(JoyMiddlewareFuncHandler(mw))
+    }
+
+    /**
+    * creates a new inline router with a copy of middleware stack. it's useful
+    * for a group of handlers along the same routing path that use an additional
+    * set of middlewares. 
+    */
     func group(relativePath: String): JoyRouters
     func basePath(): String
 
-    func GET(relativePath: String, handler: JoyRequestHandler): JoyRouters
-    func GET(relativePath: String, handler: (ctx: JoyContext) -> Unit): JoyRouters {
-        GET(relativePath, JoyFuncHandler(handler))
+    /**
+    * adds the route `pattern` that matches `GET` http method to execute the `handler`.
+    */
+    func GET(pattern: String, handler: JoyRequestHandler): JoyRouters
+    func GET(pattern: String, handler: (ctx: JoyContext) -> Unit): JoyRouters {
+        GET(pattern, JoyFuncHandler(handler))
     }
 
-    func POST(relativePath: String, handler: JoyRequestHandler): JoyRouters
-    func POST(relativePath: String, handler: (ctx: JoyContext) -> Unit): JoyRouters {
-        POST(relativePath, JoyFuncHandler(handler))
+    /**
+    * adds the route `pattern` that matches `POST` http method to execute the `handler`.
+    */
+    func POST(pattern: String, handler: JoyRequestHandler): JoyRouters
+    func POST(pattern: String, handler: (ctx: JoyContext) -> Unit): JoyRouters {
+        POST(pattern, JoyFuncHandler(handler))
     }
 
-    func PUT(relativePath: String, handler: JoyRequestHandler): JoyRouters
-    func PUT(relativePath: String, handler: (ctx: JoyContext) -> Unit): JoyRouters {
-        PUT(relativePath, JoyFuncHandler(handler))
+    /**
+    * adds the route `pattern` that matches `PUT` http method to execute the `handler`.
+    */
+    func PUT(pattern: String, handler: JoyRequestHandler): JoyRouters
+    func PUT(pattern: String, handler: (ctx: JoyContext) -> Unit): JoyRouters {
+        PUT(pattern, JoyFuncHandler(handler))
     }
 
-    func DELETE(relativePath: String, handler: JoyRequestHandler): JoyRouters
-    func DELETE(relativePath: String, handler: (ctx: JoyContext) -> Unit): JoyRouters {
-        DELETE(relativePath, JoyFuncHandler(handler))
+    /**
+    * adds the route `pattern` that matches `DELETE` http method to execute the `handler`.
+    */
+    func DELETE(pattern: String, handler: JoyRequestHandler): JoyRouters
+    func DELETE(pattern: String, handler: (ctx: JoyContext) -> Unit): JoyRouters {
+        DELETE(pattern, JoyFuncHandler(handler))
     }
 
-    func PATCH(relativePath: String, handler: JoyRequestHandler): JoyRouters
-    func PATCH(relativePath: String, handler: (ctx: JoyContext) -> Unit): JoyRouters {
-        PATCH(relativePath, JoyFuncHandler(handler))
+    /**
+    * adds the route `pattern` that matches `PATCH` http method to execute the `handler`.
+    */
+    func PATCH(pattern: String, handler: JoyRequestHandler): JoyRouters
+    func PATCH(pattern: String, handler: (ctx: JoyContext) -> Unit): JoyRouters {
+        PATCH(pattern, JoyFuncHandler(handler))
     }
 
-    func OPTION(relativePath: String, handler: JoyRequestHandler): JoyRouters
-    func OPTION(relativePath: String, handler: (ctx: JoyContext) -> Unit): JoyRouters {
-        OPTION(relativePath, JoyFuncHandler(handler))
+    /**
+    * adds the route `pattern` that matches `OPTION` http method to execute the `handler`.
+    */
+    func OPTION(pattern: String, handler: JoyRequestHandler): JoyRouters
+    func OPTION(pattern: String, handler: (ctx: JoyContext) -> Unit): JoyRouters {
+        OPTION(pattern, JoyFuncHandler(handler))
     }
 
-    func HEAD(relativePath: String, handler: JoyRequestHandler): JoyRouters
-    func HEAD(relativePath: String, handler: (ctx: JoyContext) -> Unit): JoyRouters {
-        HEAD(relativePath, JoyFuncHandler(handler))
+    /**
+    * adds the route `pattern` that matches `HEAD` http method to execute the `handler`.
+    */
+    func HEAD(pattern: String, handler: JoyRequestHandler): JoyRouters
+    func HEAD(pattern: String, handler: (ctx: JoyContext) -> Unit): JoyRouters {
+        HEAD(pattern, JoyFuncHandler(handler))
     }
 
-    func handle(method: Array<String>, relativePath: String, handler: JoyRequestHandler): JoyRouters
-    func handle(method: Array<String>, relativePath: String, handler: (ctx: JoyContext) -> Unit): JoyRouters {
-        handle(method, relativePath, JoyFuncHandler(handler))
+    /**
+    * adds the route `pattern` that matches `method` http method to execute the `handler`.
+    */
+    func handle(methods: Array<String>, pattern: String, handler: JoyRequestHandler): JoyRouters
+    func handle(methods: Array<String>, pattern: String, handler: (ctx: JoyContext) -> Unit): JoyRouters {
+        handle(methods, pattern, JoyFuncHandler(handler))
     }
 }
 
@@ -175,6 +219,8 @@ class JoyRouteGroup <: JoyRouters {
     let _path: String
     let _distributor: TreeRouteDistributor
     let _middlewares: ArrayList<JoyMiddlewareHandler>
+    let _applyMWs: ArrayList<JoyMiddlewareHandler> = ArrayList()
+    let _groups: HashMap<String, JoyRouters> = HashMap()
 
     init(path: String, distributor: TreeRouteDistributor, middlewares: ArrayList<JoyMiddlewareHandler>) {
         _path = path
@@ -197,18 +243,30 @@ class JoyRouteGroup <: JoyRouters {
         this
     }
 
-    public func group(relativePath: String): JoyRouters {
-        if (relativePath.isEmpty()) {
+    public func apply(mw: JoyMiddlewareHandler): JoyRouters {
+        _applyMWs.append(mw)
+        this
+    }
+
+    public func group(pattern: String): JoyRouters {
+        if (pattern.isEmpty()) {
             throw IllegalArgumentException("group relativePath must not be empty")
         }
-        checkPath(relativePath)
+        checkPath(pattern)
 
-        var path = _path + relativePath
+        var path = _path + pattern
         // don't want trailing slash as all sub-paths start with slash
         if (path[path.size - 1] == b'/') {
             path = path[0..path.size - 1]
         }
-        JoyRouteGroup(path, _distributor, ArrayList(_middlewares))
+
+        if (let Some(group) <- _groups.get(path)) {
+            return group
+        }
+
+        let group = JoyRouteGroup(path, _distributor, ArrayList(_middlewares))
+        _groups.put(path, group)
+        group
     }
 
     private static func checkPath(path: String): Unit {
@@ -260,44 +318,47 @@ class JoyRouteGroup <: JoyRouters {
         res
     }
 
-    public func GET(relativePath: String, handler: JoyRequestHandler): JoyRouters {
-        handle(["GET"], relativePath, handler)
+    public func GET(pattern: String, handler: JoyRequestHandler): JoyRouters {
+        handle(["GET"], pattern, handler)
         this
     }
 
-    public func POST(relativePath: String, handler: JoyRequestHandler): JoyRouters {
-        handle(["POST"], relativePath, handler)
+    public func POST(pattern: String, handler: JoyRequestHandler): JoyRouters {
+        handle(["POST"], pattern, handler)
         this
     }
 
-    public func PUT(relativePath: String, handler: JoyRequestHandler): JoyRouters {
-        handle(["PUT"], relativePath, handler)
+    public func PUT(pattern: String, handler: JoyRequestHandler): JoyRouters {
+        handle(["PUT"], pattern, handler)
         this
     }
 
-    public func DELETE(relativePath: String, handler: JoyRequestHandler): JoyRouters {
-        handle(["DELETE"], relativePath, handler)
+    public func DELETE(pattern: String, handler: JoyRequestHandler): JoyRouters {
+        handle(["DELETE"], pattern, handler)
         this
     }
 
-    public func PATCH(relativePath: String, handler: JoyRequestHandler): JoyRouters {
-        handle(["PATCH"], relativePath, handler)
+    public func PATCH(pattern: String, handler: JoyRequestHandler): JoyRouters {
+        handle(["PATCH"], pattern, handler)
         this
     }
 
-    public func OPTION(relativePath: String, handler: JoyRequestHandler): JoyRouters {
-        handle(["OPTION"], relativePath, handler)
+    public func OPTION(pattern: String, handler: JoyRequestHandler): JoyRouters {
+        handle(["OPTION"], pattern, handler)
         this
     }
 
-    public func HEAD(relativePath: String, handler: JoyRequestHandler): JoyRouters {
-        handle(["HEAD"], relativePath, handler)
+    public func HEAD(pattern: String, handler: JoyRequestHandler): JoyRouters {
+        handle(["HEAD"], pattern, handler)
         this
     }
 
-    public func handle(methods: Array<String>, relativePath: String, handler: JoyRequestHandler): JoyRouters {
-        let wrapperHandler = JoyRequestHandlerWrapper(handler, ArrayList(_middlewares))
-        methods |> forEach {method => addHandler(method, relativePath, wrapperHandler)}
+    public func handle(methods: Array<String>, pattern: String, handler: JoyRequestHandler): JoyRouters {
+        let mws: ArrayList<JoyMiddlewareHandler> = ArrayList(_middlewares)
+        mws.appendAll(_applyMWs)
+        _applyMWs.clear()
+        let wrapperHandler = JoyRequestHandlerWrapper(handler, mws)
+        methods |> forEach {method => addHandler(method, pattern, wrapperHandler)}
         this
     }
 }
