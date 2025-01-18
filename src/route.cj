@@ -12,92 +12,92 @@ public interface JoyRouters {
     prop distributor: HttpRequestDistributor
 
     /**
-    * appends a middleware handler to the middleware stack.
-    *
-    * The middleware stack for any router will execute before searching for a matching
-    * route to a specific handler, which provides opportunity to respond early,
-    * change the course of the request execution.
-    */
+     * appends a middleware handler to the middleware stack.
+     *
+     * The middleware stack for any router will execute before searching for a matching
+     * route to a specific handler, which provides opportunity to respond early,
+     * change the course of the request execution.
+     */
     func use(mw: JoyMiddlewareHandler): JoyRouters
     func use(mw: (ctx: JoyContext, chain: JoyRequestHandlerChain) -> Unit): JoyRouters {
         use(JoyMiddlewareFuncHandler(mw))
     }
 
     /**
-    * adds inline middlewares for an endpoint handler.
-    */
+     * adds inline middlewares for an endpoint handler.
+     */
     func apply(mw: JoyMiddlewareHandler): JoyRouters
     func apply(mw: (ctx: JoyContext, chain: JoyRequestHandlerChain) -> Unit): JoyRouters {
         apply(JoyMiddlewareFuncHandler(mw))
     }
 
     /**
-    * creates a new inline router with a copy of middleware stack. it's useful
-    * for a group of handlers along the same routing path that use an additional
-    * set of middlewares. 
-    */
+     * creates a new inline router with a copy of middleware stack. it's useful
+     * for a group of handlers along the same routing path that use an additional
+     * set of middlewares.
+     */
     func group(relativePath: String): JoyRouters
     func basePath(): String
 
     /**
-    * adds the route `pattern` that matches `GET` http method to execute the `handler`.
-    */
+     * adds the route `pattern` that matches `GET` http method to execute the `handler`.
+     */
     func GET(pattern: String, handler: JoyRequestHandler): JoyRouters
     func GET(pattern: String, handler: (ctx: JoyContext) -> Unit): JoyRouters {
         GET(pattern, JoyFuncHandler(handler))
     }
 
     /**
-    * adds the route `pattern` that matches `POST` http method to execute the `handler`.
-    */
+     * adds the route `pattern` that matches `POST` http method to execute the `handler`.
+     */
     func POST(pattern: String, handler: JoyRequestHandler): JoyRouters
     func POST(pattern: String, handler: (ctx: JoyContext) -> Unit): JoyRouters {
         POST(pattern, JoyFuncHandler(handler))
     }
 
     /**
-    * adds the route `pattern` that matches `PUT` http method to execute the `handler`.
-    */
+     * adds the route `pattern` that matches `PUT` http method to execute the `handler`.
+     */
     func PUT(pattern: String, handler: JoyRequestHandler): JoyRouters
     func PUT(pattern: String, handler: (ctx: JoyContext) -> Unit): JoyRouters {
         PUT(pattern, JoyFuncHandler(handler))
     }
 
     /**
-    * adds the route `pattern` that matches `DELETE` http method to execute the `handler`.
-    */
+     * adds the route `pattern` that matches `DELETE` http method to execute the `handler`.
+     */
     func DELETE(pattern: String, handler: JoyRequestHandler): JoyRouters
     func DELETE(pattern: String, handler: (ctx: JoyContext) -> Unit): JoyRouters {
         DELETE(pattern, JoyFuncHandler(handler))
     }
 
     /**
-    * adds the route `pattern` that matches `PATCH` http method to execute the `handler`.
-    */
+     * adds the route `pattern` that matches `PATCH` http method to execute the `handler`.
+     */
     func PATCH(pattern: String, handler: JoyRequestHandler): JoyRouters
     func PATCH(pattern: String, handler: (ctx: JoyContext) -> Unit): JoyRouters {
         PATCH(pattern, JoyFuncHandler(handler))
     }
 
     /**
-    * adds the route `pattern` that matches `OPTION` http method to execute the `handler`.
-    */
+     * adds the route `pattern` that matches `OPTION` http method to execute the `handler`.
+     */
     func OPTION(pattern: String, handler: JoyRequestHandler): JoyRouters
     func OPTION(pattern: String, handler: (ctx: JoyContext) -> Unit): JoyRouters {
         OPTION(pattern, JoyFuncHandler(handler))
     }
 
     /**
-    * adds the route `pattern` that matches `HEAD` http method to execute the `handler`.
-    */
+     * adds the route `pattern` that matches `HEAD` http method to execute the `handler`.
+     */
     func HEAD(pattern: String, handler: JoyRequestHandler): JoyRouters
     func HEAD(pattern: String, handler: (ctx: JoyContext) -> Unit): JoyRouters {
         HEAD(pattern, JoyFuncHandler(handler))
     }
 
     /**
-    * adds the route `pattern` that matches `method` http method to execute the `handler`.
-    */
+     * adds the route `pattern` that matches `method` http method to execute the `handler`.
+     */
     func handle(methods: Array<String>, pattern: String, handler: JoyRequestHandler): JoyRouters
     func handle(methods: Array<String>, pattern: String, handler: (ctx: JoyContext) -> Unit): JoyRouters {
         handle(methods, pattern, JoyFuncHandler(handler))
@@ -118,7 +118,6 @@ class JoyRouteHandler <: HttpRequestHandler {
 }
 
 class JoyRequestHandlerWrapper <: JoyRequestHandlerChain & JoyRequestHandler {
-
     public JoyRequestHandlerWrapper(let handler: JoyRequestHandler, let mws: ArrayList<JoyMiddlewareHandler>) {}
 
     public func handle(ctx: JoyContext): Unit {

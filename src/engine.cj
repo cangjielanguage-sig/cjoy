@@ -80,8 +80,8 @@ public class Joy {
     }
 
     /**
-    * shutdown the server
-    */
+     * shutdown the server
+     */
     public func shutdown(gracefully!: Bool = true) {
         if (let Some(server) <- _server) {
             if (gracefully) {

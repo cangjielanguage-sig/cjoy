@@ -37,6 +37,7 @@ class RouteInfo {
 }
 
 type NodeType = Int
+
 const NT_STATIC: NodeType = 0
 const NT_REGEXP: NodeType = 1
 const NT_PARAM: NodeType = 2
@@ -125,7 +126,7 @@ class TreeNode<T> {
                 child._prefix = search[0..seg.startPos]
                 // add the param edge node
                 search = search[seg.startPos..search.size]
-                let nn = TreeNode<T>(seg.typ, search[0], "", tail:seg.tail)
+                let nn = TreeNode<T>(seg.typ, search[0], "", tail: seg.tail)
                 hn = child.addChild(nn, search)
             }
         }
@@ -146,10 +147,11 @@ class TreeNode<T> {
             }
 
             var label = search[0]
-            var seg = Segment()
-            if (label == b'{' || label == b'*') {
-                seg = Segment.parseNext(search)
-            } 
+            let seg = if (label == b'{' || label == b'*') {
+                Segment.parseNext(search)
+            } else {
+                Segment()
+            }
 
             var prefix = if (seg.typ == NT_REGEXP) {
                 seg.rex
@@ -160,8 +162,7 @@ class TreeNode<T> {
             parent = node
             let edge = node.getEdge(seg.typ, label, seg.tail, prefix)
             if (edge.isNone()) {
-                let child = TreeNode<T>(NT_STATIC, label, search)
-                child._tail = seg.tail
+                let child = TreeNode<T>(NT_STATIC, label, search, tail: seg.tail)
                 let hn = parent.addChild(child, search)
                 hn.setEndpoint(method, pattern, handler)
                 return hn
@@ -203,7 +204,7 @@ class TreeNode<T> {
             return hn
         }
 
-        throw IllegalStateException("can run the line")
+        throw IllegalStateException("can not run to this line")
     }
 
     private func findStaticRoute(nds: ArrayList<TreeNode<T>>, search: String, label: Byte): (?TreeNode<T>, String) {
@@ -213,15 +214,14 @@ class TreeNode<T> {
                 return (None, "")
             }
             return (en, search[n._prefix.size..search.size])
-        } else {
-            return (None, "")
         }
+        return (None, "")
     }
 
     private func findParamOrRegexRoute(ri: RouteInfo, nds: ArrayList<TreeNode<T>>, nt: NodeType, search: String,
         method: String): (?TreeNode<T>, String, Bool) {
         var xsearch = search
-        var ret:?TreeNode<T> = None
+        var ret: ?TreeNode<T> = None
         // serially loop through each node grouped by the tail delimiter
         for (n in nds) {
             let xn = n
@@ -324,13 +324,14 @@ class TreeNode<T> {
                 continue
             }
 
-            let fin = findRouteByMethod(ri, node.getOrThrow(), method, xsearch)
+            let tnode = node.getOrThrow()
+            let fin = findRouteByMethod(ri, tnode, method, xsearch)
             if (fin.isSome()) {
                 return fin
             }
 
             // did not find final handler, let's remove the param here if it was set
-            if (node.getOrThrow()._type > NT_STATIC) {
+            if (tnode._type > NT_STATIC) {
                 if (!ri.routeParamValues.isEmpty()) {
                     ri.routeParamValues = ri.routeParamValues[0..(ri.routeParamValues.size - 1)]
                 }
@@ -352,19 +353,61 @@ class TreeNode<T> {
         (rn, None)
     }
 
+    func findPattern(pattern: String): Bool {
+        for (nds in _children) {
+            if (nds.isEmpty()) {
+                continue
+            }
+
+            let edge = findEdge(nds[0]._type, pattern[0])
+            if (edge.isNone()) {
+                continue
+            }
+            let node = edge.getOrThrow()
+
+            var idx = 0
+            if (node._type == NT_STATIC) {
+                idx = longestPrefix(pattern, node._prefix)
+                if (idx < node._prefix.size) {
+                    continue
+                }
+            } else if (node._type == NT_PARAM || node._type == NT_REGEXP) {
+                idx = pattern.lastIndexOf(b'}').getOrDefault({=> -1}) + 1
+            } else if (node._type == NT_CATCH_ALL) {
+                idx = longestPrefix(pattern, "*")
+            }
+
+            let xpattern = pattern[idx..pattern.size]
+            if (xpattern.isEmpty()) {
+                return true
+            }
+            return node.findPattern(xpattern)
+        }
+
+        false
+    }
+
+    private func findEdge(ntype: NodeType, label: Byte): ?TreeNode<T> {
+        let nds = _children[ntype]
+        return if (ntype == NT_CATCH_ALL) {
+            nds[0]
+        } else {
+            nds.findEdge(label)
+        }
+    }
+
     private func isLeaf(): Bool {
         return !_endpoints.isEmpty()
     }
 
     private func getEdge(nt: NodeType, label: Byte, tail: Byte, prefix: String): ?TreeNode<T> {
         let nds = _children[nt]
-        for (i in 0..nds.size) {
-            let n = nds[i]
-            if (n._label == label && n._tail == tail) {
-                if (nt == NT_REGEXP && n._prefix != prefix) {
+        for (node in nds) {
+            if (node._label == label && node._tail == tail) {
+                if (nt == NT_REGEXP && node._prefix != prefix) {
                     continue
                 }
-                return n
+                return node
             }
         }
         None
@@ -375,8 +418,14 @@ class TreeNode<T> {
         for (nds in node._children) {
             num += nds.size
         }
-       
-        builder.append("${prefix}${layer}[type:${node._type},prefix:${node._prefix},label:${String.fromUtf8([node._label])},tail:${String.fromUtf8([node._tail])},numEdges:${num},isLeaf:${node.isLeaf()}")
+
+        builder.append("${prefix}${layer}")
+        builder.append(",type:${node._type}")
+        builder.append(",prefix:${node._prefix}")
+        builder.append(",label:${String.fromUtf8([node._label])}")
+        builder.append(",tail:${String.fromUtf8([node._tail])}")
+        builder.append(",numEdges:${num}")
+        builder.append(",isLeaf:${node.isLeaf()}")
         if (!node._endpoints.isEmpty()) {
             builder.append(",endpoints:${node._endpoints}")
         }
@@ -384,8 +433,8 @@ class TreeNode<T> {
 
         for (nds in node._children) {
             let prefixStr = prefix + " "
-            for (n in nds) {
-                dumpTreeInner(builder, layer+1, prefixStr, n)
+            for (node in nds) {
+                dumpTreeInner(builder, layer + 1, prefixStr, node)
             }
         }
     }
@@ -397,9 +446,9 @@ class TreeNode<T> {
     }
 
     private static func longestPrefix(s1: String, s2: String): Int {
-        let maxLen = min(s1.size, s2.size)
+        let len = min(s1.size, s2.size)
         var idx = 0
-        for (i in 0..maxLen) {
+        for (i in 0..len) {
             if (s1[i] != s2[i]) {
                 break
             } else {
@@ -438,6 +487,7 @@ extend<T> TreeNodes<T> {
             } else if (label < this[idx]._label) {
                 j = idx - 1
             } else {
+                // break the while loop
                 i = num
             }
         }
@@ -459,15 +509,18 @@ class Segment {
     var endPos: Int = 0
 
     private static func normRexpat(rexpat: String): String {
-        if (rexpat.size > 0) {
-            if (rexpat[0] != b'^') {
-                return "^" + rexpat
-            }
-            if (rexpat[rexpat.size - 1] != b'$') {
-                return rexpat + "$"
-            }
+        if (rexpat.isEmpty()) {
+            return rexpat
         }
-        return rexpat
+
+        var ret = rexpat
+        if (rexpat[0] != b'^') {
+            ret = "^" + ret
+        }
+        if (ret[ret.size - 1] != b'$') {
+            ret = ret + "$"
+        }
+        return ret
     }
 
     private static func findEndIdx(pattern: String, ps: Int): Int {
@@ -500,11 +553,11 @@ class Segment {
         seg
     }
 
-    private func parse(pattern: String): Unit  {
+    private func parse(pattern: String): Unit {
         let ps = pattern.indexOf(b'{').getOrDefault({=> -1})
         let ws = pattern.indexOf(b'*').getOrDefault({=> -1})
         let len = pattern.size
-       
+
         if (ps < 0 && ws < 0) {
             endPos = len
             return
@@ -523,7 +576,7 @@ class Segment {
             key = "*"
             startPos = ws
             endPos = len
-            return 
+            return
         }
 
         typ = NT_PARAM
