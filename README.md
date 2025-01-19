@@ -175,7 +175,6 @@ Cjoy内置支持采用宏对类与结构体标注，简化对HTTP Body的Json序
 import std.io.ByteBuffer
 import encoding.json.stream.*
 import cjoy.json.*
-import cjoy.json.generate.*
 
 @Json
 class UserInfo {
@@ -199,7 +198,6 @@ class UserInfo {
  - std.io.ByteBuffer
  - encoding.json.stream.*
  - cjoy.json.*
- - cjoy.json.generate.*
 
 JoyContext提供两个函数支持对HTTP Body的绑定与映射：
 

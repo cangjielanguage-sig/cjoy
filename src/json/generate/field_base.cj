@@ -96,4 +96,8 @@ open class JsonFieldGenerator {
         quote(case $(info.jsonKeyName()) => obj.$(varId) = reader.readValue<$(varType)>()
         )
     }
+
+    public open func genAddonFuncTokens(): Tokens {
+        quote( )
+    }
 }

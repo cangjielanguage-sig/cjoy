@@ -60,6 +60,14 @@ public class JsonClassInfo {
             }
             deserTokens += f.genDeserializeTokens()
         }
+
+        var addonFuncTokens = Tokens()
+        for (f in this.fields) {
+            if (f.info.jsonKeyName() == "") {
+                continue
+            }
+            addonFuncTokens += f.genAddonFuncTokens()
+        }
         quote(
             public static func fromJson(reader: JsonReader): $(classId) {
                 var obj = $(classId)()
@@ -81,6 +89,7 @@ public class JsonClassInfo {
                 }
                 obj
             }
+            $(addonFuncTokens)
         )
     }
 
@@ -101,22 +110,9 @@ public class JsonClassInfo {
         JsonInfoCache.clear()
 
         input + quote(
-            extend $(classInfo.classId) <: JsonAdapter<$(classInfo.classId)> & JsonSerializable & JsonDeserializable<$(classInfo.classId)> {
+            extend $(classInfo.classId) <: JsonSerializable & JsonDeserializable<$(classInfo.classId)> {
                 $(serTokens)
                 $(deserTokens)
-                public func toJson(): String {
-                    let buffer = ByteBuffer()
-                    let writer = JsonWriter(buffer)
-                    writer.writeValue(this)
-                    writer.flush()
-                    String.fromUtf8(buffer.bytes())
-                }
-                public static func fromJson(jsonStr: String): $(classInfo.classId) {
-                    let buffer = ByteBuffer()
-                    unsafe { buffer.write(jsonStr.rawData()) }
-                    var reader = JsonReader(buffer)
-                    $(classInfo.classId).fromJson(reader)
-                }
             }
         )
     }

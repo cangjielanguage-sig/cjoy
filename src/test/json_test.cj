@@ -5,7 +5,7 @@
 package cjoy.test
 
 import cjoy.json.*
-import cjoy.json.generate.*
+import cjoy.json.utils.*
 import std.collection.*
 import std.time.DateTime
 import std.io.ByteBuffer
@@ -56,10 +56,10 @@ public class JsonTestCaseSuit {
     @TestCase
     public func testBase() {
         let s0 = S0()
-        let str = s0.toJson()
+        let str = JsonTool.toJson(s0)
         println(str)
 
-        let d = S0.fromJson(str)
+        let d = JsonTool.fromJson<S0>(str)
         @Assert(d.rune, r'x')
         @Assert(d.str, "str")
     }
@@ -67,10 +67,10 @@ public class JsonTestCaseSuit {
     @TestCase
     public func testIgnore() {
         let s = SIngore()
-        let str = s.toJson()
+        let str = JsonTool.toJson(s)
         let expect = #"{"str":"str"}"#
         @Assert(str, expect)
-        let s1 = SIngore.fromJson(str)
+        let s1 = JsonTool.fromJson<SIngore>(str)
         @Assert(s1.str, s.str)
         @Assert(s1.ignore, s.ignore)
     }
@@ -78,10 +78,10 @@ public class JsonTestCaseSuit {
     @TestCase
     public func testRename() {
         let s = SRename()
-        let str = s.toJson()
+        let str = JsonTool.toJson(s)
         let expect = #"{"str":"str1","newName":"str2"}"#
         @Assert(str, expect)
-        let s1 = SRename.fromJson(str)
+        let s1 = JsonTool.fromJson<SRename>(str)
         @Assert(s1.str, s.str)
         @Assert(s1.str2, s.str2)
     }
@@ -89,10 +89,10 @@ public class JsonTestCaseSuit {
     @TestCase
     public func testOmitempty() {
         let s = SOmitempty()
-        let str = s.toJson()
+        let str = JsonTool.toJson(s)
         let expect = #"{"str1":"str1","strNull":null}"#
         @Assert(str, expect)
-        let s1 = SOmitempty.fromJson(str)
+        let s1 = JsonTool.fromJson<SOmitempty>(str)
         @Assert(s1.str1, s.str1)
         @Assert(s1.strNull, s.strNull)
     }
