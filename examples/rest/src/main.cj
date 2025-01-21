@@ -20,7 +20,7 @@ class UserHandler {
     public func create(ctx: JoyContext): Unit {
         let user = ctx.readJsonBody<UserInfo>()
         if (let Some(u) <- user) {
-            users.put(u.name, u)
+            users.add(u.name, u)
             ctx.logger.info("save user info, name=${u.name}")
             ctx.succes(HttpStatusCode.STATUS_CREATED)
         } else {
@@ -29,24 +29,17 @@ class UserHandler {
     }
 
     public func query(ctx: JoyContext): Unit {
-        let name = ctx.getParam("name")
-        match (name) {
-            case Some(n) =>
-                let user = users.get(n)
-                match (user) {
-                    case Some(u) => ctx.json(u)
-                    case _ => ctx.error(HttpStatusCode.STATUS_NOT_FOUND)
-                }
+        let name = ctx.getParam("name").getOrThrow()
+        let user = users.get(name)
+        match (user) {
+            case Some(u) => ctx.json(u)
             case _ => ctx.error(HttpStatusCode.STATUS_NOT_FOUND)
         }
     }
 
     public func delete(ctx: JoyContext): Unit {
-        let name = ctx.getParam("name")
-        match (name) {
-            case Some(n) => users.remove(n)
-            case _ => ()
-        }
+        let name = ctx.getParam("name").getOrThrow()
+        users.remove(name)
         ctx.succes(HttpStatusCode.STATUS_NO_CONTENT)
     }
 
@@ -56,7 +49,7 @@ class UserHandler {
         if (user.name == name) {
             match (users.get(name)) {
                 case Some(u) =>
-                    users.put(name, user)
+                    users.add(name, user)
                     ctx.ok()
                 case _ => ctx.error(HttpStatusCode.STATUS_NOT_FOUND)
             }
@@ -69,7 +62,6 @@ class UserHandler {
 main(): Int64 {
     var cfg = JoyConfig()
     cfg.enableDebugLog = true
-    // 创建joy实例
     let joy = Joy.create(cfg)
 
     let userHandler = UserHandler()
@@ -78,7 +70,6 @@ main(): Int64 {
     joy.router.DELETE("/users/{name}", userHandler.delete)
     joy.router.PUT("/users/{name}", userHandler.update)
 
-    // 启动服务
     joy.run("127.0.0.1", 18881)
     return 0
 }
