@@ -1,5 +1,5 @@
 /*
- * Copyright (c) lanlingx 2024-2024. All rights resvered.
+ * Copyright (c) lanlingx 2024-present. All rights resvered.
  */
 
 package cjoy.json.generate

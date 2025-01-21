@@ -1,5 +1,5 @@
 /*
- * Copyright (c) lanlingx 2024-2024. All rights resvered.
+ * Copyright (c) lanlingx 2024-present. All rights resvered.
  */
 
 package cjoy
@@ -13,11 +13,22 @@ import std.console.Console
  * joy config
  */
 public class JoyConfig {
+    // the trust remote ip headers
     public var remoteIPHeaders: Array<String> = []
+
+    // enable debug log
     public var enableDebugLog: Bool = false
+
+    // whether case insensitive when add route handler
     public var caseInsensitive: Bool = false
+
+    // whether escape the path when add route handler
     public var escapeAddedRoutes: Bool = false
+
+    // set not found handler 
     public var notFoundHandler: JoyRequestHandler = JoyNotFoundHandler()
+    
+    // set method not allowed handler 
     public var methodNotAllowedHandler: JoyRequestHandler = JoyMethodNotAllowedHandler()
     
     private var _logger: ?Logger = None
@@ -50,6 +61,8 @@ public class Joy {
 
     /**
      * create Joy engine instance by default config
+     *
+     * @return the instance of Joy
      */
     public static func create(): Joy {
         create(JoyConfig())
@@ -57,6 +70,9 @@ public class Joy {
 
     /**
      * create Joy engine instance by config
+     *
+     * @param config: the global config
+     * @return the instance of Joy
      */
     public static func create(config: JoyConfig): Joy {
         Joy(config)
@@ -64,6 +80,9 @@ public class Joy {
 
     /**
      * run http server at address:port
+     *
+     * @param addr: the listen address
+     * @param port: the listen port
      */
     public func run(addr: String, port: UInt16): Unit {
         run(ServerBuilder().addr(addr).port(port))
@@ -71,6 +90,8 @@ public class Joy {
 
     /**
      * run http server by ServerBuilder
+     * 
+     * @param serverBuidler: the server buidler 
      */
     public func run(serverBuidler: ServerBuilder): Unit {
         let server = serverBuidler.distributor(router.distributor).build()
@@ -85,6 +106,8 @@ public class Joy {
 
     /**
      * shutdown the server
+     * 
+     * @param gracefully: whether gracefully shutdown
      */
     public func shutdown(gracefully!: Bool = true) {
         if (let Some(server) <- _server) {
