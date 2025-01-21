@@ -7,6 +7,7 @@ package cjoy
 import std.collection.{ArrayList, HashMap, forEach}
 import encoding.url.URL
 import net.http.*
+import log.Logger
 
 public interface JoyRouters {
     prop distributor: HttpRequestDistributor
@@ -102,18 +103,33 @@ public interface JoyRouters {
     func handle(methods: Array<String>, pattern: String, handler: (ctx: JoyContext) -> Unit): JoyRouters {
         handle(methods, pattern, JoyFuncHandler(handler))
     }
+
+    /**
+    * dump the route tree
+    */
+    func dump(): String
 }
 
 class JoyRouteHandler <: HttpRequestHandler {
     public JoyRouteHandler(
         let handler: JoyRequestHandler,
         let paramMap: HashMap<String, String>,
-        let config: JoyConfig
+        let config: JoyConfig,
+        let ctxParamMap!: HashMap<String, Any> = HashMap()
     ) {}
 
     public func handle(ctx: HttpContext): Unit {
-        let joyCtx = JoyContext(ctx, paramMap, config)
+        let joyCtx = JoyContext(ctx, paramMap, config, ctxParamMap)
         handler.handle(joyCtx)
+    }
+}
+
+class JoyGroupRouteHandler <: JoyRequestHandler {
+    static let INSTANCE = JoyGroupRouteHandler()
+
+    public func handle(ctx: JoyContext): Unit {
+        // default handle is return not found
+        ctx.notFound()
     }
 }
 
@@ -136,17 +152,6 @@ class JoyRequestHandlerWrapper <: JoyRequestHandlerChain & JoyRequestHandler {
             return
         }
         handler.handle(ctx)
-    }
-}
-
-class JoyMethodNotAllowedHandler <: HttpRequestHandler {
-    public JoyMethodNotAllowedHandler(let methods: Collection<String>) {}
-
-    public func handle(ctx: HttpContext): Unit {
-        let rspBuilder = ctx.responseBuilder
-        methods |> forEach {val => rspBuilder.header("Allow", val)}
-        rspBuilder.status(HttpStatusCode.STATUS_METHOD_NOT_ALLOWED)
-        rspBuilder.build()
     }
 }
 
@@ -181,9 +186,12 @@ class TreeRouteDistributor <: HttpRequestDistributor & HttpRequestHandler {
         }
 
         let ri: RouteInfo = RouteInfo()
-        let (node, handler) = _root.findRouteHandler(ri, req.method, path)
+        var (node, handler) = _root.findRouteHandler(ri, req.method, path)
         if (node.isNone()) {
-            return NotFoundHandler()
+            (node, handler) = _root.findRouteHandler(ri, "*", path)
+            if (node.isNone()) {
+                return JoyRouteHandler(_config.notFoundHandler, HashMap(), _config)
+            }
         }
 
         if (handler.isNone()) {
@@ -191,9 +199,10 @@ class TreeRouteDistributor <: HttpRequestDistributor & HttpRequestHandler {
                 return OptionsHandler()
             }
             if (ri.methodNotAllowed) {
-                return JoyMethodNotAllowedHandler(ri.methodsAllowed)
+                let ctxParamMap = HashMap<String, Any>([("methods", ri.methodsAllowed)])
+                return JoyRouteHandler(_config.methodNotAllowedHandler, HashMap(), _config, ctxParamMap:ctxParamMap)
             }
-            return NotFoundHandler()
+            return JoyRouteHandler(_config.notFoundHandler, HashMap(), _config)
         }
 
         let paramMap: HashMap<String, String> = HashMap()
@@ -220,11 +229,13 @@ class JoyRouteGroup <: JoyRouters {
     let _middlewares: ArrayList<JoyMiddlewareHandler>
     let _applyMWs: ArrayList<JoyMiddlewareHandler> = ArrayList()
     let _groups: HashMap<String, JoyRouters> = HashMap()
+    let _logger: Logger
 
     init(path: String, distributor: TreeRouteDistributor, middlewares: ArrayList<JoyMiddlewareHandler>) {
         _path = path
         _distributor = distributor
         _middlewares = middlewares
+        _logger = distributor._config.logger
     }
 
     init(config: JoyConfig) {
@@ -235,6 +246,10 @@ class JoyRouteGroup <: JoyRouters {
         get() {
             _distributor
         }
+    }
+
+     public func dump(): String {
+        _distributor._root.dumpTree()
     }
 
     public func use(mw: JoyMiddlewareHandler): JoyRouters {
@@ -264,6 +279,7 @@ class JoyRouteGroup <: JoyRouters {
         }
 
         let group = JoyRouteGroup(path, _distributor, ArrayList(_middlewares))
+        group.setGroupDefaultHandler()
         _groups.add(path, group)
         group
     }
@@ -272,6 +288,19 @@ class JoyRouteGroup <: JoyRouters {
         if (path.size > 1 && path[0] != b'/') {
             throw IllegalArgumentException("path [$[path}] must start with slash")
         }
+    }
+
+    private func setGroupDefaultHandler(): Unit {
+        if (_distributor._root.findPattern(_path + "*") || _distributor._root.findPattern(_path + "/*")) {
+            throw IllegalArgumentException("a handler on an existing path, `${_path}`")
+        }
+        
+        let allMethods = ["*"]
+        groupHandle(allMethods, "", JoyGroupRouteHandler.INSTANCE)
+        var xpattern = "/"
+        groupHandle(allMethods, xpattern, JoyGroupRouteHandler.INSTANCE)
+        xpattern = xpattern + "*"
+        groupHandle(allMethods, xpattern, JoyGroupRouteHandler.INSTANCE)
     }
 
     public func basePath(): String {
@@ -358,6 +387,14 @@ class JoyRouteGroup <: JoyRouters {
         _applyMWs.clear()
         let wrapperHandler = JoyRequestHandlerWrapper(handler, mws)
         methods |> forEach {method => addHandler(method, pattern, wrapperHandler)}
+        _logger.debug("[Routers#handle] add route handler, pattern=${pattern}, methods=${methods}")
+        this
+    }
+
+    private func groupHandle(methods: Array<String>, pattern: String, handler: JoyRequestHandler): JoyRouters {
+        let wrapperHandler = JoyRequestHandlerWrapper(handler, _middlewares)
+        methods |> forEach {method => addHandler(method, pattern, wrapperHandler)}
+        _logger.debug("[Routers#groupHandle] add groute route handler, pattern=${pattern}, methods=${methods}")
         this
     }
 }

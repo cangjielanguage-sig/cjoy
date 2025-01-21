@@ -4,6 +4,9 @@
 
 package cjoy
 
+import std.collection.forEach
+import net.http.{NotFoundHandler, HttpStatusCode}
+
 public interface JoyRequestHandler {
     func handle(ctx: JoyContext): Unit
 }
@@ -13,6 +16,20 @@ public class JoyFuncHandler <: JoyRequestHandler {
 
     public func handle(ctx: JoyContext): Unit {
         this.handler(ctx)
+    }
+}
+
+public class JoyNotFoundHandler <: JoyRequestHandler {
+    public func handle(ctx: JoyContext): Unit {
+        NotFoundHandler().handle(ctx.httpContext)
+    }
+}
+
+public class JoyMethodNotAllowedHandler <: JoyRequestHandler {
+    public func handle(ctx: JoyContext): Unit {
+        let methods: Collection<String> = ctx.getCtxParm<Collection<String>>("methods").getOrThrow()
+        methods |> forEach {val => ctx.header("Allow", val)}
+        ctx.error(HttpStatusCode.STATUS_METHOD_NOT_ALLOWED)
     }
 }
 

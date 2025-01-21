@@ -17,6 +17,9 @@ public class JoyConfig {
     public var enableDebugLog: Bool = false
     public var caseInsensitive: Bool = false
     public var escapeAddedRoutes: Bool = false
+    public var notFoundHandler: JoyRequestHandler = JoyNotFoundHandler()
+    public var methodNotAllowedHandler: JoyRequestHandler = JoyMethodNotAllowedHandler()
+    
     private var _logger: ?Logger = None
 
     mut prop logger: Logger {
@@ -76,6 +79,7 @@ public class Joy {
         }
         _config.logger = server.logger
         _server = Some(server)
+        _config.logger.debug("[Joy#run] route tree:\n${router.dump()}")
         server.serve()
     }
 

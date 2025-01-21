@@ -8,21 +8,22 @@ import std.collection.*
 import std.io.{ByteBuffer, copy}
 import std.net.IPAddress
 import log.Logger
-import net.http.{HttpContext, RedirectHandler, HttpStatusCode, HttpResponseBuilder, Cookie}
+import net.http.{HttpContext, RedirectHandler, NotFoundHandler, HttpStatusCode, HttpResponseBuilder, Cookie}
 import encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonReader, JsonWriter}
 
 public class JoyContext {
     private let _httpContxt: HttpContext
     private let _config: JoyConfig
     private let _paramMap: HashMap<String, String>
-    private let _ctxParamMap: HashMap<String, Any> = HashMap()
+    private let _ctxParamMap: HashMap<String, Any>
     private var _cookieCache: ?HashMap<String, String> = None
     var _handlerIndex: Int = 0
 
-    public init(httpContxt: HttpContext, paramMap: HashMap<String, String>, config: JoyConfig) {
+    public init(httpContxt: HttpContext, paramMap: HashMap<String, String>, config: JoyConfig, ctxParamMap: HashMap<String, Any>) {
         _httpContxt = httpContxt
         _config = config
         _paramMap = paramMap
+        _ctxParamMap = ctxParamMap
     }
 
     public prop httpContext: HttpContext {
@@ -226,5 +227,9 @@ public class JoyContext {
 
     public func redirect(statusCode: UInt16, location: String): Unit {
         RedirectHandler(location, statusCode).handle(_httpContxt)
+    }
+
+    public func notFound(): Unit {
+        _config.notFoundHandler.handle(this)
     }
 }
