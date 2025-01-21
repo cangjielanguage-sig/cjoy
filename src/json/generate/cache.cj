@@ -15,7 +15,7 @@ class JsonInfoCache {
     }
 
     public static func addCache(vid: String, info: JsonFieldInfo): Unit {
-        FIELD_INFOS.put(vid, info)
+        FIELD_INFOS.add(vid, info)
     }
 
     public static func create(vd: VarDecl): JsonFieldGenerator {

@@ -2,7 +2,7 @@
   cjoy = { path = "../../" ,version = "0.1.0"}
 
 [package]
-  cjc-version = "0.57.3"
+  cjc-version = "0.58.3"
   compile-option = ""
   description = "nothing here"
   link-option = ""

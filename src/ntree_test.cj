@@ -58,7 +58,7 @@ public class TreeNodeTestCaseSuit {
 
             let xparams = HashMap<String, String>()
             for (i in 0..ri.routeParamKeys.size) {
-                xparams.put(ri.routeParamKeys[i], ri.routeParamValues[i])
+                xparams.add(ri.routeParamKeys[i], ri.routeParamValues[i])
             }
 
             for ((k, v) in expectedParams) {

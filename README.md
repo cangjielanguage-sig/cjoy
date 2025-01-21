@@ -3,6 +3,13 @@ CJoy - a fast and joy web framework
 
 一个高性能、轻量、省事的Web框架。
 
+<p align="center">
+<img alt="" src="https://img.shields.io/badge/cjc-v0.58.3-brightgreen" style="display: inline-block;" />
+<img alt="" src="https://img.shields.io/badge/state-孵化-brightgreen" style="display: inline-block;" />
+<img alt="" src="https://img.shields.io/badge/domain-HOS/Cloud-brightgreen" style="display: inline-block;" />
+</p>
+
+
 ## 样例
 
 ```

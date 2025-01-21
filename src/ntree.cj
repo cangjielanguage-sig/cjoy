@@ -73,7 +73,7 @@ class TreeNode<T> {
 
     private func setEndpoint(method: String, pattern: String, handler: T) {
         let paramKeys = Segment.parseParamKeys(pattern)
-        _endpoints.put(method, Endpoint(handler, pattern, paramKeys))
+        _endpoints.add(method, Endpoint(handler, pattern, paramKeys))
     }
 
     private func replaceChild(label: Byte, tail: Byte, child: TreeNode<T>) {
@@ -131,7 +131,7 @@ class TreeNode<T> {
             }
         }
 
-        _children[child._type].append(child)
+        _children[child._type].add(child)
         _children[child._type].sortByLableTail()
         hn
     }
@@ -249,7 +249,7 @@ class TreeNode<T> {
             }
 
             let prevlen = ri.routeParamValues.size
-            ri.routeParamValues.append(search[0..p])
+            ri.routeParamValues.add(search[0..p])
             var xsearch = xsearch[p..xsearch.size]
 
             let fin = findRouteByMethod(ri, xn, method, xsearch)
@@ -262,7 +262,7 @@ class TreeNode<T> {
             xsearch = search
         }
 
-        ri.routeParamValues.append("")
+        ri.routeParamValues.add("")
         return (ret, xsearch, false)
     }
 
@@ -270,11 +270,11 @@ class TreeNode<T> {
         if (search.isEmpty() && xn.isLeaf()) {
             let epOpt = xn._endpoints.get(method)
             if (let Some(ep) <- epOpt) {
-                ri.routeParamKeys.appendAll(ep.paramKeys)
+                ri.routeParamKeys.add(all:ep.paramKeys)
                 return xn
             }
 
-            ri.methodsAllowed.appendAll(xn._endpoints.keys())
+            ri.methodsAllowed.add(all:xn._endpoints.keys())
             // flag that the routing context found a route, but not a corresponding supported method
             ri.methodNotAllowed = true
         }
@@ -315,7 +315,7 @@ class TreeNode<T> {
                     return node
                 }
             } else {
-                ri.routeParamValues.append(search)
+                ri.routeParamValues.add(search)
                 node = nds[0]
                 xsearch = ""
             }
@@ -346,7 +346,7 @@ class TreeNode<T> {
             let ep = node._endpoints[method]
             if (ep.pattern != "") {
                 ri.pattern = ep.pattern
-                ri.patterns.append(ri.pattern)
+                ri.patterns.add(ri.pattern)
             }
             return (rn, ep.handler)
         }
@@ -611,7 +611,7 @@ class Segment {
                 throw IllegalArgumentException(
                     "routing pattern '${pattern}' contains duplicate param key, '${seg.key}'")
             }
-            paramKeys.append(seg.key)
+            paramKeys.add(seg.key)
             pat = pat[seg.endPos..pat.size]
         }
         paramKeys.toArray()

@@ -238,12 +238,12 @@ class JoyRouteGroup <: JoyRouters {
     }
 
     public func use(mw: JoyMiddlewareHandler): JoyRouters {
-        _middlewares.append(mw)
+        _middlewares.add(mw)
         this
     }
 
     public func apply(mw: JoyMiddlewareHandler): JoyRouters {
-        _applyMWs.append(mw)
+        _applyMWs.add(mw)
         this
     }
 
@@ -264,7 +264,7 @@ class JoyRouteGroup <: JoyRouters {
         }
 
         let group = JoyRouteGroup(path, _distributor, ArrayList(_middlewares))
-        _groups.put(path, group)
+        _groups.add(path, group)
         group
     }
 
@@ -354,7 +354,7 @@ class JoyRouteGroup <: JoyRouters {
 
     public func handle(methods: Array<String>, pattern: String, handler: JoyRequestHandler): JoyRouters {
         let mws: ArrayList<JoyMiddlewareHandler> = ArrayList(_middlewares)
-        mws.appendAll(_applyMWs)
+        mws.add(all:_applyMWs)
         _applyMWs.clear()
         let wrapperHandler = JoyRequestHandlerWrapper(handler, mws)
         methods |> forEach {method => addHandler(method, pattern, wrapperHandler)}

@@ -44,7 +44,7 @@ public class JoyContext {
     }
 
     public func setCtxParam(key: String, value: Any): Unit {
-        _ctxParamMap.put(key, value)
+        _ctxParamMap.add(key, value)
     }
 
     public func getCtxParm<T>(key: String): ?T {
@@ -60,7 +60,7 @@ public class JoyContext {
     }
 
     public func addParam(key: String, value: String): Unit {
-        _paramMap.put(key, value)
+        _paramMap.add(key, value)
     }
 
     public func getQuery(key: String): ?String {
@@ -203,7 +203,7 @@ public class JoyContext {
             for (a in arr) {
                 let kv = a.split("=")
                 if (kv.size == 2) {
-                    cache.put(kv[0].trimAscii(), kv[1].trimAscii())
+                    cache.add(kv[0].trimAscii(), kv[1].trimAscii())
                 }
             }
         }

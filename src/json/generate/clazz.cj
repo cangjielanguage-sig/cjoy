@@ -15,7 +15,7 @@ class ClassVarDeclVisitor <: Visitor {
     }
 
     public override func visit(varDecl: VarDecl) {
-        varDecls.append(varDecl)
+        varDecls.add(varDecl)
     }
 
     public override func visit(_: FuncDecl) {
@@ -31,7 +31,7 @@ public class JsonClassInfo {
         this.classId = classId
         this.fields = ArrayList<JsonFieldGenerator>()
         for (vd in vars) {
-            this.fields.append(JsonInfoCache.create(vd))
+            this.fields.add(JsonInfoCache.create(vd))
         }
     }
 
