@@ -5,13 +5,9 @@
 package cjoy.test
 
 import cjoy.json.*
-import cjoy.json.utils.*
 import std.collection.*
-import std.time.{DateTime, DateTimeFormat}
-import std.io.ByteBuffer
 import std.unittest.*
 import std.unittest.testmacro.*
-import encoding.json.stream.*
 
 @Json
 public struct S0 {

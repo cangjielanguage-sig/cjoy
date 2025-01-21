@@ -1,11 +1,13 @@
+/*
+ * Copyright (c) lanlingx 2024-present. All rights resvered.
+ */
+
 package rest
 
 import std.collection.*
-import std.io.ByteBuffer
-import encoding.json.stream.*
+import net.http.HttpStatusCode
 import cjoy.*
 import cjoy.json.*
-import net.http.HttpStatusCode
 
 @Json
 class UserInfo {

@@ -179,8 +179,6 @@ public interface JoyMiddlewareHandler {
 Cjoy内置支持采用宏对类与结构体标注，简化对HTTP Body的Json序列化与反序列化绑定与映射。
 
 ```
-import std.io.ByteBuffer
-import encoding.json.stream.*
 import cjoy.json.*
 
 @Json
@@ -200,11 +198,7 @@ class UserInfo {
   - ignore：值true/false，指定是否忽略此字段，默认为false；
   - timeformat：指定DateTime字段序列化的格式，默认为默认DateTime.toString/parse方法默认格式。
 
-宏展开编译之后，此类与结构体会实现encoding.json.stream包下JsonSerializable与JsonDeserializable接口，也实现cjoy.json.generate.JsonAdapter接口，所以使用者先须import如下包：
-
- - std.io.ByteBuffer
- - encoding.json.stream.*
- - cjoy.json.*
+宏展开编译之后，此类与结构体会实现encoding.json.stream包下JsonSerializable与JsonDeserializable接口。
 
 JoyContext提供两个函数支持对HTTP Body的绑定与映射：
 
