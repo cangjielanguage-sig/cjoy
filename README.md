@@ -1,14 +1,17 @@
-CJoy - a fast and joy web framework
-=======
 
-一个高性能、轻量、省事的Web框架。
+<div align="center">
+<h1>CJoy</h1>
+a fast，lightweight and joy web framework.<br/>
+一个高性能、轻量、省心的Web框架。
+</div>
 
 <p align="center">
+<img alt="" src="https://img.shields.io/badge/release-v0.10.0-brightgreen" style="display: inline-block;" />
 <img alt="" src="https://img.shields.io/badge/cjc-v0.58.3-brightgreen" style="display: inline-block;" />
+<img alt="" src="https://img.shields.io/badge/cjcov-60%25+-brightgreen" style="display: inline-block;" />
 <img alt="" src="https://img.shields.io/badge/state-孵化-brightgreen" style="display: inline-block;" />
 <img alt="" src="https://img.shields.io/badge/domain-HOS/Cloud-brightgreen" style="display: inline-block;" />
 </p>
-
 
 ## 样例
 
@@ -38,9 +41,9 @@ main(): Int64 {
 
 ## 功能
 
-本项目是基于Cangjie提供http框架，参考了一些其它语言的开源设计，在其API进一步封装以简化Web应用开发，增加如下能力：
+本项目是基于Cangjie提供http框架，参考了一些其它语言的开源设计与实现，在其API进一步封装以简化Web应用开发，增加如下能力：
 
-- 基于patricia树的路由管理，支持静态Path，参数匹配Path，正则匹配Path，全路径通配符Path的高效注册与查找，支持路由组；
+- 基于压缩前辍树的路由管理，支持静态Path，参数匹配Path，正则匹配Path，全路径通配符Path的高效注册与查找，支持路由组；
 - 基于拦截器的中间件扩展能力，支持Basic认证等多种能力扩展；
 - 基于Context的上下文管理，支持快速获取请求参数与构建Json/Text响应；
 - 基于编译宏的Json序列化与反序列，支持对请求与响应消息的Json直接绑定映射。
@@ -48,8 +51,8 @@ main(): Int64 {
 应用场景 ：
 
 - API服务：cjoy可以帮助你快速开发Restful服务并配置路由规则与管理各种资源；
-- Web服务：cjoy的patricia树高性能路由查找，让你的Web服务更具有性能优势；
-- 微服务框架： cjoy的路由组与内置Json编译宏，可以实现微服务各类接口分组管理与接口实现。
+- Web服务：cjoy的压缩前辍树高性能路由查找，让你的Web服务更具有性能优势；
+- 微服务框架：cjoy的路由组与内置Json编译宏，可以实现微服务各类接口分组管理与接口实现。
 
 ## 路由
 
@@ -67,17 +70,19 @@ main(): Int64 {
 * `/{year}/{month/{post}`
 * `/{page:[0-9]+}`
 * `/{page:[0-9]+}-delete`
+* `/articles/{id}:{op}`
 
 示例说明：
 
-- static路由： 静态路由，路径不存在`{}`或`*`参数，是path全匹配。
-- param路由： 单字段参数通配符匹配，路径中字段以`{paramname}`命名。
+- static路由：静态路由，路径不存在`{}`或`*`参数，是path全匹配。
+- param路由：单字段参数通配符匹配，路径中字段以`{paramname}`命名，一个Path分段可以存在多个`{paramname}`。
   - 如`/post/{postid}`，可以匹配`/post/1`或`/post/2`，通过上下文接口可以获取参数`postid`值为`1`或`2`，但不能匹配 `/post/1/2`。
   - 如`/post/{postid}/{page}`，可以匹配`/post/1/2`，参数`postid`值为`1`，`page`值为`2`。
-- regex路由： 单字段参数正则匹配，路径中字段以`{paramname:regex}`命名，以`:`分隔正则表达式。
+  - 如`/articles/{id}:{op}`，可以匹配`/post/1/delete`，参数`id`值为`1`，`op`值为`delete`。
+- regex路由：单字段参数正则匹配，路径中字段以`{paramname:regex}`命名，以`:`分隔正则表达式。
   - 如`/{page:[0-9]+}`，可以匹配`/post/1`或`/post/2`。
   - 如`/{page:[0-9]+}-delete`，可以匹配`/post/1-delete`或`/post/2-delete`。
-- catchAll路由： 捕获所有字段通配符匹配，路径中字段以`*`开头，可能匹配路径中多段。
+- catchAll路由：捕获所有字段通配符匹配，路径中字段以`*`开头，可能匹配路径中多段。
   - 如`/images/*`： 
     - 可以匹配`/images/abc`，参数`*`值为`abc`; 
     - 也可以匹配`/images/abc/def`，参数`*`值为`abc/def`; 
@@ -86,7 +91,7 @@ main(): Int64 {
 
 ### 路由优先级
 
-路由查找优先级： static路由 > regex路由 > param路由 > catchAll路由。
+路由查找优先级：static路由 > regex路由 > param路由 > catchAll路由。
 
 可以同时存在`/users/{name}`、`/users/abc`、`/users/{name:[a-z]{3,4}}`与`/users/*`，路由匹配优先级与注册的顺序无关。
 
@@ -137,7 +142,10 @@ JoyRouters接口的group方法支持对path进行分组，分组支持多级，�
 
 ## Handler
 
-Cjoy支持两种路由处理的Handler实现，一种是实现JoyRequestHandler，一种是Lambda表达式函数。
+Cjoy支持两种路由处理的Handler实现：
+
+  - 实现JoyRequestHandler
+  - 使用Lambda表达式函数
 
 ```
 // 实现JoyRequestHandler
@@ -159,12 +167,7 @@ router.GET("/{name}", {ctx: JoyContext =>
 
 ## 中间件
 
-Cjoy提供扩展机制支持Http请求进行拦截处理，机制类似于java的servlet的filter。
-
-```
-// 如使用内置的BasicAuth中间件
-router.use(BasicAuth("test-realm", HashMap<String, String>([("test", "test")])))
-```
+Cjoy提供扩展机制支持Http请求进行拦截处理，机制类似于Java的Servlet的Filter。
 
 中间件需要实现JoyMiddlewareHandle接口，其中chain中为所有MiddlewareHandler链。
 
@@ -173,6 +176,38 @@ public interface JoyMiddlewareHandler {
     func handle(ctx: JoyContext, chain: JoyRequestHandlerChain): Unit
 }
 ```
+
+使用方式有两种:
+
+ - use(mw: JoyMiddlewareHandler)：作用于全局或对应的Group下所有请求
+ - apply(mw: JoyMiddlewareHandler)：只作用于对应的注册的Handler
+
+```
+// 如使用内置的BasicAuth中间件
+// 作用于全局所有请求
+joy.router.use(BasicAuth("test-realm", HashMap<String, String>([("test", "test")])))
+
+// group("/users")下所有Handler都会使用BasicAuth
+joy.router
+  .group("/users")
+  .use(BasicAuth(...)))
+
+// BasicAuth 只会作用于 GET `/{name}`
+joy.router
+   .apply(BasicAuth(...))
+   .apply(XXMiddleware)
+   .GET("/{name}", {ctx: JoyContext => })
+
+// BasicAuth 只会作用于 GET `/users/{name}`
+joy.router
+  .group("/users")
+  .apply(BasicAuth(...))
+  .apply(XXMiddleware)
+  .GET("/{name}", {ctx: JoyContext => })
+```
+
+注：
+  - 所有中间件与路由Handler注册目前只支持单线程
 
 ## Json
 
@@ -196,7 +231,7 @@ class UserInfo {
   - name：指定Json的字段名称；
   - omitempty：值true/false，指定生成Json字符串时是否忽略空字符串或Option的None值，默认为false；
   - ignore：值true/false，指定是否忽略此字段，默认为false；
-  - timeformat：指定DateTime字段序列化的格式，默认为默认DateTime.toString/parse方法默认格式。
+  - timeformat：指定DateTime字段序列化的格式，默认为DateTime.toString/parse方法默认格式。
 
 宏展开编译之后，此类与结构体会实现encoding.json.stream包下JsonSerializable与JsonDeserializable接口。
 
@@ -212,6 +247,8 @@ JoyContext提供两个函数支持对HTTP Body的绑定与映射：
 欢迎给我们提交 PR，欢迎给我们提交 Issue，欢迎参与任何形式的贡献。
 
 fork时请保留上游仓库地址[Cangjie-SIG/cjoy](https://gitcode.com/Cangjie-SIG/cjoy) 或 [lanlingx/cjoy](https://gitcode.com/lanlingx/cjoy) 。
+
+本项目的维护者是 [@lanlingx](https://gitcode.com/lanlingx) 。
 
 ## 协议
 
