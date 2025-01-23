@@ -3,12 +3,12 @@
 [package]
   cjc-version = "0.58.3"
   compile-option = ""
-  description = "a fast and joy web framework"
+  description = "a fast, lightweight and joy web framework"
   link-option = ""
   name = "cjoy"
   output-type = "dynamic"
   override-compile-option = ""
   src-dir = ""
   target-dir = ""
-  version = "0.1.0"
+  version = "0.10.0"
   package-configuration = {}

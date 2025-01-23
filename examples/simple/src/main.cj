@@ -16,7 +16,7 @@ main(): Int64 {
 
     // 注册路由
     let router = joy.router
-    router.GET(
+    router.get(
         "/{name}",
         {
             ctx: JoyContext =>
@@ -24,7 +24,7 @@ main(): Int64 {
             ctx.string("/{name}, name=${name}")
         }
     )
-    router.GET(
+    router.get(
         "/abc",
         {
             ctx: JoyContext => ctx.string("/abc")
@@ -33,7 +33,7 @@ main(): Int64 {
 
     // group
     let v1 = router.group("/v1")
-    v1.GET(
+    v1.get(
         "/{name}",
         {
             ctx: JoyContext =>
@@ -41,13 +41,13 @@ main(): Int64 {
             ctx.string("/v1/{name}, name=${name}")
         }
     )
-    v1.GET(
+    v1.get(
         "/abc",
         {
             ctx: JoyContext => ctx.string("/v1/abc")
         }
     )
-    v1.GET(
+    v1.get(
         "/*",
         {
             ctx: JoyContext =>
@@ -58,7 +58,7 @@ main(): Int64 {
 
     // sub group
     let v1user = v1.group("/user")
-    v1user.GET(
+    v1user.get(
         "/{name}",
         {
             ctx: JoyContext =>
@@ -66,7 +66,7 @@ main(): Int64 {
             ctx.string("/v1/user/{name}, name=${name}")
         }
     )
-    v1user.GET(
+    v1user.get(
         "/abc",
         {
             ctx: JoyContext => ctx.string("/v1/user/abc")
@@ -76,7 +76,7 @@ main(): Int64 {
     // baisc_auth
     let auth = router.group("/auth")
     auth.use(BasicAuth("test-realm", HashMap<String, String>([("test", "test")])))
-    auth.GET(
+    auth.get(
         "/{name}",
         {
             ctx: JoyContext =>

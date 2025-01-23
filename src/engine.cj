@@ -8,6 +8,7 @@ import net.http.{Server, ServerBuilder}
 import log.{LogLevel, Logger}
 import logger.SimpleLogger
 import std.console.Console
+import std.collection.concurrent.ConcurrentHashMap
 
 /**
  * joy config
@@ -50,32 +51,57 @@ public class JoyConfig {
  * a wrapper for net.http.Server
  */
 public class Joy {
+    private static let _INSTANCES: ConcurrentHashMap<String, Joy> = ConcurrentHashMap()
+
     private var _server: ?Server = None
-    private var _config: JoyConfig
+    private let _config: JoyConfig
+    private let _name: String
     public let router: JoyRouters
 
-    private init(config: JoyConfig) {
+    private init(config: JoyConfig, name: String) {
         _config = config
+        _name = name
         router = JoyRouteGroup(config)
+    }
+
+    /**
+    * return the default Joy engine instance
+    */
+    public static func default(): Joy {
+        // ~_~，bad sdk api, not have comptueIfAbsent func in map
+        // the func is not atomic
+        if (_INSTANCES.contains("default")) {
+            return _INSTANCES.get("default").getOrThrow()
+        }
+        let joy = create()
+        _INSTANCES.put("default", joy)
+        return joy
     }
 
     /**
      * create Joy engine instance by default config
      *
+     * @parame name: the instance name
      * @return the instance of Joy
      */
-    public static func create(): Joy {
-        create(JoyConfig())
+    public static func create(name!: String = "default"): Joy {
+        create(JoyConfig(), name:name)
     }
 
     /**
      * create Joy engine instance by config
      *
+     * @parame name: the instance name
      * @param config: the global config
      * @return the instance of Joy
      */
-    public static func create(config: JoyConfig): Joy {
-        Joy(config)
+    public static func create(config: JoyConfig, name!: String = "default"): Joy {
+        if (_INSTANCES.contains(name)) {
+            throw IllegalArgumentException("the instance name is already existing, name=${name}")
+        }
+        let joy = Joy(config, name)
+        _INSTANCES.put(name, joy)
+        joy
     }
 
     /**
@@ -117,5 +143,6 @@ public class Joy {
                 server.close()
             }
         }
+        _INSTANCES.remove(_name)
     }
 }

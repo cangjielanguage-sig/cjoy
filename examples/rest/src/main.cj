@@ -67,10 +67,10 @@ main(): Int64 {
     let joy = Joy.create(cfg)
 
     let userHandler = UserHandler()
-    joy.router.POST("/users", userHandler.create)
-    joy.router.GET("/users/{name}", userHandler.query)
-    joy.router.DELETE("/users/{name}", userHandler.delete)
-    joy.router.PUT("/users/{name}", userHandler.update)
+    joy.router.post("/users", userHandler.create)
+    joy.router.get("/users/{name}", userHandler.query)
+    joy.router.delete("/users/{name}", userHandler.delete)
+    joy.router.put("/users/{name}", userHandler.update)
 
     joy.run("127.0.0.1", 18881)
     return 0

@@ -239,30 +239,30 @@ public class JoyContext {
     *
     * @param contentType: the content type 
     * @param status: the http status code
-    * @param str: the string body
+    * @param body: the string body
     */
-    public func string(status: UInt16, contentType: String, str: String): Unit {
-        _httpContxt.responseBuilder.status(status).header("content-type", contentType).body(str).build()
+    public func string(status: UInt16, contentType: String, body: String): Unit {
+        _httpContxt.responseBuilder.status(status).header("content-type", contentType).body(body).build()
     }
 
     /**
     * reply response with text plain body and status code
     *
     * @param status: the http status code
-    * @param str: the string body
+    * @param body: the string body
     */
-    public func string(status: UInt16, str: String): Unit {
-        string(status, "text/plain", str)
+    public func string(status: UInt16, body: String): Unit {
+        string(status, "text/plain", body)
     }
 
     /**
     * reply response with text plain body and status code OK(200)
     *
     * @param status: the http status code
-    * @param str: the string body
+    * @param body: the string body
     */
-    public func string(str: String): Unit {
-        string(HttpStatusCode.STATUS_OK, "text/plain", str)
+    public func string(body: String): Unit {
+        string(HttpStatusCode.STATUS_OK, "text/plain", body)
     }
 
     /**

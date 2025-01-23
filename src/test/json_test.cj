@@ -56,10 +56,10 @@ public struct SDataNull {
 public struct SDataTimeFormat {
     var t1: DateTime = DateTime.parse("2023-01-20T11:25:26+08:00")
 
-    @JsonField[timeformat ="HH:mm:ss MM/dd/yyyy OO"]
+    @JsonField[timeformat = "HH:mm:ss MM/dd/yyyy OO"]
     var t2: DateTime = DateTime.parse("2023-01-20T11:25:26+08:00")
 
-    @JsonField[name ="time", timeformat ="HH:mm:ss MM/dd/yyyy OO"]
+    @JsonField[name = "time", timeformat = "HH:mm:ss MM/dd/yyyy OO"]
     var t3: DateTime = DateTime.parse("2023-01-20T11:25:26+08:00")
 }
 
@@ -71,13 +71,13 @@ public class DataClass {
 
 @Json
 public class DataNestedTop {
-    @JsonField[name ="d2_a"]
+    @JsonField[name = "d2_a"]
     var a: Int32 = 10
 
-    @JsonField[name ="d2_b"]
+    @JsonField[name = "d2_b"]
     var b: String = "str"
 
-    @JsonField[name ="nested1_c", omitempty = true]
+    @JsonField[name = "nested1_c", omitempty = true]
     var c: Option<DataNested1> = None
 
     @JsonField[omitempty = true]
@@ -89,12 +89,12 @@ public class DataNestedTop {
 
 @Json
 public class DataNested1 {
-    @JsonField[name ="nested_a"]
+    @JsonField[name = "nested_a"]
     var a: Option<DataNested2> = None
 
     var t1: DateTime = DateTime.now()
 
-    @JsonField[timeformat ="yyyy/MM/dd HH:mm:ss OO"]
+    @JsonField[timeformat = "yyyy/MM/dd HH:mm:ss OO"]
     var t2: DateTime = DateTime.now()
 }
 
@@ -180,7 +180,7 @@ public class JsonTestCaseSuit {
         println(str)
         let json = ###"{"t1":"2023-01-20T11:25:26+08:00","t2":"11:25:26 01/20/2023 +08:00","time":"11:25:26 01/20/2023 +08:00"}"###
         @Assert(str, json)
-     
+
         let data2 = JsonTool.fromJson<SDataTimeFormat>(str)
         @Assert(data2.t1, DateTime.parse("2023-01-20T11:25:26+08:00"))
         @Assert(data2.t2, DateTime.parse("2023-01-20T11:25:26+08:00"))
@@ -206,10 +206,10 @@ public class JsonTestCaseSuit {
         var top = DataNestedTop()
         top.a = 20
         top.b = "lanlingx"
-       
+
         var dn1 = DataNested1()
         top.c = Some(dn1)
-        
+
         var dn2 = DataNested2()
         dn1.a = Some(dn2)
 
@@ -232,5 +232,4 @@ public class JsonTestCaseSuit {
         @Assert(ts.c?.a?.list.size, 2)
         @Assert(ts.c?.a?.map.size, 2)
     }
-    
 }

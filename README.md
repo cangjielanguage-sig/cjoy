@@ -8,7 +8,7 @@ a fast，lightweight and joy web framework.<br/>
 <p align="center">
 <img alt="" src="https://img.shields.io/badge/release-v0.10.0-brightgreen" style="display: inline-block;" />
 <img alt="" src="https://img.shields.io/badge/cjc-v0.58.3-brightgreen" style="display: inline-block;" />
-<img alt="" src="https://img.shields.io/badge/cjcov-60%25+-brightgreen" style="display: inline-block;" />
+<img alt="" src="https://img.shields.io/badge/cjcov-70%25+-brightgreen" style="display: inline-block;" />
 <img alt="" src="https://img.shields.io/badge/state-孵化-brightgreen" style="display: inline-block;" />
 <img alt="" src="https://img.shields.io/badge/domain-HOS/Cloud-brightgreen" style="display: inline-block;" />
 </p>
@@ -25,11 +25,11 @@ main(): Int64 {
     let joy = Joy.create(cfg)
 
     // 注册路由
-    joy.router.GET("/{name}", {ctx: JoyContext => 
+    joy.router.get("/{name}", {ctx: JoyContext => 
         let name = ctx.getParam("name").getOrDefault({=>"no name"})
         ctx.string("name in paramter path, name=${name}")
     })
-    joy.router.GET("/abc", {ctx: JoyContext => 
+    joy.router.get("/abc", {ctx: JoyContext => 
         ctx.string("static path abc")
     })
 
@@ -96,10 +96,10 @@ main(): Int64 {
 可以同时存在`/users/{name}`、`/users/abc`、`/users/{name:[a-z]{3,4}}`与`/users/*`，路由匹配优先级与注册的顺序无关。
 
 ```
-router.GET("/users/{name}", {ctx: JoyContext => })
-router.GET("/users/abc", {ctx: JoyContext => })
-router.GET("/users/{name:[a-z]{3,4}}", {ctx: JoyContext => })
-router.GET("/users/*", {ctx: JoyContext => })
+router.get("/users/{name}", {ctx: JoyContext => })
+router.get("/users/abc", {ctx: JoyContext => })
+router.get("/users/{name:[a-z]{3,4}}", {ctx: JoyContext => })
+router.geet("/users/*", {ctx: JoyContext => })
 ```
 
  - 当路径为`/users/abc`，先匹配到static路由`/users/abc`
@@ -110,11 +110,11 @@ router.GET("/users/*", {ctx: JoyContext => })
 其它的示例:
 
 ```
-router.GET("/{page}", {ctx: JoyContext => })
-router.GET("/{year}/{month}/{post}", {ctx: JoyContext => })
-router.GET("/{year}/{month}", {ctx: JoyContext => })
-router.GET("/images/*", {ctx: JoyContext => })
-router.GET("/favicon.ico", {ctx: JoyContext => })
+router.get("/{page}", {ctx: JoyContext => })
+router.get("/{year}/{month}/{post}", {ctx: JoyContext => })
+router.get("/{year}/{month}", {ctx: JoyContext => })
+router.get("/images/*", {ctx: JoyContext => })
+router.get("/favicon.ico", {ctx: JoyContext => })
 ```
 
 - `/abc` 匹配到 `/{page}`
@@ -130,9 +130,9 @@ router.GET("/favicon.ico", {ctx: JoyContext => })
 let router = joy.router
 // group
 let v1 = router.group("/v1")
-v1.GET("/{name}", {ctx: JoyContext => })
-v1.GET("/abc", {ctx: JoyContext => })
-v1.GET("/*", {ctx: JoyContext => })
+v1.get("/{name}", {ctx: JoyContext => })
+v1.get("/abc", {ctx: JoyContext => })
+v1.get("/*", {ctx: JoyContext => })
 ```
 
 JoyRouters接口的group方法支持对path进行分组，分组支持多级，分组的特点：
@@ -156,10 +156,10 @@ class UserHandler <: JoyRequestHandler {
     }
 }
 
-router.GET("/{name}", UserHandler())
+router.get("/{name}", UserHandler())
 
 // 直接采用Lambda表达式函数
-router.GET("/{name}", {ctx: JoyContext => 
+router.get("/{name}", {ctx: JoyContext => 
 	let name = ctx.getParam("name").getOrDefault({=>"no name"})
 	...
 })
@@ -196,14 +196,14 @@ joy.router
 joy.router
    .apply(BasicAuth(...))
    .apply(XXMiddleware)
-   .GET("/{name}", {ctx: JoyContext => })
+   .get("/{name}", {ctx: JoyContext => })
 
 // BasicAuth 只会作用于 GET `/users/{name}`
 joy.router
   .group("/users")
   .apply(BasicAuth(...))
   .apply(XXMiddleware)
-  .GET("/{name}", {ctx: JoyContext => })
+  .get("/{name}", {ctx: JoyContext => })
 ```
 
 注：
