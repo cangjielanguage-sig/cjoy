@@ -96,7 +96,8 @@ public class RouteTestCaseSuit {
             )
 
             // Middleware
-            router.apply(JoyTestMiddleware())
+            router
+                .apply(JoyTestMiddleware())
                 .get(
                     "/mw-num-inline",
                     {
@@ -126,23 +127,25 @@ public class RouteTestCaseSuit {
                 }
             )
 
-            group.apply(JoyTestMiddleware())
+            group
+                .apply(JoyTestMiddleware())
                 .get(
-                "/path",
-                {
-                    ctx: JoyContext =>
-                    let num = ctx.getCtxParm<Int>("num").getOrThrow()
-                    ctx.string("/group/path,${num}")
-                }
-            )
+                    "/path",
+                    {
+                        ctx: JoyContext =>
+                        let num = ctx.getCtxParm<Int>("num").getOrThrow()
+                        ctx.string("/group/path,${num}")
+                    }
+                )
 
             _instance = joy
             joy.run("127.0.0.1", 18881)
         }
+        sleep(Duration.second)
     }
 
     @AfterAll
-    func treaDown() {
+    func tearDown() {
         _client.close()
         if (let Some(s) <- _instance) {
             s.shutdown()

@@ -24,8 +24,10 @@ class ParamInfo {
     // the type of decl param
     var ptype: Token = Token()
 
+    // the type of Array<T>
     var pGenericType: Token = Token()
 
+    // the defalt value for query, postform, header
     var defValue: String = ""
 
     var isPrimitive: Bool = false
@@ -306,7 +308,7 @@ class ParamInfo {
             {
                 ident: Token, value: Token => match (ident.value) {
                     case "name" => this.name = value.value
-                    case "defalut" => this.defValue = value.value
+                    case "default" => this.defValue = value.value
                     case _ => throw Exception("${marcroName} attriable should be name, defalut")
                 }
             })

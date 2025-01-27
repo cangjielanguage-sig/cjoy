@@ -1,0 +1,73 @@
+/*
+ * Copyright (c) lanlingx 2025-present. All rights resvered.
+ */
+
+package cjoy
+
+import std.collection.*
+import std.unittest.*
+import std.unittest.testmacro.*
+
+@Test
+public class RouteTestCaseSuit {
+    @TestCase
+    public func testGroup() {
+        let router: JoyRouteGroup = JoyRouteGroup(JoyConfig())
+        let ga = router.group("/a")
+        @Assert(ga.basePath(), "/a")
+        let gb = ga.group("/b")
+        @Assert(gb.basePath(), "/a/b")
+        let gc = gb.group("/c")
+        @Assert(gc.basePath(), "/a/b/c")
+    }
+
+    @TestCase
+    public func findGroupRoot() {
+        let router: JoyRouteGroup = JoyRouteGroup(JoyConfig())
+        let r = router.findGroup("/a/b/c/d")
+        @Assert(r.basePath(), "")
+    }
+
+    @TestCase
+    public func findGroupLvl1() {
+        let router: JoyRouteGroup = JoyRouteGroup(JoyConfig())
+        router.group("/a")
+        let r = router.findGroup("/a/b/c/d")
+        @Assert(r.basePath(), "/a")
+    }
+
+    @TestCase
+    public func findGroupLvl3() {
+        let router: JoyRouteGroup = JoyRouteGroup(JoyConfig())
+        router.group("/a")
+        router.group("/a").group("/b").group("/c")
+        let r = router.findGroup("/a/b/c/d")
+        @Assert(r.basePath(), "/a/b/c")
+    }
+
+    @TestCase
+    public func findGroupLvl3Indirect() {
+        let router: JoyRouteGroup = JoyRouteGroup(JoyConfig())
+        router.group("/a/b/c")
+        let r = router.findGroup("/a/b/c/d")
+        @Assert(r.basePath(), "/a/b/c")
+    }
+
+    @TestCase
+    public func findGroupLvl1Match() {
+        let router: JoyRouteGroup = JoyRouteGroup(JoyConfig())
+        router.group("/a")
+        router.group("/a").group("/c")
+        let r = router.findGroup("/a/b/c/d")
+        @Assert(r.basePath(), "/a")
+    }
+
+    @TestCase
+    public func findGroupPathAllMatch() {
+        let router: JoyRouteGroup = JoyRouteGroup(JoyConfig())
+        router.group("/a")
+        router.group("/a").group("/b").group("/c").group("/d")
+        let r = router.findGroup("/a/b/c/d")
+        @Assert(r.basePath(), "/a/b/c/d")
+    }
+}

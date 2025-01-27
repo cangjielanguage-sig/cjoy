@@ -298,9 +298,11 @@ class JoyRouteGroup <: JoyRouters {
                 router = f
                 break
             }  else {
-                let idx = path.lastIndexOf(b'/').getOrDefault({=> -1})
+                let idx = search.lastIndexOf(b'/').getOrDefault({=> -1})
                 if (!search.isEmpty() && idx > 0) {
                     search = search[0..idx]
+                } else if (idx == 0) {
+                    break
                 }
             }
         }
