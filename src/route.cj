@@ -38,6 +38,7 @@ public interface JoyRouters {
      * set of middlewares.
      */
     func group(relativePath: String): JoyRouters
+    func findGroup(path: String): JoyRouters
     func basePath(): String
 
     /**
@@ -157,8 +158,8 @@ class JoyRequestHandlerWrapper <: JoyRequestHandlerChain & JoyRequestHandler {
 
 class TreeRouteDistributor <: HttpRequestDistributor & HttpRequestHandler {
     var _root: TreeNode<JoyRequestHandler> = TreeNode(NT_STATIC, b'\0', "")
-
     let _config: JoyConfig
+    let _groups: HashMap<String, JoyRouters> = HashMap()
 
     init(config: JoyConfig) {
         this._config = config
@@ -228,7 +229,6 @@ class JoyRouteGroup <: JoyRouters {
     let _distributor: TreeRouteDistributor
     let _middlewares: ArrayList<JoyMiddlewareHandler>
     let _applyMWs: ArrayList<JoyMiddlewareHandler> = ArrayList()
-    let _groups: HashMap<String, JoyRouters> = HashMap()
     let _logger: Logger
 
     init(path: String, distributor: TreeRouteDistributor, middlewares: ArrayList<JoyMiddlewareHandler>) {
@@ -248,7 +248,7 @@ class JoyRouteGroup <: JoyRouters {
         }
     }
 
-     public func dump(): String {
+    public func dump(): String {
         _distributor._root.dumpTree()
     }
 
@@ -262,26 +262,50 @@ class JoyRouteGroup <: JoyRouters {
         this
     }
 
-    public func group(pattern: String): JoyRouters {
-        if (pattern.isEmpty()) {
+    public func group(relativePath: String): JoyRouters {
+        if (relativePath.isEmpty()) {
             throw IllegalArgumentException("group relativePath must not be empty")
         }
-        checkPath(pattern)
+        checkPath(relativePath)
 
-        var path = _path + pattern
+        var path = _path + relativePath
         // don't want trailing slash as all sub-paths start with slash
         if (path[path.size - 1] == b'/') {
             path = path[0..path.size - 1]
         }
 
-        if (let Some(group) <- _groups.get(path)) {
+        if (let Some(group) <- _distributor._groups.get(path)) {
             return group
         }
 
         let group = JoyRouteGroup(path, _distributor, ArrayList(_middlewares))
         group.setGroupDefaultHandler()
-        _groups.add(path, group)
+        _distributor._groups.add(path, group)
         group
+    }
+
+    private func findGroupByPath(path: String): ?JoyRouters {
+        _distributor._groups.get(path)
+    }
+
+    public func findGroup(path: String): JoyRouters {
+        var router: JoyRouters = this
+        var search = path
+
+        while (!search.isEmpty()) {
+            let found = findGroupByPath(search)
+            if (let Some(f) <- found) {
+                router = f
+                break
+            }  else {
+                let idx = path.lastIndexOf(b'/').getOrDefault({=> -1})
+                if (!search.isEmpty() && idx > 0) {
+                    search = search[0..idx]
+                }
+            }
+        }
+
+        router
     }
 
     private static func checkPath(path: String): Unit {

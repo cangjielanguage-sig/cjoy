@@ -198,12 +198,21 @@ public class JoyContext {
     /**
     * read the request body content into byte array
     *
-    * @return the object of T
+    * @return the object of byte array
     */
     public func readRawData(): Array<Byte> {
         let buffer = ByteBuffer()
         copy(_httpContxt.request.body, to: buffer)
         buffer.bytes()
+    }
+
+    /**
+    * read the request body content into string
+    *
+    * @return the object of string
+    */
+    public func readString(): String {
+        String.fromUtf8(readRawData())
     }
 
     /**
