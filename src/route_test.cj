@@ -70,4 +70,18 @@ public class RouteTestCaseSuit {
         let r = router.findGroup("/a/b/c/d")
         @Assert(r.basePath(), "/a/b/c/d")
     }
+
+    @TestCase
+    public func findCreateGroups() {
+        let router: JoyRouteGroup = JoyRouteGroup(JoyConfig())
+        router.createGroups("/a/b/c/d")
+        var r = router.findGroup("/a/b/c/d")
+        @Assert(r.basePath(), "/a/b/c/d")
+        r = router.findGroup("/a/b/c")
+        @Assert(r.basePath(), "/a/b/c")
+        r = router.findGroup("/a/b")
+        @Assert(r.basePath(), "/a/b")
+        r = router.findGroup("/a")
+        @Assert(r.basePath(), "/a")
+    }
 }

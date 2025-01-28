@@ -35,12 +35,18 @@ func listUsers(@QueryParam[name=id] id: String): UserInfo {
     usr
 }
 
+@Middleware[groups="/users"]
+func testMiddleware(ctx: JoyContext, chain: JoyRequestHandlerChain): Unit {
+    chain.next(ctx)
+}
+
 main(): Int64 {
     var cfg = JoyConfig()
     cfg.enableDebugLog = true
     // 创建joy实例
     let joy = Joy.create(cfg)
     // 注册生成的handlers
+    JoyMiddlewares.registerTo(joy)
     JoyHandlers.registerTo(joy)
     joy.run("127.0.0.1", 18881)
     return 0

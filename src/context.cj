@@ -381,12 +381,12 @@ public class JoyContext {
     }
 
     /**
-    * reply succes response with status code
+    * reply success response with status code
     *
     * @param status: the http status code
     * 
     */
-    public func succes(status: UInt16): Unit {
+    public func success(status: UInt16): Unit {
         _httpContxt.responseBuilder.status(status).build()
     }
 

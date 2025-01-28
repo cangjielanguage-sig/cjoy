@@ -39,6 +39,7 @@ public interface JoyRouters {
      */
     func group(relativePath: String): JoyRouters
     func findGroup(path: String): JoyRouters
+    func createGroups(path: String): JoyRouters
     func basePath(): String
 
     /**
@@ -308,6 +309,26 @@ class JoyRouteGroup <: JoyRouters {
         }
 
         router
+    }
+
+    public func createGroups(path: String): JoyRouters {
+        checkPath(path)
+        if (path.size == 1) {
+            return this
+        }
+
+        let xpath = if (path[path.size - 1] == b'/') {
+            path[1..path.size - 1]
+        } else {
+            path[1..path.size]
+        }
+
+        let segs = xpath.split("/")
+        var gr: JoyRouters = this
+        for (s in segs) {
+            gr = gr.group("/" + s)
+        }
+        gr
     }
 
     private static func checkPath(path: String): Unit {

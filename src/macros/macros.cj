@@ -5,10 +5,11 @@
 macro package cjoy.macros
 
 import std.ast.*
-import cjoy.macros.generate.{parseParam, ParamCatgory, parseFunc, MethodCatgory}
+import cjoy.macros.generate.{parseParam, ParamCatgory, parseFunc, MethodCatgory, parseMiddlewareFunc}
 
 // reimport the dependent
 public import std.convert.*
+public import cjoy.{JoyHandlers, JoyRequestHandler, JoyMiddlewares, JoyMiddlewareHandler, JoyRequestHandlerChain}
 
 public macro PathParam(attr: Tokens, input: Tokens) {
     parseParam("PathParam", ParamCatgory.PC_PATH, attr, input)
@@ -106,4 +107,12 @@ public macro Head(attr: Tokens, input: Tokens) {
 
 public macro Methods(attr: Tokens, input: Tokens) {
     input + parseFunc("Methods", MethodCatgory.MC_METHODS, attr, input)
+}
+
+public macro Middleware(attr: Tokens, input: Tokens) {
+    input + parseMiddlewareFunc(attr, input)
+}
+
+public macro Middleware(input: Tokens) {
+    input + parseMiddlewareFunc(None, input)
 }

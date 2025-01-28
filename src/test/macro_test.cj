@@ -85,6 +85,20 @@ func pathGet6(@PathParam[name = p] a: Int32): String {
     a.toString()
 }
 
+// test path param return status code
+@Get[path = "/path7/{p}"]
+func pathGet7(@PathParam[name = p] a: Int32): UInt16 {
+    println(a)
+    200
+}
+
+// test path param return status code
+@Get[path = "/path8/*"]
+func pathGet8(@PathParam[name = *] remainPath: String): UInt16 {
+    println(remainPath)
+    200
+}
+
 // test path param with no new name
 @Get[path = "/query1"]
 func queryGet1(@QueryParam name: String): String {
@@ -214,11 +228,27 @@ func cookiePost1(@CookieParam[name="csrf-token"] token: ?String): String {
     token.getOrThrow().toString()
 }
 
+@Methods[path = "/cookie1", methods="GET,POST"]
+func testMethods(): String {
+    "helloword"
+}
+
+@Middleware[groups="/a/b/c,/a/c"]
+func testMiddleware1(ctx: JoyContext, chain: JoyRequestHandlerChain): Unit {
+    chain.next(ctx)
+}
+
+@Middleware
+func testMiddleware2(ctx: JoyContext, chain: JoyRequestHandlerChain): Unit {
+    chain.next(ctx)
+}
+
 @Test
 public class MacroTestCaseSuit {
     @TestCase
     public func testAll() {
         let joy = Joy.default()
+        JoyMiddlewares.registerTo(joy)
         JoyHandlers.registerTo(joy)
         let fut = spawn {
             joy.run("127.0.0.1", 18882)

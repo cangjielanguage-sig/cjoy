@@ -46,7 +46,7 @@ class FuncInfo {
         }
 
         let array = methods.split(",", removeEmpty:true)
-        array |> map {a: String => a.trimAscii()} |> collectArray
+        array |> map {a: String => a.toAsciiUpper().trimAscii()} |> collectArray
     }
 
     private func declVars(): (Tokens, Tokens) {
@@ -88,6 +88,7 @@ class FuncInfo {
             return ret
         }
 
+        let retType = delType.toTokens()[0].value
         if (delType is TupleType) {
             let tt = (delType as TupleType).getOrThrow()
             if (tt.types.size != 2) {
@@ -97,19 +98,31 @@ class FuncInfo {
                 throw Exception(
                     "return must is tuple with 2 element, first is Uint16, second is String or JsonSerializable")
             }
-            ret += quote(
-                let (statusCode, bodyRsp) = $(funcName)($(params))
-            )
-            if (provider == "json") {
+            let tfirstType = tt.types[0]
+            if (tfirstType is PrimitiveType) {
                 ret += quote(
-                    ctx.json(statusCode, bodyRsp) 
+                    let (statusCode, bodyRsp) = $(funcName)($(params))
                 )
             } else {
                 ret += quote(
-                    ctx.string(statusCode, bodyRsp.toString()) 
+                    let (bodyRsp, statusCode) = $(funcName)($(params))
                 )
             }
-        } else if (delType.toTokens()[0].value != "Unit") {
+            if (provider == "json") {
+                ret += quote(
+                    ctx.json(UInt16(statusCode), bodyRsp) 
+                )
+            } else {
+                ret += quote(
+                    ctx.string(UInt16(statusCode), bodyRsp.toString()) 
+                )
+            }
+        } else if (retType == "UInt16") {
+            ret += quote(
+                let statusCode = $(funcName)($(params))
+                ctx.success(UInt16(statusCode))
+            )
+        } else if (retType != "Unit") {
             ret += quote(let bodyRsp = $(funcName)($(params)))
             if (provider == "json") {
                 ret += quote(

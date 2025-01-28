@@ -4,10 +4,15 @@
 
 package cjoy
 
-import std.collection.{forEach, ArrayList}
+import std.collection.{forEach, ArrayList, HashMap}
 import net.http.{NotFoundHandler, HttpStatusCode}
 
 public interface JoyRequestHandler {
+    /**
+     * process the request and reply response using context api
+     *
+     * @param ctx: the context
+     */
     func handle(ctx: JoyContext): Unit
 }
 
@@ -36,7 +41,7 @@ public class JoyMethodNotAllowedHandler <: JoyRequestHandler {
 public class JoyHandlers {
     private static let HANDLERS: ArrayList<(String, Array<String>, JoyRequestHandler)> = ArrayList()
 
-     /**
+    /**
      * add the handler for generate code by macros
      *
      * @param path: the path
@@ -48,12 +53,12 @@ public class JoyHandlers {
     }
 
     /**
-    * register the handlers to joy instance
-    * 
-    * @param joy: the instance of joy
-    */
+     * register the handlers to joy instance
+     *
+     * @param joy: the instance of joy
+     */
     public static func registerTo(joy: Joy): Unit {
-        for ( it in HANDLERS ) {
+        for (it in HANDLERS) {
             let (path, methods, handler) = it
             let rg = joy.router.findGroup(path)
             let rpath = path[rg.basePath().size..path.size]
@@ -67,6 +72,12 @@ public interface JoyRequestHandlerChain {
 }
 
 public interface JoyMiddlewareHandler {
+    /**
+     * process the request
+     *
+     * @param ctx: the context
+     * @param chain: the chain of Middleware
+     */
     func handle(ctx: JoyContext, chain: JoyRequestHandlerChain): Unit
 }
 
@@ -75,5 +86,31 @@ public class JoyMiddlewareFuncHandler <: JoyMiddlewareHandler {
 
     public func handle(ctx: JoyContext, chain: JoyRequestHandlerChain): Unit {
         this.handler(ctx, chain)
+    }
+}
+
+public class JoyMiddlewares {
+    private static let MIDDLEWARES: HashMap<String, JoyMiddlewareHandler> = HashMap()
+
+    /**
+     * add the handler for generate code by macros
+     *
+     * @param group: the path of group
+     * @param mw: the middleware hander
+     */
+    public static func addHandler(groups: Array<String>, mw: JoyMiddlewareHandler) {
+        groups |> forEach {group => MIDDLEWARES.add(group, mw)}
+    }
+
+    /**
+     * register the middleware handlers to joy instance
+     *
+     * @param joy: the instance of joy
+     */
+    public static func registerTo(joy: Joy): Unit {
+        for ((path, handler) in MIDDLEWARES) {
+            let r = joy.router.createGroups(path)
+            r.use(handler)
+        }
     }
 }
