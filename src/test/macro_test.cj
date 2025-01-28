@@ -176,7 +176,7 @@ func bodyPost1(@BodyParam body: String): String {
 @Json
 @Derive[ToString]
 class TestBody {
-    var a: String  = ""
+    var a: String = ""
     var b: Int = 0
 }
 
@@ -199,41 +199,41 @@ func bodyPost4(@BodyParam body: TestBody): String {
 }
 
 // test body param with json type and return json
-@Post[path = "/body5", provider=json]
+@Post[path = "/body5", provider = json]
 func bodyPost5(@BodyParam body: TestBody): TestBody {
     body
 }
 
 // test header param
 @Post[path = "/header1"]
-func headerPost1(@HeaderParam[name="X-Tokens", default="xxx"] token: String): String {
+func headerPost1(@HeaderParam[name = "X-Tokens", default = "xxx"] token: String): String {
     token
 }
 
 // test header param
 @Post[path = "/header2"]
-func headerPost2(@HeaderParam[name="X-IDS"] ids: Array<String>): String {
+func headerPost2(@HeaderParam[name = "X-IDS"] ids: Array<String>): String {
     ids.toString()
 }
 
 // test header param
 @Post[path = "/header3"]
-func headerPost3(@HeaderParam[name="X-Tokens"] token: ?String): String {
+func headerPost3(@HeaderParam[name = "X-Tokens"] token: ?String): String {
     token.getOrThrow().toString()
 }
 
 // test header param
-@Post[path = "/cookie1", provider=json]
-func cookiePost1(@CookieParam[name="csrf-token"] token: ?String): String {
+@Post[path = "/cookie1", provider = json]
+func cookiePost1(@CookieParam[name = "csrf-token"] token: ?String): String {
     token.getOrThrow().toString()
 }
 
-@Methods[path = "/cookie1", methods="GET,POST"]
+@Methods[path = "/cookie1", methods = "GET,POST"]
 func testMethods(): String {
     "helloword"
 }
 
-@Middleware[groups="/a/b/c,/a/c"]
+@Middleware[groups = "/a/b/c,/a/c"]
 func testMiddleware1(ctx: JoyContext, chain: JoyRequestHandlerChain): Unit {
     chain.next(ctx)
 }

@@ -34,7 +34,7 @@ class FuncInfo {
                 ident: Token, value: Token => match (ident.value) {
                     case "path" => this.path = value.value
                     case "provider" => this.provider = value.value
-                    case "methods"  => this.methods = value.value
+                    case "methods" => this.methods = value.value
                     case _ => throw Exception("${marcroName} attriable should be name, consumer, provider")
                 }
             })
@@ -45,7 +45,7 @@ class FuncInfo {
             return [marcroName.toAsciiUpper()]
         }
 
-        let array = methods.split(",", removeEmpty:true)
+        let array = methods.split(",", removeEmpty: true)
         array |> map {a: String => a.toAsciiUpper().trimAscii()} |> collectArray
     }
 
@@ -150,9 +150,11 @@ class FuncInfo {
         quote(
             public class $(handlerName) <: JoyRequestHandler {
                 public static let INSTANCE = $(handlerName)()
+                
                 init() {
                     JoyHandlers.addHandler($(path), $(getMethods()), this)
                 }
+
                 public func handle(ctx: JoyContext): Unit {
                     $(vars)
                     $(callfunc)

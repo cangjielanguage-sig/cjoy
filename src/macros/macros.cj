@@ -11,108 +11,248 @@ import cjoy.macros.generate.{parseParam, ParamCatgory, parseFunc, MethodCatgory,
 public import std.convert.*
 public import cjoy.{JoyHandlers, JoyRequestHandler, JoyMiddlewares, JoyMiddlewareHandler, JoyRequestHandlerChain}
 
+/**
+ * PathParam macro is used for annotation at the paramter of function
+ * which value from named paramter in url path.
+ *
+ * @attribute name: the name of paramter in url path
+ */
 public macro PathParam(attr: Tokens, input: Tokens) {
     parseParam("PathParam", ParamCatgory.PC_PATH, attr, input)
     input
 }
 
+/**
+ * PathParam macro is used for annotation at the paramter of function
+ * which value from named paramter in url path.
+ * The paramter name of function is the same as named paramter in path.
+ *
+ */
 public macro PathParam(input: Tokens) {
     parseParam("PathParam", ParamCatgory.PC_PATH, input)
     input
 }
 
+/**
+ * QueryParam macro is used for annotation at the paramter of function
+ * which value from named paramter in url query.
+ *
+ * @attribute name: the name of paramter in url query
+ * @attribute default: the default value of parameter
+ */
 public macro QueryParam(attr: Tokens, input: Tokens) {
     parseParam("QueryParam", ParamCatgory.PC_QUERY, attr, input)
     input
 }
 
+/**
+ * QueryParam macro is used for annotation at the paramter of function
+ * which value from named paramter in url query.
+ * The paramter name of function is the same as paramter name in query.
+ *
+ */
 public macro QueryParam(input: Tokens) {
     parseParam("QueryParam", ParamCatgory.PC_QUERY, input)
     input
 }
 
+/**
+ * PostFormParam macro is used for annotation at the paramter of function
+ * which value from named paramter in encoded url or post form.
+ *
+ * @attribute name: the name of paramter in encoded url or post form
+ * @attribute default: the default value of parameter
+ */
 public macro PostFormParam(attr: Tokens, input: Tokens) {
     parseParam("PostForm", ParamCatgory.PC_POSTFORM, attr, input)
     input
 }
 
+/**
+ * PostFormParam macro is used for annotation at the paramter of function
+ * which value from named paramter in encoded url or post form.
+ * The paramter name of function is the same as paramter name in encoded url or post form.
+ *
+ */
 public macro PostFormParam(input: Tokens) {
     parseParam("PostForm", ParamCatgory.PC_POSTFORM, input)
     input
 }
 
+/**
+ * HeaderParam macro is used for annotation at the paramter of function
+ * which value from named paramter in header.
+ *
+ * @attribute name: the name of paramter in header
+ * @attribute default: the default value of parameter
+ */
 public macro HeaderParam(attr: Tokens, input: Tokens) {
     parseParam("HeaderParam", ParamCatgory.PC_HEADER, attr, input)
     input
 }
 
+/**
+ * HeaderParam macro is used for annotation at the paramter of function
+ * which value from named paramter in header.
+ * The paramter name of function is the same as paramter name in header.
+ *
+ */
 public macro HeaderParam(input: Tokens) {
     parseParam("HeaderParam", ParamCatgory.PC_HEADER, input)
     input
 }
 
+/**
+ * ContextParam macro is used for annotation at the paramter of function
+ * which value from named paramter in context.
+ *
+ * @attribute name: the name of paramter in context
+ */
 public macro ContextParam(attr: Tokens, input: Tokens) {
     parseParam("ContextParam", ParamCatgory.PC_CONTEXT, attr, input)
     input
 }
 
+/**
+ * ContextParam macro is used for annotation at the paramter of function
+ * which value from named paramter in context.
+ * The paramter name of function is the same as paramter name in context.
+ *
+ */
 public macro ContextParam(input: Tokens) {
     parseParam("ContextParam", ParamCatgory.PC_CONTEXT, input)
     input
 }
 
+/**
+ * CookieParam macro is used for annotation at the paramter of function
+ * which value from named paramter in cookie.
+ *
+ * @attribute name: the name of paramter in cookie
+ * @attribute default: the default value of parameter
+ */
 public macro CookieParam(attr: Tokens, input: Tokens) {
     parseParam("CookieParam", ParamCatgory.PC_COOKIE, attr, input)
     input
 }
 
+/**
+ * CookieParam macro is used for annotation at the paramter of function
+ * which value from named paramter in cookie.
+ * The paramter name of function is the same as paramter name in cookie.
+ *
+ */
 public macro CookieParam(input: Tokens) {
     parseParam("CookieParam", ParamCatgory.PC_COOKIE, input)
     input
 }
 
+/**
+ * BodyParam macro is used for annotation at the paramter of function
+ * which value from body.
+ *
+ */
 public macro BodyParam(attr: Tokens, input: Tokens) {
     parseParam("BodyParam", ParamCatgory.PC_BODY, attr, input)
     input
 }
 
+/**
+ * BodyParam macro is used for annotation at the paramter of function
+ * which value from body.
+ *
+ */
 public macro BodyParam(input: Tokens) {
     parseParam("BodyParam", ParamCatgory.PC_BODY, input)
     input
 }
 
+/**
+ * Get macro is used for annotation at the function, register the funtion for GET `path`
+ *
+ * @attribute path: the path pattern
+ * @attribute provider: the format of reponse body, value is json/text, default is text
+ */
 public macro Get(attr: Tokens, input: Tokens) {
     input + parseFunc("Get", MethodCatgory.MC_GET, attr, input)
 }
 
+/**
+ * Post macro is used for annotation at the function, register the funtion for POST `path`
+ *
+ * @attribute path: the path pattern
+ * @attribute provider: the format of reponse body, value is json/text, default is text
+ */
 public macro Post(attr: Tokens, input: Tokens) {
     input + parseFunc("Post", MethodCatgory.MC_POST, attr, input)
 }
 
+/**
+ * Delete macro is used for annotation at the function, register the funtion for DELETE `path`
+ *
+ * @attribute path: the path pattern
+ * @attribute provider: the format of reponse body, value is json/text, default is text
+ */
 public macro Delete(attr: Tokens, input: Tokens) {
     input + parseFunc("Delete", MethodCatgory.MC_DELETE, attr, input)
 }
 
+/**
+ * Patch macro is used for annotation at the function, register the funtion for PATCH `path`
+ *
+ * @attribute path: the path pattern
+ * @attribute provider: the format of reponse body, value is json/text, default is text
+ */
 public macro Patch(attr: Tokens, input: Tokens) {
     input + parseFunc("Patch", MethodCatgory.MC_PATCH, attr, input)
 }
 
+/**
+ * Put macro is used for annotation at the function, register the funtion for PUT `path`
+ *
+ * @attribute path: the path pattern
+ * @attribute provider: the format of reponse body, value is json/text, default is text
+ */
 public macro Put(attr: Tokens, input: Tokens) {
     input + parseFunc("Put", MethodCatgory.MC_PUT, attr, input)
 }
 
+/**
+ * Head macro is used for annotation at the function, register the funtion for HEAD `path`
+ *
+ * @attribute path: the path pattern
+ * @attribute provider: the format of reponse body, value is json/text, default is text
+ */
 public macro Head(attr: Tokens, input: Tokens) {
     input + parseFunc("Head", MethodCatgory.MC_HEAD, attr, input)
 }
 
+/**
+ * Methods macro is used for annotation at the function, register the funtion for `method` `path`
+ *
+ * @attribute path: the path pattern
+ * @attribute methods: the method list, like `GET,PUT` or `GET`
+ * @attribute provider: the format of reponse body, value is json/text, default is text
+ */
 public macro Methods(attr: Tokens, input: Tokens) {
     input + parseFunc("Methods", MethodCatgory.MC_METHODS, attr, input)
 }
 
+/**
+ * Methods macro is used for annotation at the function,
+ * register the funtion to intercept group handler
+ *
+ * @attribute groups: the group list, like `/a/b/c,/d/f` or `/a`
+ */
 public macro Middleware(attr: Tokens, input: Tokens) {
     input + parseMiddlewareFunc(attr, input)
 }
 
+/**
+ * Methods macro is used for annotation at the function,
+ * register the funtion to intercept route group handler
+ *
+ */
 public macro Middleware(input: Tokens) {
     input + parseMiddlewareFunc(None, input)
 }

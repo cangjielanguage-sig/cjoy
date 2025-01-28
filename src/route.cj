@@ -107,8 +107,8 @@ public interface JoyRouters {
     }
 
     /**
-    * dump the route tree
-    */
+     * dump the route tree
+     */
     func dump(): String
 }
 
@@ -202,7 +202,7 @@ class TreeRouteDistributor <: HttpRequestDistributor & HttpRequestHandler {
             }
             if (ri.methodNotAllowed) {
                 let ctxParamMap = HashMap<String, Any>([("methods", ri.methodsAllowed)])
-                return JoyRouteHandler(_config.methodNotAllowedHandler, HashMap(), _config, ctxParamMap:ctxParamMap)
+                return JoyRouteHandler(_config.methodNotAllowedHandler, HashMap(), _config, ctxParamMap: ctxParamMap)
             }
             return JoyRouteHandler(_config.notFoundHandler, HashMap(), _config)
         }
@@ -298,7 +298,7 @@ class JoyRouteGroup <: JoyRouters {
             if (let Some(f) <- found) {
                 router = f
                 break
-            }  else {
+            } else {
                 let idx = search.lastIndexOf(b'/').getOrDefault({=> -1})
                 if (!search.isEmpty() && idx > 0) {
                     search = search[0..idx]
@@ -341,7 +341,7 @@ class JoyRouteGroup <: JoyRouters {
         if (_distributor._root.findPattern(_path + "*") || _distributor._root.findPattern(_path + "/*")) {
             throw IllegalArgumentException("a handler on an existing path, `${_path}`")
         }
-        
+
         let allMethods = ["*"]
         groupHandle(allMethods, "", JoyGroupRouteHandler.INSTANCE)
         var xpattern = "/"
@@ -430,7 +430,7 @@ class JoyRouteGroup <: JoyRouters {
 
     public func handle(methods: Array<String>, pattern: String, handler: JoyRequestHandler): JoyRouters {
         let mws: ArrayList<JoyMiddlewareHandler> = ArrayList(_middlewares)
-        mws.add(all:_applyMWs)
+        mws.add(all: _applyMWs)
         _applyMWs.clear()
         let wrapperHandler = JoyRequestHandlerWrapper(handler, mws)
         methods |> forEach {method => addHandler(method, pattern, wrapperHandler)}

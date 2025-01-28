@@ -98,6 +98,6 @@ open class JsonFieldGenerator {
     }
 
     public open func genAddonFuncTokens(): Tokens {
-        quote( )
+        quote()
     }
 }

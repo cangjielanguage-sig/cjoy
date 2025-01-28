@@ -16,6 +16,7 @@ main(): Int64 {
 
     // 注册路由
     let router = joy.router
+    router.use(ExceptionHandler())
     router.get(
         "/{name}",
         {

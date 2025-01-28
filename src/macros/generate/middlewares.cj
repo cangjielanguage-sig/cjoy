@@ -23,7 +23,7 @@ class MiddlewareInfo {
         if (groups == "") {
             return ["/"]
         }
-        groups.split(",", removeEmpty:true)
+        groups.split(",", removeEmpty: true)
     }
 
     func parseAttr(attr: Tokens): Unit {
@@ -42,9 +42,11 @@ class MiddlewareInfo {
         quote(
             public class $(handlerName) <: JoyMiddlewareHandler {
                 public static let INSTANCE = $(handlerName)()
+                
                 init() {
                     JoyMiddlewares.addHandler($(getGroups()), this)
                 }
+
                 public func handle(ctx: JoyContext, chain: JoyRequestHandlerChain): Unit {
                     $(funcName)(ctx, chain)
                 }

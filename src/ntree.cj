@@ -270,11 +270,11 @@ class TreeNode<T> {
         if (search.isEmpty() && xn.isLeaf()) {
             let epOpt = xn._endpoints.get(method)
             if (let Some(ep) <- epOpt) {
-                ri.routeParamKeys.add(all:ep.paramKeys)
+                ri.routeParamKeys.add(all: ep.paramKeys)
                 return xn
             }
 
-            ri.methodsAllowed.add(all:xn._endpoints.keys())
+            ri.methodsAllowed.add(all: xn._endpoints.keys())
             // flag that the routing context found a route, but not a corresponding supported method
             ri.methodNotAllowed = true
         }

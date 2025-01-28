@@ -29,10 +29,10 @@ public class JoyConfig {
 
     // set not found handler 
     public var notFoundHandler: JoyRequestHandler = JoyNotFoundHandler()
-    
+
     // set method not allowed handler 
     public var methodNotAllowedHandler: JoyRequestHandler = JoyMethodNotAllowedHandler()
-    
+
     private var _logger: ?Logger = None
 
     mut prop logger: Logger {
@@ -66,8 +66,8 @@ public class Joy {
     }
 
     /**
-    * return the default Joy engine instance
-    */
+     * return the default Joy engine instance
+     */
     public static func default(): Joy {
         // ~_~，bad sdk api, not have comptueIfAbsent func in map
         // the func is not atomic
@@ -86,7 +86,7 @@ public class Joy {
      * @return the instance of Joy
      */
     public static func create(name!: String = "default"): Joy {
-        create(JoyConfig(), name:name)
+        create(JoyConfig(), name: name)
     }
 
     /**
@@ -117,14 +117,14 @@ public class Joy {
 
     /**
      * run http server by ServerBuilder
-     * 
-     * @param serverBuidler: the server buidler 
+     *
+     * @param serverBuidler: the server buidler
      */
     public func run(serverBuidler: ServerBuilder): Unit {
         let server = serverBuidler.distributor(router.distributor).build()
         if (_config.enableDebugLog) {
             server.logger.level = LogLevel.DEBUG
-        }        
+        }
         _config.logger = server.logger
         _server = Some(server)
         _config.logger.debug("[Joy#run] route tree:\n${router.dump()}")
@@ -133,7 +133,7 @@ public class Joy {
 
     /**
      * shutdown the server
-     * 
+     *
      * @param gracefully: whether gracefully shutdown
      */
     public func shutdown(gracefully!: Bool = true) {
