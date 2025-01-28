@@ -22,7 +22,7 @@ import cjoy.*
 
 main(): Int64 {
     var cfg = JoyConfig()
-    cfg.enableDebugLog=true
+    cfg.enableDebugLog = true
     // 创建joy实例
     let joy = Joy.create(cfg)
 
@@ -62,7 +62,7 @@ func getUserName(@PathParam name: String): (UInt16, String) {
 }
 
 @Get[path = "/users", provider="json"]
-func listUsers(@QueryParam[name=id] id: String): UserInfo {
+func listUsers(@QueryParam[name = id, default = xiao] id: String): UserInfo {
     let usr = UserInfo()
     usr.id = id
     usr.name = "xiao"
@@ -392,6 +392,44 @@ JoyContext提供两个函数支持对HTTP Body的绑定与映射：
  - `json`: 序列化类与结构体对象序列化并设置Body内容
 
 使用示例：[examples/rest](examples/rest/src/main.cj)
+
+## 分块传输
+
+CJoy 提供对Chunked的封装，支持Chunked数据以及SSE(Server-Sent Events)的发送。
+
+### Chunked
+
+```
+joy.router.get("/chuncked", {
+      ctx: JoyContext =>
+      let sender = ctx.chunked()
+      for (num in 1..10) {
+          sender.write(num.toString())
+          sleep(Duration.millisecond*200)
+      }
+      sender.end()
+  })
+```
+
+ - 调用`JoyContext.chunked()` 创建 JoyChunkedWriter
+ - 调用`JoyChunkedWriter.write(...)` 写块数据，每调用一次发送一次Chunked
+
+### SSE
+
+```
+joy.router.get("/sse", {
+    ctx: JoyContext =>
+    let emitter = ctx.eventStream()
+    for (num in 1..10) {
+        emitter.sendEvent(ServerEventBuilder().data("{\"num\":\"${num}\"}"))
+        sleep(Duration.millisecond*200)
+    }
+    emitter.end()
+})
+```
+ - 调用`JoyContext.eventStream()` 创建 JoySseEmitter
+ - 调用`JoyChunkedWriter.sendEvent(...)` 每调用一次发送一次Event
+ - `ServerEventBuilder` 构建 SSE 数据
 
 ## 参与贡献
 

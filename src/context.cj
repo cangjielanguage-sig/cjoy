@@ -476,4 +476,18 @@ public class JoyContext {
     public func notFound(): Unit {
         _config.notFoundHandler.handle(this)
     }
+
+    /**
+    * create a chunked writer 
+    */
+    public func chunked(): JoyChunkedWriter {
+        JoyChunkedWriter(_httpContxt)
+    }
+
+    /**
+    * create a SseEmitter
+    */
+    public func eventStream(): JoySseEmitter {
+        JoySseEmitter(_httpContxt)
+    }
 }
