@@ -5,136 +5,138 @@
 package cjoy.test
 
 import cjoy.*
+import cjoy.json.*
 import cjoy.macros.*
+import std.deriving.*
 import std.collection.*
 
 // test not param
 @Get[path = "/test1"]
-func TestHandler1(): String {
+func testGet1(): String {
     "helloword"
 }
 
 // test one param JoyContext
 @Get[path = "/test2"]
-func TestHandler2(c: JoyContext): String {
+func testGet2(c: JoyContext): String {
     c.setCtxParam("Test", 1)
     "helloword"
 }
 
 // test one param return tuple
 @Get[path = "/test3"]
-func TestHandler3(c: JoyContext): (UInt16, String) {
+func testGet3(c: JoyContext): (UInt16, String) {
     c.setCtxParam("Test", 1)
     (200, "helloword")
 }
 
 // test one param return Unit
 @Get[path = "/test4"]
-func TestHandler4(ctx: JoyContext): Unit {
+func testGet4(ctx: JoyContext): Unit {
     ctx.setCtxParam("Test", 1)
     ctx.ok()
 }
 
 // test one param return NA
 @Get[path = "/test5"]
-func TestHandler5(ctx: JoyContext) {
+func testGet5(ctx: JoyContext) {
     ctx.ok()
 }
 
 // test path param with no new name
 @Get[path = "/path1/{name}"]
-func pathGetHandler1(@PathParam name: String): String {
+func pathGet1(@PathParam name: String): String {
     println(name)
     name
 }
 
 // test path param with a new name
 @Get[path = "/path2/{p}"]
-func pathGetHandler2(@PathParam[name = p] a: String): String {
+func pathGet2(@PathParam[name = p] a: String): String {
     println(a)
     a
 }
 
 // test path param with a new name type is ? 
 @Get[path = "/path3/{p}"]
-func pathGetHandler3(@PathParam[name = p] a: ?String): String {
+func pathGet3(@PathParam[name = p] a: ?String): String {
     println(a)
     a.getOrDefault({=> "p"})
 }
 
 // test path param with a new name type is Option 
 @Get[path = "/path4/{p}"]
-func pathGetHandler4(@PathParam[name = p] a: Option<String>): String {
+func pathGet4(@PathParam[name = p] a: Option<String>): String {
     println(a)
     a.getOrDefault({=> "p"})
 }
 
 // test path param with a new name type is convert to Int 
 @Get[path = "/path5/{p}"]
-func pathGetHandler5(@PathParam[name = p] a: Int): String {
+func pathGet5(@PathParam[name = p] a: Int): String {
     println(a)
     a.toString()
 }
 
 // test path param with a new name type is convert to Int32 
 @Get[path = "/path6/{p}"]
-func pathGetHandler6(@PathParam[name = p] a: Int32): String {
+func pathGet6(@PathParam[name = p] a: Int32): String {
     println(a)
     a.toString()
 }
 
 // test path param with no new name
 @Get[path = "/query1"]
-func queryGetHandler1(@QueryParam name: String): String {
+func queryGet1(@QueryParam name: String): String {
     println(name)
     name
 }
 
 // test path param with a new name
 @Get[path = "/query2"]
-func queryGetHandler2(@QueryParam[name = q1] name: String): String {
+func queryGet2(@QueryParam[name = q1] name: String): String {
     println(name)
     name
 }
 
 // test path param with list type
 @Get[path = "/query3"]
-func queryGetHandler3(@QueryParam[name = q1] name: ArrayList<String>): String {
+func queryGet3(@QueryParam[name = q1] name: ArrayList<String>): String {
     println(name)
     "list"
 }
 
 // test path param with array type
 @Get[path = "/query4"]
-func queryGetHandler4(@QueryParam[name = q1] name: Array<String>): String {
+func queryGet4(@QueryParam[name = q1] name: Array<String>): String {
     println(name)
     "array"
 }
 
 // test path param with defalut
 @Get[path = "/query5"]
-func queryGetHandler5(@QueryParam[name = q1, default = "x"] name: String): String {
+func queryGet5(@QueryParam[name = q1, default = "x"] name: String): String {
     println(name)
     name
 }
 
 // test path param with String type
 @Post[path = "/postform1"]
-func postfromHandler1(@PostFormParam[name = f1] name: String): String {
+func postfrom1(@PostFormParam[name = f1] name: String): String {
     println(name)
     name
 }
 
 // test path param with String type
 @Post[path = "/context1"]
-func ctxPostHandler1(@ContextParam[name = c1] name: String): String {
+func ctxPost1(@ContextParam[name = c1] name: String): String {
     println(name)
     name
 }
 
 // test path param with Int type
 @Post[path = "/context2"]
-func ctxPostHandler2(@ContextParam[name = c1] id: Int): String {
+func ctxPost2(@ContextParam[name = c1] id: Int): String {
     println(id)
     id.toString()
 }
@@ -147,13 +149,81 @@ class TestCtxParam <: ToString {
 
 // test path param with Int type
 @Post[path = "/context3"]
-func ctxPostHandler3(@ContextParam[name = c1] ctxParm: TestCtxParam): String {
+func ctxPost3(@ContextParam[name = c1] ctxParm: TestCtxParam): String {
     ctxParm.toString()
+}
+
+// test body param with string type
+@Post[path = "/body1"]
+func bodyPost1(@BodyParam body: String): String {
+    body
+}
+
+@Json
+@Derive[ToString]
+class TestBody {
+    var a: String  = ""
+    var b: Int = 0
+}
+
+// test body param with string type
+@Post[path = "/body2"]
+func bodyPost2(@BodyParam body: ?TestBody): String {
+    body.getOrThrow().toString()
+}
+
+// test body param with json type
+@Post[path = "/body3"]
+func bodyPost3(@BodyParam body: Option<TestBody>): String {
+    body.getOrThrow().toString()
+}
+
+// test body param with json type
+@Post[path = "/body4"]
+func bodyPost4(@BodyParam body: TestBody): String {
+    body.toString()
+}
+
+// test body param with json type and return json
+@Post[path = "/body5", provider=json]
+func bodyPost5(@BodyParam body: TestBody): TestBody {
+    body
+}
+
+// test header param
+@Post[path = "/header1"]
+func headerPost1(@HeaderParam[name="X-Tokens", default="xxx"] token: String): String {
+    token
+}
+
+// test header param
+@Post[path = "/header2"]
+func headerPost2(@HeaderParam[name="X-IDS"] ids: Array<String>): String {
+    ids.toString()
+}
+
+// test header param
+@Post[path = "/header3"]
+func headerPost3(@HeaderParam[name="X-Tokens"] token: ?String): String {
+    token.getOrThrow().toString()
+}
+
+// test header param
+@Post[path = "/cookie1", provider=json]
+func cookiePost1(@CookieParam[name="csrf-token"] token: ?String): String {
+    token.getOrThrow().toString()
 }
 
 @Test
 public class MacroTestCaseSuit {
     @TestCase
     public func testAll() {
+        let joy = Joy.default()
+        JoyHandlers.registerTo(joy)
+        let fut = spawn {
+            joy.run("127.0.0.1", 18882)
+        }
+        sleep(Duration.second)
+        fut.cancel()
     }
 }

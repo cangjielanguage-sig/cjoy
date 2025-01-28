@@ -57,7 +57,6 @@ public class Joy {
     private var _server: ?Server = None
     private let _config: JoyConfig
     private let _name: String
-    private let _genHandlers: ArrayList<(String, Array<String>, JoyRequestHandler)> = ArrayList()
     public let router: JoyRouters
 
     private init(config: JoyConfig, name: String) {
@@ -106,17 +105,6 @@ public class Joy {
         joy
     }
 
-   /**
-     * add the handler for generate code by macros
-     *
-     * @param path: the path
-     * @param methods: the methods
-     * @param handler: the handler
-     */
-    public func addHandler(path: String, methods: Array<String>, handler: JoyRequestHandler) {
-        _genHandlers.add((path, methods, handler))
-    } 
-
     /**
      * run http server at address:port
      *
@@ -136,15 +124,7 @@ public class Joy {
         let server = serverBuidler.distributor(router.distributor).build()
         if (_config.enableDebugLog) {
             server.logger.level = LogLevel.DEBUG
-        }
-
-        for ( it in _genHandlers ) {
-            let (path, methods, handler) = it
-            let rg = router.findGroup(path)
-            let rpath = path[rg.basePath().size..path.size]
-            rg.handle(methods, rpath, handler)
-        }
-        
+        }        
         _config.logger = server.logger
         _server = Some(server)
         _config.logger.debug("[Joy#run] route tree:\n${router.dump()}")

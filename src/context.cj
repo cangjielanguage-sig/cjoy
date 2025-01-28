@@ -244,6 +244,26 @@ public class JoyContext {
     }
 
     /**
+    * reply response with json body and status code
+    *
+    * @param status: the http status code
+    * @param body: the string body
+    */
+    public func json(status: UInt16, body: String): Unit {
+        string(status, "application/json;charset=UTF-8", body)
+    }
+
+   /**
+    * reply response with json body and and status code OK(200)
+    *
+    * @param status: the http status code
+    * @param body: the string body
+    */
+    public func json(body: String): Unit {
+        string(HttpStatusCode.STATUS_OK, "application/json;charset=UTF-8", body)
+    }
+
+    /**
     * reply response with the body of content type and status code
     *
     * @param contentType: the content type 

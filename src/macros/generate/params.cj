@@ -102,7 +102,7 @@ class ParamInfo {
         }
         if (ptype.value == "Option") {
             return quote(
-                let $(pname): ?$(pGenericType) = ctx.readJsonBody()
+                let $(pname): ?$(pGenericType) = ctx.readJsonBody<$(pGenericType)>()
             )
         } else {
             return quote(
@@ -182,7 +182,7 @@ class ParamInfo {
 
         if (isArrayStringType()) {
             return quote(
-                let $(pname) = Array(ctx.readHeaders($(this.getName())))
+                let $(pname) = ctx.readHeaders($(this.getName())).toArray()
             )
         }
 
@@ -257,7 +257,7 @@ class ParamInfo {
     }
 
     func parseFuncParam(input: Tokens): Unit {
-        let supportTypes = "String, PrimitiveType, JsonDeserializable, Opition<JsonDeserializable>, Opition<String>, ArrayList<String>, Array<Strng>"
+        let supportTypes = "String, PrimitiveType, T <: JsonDeserializable, Opition<T <: JsonDeserializable>, Opition<String>, ArrayList<String>, Array<Strng>"
         let funcParam = FuncParam(input)
         pname = funcParam.identifier
         let paramType = funcParam.paramType

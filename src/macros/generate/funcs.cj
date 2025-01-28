@@ -20,6 +20,7 @@ class FuncInfo {
 
     var path: String = ""
     var provider: String = ""
+    var methods: String = ""
 
     init(marcroName: String, catgory: MethodCatgory, decl: FuncDecl) {
         this.marcroName = marcroName
@@ -33,9 +34,19 @@ class FuncInfo {
                 ident: Token, value: Token => match (ident.value) {
                     case "path" => this.path = value.value
                     case "provider" => this.provider = value.value
+                    case "methods"  => this.methods = value.value
                     case _ => throw Exception("${marcroName} attriable should be name, consumer, provider")
                 }
             })
+    }
+
+    func getMethods(): Array<String> {
+        if (methods.isEmpty()) {
+            return [marcroName.toAsciiUpper()]
+        }
+
+        let array = methods.split(",", removeEmpty:true)
+        array |> map {a: String => a.trimAscii()} |> collectArray
     }
 
     private func declVars(): (Tokens, Tokens) {
@@ -81,32 +92,32 @@ class FuncInfo {
             let tt = (delType as TupleType).getOrThrow()
             if (tt.types.size != 2) {
                 diagReport(DiagReportLevel.ERROR, decl.toTokens(),
-                    "return type must is tuple with 2 element, first is Unit16, second is String or JsonSerializable",
+                    "return type must is tuple with 2 element, first is Uint16, second is String or JsonSerializable",
                     "(status, body)")
                 throw Exception(
-                    "return must is tuple with 2 element, first is Unit16, second is String or JsonSerializable")
+                    "return must is tuple with 2 element, first is Uint16, second is String or JsonSerializable")
             }
             ret += quote(
-                let (status, body) = $(funcName)($(params))
+                let (statusCode, bodyRsp) = $(funcName)($(params))
             )
             if (provider == "json") {
                 ret += quote(
-                    ctx.json(status, body) 
+                    ctx.json(statusCode, bodyRsp) 
                 )
             } else {
                 ret += quote(
-                    ctx.string(status, body.toString()) 
+                    ctx.string(statusCode, bodyRsp.toString()) 
                 )
             }
         } else if (delType.toTokens()[0].value != "Unit") {
-            ret += quote(let body = $(funcName)($(params)))
+            ret += quote(let bodyRsp = $(funcName)($(params)))
             if (provider == "json") {
                 ret += quote(
-                    ctx.json(body) 
+                    ctx.json(bodyRsp) 
                 )
             } else {
                 ret += quote(
-                    ctx.string(body.toString()) 
+                    ctx.string(bodyRsp.toString()) 
                 )
             }
         } else {
@@ -124,7 +135,11 @@ class FuncInfo {
         let (vars, params) = declVars()
         let callfunc = callFunc(params)
         quote(
-            class $(handlerName) <: JoyRequestHandler {
+            public class $(handlerName) <: JoyRequestHandler {
+                public static let INSTANCE = $(handlerName)()
+                init() {
+                    JoyHandlers.addHandler($(path), $(getMethods()), this)
+                }
                 public func handle(ctx: JoyContext): Unit {
                     $(vars)
                     $(callfunc)

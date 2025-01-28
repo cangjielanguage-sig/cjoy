@@ -15,6 +15,8 @@ a fast，lightweight and joy web framework.<br/>
 
 ## 样例
 
+### 使用API
+
 ```
 import cjoy.*
 
@@ -38,6 +40,49 @@ main(): Int64 {
     return 0
 }
 ```
+
+### 使用宏
+
+```
+import cjoy.*
+import cjoy.macros.*
+import cjoy.json.*
+
+@Json
+class UserInfo {
+    var id: String = ""
+    var name: String = ""
+    var address: String = ""
+    var gender: Int = 0
+}
+
+@Get[path = "/users/{name}"]
+func getUserName(@PathParam name: String): (UInt16, String) {
+    (200, "/users/${name}")
+}
+
+@Get[path = "/users", provider="json"]
+func listUsers(@QueryParam[name=id] id: String): UserInfo {
+    let usr = UserInfo()
+    usr.id = id
+    usr.name = "xiao"
+    usr.address = "shenzhen"
+    usr
+}
+
+main(): Int64 {
+    var cfg = JoyConfig()
+    cfg.enableDebugLog = true
+    // 创建joy实例
+    let joy = Joy.create(cfg)
+    // 注册生成的handlers
+    JoyHandlers.registerTo(joy)
+    joy.run("127.0.0.1", 18881)
+    return 0
+}
+```
+
+更多的样例请参见 [examples](examples/README.md) 。
 
 ## 功能
 
@@ -208,6 +253,80 @@ joy.router
 
 注：
   - 所有中间件与路由Handler注册目前只支持单线程
+
+## 宏
+
+Cjoy提供一系列的宏简化Handler注册与参数展开，业务只需要实现最简的方法，样例可以参见 [test/macro_test.cj](src/test/macro_test.cj) 。
+
+```
+@Get[path = "/path/{p}"]
+func pathGet(@PathParam[name = p] a: ?String): String {
+    println(a)
+    a.getOrDefault({=> "p"})
+}
+
+@Get[path = "/test"]
+func testGet(c: JoyContext): (UInt16, String) {
+    c.setCtxParam("Test", 1)
+    (200, "helloword")
+}
+```
+
+Handler注册宏，作用在函数上：
+
+ - Get[path="/abc/{id}", provider=json]
+ - Post[path="/abc/{name:[a-z]{3,4}}", provider=json]
+ - Put[path="/abc/def", provider=json]
+ - Delete[path="/abc", provider=json]
+ - Patch[path="/abc", provider=json]
+ - Header[path="/abc", provider=json]
+ - Methods[path="/abc", methods="PUT,POST", provider=json]
+
+参数说明：
+ - path：必选，指定handler处理的URL全路由，如果存在对应Group，框架会自动查找，注册到对应的Group上；
+ - provider：可选，只有响应返回json时指定，且方法返回值必须实现JsonSerializable接口；
+ - methods: 只有在Methods宏上使用，注册handler处理Method列表；
+  
+函数参数展开宏，作用在函数入参上：
+  
+  - PathParam[name=id]：获取param路由的参数值，指定`/abc/{id}`名称，当方法参数名与URL的提取参数名不一样时指定；
+  - PathParam：获取param路由的参数值，方法参数名与URL的提取参数名一样；
+  - QueryParam[name=id，default="abc"]：获取URL Query参数值，default可选；
+  - QueryParam: 获取URL Query参数值，default可选；
+  - PostFormParam[name=id，default="abc"]：获取PostForm参数值，default可选；
+  - PostFormParam: 获取PostForm参数值，default可选；
+  - HeaderParam[name=id，default="abc"]: 获取Header参数值，default可选；
+  - HeaderParam: 获取Header参数值，default可选；
+  - ContextParam[name=id]: 获取Context参数值；
+  - ContextParam: 获取Context参数值；
+  - CookieParam[name=id]: 获取Cookie参数值；
+  - CookieParam: 获取Cookie参数值；
+  - BodyParam: 获取Context参数值；
+
+函数入参类型支持：
+
+  - `String` ：对于QueryParam, PostFormParam, HeaderParam, CookieParam宏标注的参数；
+  - `基本类型`：如Int，PathParam，QueryParam, PostFormParam, HeaderParam宏标注的参数，String转换对应的基本类型；
+  - `?String`：QueryParam, PostFormParam, HeaderParam, CookieParam宏标注的参数；
+  - `Option<String>`：QueryParam, PostFormParam, HeaderParam, CookieParam宏标注的参数；
+  - `ArrayList<String>`：QueryParam, PostFormParam, HeaderParam宏标注的参数有多个值时；
+  - `Array<String>` ：QueryParam, PostFormParam, HeaderParam宏标注的参数有多个值时；
+  - `任一类型`：ContextParam宏标注的参数；
+  - `Option<T> when T <: JsonDeserializable`: BodyParam宏标注的参数；
+  - `JoyContext`: 不需要宏标注；
+
+不支持入参名称：
+
+  - `_`： 不支持忽略参数名称为`_`；
+
+函数返回类型：
+
+  - `String`： 响应为`plain/text`；
+  - `(UInt16, String)`： 响应为`plain/text`，并指定状态码statusCode；
+  - `T when T <: JsonSerializable` ： 响应为`application/json`，同时Handler需要指定`provider=json`；
+  - `(UInt16, T when T <: JsonSerializable)`： 响应为`application/json`，并指定状态码statusCode，同时Handler需要指定`provider=json`；
+  - `Unit`: 响应为空，状态码statusCode默认为200 OK；
+  - ` `: 无返回类型，响应为空，状态码statusCode默认为200 OK；
 
 ## Json
 
