@@ -302,7 +302,7 @@ class JoyRouteGroup <: JoyRouters {
                 let idx = search.lastIndexOf(b'/').getOrDefault({=> -1})
                 if (!search.isEmpty() && idx > 0) {
                     search = search[0..idx]
-                } else if (idx == 0) {
+                } else if (idx <= 0) {
                     break
                 }
             }
@@ -383,9 +383,6 @@ class JoyRouteGroup <: JoyRouters {
     private static func unescapeSpecial(s: String): String {
         var res = s
         res = res.replace("/%2A", "/*")
-        res = res.replace("/%5C:", "/\\:")
-        // /\\: -> /\:
-        res = res.replace("/%5C%5C:", "/%5C:")
         // /\* -> /*
         res = res.replace("/%5C%2A", "/%2A")
         // /\\* -> /\*

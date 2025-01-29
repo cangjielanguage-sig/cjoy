@@ -1,0 +1,2 @@
+openssl req  -newkey rsa:2048 -nodes -keyout server_key.pem  -out server_csr.pem
+openssl x509 -signkey server_key.pem -in server_csr.pem  -req -days 3650 -out server_cert.pem

@@ -3,6 +3,8 @@
 <h1>CJoy</h1>
 a fast，lightweight and joy web framework.<br/>
 一个高性能、轻量、省心的Web框架。
+<br/>
+<img alt="" src="doc/imgs/logo.png" height="118" width="200" style="display: inline-block;" />
 </div>
 
 <p align="center">
@@ -310,7 +312,7 @@ Handler注册宏，作用在函数上：
 
 支持的函数入参类型：
 
-  - `String` ：对于QueryParam, PostFormParam, HeaderParam, CookieParam宏标注的参数；
+  - `String` ：QueryParam, PostFormParam, HeaderParam, CookieParam宏标注的参数；
   - `基本类型`：如Int，PathParam，QueryParam, PostFormParam, HeaderParam宏标注的参数，String转换对应的基本类型；
   - `?String`：QueryParam, PostFormParam, HeaderParam, CookieParam宏标注的参数；
   - `Option<String>`：QueryParam, PostFormParam, HeaderParam, CookieParam宏标注的参数；
@@ -332,8 +334,8 @@ Handler注册宏，作用在函数上：
   - `T when T <: JsonSerializable` ：响应为`Content-Type=application/json`，同时Handler需要指定`provider=json`，`StatusCode=200`；
   - `(UInt16, T when T <: JsonSerializable)`：响应为`Content-Type=application/json`，响应的状态码statusCode，同时Handler需要指定`provider=json`，`StatusCode=${statusCode}`；
   - `(T when T <: JsonSerializable, UInt16)`： 同上；
-  - `(UInt16, T <: ToString)`：响应为`Content-Type=plain/text`，`StatusCode=${statusCode}`；
-  - `(T <: ToString, UInt16)`：同上；
+  - `(UInt16, T when T <: ToString)`：响应为`Content-Type=plain/text`，`StatusCode=${statusCode}`；
+  - `(T when T <: ToString, UInt16)`：同上；
   - `UInt16`: 响应`StatusCode=${statusCode}`；
   - `Unit`: 无返回类型，响应`StatusCode=200`；
   - ` `: 无返回类型，响应`StatusCode=200`；
@@ -341,7 +343,7 @@ Handler注册宏，作用在函数上：
 ### Middleware宏
 
 ```
-@Middleware[groups="/a/b/c,/a/c"]
+@Middleware[groups = "/a/b/c,/a/c"]
 func testMiddleware(ctx: JoyContext, chain: JoyRequestHandlerChain): Unit {
     chain.next(ctx)
 }
@@ -350,15 +352,16 @@ func testMiddleware(ctx: JoyContext, chain: JoyRequestHandlerChain): Unit {
 Middleware注册宏，作用在函数上：
 
 - `@Middleware[groups="/a,/b"]`
+- `@Middleware`
 
 参数说明：
 
-- `groups`: 多个group的全路径。如果路径是/a/b/c，会自动生成`let g = group("/a").group("/b").group("/c")`，但Middleware只会注册到`group /a/b/c`
+- `groups`: 指定多个Group的全路径。如果路径是`/a/b/c`，会自动生成`let g = group("/a").group("/b").group("/c")`，但Middleware只会注册到`Group /a/b/c`，如果不带group参数，则Middleware注册到根Group。
 
 注：
  
- - Middleware要先于Handler注册
- - 即`JoyMiddlewares.registerTo(joy)` 需要在 `JoyHandlers.registerTo(joy)` 前调用 
+ - Middleware要先于Handler注册；
+ - 即`JoyMiddlewares.registerTo(joy)` 需要在 `JoyHandlers.registerTo(joy)` 前调用；
 
 ## Json
 
@@ -435,7 +438,7 @@ joy.router.get("/sse", {
 
 欢迎给我们提交 PR，欢迎给我们提交 Issue，欢迎参与任何形式的贡献。
 
-fork时请保留上游仓库地址[Cangjie-SIG/cjoy](https://gitcode.com/Cangjie-SIG/cjoy) 或 [lanlingx/cjoy](https://gitcode.com/lanlingx/cjoy) 。
+fork时请保留上游仓库地址 [Cangjie-SIG/cjoy](https://gitcode.com/Cangjie-SIG/cjoy) 或 [lanlingx/cjoy](https://gitcode.com/lanlingx/cjoy) 。
 
 本项目的维护者是 [@lanlingx](https://gitcode.com/lanlingx) 。
 

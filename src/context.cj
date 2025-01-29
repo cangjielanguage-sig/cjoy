@@ -5,7 +5,7 @@
 package cjoy
 
 import std.collection.*
-import std.io.{ByteBuffer, copy}
+import std.io.{ByteBuffer, copy, StringReader}
 import std.net.IPAddress
 import log.Logger
 import net.http.{HttpContext, RedirectHandler, NotFoundHandler, HttpStatusCode, HttpResponseBuilder, Cookie}
@@ -191,8 +191,7 @@ public class JoyContext {
         }
 
         let buffer = ByteBuffer()
-        copy(_httpContxt.request.body, to: buffer)
-        let reader = JsonReader(buffer)
+        let reader = JsonReader(_httpContxt.request.body)
         T.fromJson(reader)
     }
 
@@ -213,7 +212,8 @@ public class JoyContext {
      * @return the object of string
      */
     public func readString(): String {
-        String.fromUtf8(readRawData())
+        let reader = StringReader(_httpContxt.request.body)
+        reader.readToEnd()
     }
 
     /**
@@ -478,15 +478,15 @@ public class JoyContext {
     }
 
     /**
-    * create a chunked writer 
-    */
+     * create a chunked writer
+     */
     public func chunked(): JoyChunkedWriter {
         JoyChunkedWriter(_httpContxt)
     }
 
     /**
-    * create a SseEmitter
-    */
+     * create a SseEmitter
+     */
     public func eventStream(): JoySseEmitter {
         JoySseEmitter(_httpContxt)
     }

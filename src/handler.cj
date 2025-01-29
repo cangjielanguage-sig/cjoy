@@ -5,7 +5,7 @@
 package cjoy
 
 import std.collection.{forEach, ArrayList, HashMap}
-import net.http.{NotFoundHandler, HttpStatusCode}
+import net.http.{notFound, HttpStatusCode}
 
 public interface JoyRequestHandler {
     /**
@@ -26,7 +26,7 @@ public class JoyFuncHandler <: JoyRequestHandler {
 
 public class JoyNotFoundHandler <: JoyRequestHandler {
     public func handle(ctx: JoyContext): Unit {
-        NotFoundHandler().handle(ctx.httpContext)
+        notFound(ctx.httpContext)
     }
 }
 

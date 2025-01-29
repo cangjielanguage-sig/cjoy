@@ -87,6 +87,9 @@ public class JoyChunkedWriter <: ChunkedWriter {
         super(httpContext)
     }
 
+    /**
+     * write string data then send it
+     */
     public func write(data: String): JoyChunkedWriter {
         checkEnd()
         _httpResponseWriter.write(data.toArray())
@@ -94,6 +97,9 @@ public class JoyChunkedWriter <: ChunkedWriter {
         this
     }
 
+    /**
+     * write bytes data then send it
+     */
     public func write(data: Array<Byte>): JoyChunkedWriter {
         checkEnd()
         _httpResponseWriter.write(data)
@@ -101,6 +107,9 @@ public class JoyChunkedWriter <: ChunkedWriter {
         this
     }
 
+    /**
+     * write data which be serializabled to json then send it
+     */
     public func writeJson<T>(data: T): JoyChunkedWriter where T <: JsonSerializable {
         let buffer = ByteBuffer()
         let writer = JsonWriter(buffer)
@@ -118,6 +127,9 @@ public class JoySseEmitter <: ChunkedWriter {
         responseBuilder.header("Cache-Control", "no-cache")
     }
 
+    /**
+     * write data which be encoded to SSE
+     */
     public func sendEvent(data: ServerEventBuilder): JoySseEmitter {
         checkEnd()
         _httpResponseWriter.write(data.build().toArray())
