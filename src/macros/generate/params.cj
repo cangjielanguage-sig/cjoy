@@ -102,11 +102,11 @@ class ParamInfo {
         }
         if (ptype.value == "Option") {
             return quote(
-                let $(pname): ?$(pGenericType) = ctx.readJsonBody<$(pGenericType)>()
+                let $(pname): ?$(pGenericType) = ctx.readJson<$(pGenericType)>()
             )
         } else {
             return quote(
-                let $(pname): $(ptype) = ctx.readJsonBody<$(ptype)>().getOrThrow()
+                let $(pname): $(ptype) = ctx.readJson<$(ptype)>().getOrThrow()
             )
         }
     }

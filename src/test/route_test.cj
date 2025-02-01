@@ -90,7 +90,7 @@ public class RouteTestCaseSuit {
                 "/json",
                 {
                     ctx: JoyContext =>
-                    let userInfo = ctx.readJsonBody<UserInfo>().getOrThrow()
+                    let userInfo = ctx.readJson<UserInfo>().getOrThrow()
                     ctx.json(userInfo)
                 }
             )

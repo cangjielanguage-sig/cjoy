@@ -391,7 +391,7 @@ class UserInfo {
 
 JoyContext提供两个函数支持对HTTP Body的绑定与映射：
 
- - `readJsonBody`：对Body内容反序列化为类与结构体
+ - `readJson`：对Body内容反序列化为类与结构体
  - `json`: 序列化类与结构体对象序列化并设置Body内容
 
 使用示例：[examples/rest](examples/rest/src/main.cj)

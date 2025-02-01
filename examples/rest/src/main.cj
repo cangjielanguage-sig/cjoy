@@ -20,11 +20,11 @@ class UserHandler {
     let users: HashMap<String, UserInfo> = HashMap()
 
     public func create(ctx: JoyContext): Unit {
-        let user = ctx.readJsonBody<UserInfo>()
+        let user = ctx.readJson<UserInfo>()
         if (let Some(u) <- user) {
             users.add(u.name, u)
             ctx.logger.info("save user info, name=${u.name}")
-            ctx.succes(HttpStatusCode.STATUS_CREATED)
+            ctx.success(HttpStatusCode.STATUS_CREATED)
         } else {
             ctx.error(HttpStatusCode.STATUS_BAD_REQUEST)
         }
@@ -42,12 +42,12 @@ class UserHandler {
     public func delete(ctx: JoyContext): Unit {
         let name = ctx.getParam("name").getOrThrow()
         users.remove(name)
-        ctx.succes(HttpStatusCode.STATUS_NO_CONTENT)
+        ctx.success(HttpStatusCode.STATUS_NO_CONTENT)
     }
 
     public func update(ctx: JoyContext): Unit {
         let name = ctx.getParam("name").getOrThrow()
-        let user = ctx.readJsonBody<UserInfo>().getOrThrow()
+        let user = ctx.readJson<UserInfo>().getOrThrow()
         if (user.name == name) {
             match (users.get(name)) {
                 case Some(u) =>

@@ -182,7 +182,7 @@ public class JoyContext {
      *
      * @return the object of T
      */
-    public func readJsonBody<T>(): ?T where T <: JsonDeserializable<T> {
+    public func readJson<T>(): ?T where T <: JsonDeserializable<T> {
         if (_httpContxt.request.bodySize.isSome() && _httpContxt.request.bodySize.getOrThrow() == 0) {
             return None
         }
