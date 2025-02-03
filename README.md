@@ -1,4 +1,3 @@
-
 <div align="center">
 <h1>CJoy</h1>
 a fast，lightweight and joy web framework.<br/>
@@ -58,18 +57,22 @@ class UserInfo {
     var gender: Int = 0
 }
 
-@Get[path = "/users/{name}"]
-func getUserName(@PathParam name: String): (UInt16, String) {
-    (200, "/users/${name}")
+@Get[path = "/users/{name}", provider="json"]
+func getUser(@PathParam name: String): (UInt16, UserInfo) {
+    let usr = UserInfo()
+    usr.id = "00009527"
+    usr.name = name
+    usr.address = "shenzhen"
+    (200, usr)
 }
 
 @Get[path = "/users", provider="json"]
-func listUsers(@QueryParam[name = id, default = xiao] id: String): UserInfo {
+func listUsers(@QueryParam[name = id, default = 00009527] id: String): Array<UserInfo> {
     let usr = UserInfo()
     usr.id = id
     usr.name = "xiao"
     usr.address = "shenzhen"
-    usr
+    [usr]
 }
 
 main(): Int64 {
@@ -291,7 +294,7 @@ Handler注册宏，作用在函数上：
 参数说明：
 
  - `path`：必选，指定handler处理的URL全路由，如果存在对应Group，框架会自动查找，注册到对应的Group上；
- - `provider`：可选，只有响应返回json时指定，且方法返回值必须实现JsonSerializable接口；
+ - `provider`：可选，只有响应返回json时指定，且方法返回值必须实现JsonSerializable接口，默认是返文本Body；
  - `methods`: 只有在Methods宏上使用，注册handler处理Method列表；
   
 函数参数展开宏，作用在函数入参上：
@@ -441,6 +444,8 @@ joy.router.get("/sse", {
 fork时请保留上游仓库地址 [Cangjie-SIG/cjoy](https://gitcode.com/Cangjie-SIG/cjoy) 或 [lanlingx/cjoy](https://gitcode.com/lanlingx/cjoy) 。
 
 本项目的维护者是 [@lanlingx](https://gitcode.com/lanlingx) 。
+
+开发指导请参见 [doc/dev_guide.md](doc/dev_guide.md) 。
 
 ## 协议
 
