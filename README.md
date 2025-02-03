@@ -288,14 +288,18 @@ Handler注册宏，作用在函数上：
  - `@Put[path="/abc/def", provider=json]`
  - `@Delete[path="/abc", provider=json]`
  - `@Patch[path="/abc", provider=json]`
- - `@Header[path="/abc", provider=json]`
+ - `@Head[path="/abc", provider=json]`
  - `@Methods[path="/abc", methods="PUT,POST", provider=json]`
 
 参数说明：
 
  - `path`：必选，指定handler处理的URL全路由，如果存在对应Group，框架会自动查找，注册到对应的Group上；
- - `provider`：可选，只有响应返回json时指定，且方法返回值必须实现JsonSerializable接口，默认是返文本Body；
+ - `provider`：可选，只有响应返回json时指定，且方法返回值必须实现JsonSerializable接口，默认是返回文本Body；
  - `methods`: 只有在Methods宏上使用，注册handler处理Method列表；
+  
+备注：
+
+  - `@Get[path="/users/{id}"]`，如果存在`@Middleware[groups="/users"]`，则它会创建`Group /users`，则此GET Handler会注册到`Group /users`下
   
 函数参数展开宏，作用在函数入参上：
   
@@ -359,7 +363,7 @@ Middleware注册宏，作用在函数上：
 
 参数说明：
 
-- `groups`: 指定多个Group的全路径。如果路径是`/a/b/c`，会自动生成`let g = group("/a").group("/b").group("/c")`，但Middleware只会注册到`Group /a/b/c`，如果不带group参数，则Middleware注册到根Group。
+- `groups`: 指定多个Group的全路径。如果路径是`/a/b/c`，会自动生成`let g = group("/a").group("/b").group("/c")`，但Middleware只会注册到`Group /a/b/c`，如果不带groups参数，则Middleware注册到根Group。
 
 注：
  
@@ -406,15 +410,15 @@ CJoy 提供对Chunked的封装，支持Chunked数据以及SSE(Server-Sent Events
 ### Chunked
 
 ```
-joy.router.get("/chuncked", {
-      ctx: JoyContext =>
-      let sender = ctx.chunked()
-      for (num in 1..10) {
-          sender.write(num.toString())
-          sleep(Duration.millisecond*200)
-      }
-      sender.end()
-  })
+router.get("/chuncked", {
+    ctx: JoyContext =>
+    let sender = ctx.chunked()
+    for (num in 1..10) {
+        sender.write(num.toString())
+        sleep(Duration.millisecond*200)
+    }
+    sender.end()
+})
 ```
 
  - 调用`JoyContext.chunked()` 创建 JoyChunkedWriter
@@ -423,7 +427,7 @@ joy.router.get("/chuncked", {
 ### SSE
 
 ```
-joy.router.get("/sse", {
+router.get("/sse", {
     ctx: JoyContext =>
     let emitter = ctx.eventStream()
     for (num in 1..10) {
