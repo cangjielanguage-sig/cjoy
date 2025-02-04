@@ -204,6 +204,18 @@ func bodyPost5(@BodyParam body: TestBody): TestBody {
     body
 }
 
+// test body param with json type and return json
+@Post[path = "/body6", provider = json]
+func bodyPost6(@BodyParam body: TestBody): Array<TestBody> {
+    [body]
+}
+
+// test body param with json type and return json
+@Post[path = "/body7", provider = json]
+func bodyPost7(@BodyParam body: TestBody): (UInt16, Array<TestBody>) {
+    (200, [body])
+}
+
 // test header param
 @Post[path = "/header1"]
 func headerPost1(@HeaderParam[name = "X-Tokens", default = "xxx"] token: String): String {

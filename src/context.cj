@@ -5,7 +5,7 @@
 package cjoy
 
 import std.collection.*
-import std.io.{ByteBuffer, copy, StringReader}
+import std.io.{InputStream, ByteBuffer, copy, StringReader}
 import std.net.IPAddress
 import log.Logger
 import net.http.{HttpContext, RedirectHandler, NotFoundHandler, HttpStatusCode, HttpResponseBuilder, Cookie}
@@ -15,7 +15,7 @@ import encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonReader, J
  * the context which holds the engine config, params, context params and any you need.
  */
 public class JoyContext {
-    private let _httpContxt: HttpContext
+    private let _httpContext: HttpContext
     private let _config: JoyConfig
     private let _paramMap: HashMap<String, String>
     private let _ctxParamMap: HashMap<String, Any>
@@ -24,9 +24,9 @@ public class JoyContext {
     // the index of executing handler chain
     var _handlerIndex: Int = 0
 
-    public init(httpContxt: HttpContext, paramMap: HashMap<String, String>, config: JoyConfig,
+    public init(httpContext: HttpContext, paramMap: HashMap<String, String>, config: JoyConfig,
         ctxParamMap: HashMap<String, Any>) {
-        _httpContxt = httpContxt
+        _httpContext = httpContext
         _config = config
         _paramMap = paramMap
         _ctxParamMap = ctxParamMap
@@ -37,7 +37,7 @@ public class JoyContext {
      */
     public prop httpContext: HttpContext {
         get() {
-            _httpContxt
+            _httpContext
         }
     }
 
@@ -115,7 +115,7 @@ public class JoyContext {
      *
      */
     public func getQuery(name: String): ?String {
-        _httpContxt.request.url.queryForm.get(name)
+        _httpContext.request.url.queryForm.get(name)
     }
 
     /**
@@ -127,7 +127,7 @@ public class JoyContext {
      *
      */
     public func getQuery(name: String, defaultValue: String): String {
-        let val = _httpContxt.request.url.queryForm.get(name)
+        let val = _httpContext.request.url.queryForm.get(name)
         val.getOrDefault({=> defaultValue})
     }
 
@@ -139,7 +139,7 @@ public class JoyContext {
      *
      */
     public func getQueryList(name: String): ArrayList<String> {
-        _httpContxt.request.url.queryForm.getAll(name)
+        _httpContext.request.url.queryForm.getAll(name)
     }
 
     /**
@@ -150,7 +150,7 @@ public class JoyContext {
      *
      */
     public func getPostForm(name: String): ?String {
-        _httpContxt.request.form.get(name)
+        _httpContext.request.form.get(name)
     }
 
     /**
@@ -162,7 +162,7 @@ public class JoyContext {
      *
      */
     public func getPostForm(name: String, defaultValue: String): String {
-        let val = _httpContxt.request.form.get(name)
+        let val = _httpContext.request.form.get(name)
         val.getOrDefault({=> defaultValue})
     }
 
@@ -174,7 +174,7 @@ public class JoyContext {
      *
      */
     public func getPostFormList(name: String): ArrayList<String> {
-        _httpContxt.request.form.getAll(name)
+        _httpContext.request.form.getAll(name)
     }
 
     /**
@@ -183,7 +183,7 @@ public class JoyContext {
      * @return the object of T
      */
     public func readJson<T>(): ?T where T <: JsonDeserializable<T> {
-        if (_httpContxt.request.bodySize.isSome() && _httpContxt.request.bodySize.getOrThrow() == 0) {
+        if (_httpContext.request.bodySize.isSome() && _httpContext.request.bodySize.getOrThrow() == 0) {
             return None
         }
         if (!getContentType().startsWith("application/json")) {
@@ -191,7 +191,7 @@ public class JoyContext {
         }
 
         let buffer = ByteBuffer()
-        let reader = JsonReader(_httpContxt.request.body)
+        let reader = JsonReader(_httpContext.request.body)
         T.fromJson(reader)
     }
 
@@ -202,7 +202,7 @@ public class JoyContext {
      */
     public func readRawData(): Array<Byte> {
         let buffer = ByteBuffer()
-        copy(_httpContxt.request.body, to: buffer)
+        copy(_httpContext.request.body, to: buffer)
         buffer.bytes()
     }
 
@@ -212,7 +212,7 @@ public class JoyContext {
      * @return the object of string
      */
     public func readString(): String {
-        let reader = StringReader(_httpContxt.request.body)
+        let reader = StringReader(_httpContext.request.body)
         reader.readToEnd()
     }
 
@@ -227,7 +227,7 @@ public class JoyContext {
         let writer = JsonWriter(buffer)
         writer.writeValue(body)
         writer.flush()
-        _httpContxt
+        _httpContext
             .responseBuilder
             .status(status)
             .header("content-type", "application/json;charset=UTF-8")
@@ -272,7 +272,7 @@ public class JoyContext {
      * @param body: the string body
      */
     public func string(status: UInt16, contentType: String, body: String): Unit {
-        _httpContxt.responseBuilder.status(status).header("content-type", contentType).body(body).build()
+        _httpContext.responseBuilder.status(status).header("content-type", contentType).body(body).build()
     }
 
     /**
@@ -296,6 +296,48 @@ public class JoyContext {
     }
 
     /**
+     * reply response with the body of content type and status code
+     *
+     * @param contentType: the content type
+     * @param status: the http status code
+     * @param body: the bytes body
+     */
+    public func data(status: UInt16, contentType: String, body: Array<Byte>): Unit {
+        _httpContext.responseBuilder.status(status).header("content-type", contentType).body(body).build()
+    }
+
+    /**
+     * reply response with the body of content type and status code OK(200)
+     *
+     * @param contentType: the content type
+     * @param body: the bytes body
+     */
+    public func data(contentType: String, body: Array<Byte>): Unit {
+        data(HttpStatusCode.STATUS_OK, contentType, body)
+    }
+
+     /**
+     * reply response with the body of content type and status code
+     *
+     * @param contentType: the content type
+     * @param status: the http status code
+     * @param body: the stream body
+     */
+    public func data(status: UInt16, contentType: String, body: InputStream): Unit {
+        _httpContext.responseBuilder.status(status).header("content-type", contentType).body(body).build()
+    }
+
+    /**
+     * reply response with the body of content type and status code OK(200)
+     *
+     * @param contentType: the content type
+     * @param body: the stream body
+     */
+    public func data(contentType: String, body: InputStream): Unit {
+        data(HttpStatusCode.STATUS_OK, contentType, body)
+    }
+
+    /**
      * get the real client ip
      *
      * @return the client ip
@@ -316,7 +358,7 @@ public class JoyContext {
      * @return the remote ip
      */
     public func getRemoteIP(): String {
-        let remoteAddr = _httpContxt.request.remoteAddr
+        let remoteAddr = _httpContext.request.remoteAddr
         let ipPort = remoteAddr.split(":")
         if (ipPort.size >= 1) {
             return ipPort[0]
@@ -330,7 +372,7 @@ public class JoyContext {
      * @return the content type
      */
     public func getContentType(): String {
-        _httpContxt.request.headers.getFirst("content-type").getOrDefault({=> ""})
+        _httpContext.request.headers.getFirst("content-type").getOrDefault({=> ""})
     }
 
     /**
@@ -340,7 +382,7 @@ public class JoyContext {
      * @return the header value
      */
     public func readHeader(name: String): ?String {
-        _httpContxt.request.headers.getFirst(name)
+        _httpContext.request.headers.getFirst(name)
     }
 
     /**
@@ -350,7 +392,7 @@ public class JoyContext {
      * @return the header values
      */
     public func readHeaders(name: String): Collection<String> {
-        _httpContxt.request.headers.get(name)
+        _httpContext.request.headers.get(name)
     }
 
     /**
@@ -360,7 +402,7 @@ public class JoyContext {
      * @return the object of JoyContext
      */
     public func status(status: UInt16): JoyContext {
-        _httpContxt.responseBuilder.status(status)
+        _httpContext.responseBuilder.status(status)
         this
     }
 
@@ -368,7 +410,7 @@ public class JoyContext {
      * reply OK(200) response
      */
     public func ok(): Unit {
-        _httpContxt.responseBuilder.status(HttpStatusCode.STATUS_OK).build()
+        _httpContext.responseBuilder.status(HttpStatusCode.STATUS_OK).build()
     }
 
     /**
@@ -378,7 +420,7 @@ public class JoyContext {
      *
      */
     public func error(status: UInt16): Unit {
-        _httpContxt.responseBuilder.status(status).build()
+        _httpContext.responseBuilder.status(status).build()
     }
 
     /**
@@ -388,7 +430,7 @@ public class JoyContext {
      *
      */
     public func success(status: UInt16): Unit {
-        _httpContxt.responseBuilder.status(status).build()
+        _httpContext.responseBuilder.status(status).build()
     }
 
     /**
@@ -399,7 +441,7 @@ public class JoyContext {
      *
      */
     public func header(name: String, value: String): JoyContext {
-        _httpContxt.responseBuilder.header(name, value)
+        _httpContext.responseBuilder.header(name, value)
         this
     }
 
@@ -416,7 +458,7 @@ public class JoyContext {
         }
 
         let cache = HashMap<String, String>()
-        let cookies = _httpContxt.request.headers.get("cookie")
+        let cookies = _httpContext.request.headers.get("cookie")
         for (c in cookies) {
             let arr = c.split(";")
             for (a in arr) {
@@ -438,7 +480,7 @@ public class JoyContext {
      *
      */
     public func cookie(cookie: Cookie): JoyContext {
-        _httpContxt.responseBuilder.header("Set-Cookie", cookie.toSetCookieString())
+        _httpContext.responseBuilder.header("Set-Cookie", cookie.toSetCookieString())
         this
     }
 
@@ -448,7 +490,7 @@ public class JoyContext {
      * @param r: the render
      */
     public func render(r: JoyRender): Unit {
-        r.render(_httpContxt.responseBuilder)
+        r.render(_httpContext.responseBuilder)
     }
 
     /**
@@ -466,7 +508,7 @@ public class JoyContext {
      * @param status: the http status code
      */
     public func redirect(status: UInt16, location: String): Unit {
-        RedirectHandler(location, status).handle(_httpContxt)
+        RedirectHandler(location, status).handle(_httpContext)
     }
 
     /**
@@ -481,13 +523,13 @@ public class JoyContext {
      * create a chunked writer
      */
     public func chunked(): JoyChunkedWriter {
-        JoyChunkedWriter(_httpContxt)
+        JoyChunkedWriter(_httpContext)
     }
 
     /**
      * create a SseEmitter
      */
     public func eventStream(): JoySseEmitter {
-        JoySseEmitter(_httpContxt)
+        JoySseEmitter(_httpContext)
     }
 }

@@ -5,11 +5,15 @@
 package cjoy
 
 import std.collection.{ArrayList, HashMap, forEach}
+import std.fs.*
 import encoding.url.URL
 import net.http.*
 import log.Logger
 
 public interface JoyRouters {
+    /**
+     * return the distributor instance
+     */
     prop distributor: HttpRequestDistributor
 
     /**
@@ -107,54 +111,19 @@ public interface JoyRouters {
     }
 
     /**
+     * serves files with url path `relativePath` from the given file system `root`.
+     */
+    func staticFs(relativePath: String, root: String): JoyRouters
+
+    /*
+     * registers a single route with url path `relativePath` to serve a single file of the local filesystem.
+     */
+    func staticFile(relativePath: String, filepath: String): JoyRouters
+
+    /**
      * dump the route tree
      */
     func dump(): String
-}
-
-class JoyRouteHandler <: HttpRequestHandler {
-    public JoyRouteHandler(
-        let handler: JoyRequestHandler,
-        let paramMap: HashMap<String, String>,
-        let config: JoyConfig,
-        let ctxParamMap!: HashMap<String, Any> = HashMap()
-    ) {}
-
-    public func handle(ctx: HttpContext): Unit {
-        let joyCtx = JoyContext(ctx, paramMap, config, ctxParamMap)
-        handler.handle(joyCtx)
-    }
-}
-
-class JoyGroupRouteHandler <: JoyRequestHandler {
-    static let INSTANCE = JoyGroupRouteHandler()
-
-    public func handle(ctx: JoyContext): Unit {
-        // default handle is return not found
-        ctx.notFound()
-    }
-}
-
-class JoyRequestHandlerWrapper <: JoyRequestHandlerChain & JoyRequestHandler {
-    public JoyRequestHandlerWrapper(let handler: JoyRequestHandler, let mws: ArrayList<JoyMiddlewareHandler>) {}
-
-    public func handle(ctx: JoyContext): Unit {
-        ctx._handlerIndex = 0
-        if (mws.isEmpty()) {
-            handler.handle(ctx)
-        } else {
-            mws[ctx._handlerIndex].handle(ctx, this)
-        }
-    }
-
-    public func next(ctx: JoyContext): Unit {
-        ctx._handlerIndex += 1
-        if (ctx._handlerIndex < mws.size) {
-            mws[ctx._handlerIndex].handle(ctx, this)
-            return
-        }
-        handler.handle(ctx)
-    }
 }
 
 class TreeRouteDistributor <: HttpRequestDistributor & HttpRequestHandler {
@@ -439,6 +408,37 @@ class JoyRouteGroup <: JoyRouters {
         let wrapperHandler = JoyRequestHandlerWrapper(handler, _middlewares)
         methods |> forEach {method => addHandler(method, pattern, wrapperHandler)}
         _logger.debug("[Routers#groupHandle] add groute route handler, pattern=${pattern}, methods=${methods}")
+        this
+    }
+
+    public func staticFs(relativePath: String, root: String): JoyRouters {
+        let fp = canonicalize(root)
+        if (!exists(fp)) {
+            throw FSException("not existed file system root, root=${root}")
+        }
+
+        var path = if (relativePath[relativePath.size - 1] == b'/') {
+            relativePath + "*"
+        } else {
+            relativePath + "/*"
+        }
+
+        handle(["GET"], path, JoyFileSystemServeHandler(fp, _distributor._config))
+        this
+    }
+
+    public func staticFile(relativePath: String, filepath: String): JoyRouters {
+        let fp = canonicalize(filepath)
+        if (!exists(fp)) {
+            throw FSException("not existed file, filepath=${filepath}")
+        }
+
+        let fi = FileInfo(fp)
+        if (fi.isDirectory() || fi.isHidden() || !fi.canRead()) {
+            throw FSException("invalid file, filepath=${filepath}")
+        }
+
+        handle(["GET"], relativePath, JoyFileServeHandler(fp.toString()))
         this
     }
 }

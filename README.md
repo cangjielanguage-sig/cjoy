@@ -423,6 +423,7 @@ router.get("/chuncked", {
 
  - 调用`JoyContext.chunked()` 创建 JoyChunkedWriter
  - 调用`JoyChunkedWriter.write(...)` 写块数据，每调用一次发送一次Chunked
+ - 调用`JoyChunkedWriter.end` 写结束块
 
 ### SSE
 
@@ -438,8 +439,31 @@ router.get("/sse", {
 })
 ```
  - 调用`JoyContext.eventStream()` 创建 JoySseEmitter
- - 调用`JoyChunkedWriter.sendEvent(...)` 每调用一次发送一次Event
- - `ServerEventBuilder` 构建 SSE 数据
+ - 使用`ServerEventBuilder` 构建 SSE 数据，调用`JoyChunkedWriter.sendEvent(...)`，每调用一次发送一次Event
+ - 调用`JoyChunkedWriter.end` 写结束块
+
+
+## 文件服务器
+
+CJoy 提供文件服务器的封装，提供两个API：
+
+**单个文件路由**
+
+示例：`router.staticFile("/static/favicon.ico", "./resources/favicon.ico")`
+
+**多文件路由**
+
+示例：`router.staticFs("/static", "/var/www")`
+
+指定URL Path与本地路径，框架会注册`/static/*`的路由，支持如下：
+
+  - `/static/a.png` <--> `/var/www/a.png`
+  - `/static/a/b/c/d.png` <--> `/var/www/a/b/c/d.png`
+
+约束：
+
+- URL Path映射只能是本地文件，且不能是隐藏文件，不能是子目录
+- URL Path中禁止使用`..` 遍历上层路径
 
 ## 参与贡献
 

@@ -55,14 +55,24 @@ public class Joy {
     private static let _INSTANCES: ConcurrentHashMap<String, Joy> = ConcurrentHashMap()
 
     private var _server: ?Server = None
-    private let _config: JoyConfig
-    private let _name: String
+
+    public let config: JoyConfig
+    public let name: String
     public let router: JoyRouters
 
     private init(config: JoyConfig, name: String) {
-        _config = config
-        _name = name
+        this.config = config
+        this.name = name
         router = JoyRouteGroup(config)
+    }
+
+    /**
+    * return the net.http.Server
+    */
+    public prop server: Server {
+        get() {
+            _server.getOrThrow()
+        }
     }
 
     /**
@@ -122,12 +132,12 @@ public class Joy {
      */
     public func run(serverBuidler: ServerBuilder): Unit {
         let server = serverBuidler.distributor(router.distributor).build()
-        if (_config.enableDebugLog) {
+        if (config.enableDebugLog) {
             server.logger.level = LogLevel.DEBUG
         }
-        _config.logger = server.logger
+        config.logger = server.logger
         _server = Some(server)
-        _config.logger.debug("[Joy#run] route tree:\n${router.dump()}")
+        config.logger.debug("[Joy#run] route tree:\n${router.dump()}")
         server.serve()
     }
 
@@ -144,6 +154,6 @@ public class Joy {
                 server.close()
             }
         }
-        _INSTANCES.remove(_name)
+        _INSTANCES.remove(this.name)
     }
 }
