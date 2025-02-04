@@ -1,5 +1,11 @@
 /*
  * Copyright (c) lanlingx 2024-present. All rights resvered.
+ * CJoy is licensed under Mulan PSL v2.
+ * You can use this software according to the terms and conditions of the Mulan PSL v2.
+ * You may obtain a copy of Mulan PSL v2 at:
+ *          http://license.coscl.org.cn/MulanPSL2
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
+ * See the Mulan PSL v2 for more details.
  */
 
 package cjoy
@@ -7,6 +13,9 @@ package cjoy
 import std.collection.{forEach, ArrayList, HashMap}
 import net.http.{notFound, HttpStatusCode}
 
+/**
+* the interface of request handler
+*/
 public interface JoyRequestHandler {
     /**
      * process the request and reply response using context api
@@ -67,10 +76,21 @@ public class JoyHandlers {
     }
 }
 
+/**
+* the interface of request handler chain
+*/
 public interface JoyRequestHandlerChain {
+    /**
+    * move next handler
+    *
+    * @param ctx: the context
+    */
     func next(ctx: JoyContext): Unit
 }
 
+/**
+* the interface of request middleware handler
+*/
 public interface JoyMiddlewareHandler {
     /**
      * process the request

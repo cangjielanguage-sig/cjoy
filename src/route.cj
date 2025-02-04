@@ -1,5 +1,11 @@
 /*
  * Copyright (c) lanlingx 2024-present. All rights resvered.
+ * CJoy is licensed under Mulan PSL v2.
+ * You can use this software according to the terms and conditions of the Mulan PSL v2.
+ * You may obtain a copy of Mulan PSL v2 at:
+ *          http://license.coscl.org.cn/MulanPSL2
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
+ * See the Mulan PSL v2 for more details.
  */
 
 package cjoy
@@ -10,6 +16,9 @@ import encoding.url.URL
 import net.http.*
 import log.Logger
 
+/**
+* the inferface of router
+*/
 public interface JoyRouters {
     /**
      * return the distributor instance
@@ -417,7 +426,7 @@ class JoyRouteGroup <: JoyRouters {
             throw FSException("not existed file system root, root=${root}")
         }
 
-        var path = if (relativePath[relativePath.size - 1] == b'/') {
+        let path = if (relativePath[relativePath.size - 1] == b'/') {
             relativePath + "*"
         } else {
             relativePath + "/*"
