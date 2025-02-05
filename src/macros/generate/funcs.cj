@@ -65,12 +65,12 @@ class FuncInfo {
             let paramInfo = match (piOpt) {
                 case Some(val) => val
                 case _ =>
-                    let val = ParamInfo("", PC_NONE)
+                    let val = createParamVarGenerator(PC_NONE)
                     val.parse(fp.toTokens())
                     val
             }
 
-            vars += paramInfo.getDeclVarTokens()
+            vars += paramInfo.genTokens()
             if (params.size == 0) {
                 params += quote($(pid))
             } else {
@@ -148,7 +148,7 @@ class FuncInfo {
         ret
     }
 
-    func genCodes(): Tokens {
+    func genTokens(): Tokens {
         let handlerName = Token(TokenKind.IDENTIFIER, decl.identifier.value.toAsciiTitle() + "Handler")
 
         let (vars, params) = declVars()
@@ -178,7 +178,7 @@ public func parseFunc(marcroName: String, catgory: MethodCatgory, attr: Tokens, 
 
     let funcInfo = FuncInfo(marcroName, catgory, (decl as FuncDecl).getOrThrow())
     funcInfo.parseAttr(attr)
-    let tokens = funcInfo.genCodes()
+    let tokens = funcInfo.genTokens()
     ParamInfoCache.clear()
     tokens
 }

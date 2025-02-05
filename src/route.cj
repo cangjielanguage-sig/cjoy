@@ -12,6 +12,7 @@ package cjoy
 
 import std.collection.{ArrayList, HashMap, forEach}
 import std.fs.*
+import std.objectpool.ObjectPool 
 import encoding.url.URL
 import net.http.*
 import log.Logger
@@ -96,11 +97,11 @@ public interface JoyRouters {
     }
 
     /**
-     * adds the route `pattern` that matches `OPTION` http method to execute the `handler`.
+     * adds the route `pattern` that matches `OPTIONS` http method to execute the `handler`.
      */
-    func option(pattern: String, handler: JoyRequestHandler): JoyRouters
-    func option(pattern: String, handler: (ctx: JoyContext) -> Unit): JoyRouters {
-        option(pattern, JoyFuncHandler(handler))
+    func options(pattern: String, handler: JoyRequestHandler): JoyRouters
+    func options(pattern: String, handler: (ctx: JoyContext) -> Unit): JoyRouters {
+        options(pattern, JoyFuncHandler(handler))
     }
 
     /**
@@ -139,9 +140,11 @@ class TreeRouteDistributor <: HttpRequestDistributor & HttpRequestHandler {
     var _root: TreeNode<JoyRequestHandler> = TreeNode(NT_STATIC, b'\0', "")
     let _config: JoyConfig
     let _groups: HashMap<String, JoyRouters> = HashMap()
+    let _handlerPool: ObjectPool<JoyRouteHandler>
 
     init(config: JoyConfig) {
         this._config = config
+        this._handlerPool = ObjectPool({ => JoyRouteHandler(config) }, resetFunc: JoyRouteHandler.reset)
     }
 
     public func register(_: String, _: HttpRequestHandler): Unit {
@@ -154,11 +157,16 @@ class TreeRouteDistributor <: HttpRequestDistributor & HttpRequestHandler {
     }
 
     public func handle(ctx: HttpContext) {
-        let handler = lookup(ctx.request)
-        handler.handle(ctx)
+        let handler = _handlerPool.get()
+        try {
+            lookup(ctx.request, handler)
+            handler.handle(ctx)
+        } finally {
+            _handlerPool.put(handler)
+        }
     }
 
-    private func lookup(req: HttpRequest): HttpRequestHandler {
+    private func lookup(req: HttpRequest, obj: JoyRouteHandler): Unit {
         var path = if (_config.caseInsensitive) {
             req.url.path.toAsciiLower()
         } else {
@@ -168,34 +176,36 @@ class TreeRouteDistributor <: HttpRequestDistributor & HttpRequestHandler {
         let ri: RouteInfo = RouteInfo()
         var (node, handler) = _root.findRouteHandler(ri, req.method, path)
         if (node.isNone()) {
-            (node, handler) = _root.findRouteHandler(ri, "*", path)
-            if (node.isNone()) {
-                return JoyRouteHandler(_config.notFoundHandler, HashMap(), _config)
-            }
+            obj.handler = _config.notFoundHandler
+            return
         }
 
         if (handler.isNone()) {
             if (req.method == "OPTIONS") {
-                return OptionsHandler()
+                obj.handler = JoyOptionsHandler.INSTANCE
+                return
             }
+            
             if (ri.methodNotAllowed) {
-                let ctxParamMap = HashMap<String, Any>([("methods", ri.methodsAllowed)])
-                return JoyRouteHandler(_config.methodNotAllowedHandler, HashMap(), _config, ctxParamMap: ctxParamMap)
+                obj.ctxParamMap.add("methods", ri.methodsAllowed)
+                obj.handler = _config.methodNotAllowedHandler
+                return
             }
-            return JoyRouteHandler(_config.notFoundHandler, HashMap(), _config)
+
+            obj.handler = _config.notFoundHandler
+            return
         }
 
-        let paramMap: HashMap<String, String> = HashMap()
         if (!ri.routeParamKeys.isEmpty()) {
             if (ri.routeParamKeys.size != ri.routeParamValues.size) {
                 throw Exception("parameter list length mismatch")
             }
             for (idx in 0..ri.routeParamKeys.size) {
-                paramMap[ri.routeParamKeys[idx]] = ri.routeParamValues[idx]
+                obj.paramMap[ri.routeParamKeys[idx]] = ri.routeParamValues[idx]
             }
         }
 
-        JoyRouteHandler(handler.getOrThrow(), paramMap, _config)
+        obj.handler = handler.getOrThrow()
     }
 
     public func dump(): String {
@@ -320,7 +330,7 @@ class JoyRouteGroup <: JoyRouters {
             throw IllegalArgumentException("a handler on an existing path, `${_path}`")
         }
 
-        let allMethods = ["*"]
+        let allMethods = ["GET", "POST", "DELETE", "PUT", "PATCH", "HEAD", "OPTIONS"]
         groupHandle(allMethods, "", JoyGroupRouteHandler.INSTANCE)
         var xpattern = "/"
         groupHandle(allMethods, xpattern, JoyGroupRouteHandler.INSTANCE)
@@ -393,8 +403,8 @@ class JoyRouteGroup <: JoyRouters {
         this
     }
 
-    public func option(pattern: String, handler: JoyRequestHandler): JoyRouters {
-        handle(["OPTION"], pattern, handler)
+    public func options(pattern: String, handler: JoyRequestHandler): JoyRouters {
+        handle(["OPTIONS"], pattern, handler)
         this
     }
 

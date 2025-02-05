@@ -115,7 +115,7 @@ public class JsonClassInfo {
         let deserTokens = classInfo.genDeserializeFunc()
         JsonInfoCache.clear()
 
-        input + quote(
+        quote(
             extend $(classInfo.classId) <: JsonSerializable & JsonDeserializable<$(classInfo.classId)> {
                 $(serTokens)
                 $(deserTokens)

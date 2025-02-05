@@ -65,7 +65,7 @@ public class JsonFieldInfo {
         }
     }
 
-    public static func parse(attr: Tokens, input: Tokens): Tokens {
+    public static func parse(attr: Tokens, input: Tokens): Unit {
         let varDecl: Decl = parseDecl(input)
         if (!(varDecl is VarDecl)) {
             diagReport(DiagReportLevel.ERROR, input, "JsonField macro only using for the var field of struct or class",
@@ -77,8 +77,6 @@ public class JsonFieldInfo {
         let info = JsonFieldInfo(varId)
         info.parseAttr(attr)
         JsonInfoCache.addCache(varId, info)
-
-        input
     }
 }
 

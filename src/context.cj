@@ -21,21 +21,28 @@ import encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonReader, J
  * the context which holds the engine config, params, context params and any you need.
  */
 public class JoyContext {
-    private let _httpContext: HttpContext
+    var _httpContext: HttpContext
     private let _config: JoyConfig
     private let _paramMap: HashMap<String, String>
     private let _ctxParamMap: HashMap<String, Any>
-    private var _cookieCache: ?HashMap<String, String> = None
+    private var _cookieCache: HashMap<String, String> = HashMap()
 
     // the index of executing handler chain
     var _handlerIndex: Int = 0
 
-    public init(httpContext: HttpContext, paramMap: HashMap<String, String>, config: JoyConfig,
+    init(httpContext: HttpContext, paramMap: HashMap<String, String>, config: JoyConfig,
         ctxParamMap: HashMap<String, Any>) {
         _httpContext = httpContext
         _config = config
         _paramMap = paramMap
         _ctxParamMap = ctxParamMap
+    }
+
+    func reset() {
+        _paramMap.clear()
+        _ctxParamMap.clear()
+        _cookieCache.clear()
+        _handlerIndex = 0
     }
 
     /**
@@ -459,23 +466,21 @@ public class JoyContext {
      *
      */
     public func readCookie(name: String): ?String {
-        if (_cookieCache.isSome()) {
-            return _cookieCache.getOrThrow().get(name)
+        if (!_cookieCache.isEmpty()) {
+            return _cookieCache.get(name)
         }
 
-        let cache = HashMap<String, String>()
         let cookies = _httpContext.request.headers.get("cookie")
         for (c in cookies) {
             let arr = c.split(";")
             for (a in arr) {
                 let kv = a.split("=")
                 if (kv.size == 2) {
-                    cache.add(kv[0].trimAscii(), kv[1].trimAscii())
+                    _cookieCache.add(kv[0].trimAscii(), kv[1].trimAscii())
                 }
             }
         }
-        _cookieCache = Some(cache)
-        cache.get(name)
+        _cookieCache.get(name)
     }
 
     /**

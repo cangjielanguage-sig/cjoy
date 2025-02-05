@@ -17,7 +17,7 @@ public enum ParamCatgory {
     PC_PATH | PC_QUERY | PC_POSTFORM | PC_HEADER | PC_CONTEXT | PC_BODY | PC_COOKIE | PC_NONE
 }
 
-class ParamInfo {
+open class ParamInfo {
     let marcroName: String
     let catgory: ParamCatgory
 
@@ -54,26 +54,28 @@ class ParamInfo {
         return pname.value
     }
 
-    func getDeclVarTokens(): Tokens {
-        match (catgory) {
-            case PC_PATH => getXCateVarTokens("getParam", array: false)
-            case PC_QUERY => getXCateVarTokens("getQuery", array: true)
-            case PC_POSTFORM => getXCateVarTokens("getPostForm", array: true)
-            case PC_CONTEXT => getCtxCateVarTokens()
-            case PC_HEADER => getHeaderCateVarTokens()
-            case PC_COOKIE => getCookieCateVarTokens()
-            case PC_BODY => getBodyCateVarTokens()
-            case PC_NONE => getOtherVarTokens()
-        }
+    protected func isOptionStringType(): Bool {
+        ptype.value == "Option" && pGenericType.value == "String"
     }
 
-    private func getOtherVarTokens(): Tokens {
+    protected func isStringType(): Bool {
+        ptype.value == "String" && pGenericType.value == ""
+    }
+
+    protected func isArrayStringType(): Bool {
+        ptype.value == "Array" && pGenericType.value == "String"
+    }
+
+    protected func isArrayListStringType(): Bool {
+        ptype.value == "ArrayList" && pGenericType.value == "String"
+    }
+
+    public open func genTokens(): Tokens {
         if (ptype.value == "JoyContext") {
             if (pname.value == "ctx") {
                 Tokens()
             } else {
-                quote(
-                    let $(pname) = ctx
+                quote(let $(pname) = ctx
                 )
             }
         } else {
@@ -81,188 +83,7 @@ class ParamInfo {
         }
     }
 
-    private func getCtxCateVarTokens(): Tokens {
-        // context param
-        if (ptype.value == "Option") {
-            return quote(
-                let $(pname): ?$(pGenericType)= ctx.getCtxParm($(this.getName()))
-            )
-        } else {
-            return quote(
-                let $(pname): $(ptype)= ctx.getCtxParm<$(ptype)>($(this.getName())).getOrThrow()
-            )
-        }
-    }
-
-    private func getBodyCateVarTokens(): Tokens {
-        // body param
-        if (isOptionStringType()) {
-            return quote(
-                let $(pname) = Some(ctx.readString())
-            )
-        }
-        if (isStringType()) {
-            return quote(
-                let $(pname) = ctx.readString()
-            )
-        }
-        if (ptype.value == "Option") {
-            return quote(
-                let $(pname): ?$(pGenericType) = ctx.readJson<$(pGenericType)>()
-            )
-        } else {
-            return quote(
-                let $(pname): $(ptype) = ctx.readJson<$(ptype)>().getOrThrow()
-            )
-        }
-    }
-
-    private func getXCateVarTokens(fname: String, array!: Bool = false): Tokens {
-        // query, param, postform
-        let fn = Token(TokenKind.IDENTIFIER, fname)
-        if (isOptionStringType()) {
-            return quote(
-                let $(pname) = ctx.$(fn)($(this.getName()))
-            )
-        }
-
-        if (isStringType()) {
-            if (defValue != "") {
-                return quote(
-                    let $(pname) = ctx.$(fn)($(this.getName())).getOrDefault({=>$(defValue)})
-                )
-            } else {
-                return quote(
-                    let $(pname) = ctx.$(fn)($(this.getName())).getOrThrow()
-                )
-            }
-        }
-
-        if (isArrayStringType() && array) {
-            let fnl = Token(TokenKind.IDENTIFIER, fname + "List")
-            return quote(
-                let $(pname) = ctx.$(fnl)($(this.getName())).toArray()
-            )
-        }
-
-        if (isArrayListStringType() && array) {
-            let fnl = Token(TokenKind.IDENTIFIER, fname + "List")
-            return quote(
-                let $(pname) = ctx.$(fnl)($(this.getName()))
-            )
-        }
-
-        if (isPrimitive) {
-            if (defValue != "") {
-                return quote(
-                    let $(pname) = $(ptype).parse(ctx.$(fn)($(this.getName())).getOrDefault({=>$(defValue)}))
-                )
-            } else {
-                return quote(
-                    let $(pname) = $(ptype).parse(ctx.$(fn)($(this.getName())).getOrThrow())
-                )
-            }
-        }
-        Tokens()
-    }
-
-    private func getHeaderCateVarTokens(): Tokens {
-        // header param
-        if (isOptionStringType()) {
-            return quote(
-                let $(pname) = ctx.readHeader($(this.getName()))
-            )
-        }
-
-        if (isStringType()) {
-            if (defValue != "") {
-                return quote(
-                    let $(pname) = ctx.readHeader($(this.getName())).getOrDefault({=>$(defValue)})
-                )
-            } else {
-                return quote(
-                    let $(pname) = ctx.readHeader($(this.getName())).getOrThrow()
-                )
-            }
-        }
-
-        if (isArrayStringType()) {
-            return quote(
-                let $(pname) = ctx.readHeaders($(this.getName())).toArray()
-            )
-        }
-
-        if (isArrayListStringType()) {
-            return quote(
-                let $(pname) = ArrayList(ctx.readHeaders($(this.getName())))
-            )
-        }
-
-        if (isPrimitive) {
-            if (defValue != "") {
-                return quote(
-                    let $(pname) = $(ptype).parse(ctx.readHeader($(this.getName())).getOrDefault({=>$(defValue)}))
-                )
-            } else {
-                return quote(
-                    let $(pname) = $(ptype).parse(ctx.readHeader($(this.getName())).getOrThrow())
-                )
-            }
-        }
-        Tokens()
-    }
-
-    private func getCookieCateVarTokens(): Tokens {
-        // cookie param
-        if (isOptionStringType()) {
-            return quote(
-                let $(pname) = ctx.readCookie($(this.getName()))
-            )
-        }
-
-        if (isStringType()) {
-            if (defValue != "") {
-                return quote(
-                    let $(pname) = ctx.readCookie($(this.getName())).getOrDefault({=>$(defValue)})
-                )
-            } else {
-                return quote(
-                    let $(pname) = ctx.readCookie($(this.getName())).getOrThrow()
-                )
-            }
-        }
-
-        if (isPrimitive) {
-            if (defValue != "") {
-                return quote(
-                    let $(pname) = $(ptype).parse(ctx.readCookie($(this.getName())).getOrDefault({=>$(defValue)}))
-                )
-            } else {
-                return quote(
-                    let $(pname) = $(ptype).parse(ctx.readCookie($(this.getName())).getOrThrow())
-                )
-            }
-        }
-        Tokens()
-    }
-
-    private func isOptionStringType(): Bool {
-        ptype.value == "Option" && pGenericType.value == "String"
-    }
-
-    private func isStringType(): Bool {
-        ptype.value == "String" && pGenericType.value == ""
-    }
-
-    private func isArrayStringType(): Bool {
-        ptype.value == "Array" && pGenericType.value == "String"
-    }
-
-    private func isArrayListStringType(): Bool {
-        ptype.value == "ArrayList" && pGenericType.value == "String"
-    }
-
-    func parseFuncParam(input: Tokens): Unit {
+    private func parseFuncParam(input: Tokens): Unit {
         let supportTypes = "String, PrimitiveType, T <: JsonDeserializable, Opition<T <: JsonDeserializable>, Opition<String>, ArrayList<String>, Array<Strng>"
         let funcParam = FuncParam(input)
         pname = funcParam.identifier
@@ -321,6 +142,214 @@ class ParamInfo {
     }
 }
 
+open class UrlParamVarGenerator <: ParamInfo {
+    var fname: String = ""
+    var array: Bool = false
+
+    init(marcroName: String, catgory: ParamCatgory) {
+        super(marcroName, catgory)
+    }
+
+    public override func genTokens(): Tokens {
+        // query, param, postform
+        let fn = Token(TokenKind.IDENTIFIER, fname)
+        if (isOptionStringType()) {
+            return quote(let $(pname) = ctx.$(fn)($(this.getName()))
+            )
+        }
+
+        if (isStringType()) {
+            if (defValue != "") {
+                return quote(let $(pname) = ctx.$(fn)($(this.getName())).getOrDefault({=>$(defValue)})
+                )
+            } else {
+                return quote(let $(pname) = ctx.$(fn)($(this.getName())).getOrThrow()
+                )
+            }
+        }
+
+        if (isArrayStringType() && array) {
+            let fnl = Token(TokenKind.IDENTIFIER, fname + "List")
+            return quote(let $(pname) = ctx.$(fnl)($(this.getName())).toArray()
+            )
+        }
+
+        if (isArrayListStringType() && array) {
+            let fnl = Token(TokenKind.IDENTIFIER, fname + "List")
+            return quote(let $(pname) = ctx.$(fnl)($(this.getName()))
+            )
+        }
+
+        if (isPrimitive) {
+            if (defValue != "") {
+                return quote(let $(pname) = $(ptype).parse(ctx.$(fn)($(this.getName())).getOrDefault({=>$(defValue)}))
+                )
+            } else {
+                return quote(let $(pname) = $(ptype).parse(ctx.$(fn)($(this.getName())).getOrThrow())
+                )
+            }
+        }
+        Tokens()
+    }
+}
+
+class PathParamVarGenerator <: UrlParamVarGenerator {
+    init() {
+        super("PathParam", ParamCatgory.PC_PATH)
+        this.fname = "getParam"
+    }
+}
+
+class QueryParamVarGenerator <: UrlParamVarGenerator {
+    init() {
+        super("QueryParam", ParamCatgory.PC_QUERY)
+        this.fname = "getQuery"
+        this.array = true
+    }
+}
+
+class PostFormParamVarGenerator <: UrlParamVarGenerator {
+    init() {
+        super("PostFormParam", ParamCatgory.PC_POSTFORM)
+        this.fname = "getPostForm"
+        this.array = true
+    }
+}
+
+class HeaderParamVarGenerator <: ParamInfo {
+    init() {
+         super("HeaderParam", ParamCatgory.PC_HEADER)
+    }
+
+    public override func genTokens(): Tokens {
+        // header param
+        if (isOptionStringType()) {
+            return quote(let $(pname) = ctx.readHeader($(this.getName()))
+            )
+        }
+
+        if (isStringType()) {
+            if (defValue != "") {
+                return quote(let $(pname) = ctx.readHeader($(this.getName())).getOrDefault({=>$(defValue)})
+                )
+            } else {
+                return quote(let $(pname) = ctx.readHeader($(this.getName())).getOrThrow()
+                )
+            }
+        }
+
+        if (isArrayStringType()) {
+            return quote(let $(pname) = ctx.readHeaders($(this.getName())).toArray()
+            )
+        }
+
+        if (isArrayListStringType()) {
+            return quote(let $(pname) = ArrayList(ctx.readHeaders($(this.getName())))
+            )
+        }
+
+        if (isPrimitive) {
+            if (defValue != "") {
+                return quote(let $(pname) = $(ptype).parse(ctx.readHeader($(this.getName())).getOrDefault({=>$(defValue)}))
+                )
+            } else {
+                return quote(let $(pname) = $(ptype).parse(ctx.readHeader($(this.getName())).getOrThrow())
+                )
+            }
+        }
+        Tokens()
+    }
+}
+
+class CookieParamVarGenerator <: ParamInfo {
+    init() {
+         super("CookieParam", ParamCatgory.PC_COOKIE)
+    }
+
+    public override func genTokens(): Tokens {
+        // cookie param
+        if (isOptionStringType()) {
+            return quote(let $(pname) = ctx.readCookie($(this.getName()))
+            )
+        }
+
+        if (isStringType()) {
+            if (defValue != "") {
+                return quote(let $(pname) = ctx.readCookie($(this.getName())).getOrDefault({=>$(defValue)})
+                )
+            } else {
+                return quote(let $(pname) = ctx.readCookie($(this.getName())).getOrThrow()
+                )
+            }
+        }
+
+        if (isPrimitive) {
+            if (defValue != "") {
+                return quote(let $(pname) = $(ptype).parse(ctx.readCookie($(this.getName())).getOrDefault({=>$(defValue)}))
+                )
+            } else {
+                return quote(let $(pname) = $(ptype).parse(ctx.readCookie($(this.getName())).getOrThrow())
+                )
+            }
+        }
+        Tokens()
+    }
+}
+
+class ContextParamVarGenerator <: ParamInfo {
+    init() {
+        super("ContextParam", ParamCatgory.PC_CONTEXT)
+    }
+
+    public override func genTokens(): Tokens {
+        if (ptype.value == "Option") {
+            return quote(let $(pname): ?$(pGenericType)= ctx.getCtxParm($(this.getName()))
+            )
+        } else {
+            return quote(let $(pname): $(ptype)= ctx.getCtxParm<$(ptype)>($(this.getName())).getOrThrow()
+            )
+        }
+    }
+}
+
+class BodyParamVarGenerator <: ParamInfo {
+    init() {
+        super("BodyParam", ParamCatgory.PC_BODY)
+    }
+
+    public override func genTokens(): Tokens {
+        // body param
+        if (isOptionStringType()) {
+            return quote(let $(pname) = Some(ctx.readString())
+            )
+        }
+        if (isStringType()) {
+            return quote(let $(pname) = ctx.readString()
+            )
+        }
+        if (ptype.value == "Option") {
+            return quote(let $(pname): ?$(pGenericType) = ctx.readJson<$(pGenericType)>()
+            )
+        } else {
+            return quote(let $(pname): $(ptype) = ctx.readJson<$(ptype)>().getOrThrow()
+            )
+        }
+    }
+}
+
+func createParamVarGenerator(catgory: ParamCatgory): ParamInfo {
+    match (catgory) {
+        case PC_PATH => PathParamVarGenerator()
+        case PC_QUERY => QueryParamVarGenerator()
+        case PC_POSTFORM => PostFormParamVarGenerator()
+        case PC_CONTEXT => ContextParamVarGenerator()
+        case PC_HEADER => HeaderParamVarGenerator()
+        case PC_COOKIE => CookieParamVarGenerator()
+        case PC_BODY => BodyParamVarGenerator()
+        case PC_NONE => ParamInfo("", ParamCatgory.PC_NONE)
+    }
+}
+
 func parseKVAttr(attr: Tokens, marcroName: String, cb: (ident: Token, value: Token) -> Unit): Unit {
     if ((attr.size + 1) % 4 != 0) {
         diagReport(DiagReportLevel.ERROR, attr, "${marcroName} attriable should link 'attrname= value'", "")
@@ -362,12 +391,12 @@ class ParamInfoCache {
     }
 }
 
-public func parseParam(marcroName: String, catgory: ParamCatgory, input: Tokens): Unit {
-    parseParam(marcroName, catgory, None, input)
+public func parseParam(catgory: ParamCatgory, input: Tokens): Unit {
+    parseParam(catgory, None, input)
 }
 
-public func parseParam(marcroName: String, catgory: ParamCatgory, attr: ?Tokens, input: Tokens): Unit {
-    let paramInfo: ParamInfo = ParamInfo(marcroName, catgory)
+public func parseParam(catgory: ParamCatgory, attr: ?Tokens, input: Tokens): Unit {
+    let paramInfo: ParamInfo = createParamVarGenerator(catgory)
     paramInfo.parse(input)
     if (let Some(a) <- attr) {
         paramInfo.parseAttr(a)

@@ -10,3 +10,4 @@ target/
 */*.bchir2
 */*.cjo
 src/test/*.cj.macrocall
+/tmpFile*

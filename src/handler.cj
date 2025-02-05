@@ -11,7 +11,7 @@
 package cjoy
 
 import std.collection.{forEach, ArrayList, HashMap}
-import net.http.{notFound, HttpStatusCode}
+import net.http.{notFound, HttpStatusCode, OptionsHandler}
 
 /**
 * the interface of request handler
@@ -44,6 +44,14 @@ public class JoyMethodNotAllowedHandler <: JoyRequestHandler {
         let methods: Collection<String> = ctx.getCtxParm<Collection<String>>("methods").getOrThrow()
         methods |> forEach {val => ctx.header("Allow", val)}
         ctx.error(HttpStatusCode.STATUS_METHOD_NOT_ALLOWED)
+    }
+}
+
+class JoyOptionsHandler <: JoyRequestHandler {
+    static let INSTANCE = JoyOptionsHandler()
+
+    public func handle(ctx: JoyContext): Unit {
+        OptionsHandler().handle(ctx.httpContext)
     }
 }
 

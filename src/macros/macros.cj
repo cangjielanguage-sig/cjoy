@@ -24,7 +24,7 @@ public import cjoy.{JoyHandlers, JoyRequestHandler, JoyMiddlewares, JoyMiddlewar
  * @attribute name: the name of paramter in url path
  */
 public macro PathParam(attr: Tokens, input: Tokens) {
-    parseParam("PathParam", ParamCatgory.PC_PATH, attr, input)
+    parseParam(ParamCatgory.PC_PATH, attr, input)
     input
 }
 
@@ -35,7 +35,7 @@ public macro PathParam(attr: Tokens, input: Tokens) {
  *
  */
 public macro PathParam(input: Tokens) {
-    parseParam("PathParam", ParamCatgory.PC_PATH, input)
+    parseParam(ParamCatgory.PC_PATH, input)
     input
 }
 
@@ -47,7 +47,7 @@ public macro PathParam(input: Tokens) {
  * @attribute default: the default value of parameter
  */
 public macro QueryParam(attr: Tokens, input: Tokens) {
-    parseParam("QueryParam", ParamCatgory.PC_QUERY, attr, input)
+    parseParam(ParamCatgory.PC_QUERY, attr, input)
     input
 }
 
@@ -58,7 +58,7 @@ public macro QueryParam(attr: Tokens, input: Tokens) {
  *
  */
 public macro QueryParam(input: Tokens) {
-    parseParam("QueryParam", ParamCatgory.PC_QUERY, input)
+    parseParam(ParamCatgory.PC_QUERY, input)
     input
 }
 
@@ -70,7 +70,7 @@ public macro QueryParam(input: Tokens) {
  * @attribute default: the default value of parameter
  */
 public macro PostFormParam(attr: Tokens, input: Tokens) {
-    parseParam("PostForm", ParamCatgory.PC_POSTFORM, attr, input)
+    parseParam(ParamCatgory.PC_POSTFORM, attr, input)
     input
 }
 
@@ -81,7 +81,7 @@ public macro PostFormParam(attr: Tokens, input: Tokens) {
  *
  */
 public macro PostFormParam(input: Tokens) {
-    parseParam("PostForm", ParamCatgory.PC_POSTFORM, input)
+    parseParam(ParamCatgory.PC_POSTFORM, input)
     input
 }
 
@@ -93,7 +93,7 @@ public macro PostFormParam(input: Tokens) {
  * @attribute default: the default value of parameter
  */
 public macro HeaderParam(attr: Tokens, input: Tokens) {
-    parseParam("HeaderParam", ParamCatgory.PC_HEADER, attr, input)
+    parseParam(ParamCatgory.PC_HEADER, attr, input)
     input
 }
 
@@ -104,7 +104,7 @@ public macro HeaderParam(attr: Tokens, input: Tokens) {
  *
  */
 public macro HeaderParam(input: Tokens) {
-    parseParam("HeaderParam", ParamCatgory.PC_HEADER, input)
+    parseParam(ParamCatgory.PC_HEADER, input)
     input
 }
 
@@ -115,7 +115,7 @@ public macro HeaderParam(input: Tokens) {
  * @attribute name: the name of paramter in context
  */
 public macro ContextParam(attr: Tokens, input: Tokens) {
-    parseParam("ContextParam", ParamCatgory.PC_CONTEXT, attr, input)
+    parseParam(ParamCatgory.PC_CONTEXT, attr, input)
     input
 }
 
@@ -126,7 +126,7 @@ public macro ContextParam(attr: Tokens, input: Tokens) {
  *
  */
 public macro ContextParam(input: Tokens) {
-    parseParam("ContextParam", ParamCatgory.PC_CONTEXT, input)
+    parseParam(ParamCatgory.PC_CONTEXT, input)
     input
 }
 
@@ -138,7 +138,7 @@ public macro ContextParam(input: Tokens) {
  * @attribute default: the default value of parameter
  */
 public macro CookieParam(attr: Tokens, input: Tokens) {
-    parseParam("CookieParam", ParamCatgory.PC_COOKIE, attr, input)
+    parseParam(ParamCatgory.PC_COOKIE, attr, input)
     input
 }
 
@@ -149,7 +149,7 @@ public macro CookieParam(attr: Tokens, input: Tokens) {
  *
  */
 public macro CookieParam(input: Tokens) {
-    parseParam("CookieParam", ParamCatgory.PC_COOKIE, input)
+    parseParam(ParamCatgory.PC_COOKIE, input)
     input
 }
 
@@ -159,7 +159,7 @@ public macro CookieParam(input: Tokens) {
  *
  */
 public macro BodyParam(attr: Tokens, input: Tokens) {
-    parseParam("BodyParam", ParamCatgory.PC_BODY, attr, input)
+    parseParam(ParamCatgory.PC_BODY, attr, input)
     input
 }
 
@@ -169,7 +169,7 @@ public macro BodyParam(attr: Tokens, input: Tokens) {
  *
  */
 public macro BodyParam(input: Tokens) {
-    parseParam("BodyParam", ParamCatgory.PC_BODY, input)
+    parseParam(ParamCatgory.PC_BODY, input)
     input
 }
 

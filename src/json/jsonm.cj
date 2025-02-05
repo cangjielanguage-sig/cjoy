@@ -23,7 +23,7 @@ public import encoding.json.stream.*
  * Json macro is used for annotation the object of class or struct can be serialized and deserialized.
  */
 public macro Json(input: Tokens): Tokens {
-    JsonClassInfo.parse(input)
+    input + JsonClassInfo.parse(input)
 }
 
 /**
@@ -36,4 +36,5 @@ public macro Json(input: Tokens): Tokens {
  */
 public macro JsonField(attr: Tokens, input: Tokens): Tokens {
     JsonFieldInfo.parse(attr, input)
+    input
 }

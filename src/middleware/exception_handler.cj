@@ -23,7 +23,12 @@ public class ExceptionHandler <: JoyMiddlewareHandler {
                 ex.printStackTrace()
             }
             ctx.logger.error("handle request occurs an error, message=${ex.message}")
-            ctx.error(HttpStatusCode.STATUS_INTERNAL_SERVER_ERROR)
+            if (ex is NoneValueException || ex is IllegalArgumentException) {
+                // for Option.getOrThrow, Parable.parse
+                ctx.error(HttpStatusCode.STATUS_BAD_REQUEST)
+            } else {
+                ctx.error(HttpStatusCode.STATUS_INTERNAL_SERVER_ERROR)
+            }
         }
     }
 }

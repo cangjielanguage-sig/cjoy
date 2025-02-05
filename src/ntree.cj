@@ -14,13 +14,7 @@ import std.regex.Regex
 import std.collection.*
 
 class Endpoint<T> <: ToString {
-    let handler: T
-    let pattern: String
-    let paramKeys: Array<String>
-    init(handler: T, pattern: String, paramKeys: Array<String>) {
-        this.handler = handler
-        this.pattern = pattern
-        this.paramKeys = paramKeys
+    Endpoint(let handler: T, let pattern: String, let paramKeys: Array<String>) {
     }
 
     public func toString(): String {
@@ -31,7 +25,7 @@ class Endpoint<T> <: ToString {
 type Endpoints<T> = HashMap<String, Endpoint<T>>
 
 class RouteInfo {
-    public RouteInfo(
+    RouteInfo(
         var pattern!: String = "",
         let patterns!: ArrayList<String> = ArrayList(),
         let routeParamKeys!: ArrayList<String> = ArrayList(),

@@ -15,17 +15,36 @@ import std.collection.concurrent.ConcurrentHashMap
 import std.fs.*
 import net.http.*
 
+
+/**
+* the instance of class will add to object pool
+*/
 class JoyRouteHandler <: HttpRequestHandler {
-    public JoyRouteHandler(
-        let handler: JoyRequestHandler,
-        let paramMap: HashMap<String, String>,
-        let config: JoyConfig,
-        let ctxParamMap!: HashMap<String, Any> = HashMap()
-    ) {}
+    var handler: JoyRequestHandler // JoyRequestHandlerWrapper
+    let paramMap: HashMap<String, String>
+    let ctxParamMap: HashMap<String, Any>
+    let joyCtx: JoyContext
+
+    init(config: JoyConfig) {
+        this.handler = unsafe { zeroValue<JoyRequestHandler>() }
+        this.paramMap = HashMap()
+        this.ctxParamMap = HashMap()
+        this.joyCtx = JoyContext(unsafe { zeroValue<HttpContext>() }, paramMap, config, ctxParamMap)
+    }
 
     public func handle(ctx: HttpContext): Unit {
-        let joyCtx = JoyContext(ctx, paramMap, config, ctxParamMap)
-        handler.handle(joyCtx)
+        this.joyCtx._httpContext = ctx
+        handler.handle(this.joyCtx)
+    }
+
+    /**
+    * reset when get from the object pool 
+    */
+    static func reset(obj: JoyRouteHandler): JoyRouteHandler {
+        obj.paramMap.clear()
+        obj.ctxParamMap.clear()
+        obj.joyCtx.reset()
+        return obj
     }
 }
 
@@ -121,4 +140,3 @@ class JoyFileSystemServeHandler <: JoyRequestHandler {
         }
     }
 }
-

@@ -129,7 +129,7 @@ main(): Int64 {
 - param路由：单字段参数通配符匹配，路径中字段以`{paramname}`命名，一个Path分段可以存在多个`{paramname}`。
   - 如`/post/{postid}`，可以匹配`/post/1`或`/post/2`，通过上下文接口可以获取参数`postid`值为`1`或`2`，但不能匹配 `/post/1/2`。
   - 如`/post/{postid}/{page}`，可以匹配`/post/1/2`，参数`postid`值为`1`，`page`值为`2`。
-  - 如`/articles/{id}:{op}`，可以匹配`/post/1/delete`，参数`id`值为`1`，`op`值为`delete`。
+  - 如`/articles/{id}:{op}`，可以匹配`/post/1:delete`，参数`id`值为`1`，`op`值为`delete`。
 - regex路由：单字段参数正则匹配，路径中字段以`{paramname:regex}`命名，以`:`分隔正则表达式。
   - 如`/{page:[0-9]+}`，可以匹配`/post/1`或`/post/2`。
   - 如`/{page:[0-9]+}-delete`，可以匹配`/post/1-delete`或`/post/2-delete`。
@@ -188,10 +188,10 @@ v1.get("/*", {ctx: JoyContext => })
 JoyRouters接口的group方法支持对path进行分组，分组支持多级，分组的特点：
 
  - 有相同的path前辍；
- - 同一组使用相同的中间件，并继承父一级path注册的中间件；
+ - 使用相同的中间件，并继承父一级Path注册的中间件；
  - 调用`v1 = router.group("/v1")`：
-   - 会自动注册两个 (`/v1/`, `/v1/*`) NotFound的Handler，匹配所有Method，可用中间件拦截处理；
-   - 可以再注册 `v1.get("/"..)`  `v1.get("/*"..)` 覆盖上面的默认Handler；
+   - 会自动注册三个Path: `/v1`,  `/v1/`,  `/v1/*`的NotFoundHandler，Method: "GET", "POST", "DELETE", "PUT", "PATCH", "HEAD", "OPTIONS"，以便让其Group的中间件可拦截此Group的所有URL；
+   - 可以再注册 `v1.get("", ...)`  `v1.get("/", ...)`  `v1.get("/*", ...)` 覆盖上面的默认Handler；
 
 ## Handler
 
@@ -365,10 +365,20 @@ Middleware注册宏，作用在函数上：
 
 - `groups`: 指定多个Group的全路径。如果路径是`/a/b/c`，会自动生成`let g = group("/a").group("/b").group("/c")`，但Middleware只会注册到`Group /a/b/c`，如果不带groups参数，则Middleware注册到根Group。
 
-注：
- 
- - Middleware要先于Handler注册；
- - 即`JoyMiddlewares.registerTo(joy)` 需要在 `JoyHandlers.registerTo(joy)` 前调用；
+### 注册
+
+所有的 Handler 注册宏生成的类会自动加到JoyHandlers上，以及Middleware注册宏生成的类会自动加到JoyMiddlewares上，但目前没有自动加到在服务实例Joy上。
+
+```
+JoyMiddlewares.registerTo(joy)
+JoyHandlers.registerTo(joy)
+joy.run("127.0.0.1", 18881)
+```
+
+ - 需要在服务实例启动之前，需要显示地调用`JoyMiddlewares.registerTo(joy)`与`JoyHandlers.registerTo(joy)`，把自动生成Handler注册到实例上；
+ - Middleware要先于Handler注册，即`JoyMiddlewares.registerTo(joy)` 需要在 `JoyHandlers.registerTo(joy)` 前调用；
+
+
 
 ## Json
 
