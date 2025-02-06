@@ -315,18 +315,19 @@ Handler注册宏，作用在函数上：
   - `@ContextParam`: 获取Context参数值；
   - `@CookieParam[name=id]`: 获取Cookie参数值；
   - `@CookieParam`: 获取Cookie参数值；
-  - `@BodyParam`: 获取Context参数值；
+  - `@BodyParam`: 获取Body参数值；
 
 支持的函数入参类型：
 
-  - `String` ：QueryParam, PostFormParam, HeaderParam, CookieParam宏标注的参数；
+  - `String` ：QueryParam, PostFormParam, HeaderParam, CookieParam, BodyParam宏标注的参数；
   - `基本类型`：如Int，PathParam，QueryParam, PostFormParam, HeaderParam宏标注的参数，String转换对应的基本类型；
-  - `?String`：QueryParam, PostFormParam, HeaderParam, CookieParam宏标注的参数；
-  - `Option<String>`：QueryParam, PostFormParam, HeaderParam, CookieParam宏标注的参数；
+  - `?String`：QueryParam, PostFormParam, HeaderParam, CookieParam, BodyParam宏标注的参数；
+  - `Option<String>`：QueryParam, PostFormParam, HeaderParam, CookieParam, BodyParam宏标注的参数；
   - `ArrayList<String>`：QueryParam, PostFormParam, HeaderParam宏标注的参数有多个值时；
   - `Array<String>` ：QueryParam, PostFormParam, HeaderParam宏标注的参数有多个值时；
   - `任一类型`：ContextParam宏标注的参数；
   - `Option<T> when T <: JsonDeserializable`: BodyParam宏标注的参数；
+  - `T <: JsonDeserializable`: BodyParam宏标注的参数；
   - `JoyContext`: 不需要宏标注；
 
 不支持的入参名称：
