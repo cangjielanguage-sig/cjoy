@@ -238,4 +238,29 @@ public class JsonTestCaseSuit {
         @Assert(ts.c?.a?.list.size, 2)
         @Assert(ts.c?.a?.map.size, 2)
     }
+
+    @TestCase
+    public func testExcessField1(): Unit {
+        let json = ###"{"width": 1, "height": 2, "others": "xxx"}"###
+        let dc = JsonTool.fromJson<DataClass>(json)
+        @Assert(dc.width, 1)
+        @Assert(dc.height, 2)
+    }
+
+    @TestCase
+    public func testExcessField2(): Unit {
+        let json = ###"{"width": 1, "height": 2, "others": {"k1": 1, "k2": "v2"}}"###
+        let dc = JsonTool.fromJson<DataClass>(json)
+        @Assert(dc.width, 1)
+        @Assert(dc.height, 2)
+    }
+
+    @TestCase
+    public func testExcessField3(): Unit {
+        let json = ###"{"width": 1, "height": 2, "others": null}"###
+        let dc = JsonTool.fromJson<DataClass>(json)
+        @Assert(dc.width, 1)
+        @Assert(dc.height, 2)
+    }
+
 }

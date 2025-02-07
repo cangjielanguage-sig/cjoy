@@ -85,7 +85,7 @@ public class JsonClassInfo {
                                 let name = reader.readName()
                                 match (name) {
                                     $(deserTokens)
-                                    case _ => ()
+                                    case _ => reader.skip()
                                 }
                             }
                             reader.endObject()
