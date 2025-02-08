@@ -7,7 +7,7 @@ a fast，lightweight and joy web framework.<br/>
 </div>
 
 <p align="center">
-<img alt="" src="https://img.shields.io/badge/release-v0.20.0-brightgreen" style="display: inline-block;" />
+<img alt="" src="https://img.shields.io/badge/release-v0.21.0-brightgreen" style="display: inline-block;" />
 <img alt="" src="https://img.shields.io/badge/cjc-v0.58.3-brightgreen" style="display: inline-block;" />
 <img alt="" src="https://img.shields.io/badge/cjcov-70%25+-brightgreen" style="display: inline-block;" />
 <img alt="" src="https://img.shields.io/badge/state-孵化-brightgreen" style="display: inline-block;" />
@@ -89,7 +89,7 @@ main(): Int64 {
 
 更多的样例请参见 [examples](examples/README.md) 。
 
-## 功能
+## 特性
 
 本项目参考了一些其它语言的开源设计与实现，基于Cangjie提供HTTP框架，在其API进一步封装以简化Web应用开发，增加如下能力：
 
@@ -105,9 +105,11 @@ main(): Int64 {
 - Web服务：CJoy 的压缩前辍树高性能路由查找，让你的Web服务更具有性能优势；
 - 微服务框架：CJoy 的路由组与内置Json编译宏，可以实现微服务各类接口分组管理与接口实现。
 
-## 路由
+## 功能介绍
 
-### 路由规则
+### 路由
+
+#### 路由规则
 
 注册的path支持四种路由匹配模式，示例如下：
 
@@ -139,7 +141,7 @@ main(): Int64 {
     - 也可以匹配`/images/abc/def`，参数`*`值为`abc/def`; 
     - 也可匹配只字符串`/images/`; 参数`*`值为``。
 
-### 路由优先级
+#### 路由优先级
 
 路由查找优先级：static路由 > regex路由 > param路由 > catchAll路由。
 
@@ -174,7 +176,7 @@ router.get("/favicon.ico", {ctx: JoyContext => })
 - `/images/2014/05/image.jpg` 匹配到 `/images/*`
 - `/favicon.ico` 匹配到 `/favicon.ico`
 
-### 分组
+#### 分组
 
 ```
 let router = joy.router
@@ -193,7 +195,7 @@ JoyRouters接口的group方法支持对path进行分组，分组支持多级，�
    - 会自动注册三个Path: `/v1`,  `/v1/`,  `/v1/*`的NotFoundHandler，Method: "GET", "POST", "DELETE", "PUT", "PATCH", "HEAD", "OPTIONS"，以便让其Group的中间件可拦截此Group的所有URL；
    - 可以再注册 `v1.get("", ...)`  `v1.get("/", ...)`  `v1.get("/*", ...)` 覆盖上面的默认Handler；
 
-## Handler
+### Handler
 
 CJoy支持两种路由处理的Handler实现：
 
@@ -217,7 +219,7 @@ router.get("/{name}", {ctx: JoyContext =>
 })
 ```
 
-## 中间件
+### Middleware
 
 CJoy提供扩展机制支持Http请求进行拦截处理，机制类似于Java的Servlet的Filter。
 
@@ -261,9 +263,9 @@ joy.router
 注：
   - 所有中间件与路由Handler注册目前只支持单线程
 
-## 宏
+### 宏
 
-### Handler宏
+#### Handler宏
 
 CJoy提供一系列的宏简化Handler的注册与参数展开，业务只需要实现最简洁的函数，样例可以参见 [test/macro_test.cj](src/test/macro_test.cj) 。
 
@@ -348,7 +350,7 @@ Handler注册宏，作用在函数上：
   - `Unit`: 无返回类型，响应`StatusCode=200`；
   - ` `: 无返回类型，响应`StatusCode=200`；
 
-### Middleware宏
+#### Middleware宏
 
 ```
 @Middleware[groups = "/a/b/c,/a/c"]
@@ -366,7 +368,7 @@ Middleware注册宏，作用在函数上：
 
 - `groups`: 指定多个Group的全路径。如果路径是`/a/b/c`，会自动生成`let g = group("/a").group("/b").group("/c")`，但Middleware只会注册到`Group /a/b/c`，如果不带groups参数，则Middleware注册到根Group。
 
-### 注册
+#### 注册
 
 所有的 Handler 注册宏生成的类会自动加到JoyHandlers上，以及Middleware注册宏生成的类会自动加到JoyMiddlewares上，但目前没有自动加到在服务实例Joy上。
 
@@ -380,8 +382,7 @@ joy.run("127.0.0.1", 18881)
  - Middleware要先于Handler注册，即`JoyMiddlewares.registerTo(joy)` 需要在 `JoyHandlers.registerTo(joy)` 前调用；
 
 
-
-## Json
+### Json
 
 CJoy内置支持采用宏对类与结构体标注，简化对HTTP Body的Json序列化与反序列化绑定与映射。
 
@@ -414,11 +415,11 @@ JoyContext提供两个函数支持对HTTP Body的绑定与映射：
 
 使用示例：[examples/rest](examples/rest/src/main.cj)
 
-## 分块传输
+### 分块传输
 
 CJoy 提供对Chunked的封装，支持Chunked数据以及SSE(Server-Sent Events)的发送。
 
-### Chunked
+#### Chunked
 
 ```
 router.get("/chuncked", {
@@ -436,7 +437,7 @@ router.get("/chuncked", {
  - 调用`JoyChunkedWriter.write(...)` 写块数据，每调用一次发送一次Chunked
  - 调用`JoyChunkedWriter.end` 写结束块
 
-### SSE
+#### SSE
 
 ```
 router.get("/sse", {
@@ -454,7 +455,7 @@ router.get("/sse", {
  - 调用`JoyChunkedWriter.end` 写结束块
 
 
-## 文件服务器
+### 文件服务器
 
 CJoy 提供文件服务器的封装，提供两个API：
 
@@ -475,6 +476,37 @@ CJoy 提供文件服务器的封装，提供两个API：
 
 - URL Path映射只能是本地文件，且不能是隐藏文件，不能是子目录
 - URL Path中禁止使用`..` 遍历上层路径
+
+### WebSocket
+
+CJoy 提供WebSocket的封装，简化WebSocket消息接收与响应。
+
+**路由注册**
+
+示例：`router.websocket("/ws/chat/{name}", TextEchoJoyWebSocketHandler())`
+
+**Handler**
+
+接收消息需要实现接口`JoyWebSocketHandler`，回调函数说明：
+
+ - `supportedSubProtocols`：设置支持的SubProtocols，默认为空
+ - `supportedOrigins`：设置接受Origins的白名单，默认为空，表示接受所有
+ - `mergeFrames`：当分Frame传输时，是否合并Frame，回onMessage函数，默认合并
+ - `onOpen`：Webscoket握手成功之后回调
+ - `onMessage`：接收到Text或Binary消息时回调，如果分Frame传输且mergeFrames=false，则一个消息会回调多次
+ - `onClose`：Webscoket关闭时回调
+ - `onError`：接收或发送消息发生异常时回调
+
+两个主要类，相关方法请参见源码：
+
+ - `JoyWebSocketMessage`：Webscoket消息包装类
+ - `JoyWebSocketSession`：Webscoket会话包括类，可以获取握手时一此URL参数，以及调用`send`发送消息
+
+约束：
+
+ - 受限于Cangjie SDK，`JoyWebSocketHandler`处理与发送消息要在同一线程中
+
+使用示例：[examples/websocket](examples/websocket/src/main.cj)
 
 ## 参与贡献
 

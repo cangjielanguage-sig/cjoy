@@ -45,6 +45,14 @@ public class JoyContext {
         _handlerIndex = 0
     }
 
+    func copyParams(): HashMap<String, String> {
+        _paramMap.clone()
+    }
+
+    func copyCtxParams(): HashMap<String, Any> {
+        _ctxParamMap.clone()
+    }
+
     /**
      * return the http context
      */
@@ -329,7 +337,7 @@ public class JoyContext {
         data(HttpStatusCode.STATUS_OK, contentType, body)
     }
 
-     /**
+    /**
      * reply response with the body of content type and status code
      *
      * @param contentType: the content type

@@ -86,7 +86,7 @@ class FuncInfo {
         let funcName = decl.identifier
         let delType = try {
             decl.declType
-        } catch (ex: Exception) {
+        } catch (_: Exception) {
             ret += quote(
                 $(funcName)($(params))
                 ctx.ok()

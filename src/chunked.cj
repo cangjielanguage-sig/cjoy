@@ -18,14 +18,14 @@ public class ServerEventBuilder {
     private let _sb: StringBuilder = StringBuilder()
 
     public func event(event: String): ServerEventBuilder {
-        _sb.append("event:")
+        _sb.append("event: ")
         _sb.append(event)
         _sb.append("\n")
         this
     }
 
     public func id(id: String): ServerEventBuilder {
-        _sb.append("id:")
+        _sb.append("id: ")
         _sb.append(id)
         _sb.append("\n")
         this

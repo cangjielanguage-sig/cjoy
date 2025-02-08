@@ -131,6 +131,11 @@ public interface JoyRouters {
     func staticFile(relativePath: String, filepath: String): JoyRouters
 
     /**
+    * adds the route `pattern` that matches `GET` http method to process websocket reqeuest.
+    */
+    func websocket(pattern: String, handler: JoyWebSocketHandler): JoyRouters
+
+    /**
      * dump the route tree
      */
     func dump(): String
@@ -174,8 +179,10 @@ class TreeRouteDistributor <: HttpRequestDistributor & HttpRequestHandler {
         }
 
         let ri: RouteInfo = RouteInfo()
+        _config.logger.debug("[TreeRouteDistributor#lookup] finding handler, method=${req.method}, path=${path}")
         var (node, handler) = _root.findRouteHandler(ri, req.method, path)
         if (node.isNone()) {
+            _config.logger.debug("[TreeRouteDistributor#lookup] not found handler, method=${req.method}, path=${path}")
             obj.handler = _config.notFoundHandler
             return
         }
@@ -192,6 +199,7 @@ class TreeRouteDistributor <: HttpRequestDistributor & HttpRequestHandler {
                 return
             }
 
+            _config.logger.debug("[TreeRouteDistributor#lookup] not found handler, method=${req.method}, path=${path}")
             obj.handler = _config.notFoundHandler
             return
         }
@@ -458,6 +466,11 @@ class JoyRouteGroup <: JoyRouters {
         }
 
         handle(["GET"], relativePath, JoyFileServeHandler(fp.toString()))
+        this
+    }
+
+    public func websocket(pattern: String, handler: JoyWebSocketHandler): JoyRouters {
+        handle(["GET"], pattern, JoyWebSocketUpgradeHandler(handler))
         this
     }
 }

@@ -7,3 +7,4 @@
 - [sse](sse/src/main.cj): Server-Sent Event
 - [tls](tls/src/main.cj): HTTPS
 - [fileserver](fileserver/src/main.cj): 文件服务器
+- [websocket](websocket/src/main.cj): WebSocket
