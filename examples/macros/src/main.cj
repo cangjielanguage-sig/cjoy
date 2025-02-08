@@ -27,7 +27,7 @@ func getUserName(@PathParam name: String): (UInt16, String) {
     (200, "/users/${name}")
 }
 
-@Get[path = "/users", provider = "json"]
+@Get[path = "/users", produce = "json"]
 func listUsers(@QueryParam[name = id, default = xiao] id: String): UserInfo {
     let usr = UserInfo()
     usr.id = id

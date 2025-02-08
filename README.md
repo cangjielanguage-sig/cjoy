@@ -57,7 +57,7 @@ class UserInfo {
     var gender: Int = 0
 }
 
-@Get[path = "/users/{name}", provider="json"]
+@Get[path = "/users/{name}", produce="json"]
 func getUser(@PathParam name: String): (UInt16, UserInfo) {
     let usr = UserInfo()
     usr.id = "00009527"
@@ -66,7 +66,7 @@ func getUser(@PathParam name: String): (UInt16, UserInfo) {
     (200, usr)
 }
 
-@Get[path = "/users", provider="json"]
+@Get[path = "/users", produce="json"]
 func listUsers(@QueryParam[name = id, default = 00009527] id: String): Array<UserInfo> {
     let usr = UserInfo()
     usr.id = id
@@ -285,18 +285,18 @@ func testGet(c: JoyContext): (UInt16, String) {
 
 Handler注册宏，作用在函数上：
 
- - `@Get[path="/abc/{id}", provider=json]`
- - `@Post[path="/abc/{name:[a-z]{3,4}}", provider=json]`
- - `@Put[path="/abc/def", provider=json]`
- - `@Delete[path="/abc", provider=json]`
- - `@Patch[path="/abc", provider=json]`
- - `@Head[path="/abc", provider=json]`
- - `@Methods[path="/abc", methods="PUT,POST", provider=json]`
+ - `@Get[path="/abc/{id}", produce=json]`
+ - `@Post[path="/abc/{name:[a-z]{3,4}}", produce=json]`
+ - `@Put[path="/abc/def", produce=json]`
+ - `@Delete[path="/abc", produce=json]`
+ - `@Patch[path="/abc", produce=json]`
+ - `@Head[path="/abc", produce=json]`
+ - `@Methods[path="/abc", methods="PUT,POST", produce=json]`
 
 参数说明：
 
  - `path`：必选，指定handler处理的URL全路由，如果存在对应Group，框架会自动查找，注册到对应的Group上；
- - `provider`：可选，只有响应返回json时指定，且方法返回值必须实现JsonSerializable接口，默认是返回文本Body；
+ - `produce`：可选，只有响应返回json时指定，且方法返回值必须实现JsonSerializable接口，默认是返回文本Body；
  - `methods`: 只有在Methods宏上使用，注册handler处理Method列表；
   
 备注：
@@ -324,12 +324,13 @@ Handler注册宏，作用在函数上：
   - `String` ：QueryParam, PostFormParam, HeaderParam, CookieParam, BodyParam宏标注的参数；
   - `基本类型`：如Int，PathParam，QueryParam, PostFormParam, HeaderParam宏标注的参数，String转换对应的基本类型；
   - `?String`：QueryParam, PostFormParam, HeaderParam, CookieParam, BodyParam宏标注的参数；
-  - `Option<String>`：QueryParam, PostFormParam, HeaderParam, CookieParam, BodyParam宏标注的参数；
+  - `Option<String>`：同上；
   - `ArrayList<String>`：QueryParam, PostFormParam, HeaderParam宏标注的参数有多个值时；
-  - `Array<String>` ：QueryParam, PostFormParam, HeaderParam宏标注的参数有多个值时；
+  - `Array<String>` ：同上；
   - `任一类型`：ContextParam宏标注的参数；
   - `Option<T> when T <: JsonDeserializable`: BodyParam宏标注的参数；
-  - `T <: JsonDeserializable`: BodyParam宏标注的参数；
+  - `?T when T <: JsonDeserializable`: 同上；
+  - `T <: JsonDeserializable`: 同上；
   - `JoyContext`: 不需要宏标注；
 
 不支持的入参名称：
@@ -341,8 +342,8 @@ Handler注册宏，作用在函数上：
   - `String`：响应为`Content-Type=plain/text`，`StatusCode=200`；
   - `(UInt16, String)`：响应为`Content-Type=plain/text`，`StatusCode=${statusCode}`；
   - `(String, UInt16)`：同上；
-  - `T when T <: JsonSerializable` ：响应为`Content-Type=application/json`，同时Handler需要指定`provider=json`，`StatusCode=200`；
-  - `(UInt16, T when T <: JsonSerializable)`：响应为`Content-Type=application/json`，响应的状态码statusCode，同时Handler需要指定`provider=json`，`StatusCode=${statusCode}`；
+  - `T when T <: JsonSerializable` ：响应为`Content-Type=application/json`，同时Handler需要指定`produce=json`，`StatusCode=200`；
+  - `(UInt16, T when T <: JsonSerializable)`：响应为`Content-Type=application/json`，响应的状态码statusCode，同时Handler需要指定`produce=json`，`StatusCode=${statusCode}`；
   - `(T when T <: JsonSerializable, UInt16)`： 同上；
   - `(UInt16, T when T <: ToString)`：响应为`Content-Type=plain/text`，`StatusCode=${statusCode}`；
   - `(T when T <: ToString, UInt16)`：同上；
@@ -457,13 +458,13 @@ router.get("/sse", {
 
 ### 文件服务器
 
-CJoy 提供文件服务器的封装，提供两个API：
+CJoy 提供文件服务器的封装，提供两个API：`staticFile` 与 `staticFs`。
 
-**单个文件路由**
+#### 单个文件路由
 
 示例：`router.staticFile("/static/favicon.ico", "./resources/favicon.ico")`
 
-**多文件路由**
+#### 多文件路由
 
 示例：`router.staticFs("/static", "/var/www")`
 
@@ -481,9 +482,11 @@ CJoy 提供文件服务器的封装，提供两个API：
 
 CJoy 提供WebSocket的封装，简化WebSocket消息接收与响应。
 
-**路由注册**
+#### 路由注册
 
 示例：`router.websocket("/ws/chat/{name}", TextEchoJoyWebSocketHandler())`
+
+调用`JoyRouters.websocket`注册路由，与调用`get`函数类似，也支持中间件拦截WebSocket握手时的请求消息。
 
 **Handler**
 
@@ -493,14 +496,14 @@ CJoy 提供WebSocket的封装，简化WebSocket消息接收与响应。
  - `supportedOrigins`：设置接受Origins的白名单，默认为空，表示接受所有
  - `mergeFrames`：当分Frame传输时，是否合并Frame，回onMessage函数，默认合并
  - `onOpen`：Webscoket握手成功之后回调
- - `onMessage`：接收到Text或Binary消息时回调，如果分Frame传输且mergeFrames=false，则一个消息会回调多次
+ - `onMessage`：接收到Text或Binary消息时回调，如果分Frame传输且mergeFrames=false，则一个消息会按分Frame回调多次
  - `onClose`：Webscoket关闭时回调
- - `onError`：接收或发送消息发生异常时回调
+ - `onError`：若接收或发送消息发生异常时回调
 
 两个主要类，相关方法请参见源码：
 
  - `JoyWebSocketMessage`：Webscoket消息包装类
- - `JoyWebSocketSession`：Webscoket会话包括类，可以获取握手时一此URL参数，以及调用`send`发送消息
+ - `JoyWebSocketSession`：Webscoket会话包装类，可以获取握手请求的一此URL参数(Path参数、Query参数，头域)，调用其`send`函数发送消息
 
 约束：
 

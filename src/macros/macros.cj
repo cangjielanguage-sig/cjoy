@@ -177,7 +177,7 @@ public macro BodyParam(input: Tokens) {
  * Get macro is used for annotation at the function, register the funtion for GET `path`
  *
  * @attribute path: the path pattern
- * @attribute provider: the format of reponse body, value is json/text, default is text
+ * @attribute produce: the format of reponse body, value is json/text, default is text
  */
 public macro Get(attr: Tokens, input: Tokens) {
     input + parseFunc("Get", MethodCatgory.MC_GET, attr, input)
@@ -187,7 +187,7 @@ public macro Get(attr: Tokens, input: Tokens) {
  * Post macro is used for annotation at the function, register the funtion for POST `path`
  *
  * @attribute path: the path pattern
- * @attribute provider: the format of reponse body, value is json/text, default is text
+ * @attribute produce: the format of reponse body, value is json/text, default is text
  */
 public macro Post(attr: Tokens, input: Tokens) {
     input + parseFunc("Post", MethodCatgory.MC_POST, attr, input)
@@ -197,7 +197,7 @@ public macro Post(attr: Tokens, input: Tokens) {
  * Delete macro is used for annotation at the function, register the funtion for DELETE `path`
  *
  * @attribute path: the path pattern
- * @attribute provider: the format of reponse body, value is json/text, default is text
+ * @attribute produce: the format of reponse body, value is json/text, default is text
  */
 public macro Delete(attr: Tokens, input: Tokens) {
     input + parseFunc("Delete", MethodCatgory.MC_DELETE, attr, input)
@@ -207,7 +207,7 @@ public macro Delete(attr: Tokens, input: Tokens) {
  * Patch macro is used for annotation at the function, register the funtion for PATCH `path`
  *
  * @attribute path: the path pattern
- * @attribute provider: the format of reponse body, value is json/text, default is text
+ * @attribute produce: the format of reponse body, value is json/text, default is text
  */
 public macro Patch(attr: Tokens, input: Tokens) {
     input + parseFunc("Patch", MethodCatgory.MC_PATCH, attr, input)
@@ -217,7 +217,7 @@ public macro Patch(attr: Tokens, input: Tokens) {
  * Put macro is used for annotation at the function, register the funtion for PUT `path`
  *
  * @attribute path: the path pattern
- * @attribute provider: the format of reponse body, value is json/text, default is text
+ * @attribute produce: the format of reponse body, value is json/text, default is text
  */
 public macro Put(attr: Tokens, input: Tokens) {
     input + parseFunc("Put", MethodCatgory.MC_PUT, attr, input)
@@ -227,7 +227,7 @@ public macro Put(attr: Tokens, input: Tokens) {
  * Head macro is used for annotation at the function, register the funtion for HEAD `path`
  *
  * @attribute path: the path pattern
- * @attribute provider: the format of reponse body, value is json/text, default is text
+ * @attribute produce: the format of reponse body, value is json/text, default is text
  */
 public macro Head(attr: Tokens, input: Tokens) {
     input + parseFunc("Head", MethodCatgory.MC_HEAD, attr, input)
@@ -238,7 +238,7 @@ public macro Head(attr: Tokens, input: Tokens) {
  *
  * @attribute path: the path pattern
  * @attribute methods: the method list, like `GET,PUT` or `GET`
- * @attribute provider: the format of reponse body, value is json/text, default is text
+ * @attribute produce: the format of reponse body, value is json/text, default is text
  */
 public macro Methods(attr: Tokens, input: Tokens) {
     input + parseFunc("Methods", MethodCatgory.MC_METHODS, attr, input)

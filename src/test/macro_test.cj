@@ -205,19 +205,19 @@ func bodyPost4(@BodyParam body: TestBody): String {
 }
 
 // test body param with json type and return json
-@Post[path = "/body5", provider = json]
+@Post[path = "/body5", produce = json]
 func bodyPost5(@BodyParam body: TestBody): TestBody {
     body
 }
 
 // test body param with json type and return json
-@Post[path = "/body6", provider = json]
+@Post[path = "/body6", produce = json]
 func bodyPost6(@BodyParam body: TestBody): Array<TestBody> {
     [body]
 }
 
 // test body param with json type and return json
-@Post[path = "/body7", provider = json]
+@Post[path = "/body7", produce = json]
 func bodyPost7(@BodyParam body: TestBody): (UInt16, Array<TestBody>) {
     (200, [body])
 }
@@ -241,7 +241,7 @@ func headerPost3(@HeaderParam[name = "X-Tokens"] token: ?String): String {
 }
 
 // test header param
-@Post[path = "/cookie1", provider = json]
+@Post[path = "/cookie1", produce = json]
 func cookiePost1(@CookieParam[name = "csrf-token"] token: ?String): String {
     token.getOrThrow().toString()
 }

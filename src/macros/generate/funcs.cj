@@ -25,7 +25,7 @@ class FuncInfo {
     let decl: FuncDecl
 
     var path: String = ""
-    var provider: String = ""
+    var produce: String = ""
     var methods: String = ""
 
     init(marcroName: String, catgory: MethodCatgory, decl: FuncDecl) {
@@ -39,9 +39,9 @@ class FuncInfo {
             {
                 ident: Token, value: Token => match (ident.value) {
                     case "path" => this.path = value.value
-                    case "provider" => this.provider = value.value
+                    case "produce" => this.produce = value.value
                     case "methods" => this.methods = value.value
-                    case _ => throw Exception("${marcroName} attriable should be name, consumer, provider")
+                    case _ => throw Exception("${marcroName} attriable should be name, consumer, produce")
                 }
             })
     }
@@ -114,7 +114,7 @@ class FuncInfo {
                     let (bodyRsp, statusCode) = $(funcName)($(params))
                 )
             }
-            if (provider == "json") {
+            if (produce == "json") {
                 ret += quote(
                     ctx.json(UInt16(statusCode), bodyRsp) 
                 )
@@ -130,7 +130,7 @@ class FuncInfo {
             )
         } else if (retType != "Unit") {
             ret += quote(let bodyRsp = $(funcName)($(params)))
-            if (provider == "json") {
+            if (produce == "json") {
                 ret += quote(
                     ctx.json(bodyRsp) 
                 )
