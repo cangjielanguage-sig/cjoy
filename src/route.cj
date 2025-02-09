@@ -11,10 +11,10 @@
 package cjoy
 
 import std.collection.{ArrayList, HashMap, forEach}
-import std.fs.*
+import std.fs.{canonicalize, FSException, exists, FileInfo}
 import std.objectpool.ObjectPool 
 import encoding.url.URL
-import net.http.*
+import net.http.{HttpRequestDistributor, HttpRequestHandler, HttpRequest, HttpContext}
 import log.Logger
 
 /**
@@ -442,6 +442,11 @@ class JoyRouteGroup <: JoyRouters {
         let fp = canonicalize(root)
         if (!exists(fp)) {
             throw FSException("not existed file system root, root=${root}")
+        }
+
+        let fi = FileInfo(fp)
+        if (!fi.isDirectory() || !fi.canRead()) {
+            throw FSException("invalid file system root, root=${root}")
         }
 
         let path = if (relativePath[relativePath.size - 1] == b'/') {

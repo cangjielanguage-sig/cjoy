@@ -79,6 +79,14 @@ public class WebSocketTestCaseSuit {
         sleep(Duration.second)
     }
 
+    @AfterAll
+    func tearDown() {
+        _client.close()
+        if (let Some(s) <- _instance) {
+            s.shutdown()
+        }
+    }
+
     @TestCase
     func testTextOneFrame() {
         _textWsHandler.reset()
@@ -140,13 +148,5 @@ public class WebSocketTestCaseSuit {
 
         websocket.writeCloseFrame(status: JoyWebSocketCloseStatus.NORMAL)
         websocket.closeConn()
-    }
-
-    @AfterAll
-    func tearDown() {
-        _client.close()
-        if (let Some(s) <- _instance) {
-            s.shutdown()
-        }
     }
 }

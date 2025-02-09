@@ -16,7 +16,7 @@ main(): Int64 {
         ctx: JoyContext =>
         let emitter = ctx.eventStream()
         for (num in 1..10) {
-            emitter.sendEvent(ServerEventBuilder().data("{\"num\":\"${num}\"}"))
+            emitter.sendEvent(JoyServerEventBuilder().data("{\"num\":\"${num}\"}"))
             sleep(Duration.millisecond*200)
         }
         emitter.end()

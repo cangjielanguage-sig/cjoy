@@ -425,18 +425,18 @@ CJoy 提供对Chunked的封装，支持Chunked数据以及SSE(Server-Sent Events
 ```
 router.get("/chuncked", {
     ctx: JoyContext =>
-    let sender = ctx.chunked()
+    let pusher = ctx.pusher()
     for (num in 1..10) {
-        sender.write(num.toString())
+        pusher.write(num.toString())
         sleep(Duration.millisecond*200)
     }
-    sender.end()
+    pusher.end()
 })
 ```
 
- - 调用`JoyContext.chunked()` 创建 JoyChunkedWriter
- - 调用`JoyChunkedWriter.write(...)` 写块数据，每调用一次发送一次Chunked
- - 调用`JoyChunkedWriter.end` 写结束块
+ - 调用`JoyContext.pusher()` 创建 JoyPusherWriter
+ - 调用`JoyPusherWriter.write(...)` 写块数据，每调用一次发送一次Chunked
+ - 调用`JoyPusherWriter.end` 写结束块
 
 #### SSE
 
@@ -445,15 +445,15 @@ router.get("/sse", {
     ctx: JoyContext =>
     let emitter = ctx.eventStream()
     for (num in 1..10) {
-        emitter.sendEvent(ServerEventBuilder().data("{\"num\":\"${num}\"}"))
+        emitter.sendEvent(JobServerEventBuilder().data("{\"num\":\"${num}\"}"))
         sleep(Duration.millisecond*200)
     }
     emitter.end()
 })
 ```
  - 调用`JoyContext.eventStream()` 创建 JoySseEmitter
- - 使用`ServerEventBuilder` 构建 SSE 数据，调用`JoyChunkedWriter.sendEvent(...)`，每调用一次发送一次Event
- - 调用`JoyChunkedWriter.end` 写结束块
+ - 使用`JobServerEventBuilder` 构建 SSE 数据，调用`JoySseEmitter.sendEvent(...)`，每调用一次发送一次Event
+ - 调用`JoySseEmitter.end` 写结束块
 
 
 ### 文件服务器
@@ -494,7 +494,7 @@ CJoy 提供WebSocket的封装，简化WebSocket消息接收与响应。
 
  - `supportedSubProtocols`：设置支持的SubProtocols，默认为空
  - `supportedOrigins`：设置接受Origins的白名单，默认为空，表示接受所有
- - `mergeFrames`：当分Frame传输时，是否合并Frame，回onMessage函数，默认合并
+ - `mergeFrames`：当分Frame传输时，是否合并Frame一个消息回调onMessage函数，默认合并
  - `onOpen`：Webscoket握手成功之后回调
  - `onMessage`：接收到Text或Binary消息时回调，如果分Frame传输且mergeFrames=false，则一个消息会按分Frame回调多次
  - `onClose`：Webscoket关闭时回调

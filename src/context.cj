@@ -10,7 +10,7 @@
 
 package cjoy
 
-import std.collection.*
+import std.collection.{HashMap, ArrayList}
 import std.io.{InputStream, ByteBuffer, copy, StringReader}
 import std.net.IPAddress
 import log.Logger
@@ -541,8 +541,8 @@ public class JoyContext {
     /**
      * create a chunked writer
      */
-    public func chunked(): JoyChunkedWriter {
-        JoyChunkedWriter(_httpContext)
+    public func pusher(): JoyPusherWriter {
+        JoyPusherWriter(_httpContext)
     }
 
     /**

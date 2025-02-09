@@ -10,12 +10,16 @@
 
 package cjoy
 
-import net.http.{Server, ServerBuilder}
-import log.{LogLevel, Logger}
-import logger.SimpleLogger
 import std.console.Console
 import std.collection.concurrent.ConcurrentHashMap
 import std.collection.ArrayList
+import std.fs.{File, OpenMode}
+import std.io.{readToEnd}
+import net.tls.TlsServerConfig
+import net.http.{Server, ServerBuilder}
+import log.{LogLevel, Logger}
+import logger.SimpleLogger
+import crypto.x509.{X509Certificate, PrivateKey}
 
 /**
  * joy config
@@ -73,8 +77,8 @@ public class Joy {
     }
 
     /**
-    * return the net.http.Server
-    */
+     * return the net.http.Server
+     */
     public prop server: Server {
         get() {
             _server.getOrThrow()
@@ -132,7 +136,20 @@ public class Joy {
     }
 
     /**
-     * run http server by ServerBuilder
+     * run https server at address:port with certificate files
+     *
+     * @param addr: the listen address
+     * @param port: the listen port
+     * @param certFilePath: the certificate server file path
+     * @parm keyFilePath: the certificate server key file path
+     */
+    public func run(addr: String, port: UInt16, certFilePath: String, keyFilePath: String): Unit {
+        let tlsConfig = loadTlsConfig(certFilePath, keyFilePath)
+        run(ServerBuilder().addr(addr).port(port).tlsConfig(tlsConfig))
+    }
+
+    /**
+     * run http(s) server by ServerBuilder
      *
      * @param serverBuidler: the server buidler
      */
@@ -161,5 +178,22 @@ public class Joy {
             }
         }
         _INSTANCES.remove(this.name)
+    }
+
+    private static func readPermFile(path: String): String {
+        try (file = File(path, Read)) {
+            return String.fromUtf8(readToEnd(file))
+        }
+        ""
+    }
+
+    private static func loadTlsConfig(certFilePath: String, keyFilePath: String): TlsServerConfig {
+        let certText = readPermFile(certFilePath)
+        let keyText = readPermFile(keyFilePath)
+
+        let certificate = X509Certificate.decodeFromPem(certText)
+        let privateKey = PrivateKey.decodeFromPem(keyText)
+
+        TlsServerConfig(certificate, privateKey)
     }
 }

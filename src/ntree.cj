@@ -11,7 +11,7 @@
 package cjoy
 
 import std.regex.Regex
-import std.collection.*
+import std.collection.{ArrayList, HashMap, forEach}
 
 class Endpoint<T> <: ToString {
     Endpoint(let handler: T, let pattern: String, let paramKeys: Array<String>) {

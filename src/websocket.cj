@@ -10,10 +10,10 @@
 
 package cjoy
 
-import std.collection.*
+import std.collection.{ArrayList, HashMap}
 import std.io.ByteBuffer
 import log.Logger
-import net.http.*
+import net.http.{WebSocket, WebSocketException, WebSocketFrameType, HttpHeaders}
 import encoding.url.Form
 import encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonReader, JsonWriter}
 
@@ -339,13 +339,13 @@ class JoyWebSocketUpgradeHandler <: JoyRequestHandler {
 
         // release the context and http framework thread
         spawn {
-            handleReceive(session, websocket)
+            handleReceive(ctx.logger, session, websocket)
         }
     }
 
-    private func handleReceive(session: JoyWebSocketSession, websocket: WebSocket) {
+    private func handleReceive(logger: Logger, session: JoyWebSocketSession, websocket: WebSocket) {
         var isOpen = true
-        var buffer = ByteBuffer()
+        let buffer = ByteBuffer()
 
         handler.onOpen(session)
 
@@ -383,17 +383,28 @@ class JoyWebSocketUpgradeHandler <: JoyRequestHandler {
                         }
                     case CloseWebFrame =>
                         match {
-                            case frame.payload.size == 0 => handler.onClose(session, JoyWebSocketCloseStatus.NORMAL)
-                            case frame.payload.size == 1 => handler.onError(session,
-                                WebSocketException("invalid close status code"))
-                            case frame.payload.size <= 125 => handler.onClose(session, toUInt16(frame.payload[0..2]))
-                            case _ => handler.onError(session, WebSocketException("invalid close status code"))
+                            case frame.payload.size == 0 =>
+                                logger.debug("[JoyWebSocketUpgradeHandler#handleReceive] revceive empty close status")
+                                handler.onClose(session, JoyWebSocketCloseStatus.NORMAL)
+                            case frame.payload.size <= 125 && frame.payload.size > 1 =>
+                                let statusCode = toUInt16(frame.payload[0..2])
+                                logger.debug(
+                                    "[JoyWebSocketUpgradeHandler#handleReceive] revceive close status code, ${statusCode}"
+                                )
+                                handler.onClose(session, statusCode)
+                            case _ =>
+                                logger.warn(
+                                    "[JoyWebSocketUpgradeHandler#handleReceive] revceive invalid close status code")
+                                handler.onError(session, WebSocketException("invalid close status code"))
                         }
                         isOpen = false
                     case PingWebFrame => websocket.writePongFrame(frame.payload)
                     case _ => ()
                 }
             } catch (ex: Exception) {
+                logger.warn(
+                    "[JoyWebSocketUpgradeHandler#handleReceive] read frame from websocket occurs an error, message=${ex.message}"
+                )
                 handler.onError(session, ex)
                 isOpen = false
             }

@@ -10,7 +10,7 @@
 
 macro package cjoy.macros
 
-import std.ast.*
+import std.ast.Tokens
 import cjoy.macros.generate.{parseParam, ParamCatgory, parseFunc, MethodCatgory, parseMiddlewareFunc}
 
 // reimport the dependent
