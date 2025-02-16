@@ -541,14 +541,14 @@ public class JoyContext {
     /**
      * create a chunked writer
      */
-    public func pusher(): JoyPusherWriter {
-        JoyPusherWriter(_httpContext)
+    public func chunkedWriter(): JoyChunkedWriter {
+        JoyChunkedWriter(_httpContext)
     }
 
     /**
      * create a SseEmitter
      */
-    public func eventStream(): JoySseEmitter {
+    public func eventEmitter(): JoySseEmitter {
         JoySseEmitter(_httpContext)
     }
 }

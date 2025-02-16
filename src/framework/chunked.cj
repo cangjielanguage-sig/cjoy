@@ -60,7 +60,7 @@ public class JoyServerEventBuilder {
     }
 }
 
-public open class PusherWriter {
+public open class ChunkedWriter {
     protected let _httpContext: HttpContext
     protected let _httpResponseWriter: HttpResponseWriter
     protected var _end = false
@@ -88,7 +88,7 @@ public open class PusherWriter {
     }
 }
 
-public class JoyPusherWriter <: PusherWriter {
+public class JoyChunkedWriter <: ChunkedWriter {
     init(httpContext: HttpContext) {
         super(httpContext)
     }
@@ -96,7 +96,7 @@ public class JoyPusherWriter <: PusherWriter {
     /**
      * write string data then send it
      */
-    public func write(data: String): JoyPusherWriter {
+    public func write(data: String): JoyChunkedWriter {
         checkEnd()
         _httpResponseWriter.write(data.toArray())
         _chunkedNum += 1
@@ -106,7 +106,7 @@ public class JoyPusherWriter <: PusherWriter {
     /**
      * write bytes data then send it
      */
-    public func write(data: Array<Byte>): JoyPusherWriter {
+    public func write(data: Array<Byte>): JoyChunkedWriter {
         checkEnd()
         _httpResponseWriter.write(data)
         _chunkedNum += 1
@@ -116,7 +116,7 @@ public class JoyPusherWriter <: PusherWriter {
     /**
      * write data which be serializabled to json then send it
      */
-    public func writeJson<T>(data: T): JoyPusherWriter where T <: JsonSerializable {
+    public func writeJson<T>(data: T): JoyChunkedWriter where T <: JsonSerializable {
         let buffer = ByteBuffer()
         let writer = JsonWriter(buffer)
         writer.writeValue(data)
@@ -125,7 +125,7 @@ public class JoyPusherWriter <: PusherWriter {
     }
 }
 
-public class JoySseEmitter <: PusherWriter {
+public class JoySseEmitter <: ChunkedWriter {
     init(httpContext: HttpContext) {
         super(httpContext)
         let responseBuilder = httpContext.responseBuilder

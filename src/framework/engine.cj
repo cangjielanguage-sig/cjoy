@@ -141,7 +141,7 @@ public class Joy {
      * @param addr: the listen address
      * @param port: the listen port
      * @param certFilePath: the certificate server file path
-     * @parm keyFilePath: the certificate server key file path
+     * @param keyFilePath: the certificate server key file path
      */
     public func run(addr: String, port: UInt16, certFilePath: String, keyFilePath: String): Unit {
         let tlsConfig = loadTlsConfig(certFilePath, keyFilePath)

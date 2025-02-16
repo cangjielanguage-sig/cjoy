@@ -14,12 +14,12 @@ main(): Int64 {
     // 注册路由
     joy.router.get("/chuncked", {
         ctx: JoyContext =>
-        let pusher = ctx.pusher()
+        let writer = ctx.chunkedWriter()
         for (num in 1..10) {
-            pusher.write(num.toString())
+            writer.write(num.toString())
             sleep(Duration.millisecond*200)
         }
-        pusher.end()
+        writer.end()
     })
     // 启动服务
     joy.run("127.0.0.1", 18881)

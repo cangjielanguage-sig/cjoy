@@ -28,18 +28,18 @@ public enum JoyWebSocketMsgType {
  * some status code define in RFC 6455 7.4.2
  */
 public struct JoyWebSocketCloseStatus {
-    public static let NORMAL: UInt16 = 1000
-    public static let GOING_AWAY: UInt16 = 1001
-    public static let PROTOCAL_ERROR: UInt16 = 1002
-    public static let NOT_ACCEPTABLE: UInt16 = 1003
-    public static let NO_BAD_DATA: UInt16 = 1007
-    public static let POLICY_VIOLATION: UInt16 = 1008
-    public static let TO_BIG_TO_PROCESS: UInt16 = 1009
-    public static let REQUIRED_EXTENSION: UInt16 = 1010
-    public static let SERVER_ERROR: UInt16 = 1011
-    public static let SERVICE_RESTARTED: UInt16 = 1012
-    public static let SERVICE_OVERLOAD: UInt16 = 1013
-    public static let SESSION_NOT_RELIABLE: UInt16 = 4500
+    public static const NORMAL: UInt16 = 1000
+    public static const GOING_AWAY: UInt16 = 1001
+    public static const PROTOCAL_ERROR: UInt16 = 1002
+    public static const NOT_ACCEPTABLE: UInt16 = 1003
+    public static const NO_BAD_DATA: UInt16 = 1007
+    public static const POLICY_VIOLATION: UInt16 = 1008
+    public static const TO_BIG_TO_PROCESS: UInt16 = 1009
+    public static const REQUIRED_EXTENSION: UInt16 = 1010
+    public static const SERVER_ERROR: UInt16 = 1011
+    public static const SERVICE_RESTARTED: UInt16 = 1012
+    public static const SERVICE_OVERLOAD: UInt16 = 1013
+    public static const SESSION_NOT_RELIABLE: UInt16 = 4500
 }
 
 /**

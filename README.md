@@ -425,25 +425,25 @@ CJoy 提供对Chunked的封装，支持Chunked数据以及SSE(Server-Sent Events
 ```
 router.get("/chuncked", {
     ctx: JoyContext =>
-    let pusher = ctx.pusher()
+    let writer = ctx.chunkedWriter()
     for (num in 1..10) {
-        pusher.write(num.toString())
+        writer.write(num.toString())
         sleep(Duration.millisecond*200)
     }
-    pusher.end()
+    writer.end()
 })
 ```
 
  - 调用`JoyContext.pusher()` 创建 JoyPusherWriter
- - 调用`JoyPusherWriter.write(...)` 写块数据，每调用一次发送一次Chunked
- - 调用`JoyPusherWriter.end` 写结束块
+ - 调用`JoyChunkedWriter.write(...)` 写块数据，每调用一次发送一次Chunked
+ - 调用`JoyChunkedWriter.end` 写结束块
 
 #### SSE
 
 ```
 router.get("/sse", {
     ctx: JoyContext =>
-    let emitter = ctx.eventStream()
+    let emitter = ctx.eventEmitter()
     for (num in 1..10) {
         emitter.sendEvent(JobServerEventBuilder().data("{\"num\":\"${num}\"}"))
         sleep(Duration.millisecond*200)
@@ -451,7 +451,7 @@ router.get("/sse", {
     emitter.end()
 })
 ```
- - 调用`JoyContext.eventStream()` 创建 JoySseEmitter
+ - 调用`JoyContext.eventEmitter()` 创建 JoySseEmitter
  - 使用`JobServerEventBuilder` 构建 SSE 数据，调用`JoySseEmitter.sendEvent(...)`，每调用一次发送一次Event
  - 调用`JoySseEmitter.end` 写结束块
 

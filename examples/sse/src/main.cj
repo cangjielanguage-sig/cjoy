@@ -14,7 +14,7 @@ main(): Int64 {
     // 注册路由
     joy.router.get("/sse", {
         ctx: JoyContext =>
-        let emitter = ctx.eventStream()
+        let emitter = ctx.eventEmitter()
         for (num in 1..10) {
             emitter.sendEvent(JoyServerEventBuilder().data("{\"num\":\"${num}\"}"))
             sleep(Duration.millisecond*200)
