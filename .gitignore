@@ -4,10 +4,10 @@
 */.vscode
 src/*.macrocall
 */src/*.macrocall
+src/*/*.macrocall
 target/
 */target/
 */*.exe
 */*.bchir2
 */*.cjo
-src/test/*.cj.macrocall
 /tmpFile*

@@ -8,7 +8,7 @@
  * See the Mulan PSL v2 for more details.
  */
 
-package cjoy
+package cjoy.framework
 
 import std.collection.{ArrayList, HashMap, forEach}
 import std.fs.{canonicalize, FSException, exists, FileInfo}

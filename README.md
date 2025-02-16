@@ -488,7 +488,7 @@ CJoy 提供WebSocket的封装，简化WebSocket消息接收与响应。
 
 调用`JoyRouters.websocket`注册路由，与调用`get`函数类似，也支持中间件拦截WebSocket握手时的请求消息。
 
-**Handler**
+#### Handler
 
 接收消息需要实现接口`JoyWebSocketHandler`，回调函数说明：
 
