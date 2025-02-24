@@ -11,8 +11,19 @@
 package cjoy.multipart
 
 import std.collection.HashMap
-import std.io.{InputStream, ByteBuffer}
-import net.http.HttpHeaders
+import std.io.ByteBuffer
+
+public class MultipartParseException <: Exception {
+    public init(message: String) {
+        super(message)
+    }
+}
+
+public class MultipartLimitReachedException <: Exception {
+    public init(message: String) {
+        super(message)
+    }
+}
 
 public struct JoyDataSize {
     private var _value: UInt
@@ -40,37 +51,4 @@ public struct JoyMultiPartConfig {
     public var maxHeaders: UInt = 5
     public var maxMemSize: JoyDataSize = JoyDataSize.MB * 32
     public var maxMemFileSize: JoyDataSize = JoyDataSize.MB * 32
-}
-
-public class JoyHttpPart {
-    var _header: HttpHeaders = HttpHeaders()
-    var _dispositionParams: HashMap<String, String> = HashMap()
-
-    public func get(name: String): ?String {
-        _header.getFirst(name)
-    }
-
-    public func contentType(): String {
-        _header.getFirst("Content-Type").getOrThrow()
-    }
-
-    public func name(): String {
-        _dispositionParams.get("name").getOrDefault({=> ""})
-    }
-
-    public func fileName(): String {
-        _dispositionParams.get("filename").getOrDefault({=> ""})
-    }
-}
-
-public interface JoyPartHandler {
-    func onPart(part: JoyHttpPart): Unit
-}
-
-public class JoyPartFuncHandler <: JoyPartHandler {
-    public JoyPartFuncHandler(let handler: (JoyHttpPart) -> Unit) {}
-
-    public func onPart(part: JoyHttpPart): Unit {
-        this.onPart(part)
-    }
 }
