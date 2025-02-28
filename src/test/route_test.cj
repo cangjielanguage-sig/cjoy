@@ -153,9 +153,7 @@ public class RouteTestCaseSuit {
     @AfterAll
     func tearDown() {
         _client.close()
-        if (let Some(s) <- _instance) {
-            s.shutdown()
-        }
+        _instance?.shutdown()
     }
 
     @TestCase

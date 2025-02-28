@@ -13,21 +13,21 @@ package cjoy.multipart
 import std.collection.HashMap
 import std.io.ByteBuffer
 
-public class MultipartParseException <: Exception {
+public class MultiPartParseException <: Exception {
     public init(message: String) {
         super(message)
     }
 }
 
-public class MultipartLimitReachedException <: Exception {
+public class MultiPartLimitReachedException <: Exception {
     public init(message: String) {
         super(message)
     }
 }
 
 public struct JoyDataSize {
-    private var _value: UInt
-    const init(value: UInt) {
+    private let _value: Int
+    const init(value: Int) {
         _value = value
     }
 
@@ -35,11 +35,11 @@ public struct JoyDataSize {
     public static const MB: JoyDataSize = JoyDataSize(1 << 20)
     public static const GB: JoyDataSize = JoyDataSize(1 << 30)
 
-    public operator func *(r: UInt): JoyDataSize {
+    public operator func *(r: Int): JoyDataSize {
         JoyDataSize(_value * r)
     }
 
-    public prop value: UInt {
+    public prop value: Int {
         get() {
             _value
         }
@@ -47,8 +47,9 @@ public struct JoyDataSize {
 }
 
 public struct JoyMultiPartConfig {
-    public var maxParts: UInt = 10
-    public var maxHeaders: UInt = 5
+    public var maxParts: Int = 10
+    public var maxHeaders: Int = 5
     public var maxMemSize: JoyDataSize = JoyDataSize.MB * 32
-    public var maxMemFileSize: JoyDataSize = JoyDataSize.MB * 32
+    public var maxFileSize: JoyDataSize = JoyDataSize.MB * 32
+    public var fileCacheDir: String = ""
 }

@@ -14,8 +14,14 @@ import std.collection.{HashMap, ArrayList}
 import std.io.{InputStream, BufferedInputStream, ByteBuffer, SeekPosition}
 import net.http.HttpHeaders
 
+type ParseState = Int
+
+const PS_HEADER: ParseState = 0
+const PS_BODY: ParseState = 1
+const PS_END: ParseState = 2
+
 public class JoyMultiPartParser <: Iterable<JoyMultiPart> {
-    private let _config: JoyMultiPartConfig
+    let _config: JoyMultiPartConfig
     let _handler: JoyMultiPartHandler
     private let _buffer: BufferReader
     private let _boundary: String
@@ -25,7 +31,7 @@ public class JoyMultiPartParser <: Iterable<JoyMultiPart> {
     private let _dashBoundaryDash: Array<Byte> // "--boundary--"
     private let _dashBoundary: Array<Byte> // "--boundary"
 
-    private var _partsRead: UInt = 0
+    private var _partsRead: Int = 0
     private let _parts = ArrayList<JoyMultiPart>()
 
     public init(config: JoyMultiPartConfig, handler: JoyMultiPartHandler, inputStream: InputStream, boundary: String) {
@@ -42,7 +48,7 @@ public class JoyMultiPartParser <: Iterable<JoyMultiPart> {
     }
 
     /**
-     * parse the multi parts
+     * parse the multi parts content
      */
     public func parseParts(): Unit {
         while (let Some(line) <- _buffer.readUntil(b'\n')) {
@@ -77,12 +83,12 @@ public class JoyMultiPartParser <: Iterable<JoyMultiPart> {
             return true
         }
 
-        throw MultipartParseException("unexpected line in parser, data : ${String.fromUtf8(line)}")
+        throw MultiPartParseException("unexpected line in parser, data : ${String.fromUtf8(line)}")
     }
 
     private func checkParts() {
         if (_partsRead > _config.maxParts) {
-            throw MultipartLimitReachedException("parts limit reached ${_partsRead} > ${_config.maxParts}")
+            throw MultiPartLimitReachedException("parts limit reached, ${_partsRead} > ${_config.maxParts}")
         }
     }
 

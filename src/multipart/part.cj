@@ -11,27 +11,38 @@
 package cjoy.multipart
 
 import std.collection.HashMap
+import std.fs.File
 import std.io.{InputStream, ByteBuffer}
 import net.http.HttpHeaders
 
 public class JoyMultiPart {
-    let _header: HttpHeaders = HttpHeaders()
+    let _headers: HttpHeaders = HttpHeaders()
     private var _dispositionParams: HashMap<String, String> = HashMap()
     private var _isParseDisposition: Bool = false
+    private var _nextState: ParseState = PS_HEADER
 
-    private var _totalSize = 0
-    private var _contentSize = 0
+    var _memoryHandler: ?JoyMemoryMultiPartHandler = None
+    var _diskHandler: ?JoyDiskMultiPartHandler = None
 
+    /**
+     * return the header
+     */
     public func header(name: String): ?String {
-        _header.getFirst(name)
+        _headers.getFirst(name)
     }
 
+    /**
+     * return the content type
+     */
     public prop contentType: String {
         get() {
-            _header.getFirst("Content-Type").getOrThrow()
+            _headers.getFirst("Content-Type").getOrThrow()
         }
     }
 
+    /**
+     * return the name
+     */
     public prop name: String {
         get() {
             parseContentDisposition()
@@ -39,6 +50,9 @@ public class JoyMultiPart {
         }
     }
 
+    /**
+     * return the file name
+     */
     public prop fileName: String {
         get() {
             parseContentDisposition()
@@ -46,19 +60,29 @@ public class JoyMultiPart {
         }
     }
 
-    public prop size: Int {
-        get() {
-            _totalSize
-        }
+    /**
+     * return text value in memory
+     */
+    public func text(): ?String {
+        _memoryHandler?.getContent(this.name).map({bb => String.fromUtf8(bb.bytes())}) ?? None
     }
 
-    public prop contentSize: Int {
-        get() {
-            _contentSize
-        }
+    /**
+     * return file in cache dir, you can move or copy to other dir
+     */
+    public func file(): ?File {
+        _diskHandler?.getFile(this.name) ?? None
+    }
+
+    /**
+     * return file content in memory
+     */
+    public func fileContent(): ?ByteBuffer {
+        _memoryHandler?.getContent(this.name) ?? None
     }
 
     func read(r: JoyMultiPartParser, buffer: BufferReader): Unit {
+        var headerNum: Int = 0
         while (let Some(line) <- buffer.readUntil(b'\n')) {
             let linebs = line.bytes()
             if (linebs.isEmpty()) {
@@ -66,33 +90,47 @@ public class JoyMultiPart {
             }
 
             if (isEmptyLine(linebs)) {
+                _nextState = PS_BODY
                 continue
             }
 
             // header line
             let hKey = readHeaderKey(linebs)
             if (!hKey.isEmpty()) {
-                _header.add(String.fromUtf8(hKey), String.fromUtf8(linebs[(hKey.size + 1)..]))
-                _totalSize += hKey.size - 2
+                if (_nextState != PS_HEADER) {
+                    throw MultiPartParseException(
+                        "parse multi part failed, invalid state(${_nextState}), shoud be header line")
+                }
+                headerNum++
+                if (headerNum > r._config.maxHeaders) {
+                    throw MultiPartLimitReachedException("header limit reached, ${headerNum} > ${r._config.maxHeaders}")
+                }
+                _headers.add(String.fromUtf8(hKey), String.fromUtf8(linebs[(hKey.size + 1)..]))
                 continue
             }
 
             // end with dash line
             if (r.isDashLine(linebs)) {
                 buffer.rewindLast()
+                _nextState = PS_END
                 return
             }
 
             // body
+            if (_nextState != PS_BODY) {
+                throw MultiPartParseException(
+                    "parse multi part failed, invalid state(${_nextState}), shoud be body line")
+            }
             if (isEndLine(linebs)) {
-                _contentSize += linebs.size - 2 // remove \r\n
-                _totalSize += linebs.size - 2
                 r._handler.onPart(this, linebs[..linebs.size - 2])
+                _nextState = PS_END
             } else {
-                _contentSize += linebs.size
-                _totalSize += linebs.size
                 r._handler.onPart(this, linebs)
             }
+        }
+
+        if (_nextState != PS_END) {
+            throw MultiPartParseException("parse multi part failed, invalid state(${_nextState}), shoud have end line")
         }
     }
 
@@ -109,7 +147,6 @@ public class JoyMultiPart {
             if (i > 30) {
                 return []
             }
-
             if (line[i] == b':') {
                 return line[0..i]
             }
@@ -122,7 +159,7 @@ public class JoyMultiPart {
             return
         }
 
-        if (let Some(h) <- _header.getFirst("Content-Disposition")) {
+        if (let Some(h) <- _headers.getFirst("Content-Disposition")) {
             let mt = JoyMediaType.parse(h)
             _dispositionParams = mt.params
             _isParseDisposition = true

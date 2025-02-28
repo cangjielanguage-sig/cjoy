@@ -16,10 +16,10 @@ import std.unittest.*
 import std.unittest.testmacro.*
 
 @Test
-public class MultiPartReaderTestCaseSuit {
-    func checkPart(name: String, value: String, parser: JoyMultiPartParser, handler: JoyMemoryMultiPartHandler): JoyMultiPart {
+public class MultiPartParserTestCaseSuit {
+    private func checkPart(name: String, value: String, parser: JoyMultiPartParser, handler: JoyMemoryMultiPartHandler): JoyMultiPart {
         let part = parser.getPart(name).getOrThrow()
-        let content = handler.getPartContent(name)
+        let content = handler.getContent(name)
         let rc = String.fromUtf8(content.getOrThrow().bytes())
         if (rc != value) {
             @Fail("the part content is not match, expect=${value}, real=${rc}")
@@ -27,7 +27,7 @@ public class MultiPartReaderTestCaseSuit {
         part
     }
 
-    func checkPartProp(part: JoyMultiPart, filename: String, contType: String): Unit {
+    private func checkPartProp(part: JoyMultiPart, filename: String, contType: String): Unit {
         if (part.fileName != filename) {
             @Fail("the file name is not match, expect=${filename}, real=${part.fileName}")
         }
@@ -51,7 +51,7 @@ PNG ... content of abc.png
 --WebKitFormBoundaryrGKCBY7qhFd3TrwA--
 "#
         let config = JoyMultiPartConfig()
-        let handler = JoyMemoryMultiPartHandler()
+        let handler = JoyMemoryMultiPartHandler(config)
         let byteBuffer = ByteBuffer()
         byteBuffer.write(str.replace("\n", "\r\n").toArray())
         let parser = JoyMultiPartParser(config, handler, byteBuffer, "WebKitFormBoundaryrGKCBY7qhFd3TrwA")
@@ -82,7 +82,7 @@ test_file
 --WebKitFormBoundaryrGKCBY7qhFd3TrwA--
 "#
         let config = JoyMultiPartConfig()
-        let handler = JoyMemoryMultiPartHandler()
+        let handler = JoyMemoryMultiPartHandler(config)
         let byteBuffer = ByteBuffer()
         let testFile = "abcd" * 1024
         byteBuffer.write(str.replace("\n", "\r\n").replace("test_file", testFile).toArray())

@@ -434,7 +434,7 @@ router.get("/chuncked", {
 })
 ```
 
- - 调用`JoyContext.pusher()` 创建 JoyPusherWriter
+ - 调用`JoyContext.chunkedWriter()` 创建 JoyPusherWriter
  - 调用`JoyChunkedWriter.write(...)` 写块数据，每调用一次发送一次Chunked
  - 调用`JoyChunkedWriter.end` 写结束块
 
@@ -509,7 +509,94 @@ CJoy 提供WebSocket的封装，简化WebSocket消息接收与响应。
 
  - 受限于Cangjie SDK，`JoyWebSocketHandler`处理与发送消息要在同一线程中
 
-使用示例：[examples/websocket](examples/websocket/src/main.cj)
+使用示例：[examples/websocket](examples/websocket/src/main.cj) 。
+
+### MultiPart
+
+CJoy 提供对 `Content-Type: multipart/form-data`的解释、数据缓存，并提供API简化上层应用的使用。
+
+#### 内置缓存
+
+框架内置缓存支持文本的内存与文件磁盘缓存，通过API直接获取缓存内容。
+
+```
+router.post(
+  "/saveUserInfo1",
+  {
+      ctx: JoyContext =>
+      var config = JoyMultiPartConfig()
+      config.fileCacheDir = "./test_tmp"
+      try (form = JoyMultiPartForm.create(ctx, config)) {
+          // 获取form-data; name="id"
+          if (let Some(id) <- (form.getPart("id")?.getText() ?? None)) {
+              println(id)
+          }
+          // 获取form-data; name="photo"; filename="photo.png"
+          if (let Some(file) <- (form.getPart("photo")?.getFile() ?? None)) {
+              let tempPath = Path("./photos")
+              copy(file.info.path, to: tempPath.join(file.info.name))
+          }
+      }
+      ctx.ok()
+  }
+)
+```
+- JoyMultiPartForm 
+  - `getPart(name)`: 获取MultiPart对象
+- JoyMultiPart
+  - `text()`: 获取表单文本内容
+  - `file()`: 获取表单上传文件缓存磁盘文件对象，用户可移动，Copy到其它目标目录。当JoyMultiPartConfig.fileCacheDir不为空时，文件缓存在指定的目录下
+  - `fileContent()`: 获取表单上传文件缓存在内存中内容。当JoyMultiPartConfig.fileCacheDir为空时，默认缓存在内存中
+  - `name`: 获取表单名称
+  - `fileName`: 获取表单上传文件名
+  - `contentType` : 获取表单上传文件类型
+
+JoyMultiPartForm实现Resource接口，需要使用 `try()` 确保缓存的临时对象进行退出清理。
+
+#### 用户自定义Handler
+
+框架支持对每个Part注册回调的Handler，在边解释Http Body时边回调，减少对内存与文件复制。
+
+```
+router.post(
+  "/saveUserInfo2",
+  {
+    ctx: JoyContext =>
+    var config = JoyMultiPartConfig()
+    try (form = JoyMultiPartForm.create(ctx, config)) {
+        // 注册回调的Handler
+        // 处理form-data; name="id"
+        form.handlePart(
+            "id",
+            {
+                part: JoyMultiPart, data: Array<Byte> =>
+                let text = String.fromUtf8(data)
+                println("${part.name}=${text}")
+            }
+        )
+        // 处理form-data; name="photo"; filename="photo.png"
+        let tempPath = Path("./photo")
+        form.handlePart(
+            "photo",
+            {
+                part: JoyMultiPart, data: Array<Byte> =>
+                // 会多次回调，性能优化可以考虑减少File打开
+                let fileName = tempPath.join(part.fileName)
+                try (file = File(fileName, OpenMode.Append)) {
+                    file.write(data)
+                }
+            }
+        )
+    }
+    ctx.ok()
+  }
+)
+```
+- JoyMultiPartForm 
+  - `form.handlePart(name: String, handler: JoyMultiPartHandler)`: 注册part的Handler
+  - `form.handlePart(name: String, handler: (JoyMultiPart, Array<Byte>)`: 注册part的Handler， Handler为Lambda表达式函数
+
+当用户有注册自定义Handler时，框架会优先调用Handler进行回调，不再做内存或磁盘缓存。同一个HTTP请求存在多个MultiPart时，不同的Part可以采用不同处理策略，如示例中的`id`文本类可以采用内置缓存，`photo`文件类可以注册自定义Handler。
 
 ## 参与贡献
 
