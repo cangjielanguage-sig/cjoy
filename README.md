@@ -513,7 +513,7 @@ CJoy 提供WebSocket的封装，简化WebSocket消息接收与响应。
 
 ### MultiPart
 
-CJoy 提供对 `Content-Type: multipart/form-data`的解释、数据缓存，并提供API简化上层应用的使用。
+CJoy 提供对 `Content-Type: multipart/form-data`的解释、数据缓存，并提供API简化使用。
 
 #### 内置缓存
 
@@ -527,11 +527,12 @@ router.post(
       var config = JoyMultiPartConfig()
       config.fileCacheDir = "./test_tmp"
       try (form = JoyMultiPartForm.create(ctx, config)) {
+          form.parse()
           // 获取form-data; name="id"
           if (let Some(id) <- (form.getPart("id")?.getText() ?? None)) {
               println(id)
           }
-          // 获取form-data; name="photo"; filename="photo.png"
+          // 获取form-data; name="photo"; filename="00009527.png"
           if (let Some(file) <- (form.getPart("photo")?.getFile() ?? None)) {
               let tempPath = Path("./photos")
               copy(file.info.path, to: tempPath.join(file.info.name))
@@ -542,6 +543,7 @@ router.post(
 )
 ```
 - JoyMultiPartForm 
+  - `parse()`: 解释表单内容
   - `getPart(name)`: 获取MultiPart对象
 - JoyMultiPart
   - `text()`: 获取表单文本内容
@@ -574,8 +576,8 @@ router.post(
                 println("${part.name}=${text}")
             }
         )
-        // 处理form-data; name="photo"; filename="photo.png"
-        let tempPath = Path("./photo")
+        // 处理form-data; name="photo"; filename="00009527.png"
+        let tempPath = Path("./photos")
         form.handlePart(
             "photo",
             {
@@ -587,6 +589,7 @@ router.post(
                 }
             }
         )
+        form.parse()
     }
     ctx.ok()
   }

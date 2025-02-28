@@ -15,7 +15,7 @@ Content-Disposition: form-data; name="id"
 
 00009527
 --WebKitFormBoundaryrGKCBY7qhFd3TrwA
-Content-Disposition: form-data; name="photo"; filename="photo.png"
+Content-Disposition: form-data; name="photo"; filename="00009527.png"
 Content-Type: image/png
 
 PNG ... content of photo.png
@@ -34,13 +34,14 @@ main(): Int64 {
             var config = JoyMultiPartConfig()
             config.fileCacheDir = "./test_tmp"
             try (form = JoyMultiPartForm.create(ctx, config)) {
+                form.parse()
                 // 获取form-data; name="id"
                 if (let Some(id) <- (form.getPart("id")?.text() ?? None)) {
                     println(id)
                 }
-                // 获取form-data; name="photo"; filename="photo.png"
+                // 获取form-data; name="photo"; filename="00009527.png"
                 if (let Some(file) <- (form.getPart("photo")?.file() ?? None)) {
-                    let tempPath = Path("./phones")
+                    let tempPath = Path("./photos")
                     copy(file.info.path, to: tempPath.join(file.info.name))
                 }
             }
@@ -65,8 +66,8 @@ main(): Int64 {
                         println("${part.name}=${text}")
                     }
                 )
-                // 处理form-data; name="photo"; filename="photo.png"
-                let tempPath = Path("./phones")
+                // 处理form-data; name="photo"; filename="00009527.png"
+                let tempPath = Path("./photos")
                 form.handlePart(
                     "photo",
                     {
@@ -78,6 +79,7 @@ main(): Int64 {
                         }
                     }
                 )
+                form.parse()
             }
             ctx.ok()
         }

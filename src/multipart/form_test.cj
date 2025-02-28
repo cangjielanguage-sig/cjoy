@@ -44,13 +44,14 @@ PNG ... content of abc.png
         var config = JoyMultiPartConfig()
         config.fileCacheDir = "./test_tmp"
         try (form = JoyMultiPartForm.create(request, config)) {
+            form.parse()
             let text = form.getPart("text")?.text()
             if (text != "title") {
                 @Fail("the text is not match, expect=title, real=${text}")
             }
             let file = form.getPart("file")?.file()
             if (file.isNone()) {
-                @Fail("the text is not match")
+                @Fail("the file is not match")
             }
         } finally {
             remove(config.fileCacheDir, recursive: true)

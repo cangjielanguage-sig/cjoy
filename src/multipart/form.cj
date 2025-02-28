@@ -65,8 +65,14 @@ public class JoyMultiPartForm <: JoyMultiPartHandler & Resource & Iterable<JoyMu
 
         let parser = JoyMultiPartParser(config, form, request.body, boundary)
         form._parser = parser
-        parser.parseParts()
         form
+    }
+
+    /**
+    * parse the multi parts
+    */
+    public func parse(): Unit {
+        _parser?.parseParts()
     }
 
     /**
