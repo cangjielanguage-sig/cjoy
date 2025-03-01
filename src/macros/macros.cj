@@ -234,14 +234,14 @@ public macro Head(attr: Tokens, input: Tokens) {
 }
 
 /**
- * Methods macro is used for annotation at the function, register the funtion for `method` `path`
+ * Handler macro is used for annotation at the function, register the funtion for `method path`
  *
  * @attribute path: the path pattern
  * @attribute methods: the method list, like `GET,PUT` or `GET`
  * @attribute produce: the format of reponse body, value is json/text, default is text
  */
-public macro Methods(attr: Tokens, input: Tokens) {
-    input + parseFunc("Methods", MethodCatgory.MC_METHODS, attr, input)
+public macro Handler(attr: Tokens, input: Tokens) {
+    input + parseFunc("Handler", MethodCatgory.MC_HANDLER, attr, input)
 }
 
 /**

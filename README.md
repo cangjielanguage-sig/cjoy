@@ -291,13 +291,13 @@ Handler注册宏，作用在函数上：
  - `@Delete[path="/abc", produce=json]`
  - `@Patch[path="/abc", produce=json]`
  - `@Head[path="/abc", produce=json]`
- - `@Methods[path="/abc", methods="PUT,POST", produce=json]`
+ - `@Handler[path="/abc", methods="PUT,POST", produce=json]`
 
 参数说明：
 
  - `path`：必选，指定handler处理的URL全路由，如果存在对应Group，框架会自动查找，注册到对应的Group上；
  - `produce`：可选，只有响应返回json时指定，且方法返回值必须实现JsonSerializable接口，默认是返回文本Body；
- - `methods`: 只有在Methods宏上使用，注册handler处理Method列表；
+ - `methods`: 只有在Handler宏上使用，注册handler处理Method列表；
   
 备注：
 

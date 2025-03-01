@@ -15,7 +15,7 @@ import std.collection.*
 import cjoy.*
 
 public enum MethodCatgory {
-    MC_POST | MC_GET | MC_DELETE | MC_PUT | MC_PATCH | MC_HEAD | MC_METHODS
+    MC_POST | MC_GET | MC_DELETE | MC_PUT | MC_PATCH | MC_HEAD | MC_HANDLER
 }
 
 class FuncInfo {

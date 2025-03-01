@@ -13,7 +13,7 @@ Changelog
 # V0.20.0
 
 - 特性：增加宏支持Handler与Middleware自动注册与参数注入
-- 特性：oyContext增加支持Chunked与SSE API
+- 特性：JoyContext增加支持Chunked与SSE API
 - 样例：增加上述功能的examples
 
 # V0.10.0
