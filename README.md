@@ -7,7 +7,7 @@ a fast，lightweight and joy web framework.<br/>
 </div>
 
 <p align="center">
-<img alt="" src="https://img.shields.io/badge/release-v0.21.0-brightgreen" style="display: inline-block;" />
+<img alt="" src="https://img.shields.io/badge/release-v0.22.0-brightgreen" style="display: inline-block;" />
 <img alt="" src="https://img.shields.io/badge/cjc-v0.58.3-brightgreen" style="display: inline-block;" />
 <img alt="" src="https://img.shields.io/badge/cjcov-70%25+-brightgreen" style="display: inline-block;" />
 <img alt="" src="https://img.shields.io/badge/state-孵化-brightgreen" style="display: inline-block;" />
@@ -515,6 +515,8 @@ CJoy 提供WebSocket的封装，简化WebSocket消息接收与响应。
 
 CJoy 提供对 `Content-Type: multipart/form-data`的解释、数据缓存，并提供API简化使用。
 
+使用示例：[examples/multipart](examples/multipart/src/main.cj) 。
+
 #### 内置缓存
 
 框架内置缓存支持文本的内存与文件磁盘缓存，通过API直接获取缓存内容。
@@ -566,7 +568,7 @@ router.post(
     ctx: JoyContext =>
     var config = JoyMultiPartConfig()
     try (form = JoyMultiPartForm.create(ctx, config)) {
-        // 注册回调的Handler
+        // 先注册回调的Handler
         // 处理form-data; name="id"
         form.handlePart(
             "id",

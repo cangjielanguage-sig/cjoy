@@ -52,7 +52,7 @@ public class JoyMultiPartForm <: JoyMultiPartHandler & Resource & Iterable<JoyMu
             }
 
             if (let Some(boundary) <- mtype.params.get("boundary")) {
-                return parseFormData(request, config, boundary)
+                return createForm(request, config, boundary)
             } else {
                 throw MultiPartParseException("not found boundary in header: ${header}")
             }
@@ -60,11 +60,9 @@ public class JoyMultiPartForm <: JoyMultiPartHandler & Resource & Iterable<JoyMu
         return JoyMultiPartForm.INSTANCE
     }
 
-    private static func parseFormData(request: HttpRequest, config: JoyMultiPartConfig, boundary: String): JoyMultiPartForm {
+    private static func createForm(request: HttpRequest, config: JoyMultiPartConfig, boundary: String): JoyMultiPartForm {
         let form = JoyMultiPartForm()
-
-        let parser = JoyMultiPartParser(config, form, request.body, boundary)
-        form._parser = parser
+        form._parser = JoyMultiPartParser(config, form, request.body, boundary)
         form
     }
 
