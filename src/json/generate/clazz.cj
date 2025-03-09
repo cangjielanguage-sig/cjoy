@@ -12,22 +12,7 @@ package cjoy.json.generate
 
 import std.ast.*
 import std.collection.ArrayList
-
-class ClassVarDeclVisitor <: Visitor {
-    private let varDecls: ArrayList<VarDecl> = ArrayList<VarDecl>()
-
-    public func allVarDecls(): Array<VarDecl> {
-        return varDecls.toArray()
-    }
-
-    public override func visit(varDecl: VarDecl) {
-        varDecls.add(varDecl)
-    }
-
-    public override func visit(_: FuncDecl) {
-        breakTraverse()
-    }
-}
+import cjoy.utils.ClassVarDeclVisitor
 
 public class JsonClassInfo {
     let classId: Token

@@ -1,0 +1,158 @@
+/*
+ * Copyright (c) lanlingx 2025-present. All rights resvered.
+ * CJoy is licensed under Mulan PSL v2.
+ * You can use this software according to the terms and conditions of the Mulan PSL v2.
+ * You may obtain a copy of Mulan PSL v2 at:
+ *          http://license.coscl.org.cn/MulanPSL2
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
+ * See the Mulan PSL v2 for more details.
+ */
+
+package cjoy.test
+
+import cjoy.*
+import cjoy.bind.*
+import std.deriving.*
+import std.collection.*
+import std.time.*
+import net.http.*
+import encoding.url.URL
+import std.unittest.*
+import std.unittest.testmacro.*
+
+@QueryBind
+public struct SQueryBind {
+    var str: String = ""
+    var str2: ?String = None
+    var i64: Int64 = 0
+
+    @BindField[name = int]
+    var i2_64: Int = 0
+
+    var i3_64: ?Int = None
+    var arr: Array<String> = []
+    var list: ArrayList<String> = ArrayList<String>()
+
+    //@BindField[name = "time1", timeformat = "HH:mm:ss MM/dd/yyyy OO"]
+    //var t1: DateTime = DateTime.now()
+
+    //@BindField[name = "time2", timeformat = "HH:mm:ss MM/dd/yyyy OO"]
+    //var t2: ?DateTime = None
+}
+
+@PostFormBind
+public struct SPostBind {
+    var str: String = ""
+    var str2: ?String = None
+    var i64: Int64 = 0
+
+    @BindField[name = int]
+    var i2_64: Int = 0
+
+    var i3_64: ?Int = None
+    var arr: Array<String> = []
+    var list: ArrayList<String> = ArrayList<String>()
+
+    //@BindField[name = "time1", timeformat = "HH:mm:ss MM/dd/yyyy OO"]
+    //var t1: DateTime = DateTime.now()
+
+    //@BindField[name = "time2", timeformat = "HH:mm:ss MM/dd/yyyy OO"]
+    //var t2: ?DateTime = None
+}
+
+@HeaderBind
+public struct SHeaderBind {
+    @BindField[name = hstr1]
+    var str: String = ""
+
+    @BindField[name = hstr2]
+    var str2: ?String = None
+
+    @BindField[name = hint1]
+    var i64: Int64 = 0
+
+    @BindField[name = hint2]
+    var i2_64: Int = 0
+
+    @BindField[name = hint3]
+    var i3_64: ?Int = None
+
+    @BindField[name = harr]
+    var arr: Array<String> = []
+
+    @BindField[name = hlist]
+    var list: ArrayList<String> = ArrayList<String>()
+
+    @BindField[name = "htime1", timeformat = "HH:mm:ss MM/dd/yyyy OO"]
+    var t1: DateTime = DateTime.now()
+
+    @BindField[name = "htime2", timeformat = "HH:mm:ss MM/dd/yyyy OO"]
+    var t2: ?DateTime = None
+}
+
+@Test
+public class BindTestCaseSuit {
+    @TestCase
+    public func testQueryBind() {
+        let u = "http://127.0.0.1:18881/test?str=1&str2=2&i64=1&int=2&i3_64=3&arr=1&arr=2&list=1&list=2"
+        let r = HttpRequestBuilder().get().url(URL.parse(u)).build()
+        let obj = SQueryBind.bind(r)
+        @Assert(obj.str, "1")
+        @Assert(obj.str2, "2")
+        @Assert(obj.i64, 1)
+        @Assert(obj.i2_64, 2)
+        @Assert(obj.i3_64, 3)
+        @Assert(obj.arr, ["1", "2"])
+        @Assert(obj.list, ArrayList(["1", "2"]))
+    }
+
+    @TestCase
+    public func testPostFormBind() {
+        let u = "http://127.0.0.1:18881/test?str=1&str2=2&i64=1&int=2&i3_64=3&arr=1&arr=2&list=1&list=2"
+        let r = HttpRequestBuilder()
+            .post()
+            .url(URL.parse(u))
+            .body(u)
+            .header("Content-Type", "application/x-www-form-urlencoded")
+            .build()
+        let obj = SPostBind.bind(r)
+        @Assert(obj.str, "1")
+        @Assert(obj.str2, "2")
+        @Assert(obj.i64, 1)
+        @Assert(obj.i2_64, 2)
+        @Assert(obj.i3_64, 3)
+        @Assert(obj.arr, ["1", "2"])
+        @Assert(obj.list, ArrayList(["1", "2"]))
+    }
+
+    @TestCase
+    public func testHeaderBind() {
+        let ts = DateTime.now().toString(DateTimeFormat.of("HH:mm:ss MM/dd/yyyy OO"))
+        let u = "http://127.0.0.1:18881/test"
+        let r = HttpRequestBuilder()
+            .get()
+            .url(URL.parse(u))
+            .header("hstr1", "1")
+            .header("hstr2", "2")
+            .header("hint1", "1")
+            .header("hint2", "2")
+            .header("hint3", "3")
+            .header("harr", "1")
+            .header("harr", "2")
+            .header("hlist", "1")
+            .header("hlist", "2")
+            .header("htime1", ts)
+            .header("htime2", ts)
+            .build()
+        let obj = SHeaderBind.bind(r)
+        @Assert(obj.str, "1")
+        @Assert(obj.str2, "2")
+        @Assert(obj.i64, 1)
+        @Assert(obj.i2_64, 2)
+        @Assert(obj.i3_64, 3)
+        @Assert(obj.arr, ["1", "2"])
+        @Assert(obj.list, ArrayList(["1", "2"]))
+        @Assert(obj.t1, DateTime.parse(ts, DateTimeFormat.of("HH:mm:ss MM/dd/yyyy OO")))
+        @Assert(obj.t2, DateTime.parse(ts, DateTimeFormat.of("HH:mm:ss MM/dd/yyyy OO")))
+    }
+}

@@ -12,6 +12,7 @@ package cjoy.macros.generate
 
 import std.ast.*
 import std.collection.*
+import cjoy.utils.{parseKVAttr, TypeNodeInfo}
 
 public enum ParamCatgory {
     PC_PATH | PC_QUERY | PC_POSTFORM | PC_HEADER | PC_CONTEXT | PC_BODY | PC_COOKIE | PC_NONE
@@ -27,20 +28,17 @@ open class ParamInfo {
     // the name of decl param
     var pname: Token = Token()
 
-    // the type of decl param
-    var ptype: Token = Token()
-
-    // the type of Array<T>
-    var pGenericType: Token = Token()
+    // the type info of param
+    var typeNode: TypeNodeInfo
 
     // the defalt value for query, postform, header
     var defValue: String = ""
 
-    var isPrimitive: Bool = false
-
     init(marcroName: String, catgory: ParamCatgory) {
         this.marcroName = marcroName
         this.catgory = catgory
+        let supportTypes = "String, PrimitiveType, T <: JsonDeserializable, Opition<T <: JsonDeserializable>, Opition<String>, ArrayList<String>, Array<Strng>"
+        this.typeNode = TypeNodeInfo(supportTypes)
     }
 
     func parse(input: Tokens): Unit {
@@ -54,24 +52,8 @@ open class ParamInfo {
         return pname.value
     }
 
-    protected func isOptionStringType(): Bool {
-        ptype.value == "Option" && pGenericType.value == "String"
-    }
-
-    protected func isStringType(): Bool {
-        ptype.value == "String" && pGenericType.value == ""
-    }
-
-    protected func isArrayStringType(): Bool {
-        ptype.value == "Array" && pGenericType.value == "String"
-    }
-
-    protected func isArrayListStringType(): Bool {
-        ptype.value == "ArrayList" && pGenericType.value == "String"
-    }
-
     public open func genTokens(): Tokens {
-        if (ptype.value == "JoyContext") {
+        if (typeNode.vtype.value == "JoyContext") {
             if (pname.value == "ctx") {
                 Tokens()
             } else {
@@ -79,55 +61,15 @@ open class ParamInfo {
                 )
             }
         } else {
-            throw Exception("not support param type ${ptype.value} for no macro")
+            throw Exception("not support param type ${typeNode.vtype.value} for no macro")
         }
     }
 
     private func parseFuncParam(input: Tokens): Unit {
-        let supportTypes = "String, PrimitiveType, T <: JsonDeserializable, Opition<T <: JsonDeserializable>, Opition<String>, ArrayList<String>, Array<Strng>"
         let funcParam = FuncParam(input)
         pname = funcParam.identifier
         let paramType = funcParam.paramType
-        match (paramType) {
-            case x: PrimitiveType =>
-                ptype = x.keyword
-                isPrimitive = true
-            case x: PrefixType =>
-                ptype = Token(TokenKind.IDENTIFIER, "Option")
-                let gType = x.baseType
-                if (gType is RefType) {
-                    pGenericType = (gType as RefType).getOrThrow().identifier
-                } else {
-                    diagReport(DiagReportLevel.ERROR, input, "unsuported type", "param ref type must be ${supportTypes}"
-                    )
-                    throw Exception("unsuported type")
-                }
-            case x: RefType =>
-                ptype = x.identifier
-                if (ptype.value == "Int" || ptype.value == "UInt") {
-                    isPrimitive = true
-                }
-
-                if (x.typeArguments.size != 1 && x.typeArguments.size != 0) {
-                    diagReport(DiagReportLevel.ERROR, input, "unsuported type", "param ref type must be ${supportTypes}"
-                    )
-                    throw Exception("unsuported type")
-                }
-
-                if (x.typeArguments.size == 1) {
-                    let gType = x.typeArguments[0]
-                    if (gType is RefType) {
-                        pGenericType = (gType as RefType).getOrThrow().identifier
-                    } else {
-                        diagReport(DiagReportLevel.ERROR, input, "unsuported type",
-                            "param ref type must be ${supportTypes}")
-                        throw Exception("unsuported type")
-                    }
-                }
-            case _ =>
-                diagReport(DiagReportLevel.ERROR, input, "unsuported type", "param ref type must be ${supportTypes}")
-                throw Exception("unsuported type")
-        }
+        typeNode.parse(input, paramType)
     }
 
     func parseAttr(attr: Tokens): Unit {
@@ -153,12 +95,12 @@ open class UrlParamVarGenerator <: ParamInfo {
     public override func genTokens(): Tokens {
         // query, param, postform
         let fn = Token(TokenKind.IDENTIFIER, fname)
-        if (isOptionStringType()) {
+        if (typeNode.isOptionStringType()) {
             return quote(let $(pname) = ctx.$(fn)($(this.getName()))
             )
         }
 
-        if (isStringType()) {
+        if (typeNode.isStringType()) {
             if (defValue != "") {
                 return quote(let $(pname) = ctx.$(fn)($(this.getName())).getOrDefault({=>$(defValue)})
                 )
@@ -168,24 +110,24 @@ open class UrlParamVarGenerator <: ParamInfo {
             }
         }
 
-        if (isArrayStringType() && array) {
+        if (typeNode.isArrayStringType() && array) {
             let fnl = Token(TokenKind.IDENTIFIER, fname + "List")
             return quote(let $(pname) = ctx.$(fnl)($(this.getName())).toArray()
             )
         }
 
-        if (isArrayListStringType() && array) {
+        if (typeNode.isArrayListStringType() && array) {
             let fnl = Token(TokenKind.IDENTIFIER, fname + "List")
             return quote(let $(pname) = ctx.$(fnl)($(this.getName()))
             )
         }
 
-        if (isPrimitive) {
+        if (typeNode.isPrimitive) {
             if (defValue != "") {
-                return quote(let $(pname) = $(ptype).parse(ctx.$(fn)($(this.getName())).getOrDefault({=>$(defValue)}))
+                return quote(let $(pname) = $(typeNode.vtype).parse(ctx.$(fn)($(this.getName())).getOrDefault({=>$(defValue)}))
                 )
             } else {
-                return quote(let $(pname) = $(ptype).parse(ctx.$(fn)($(this.getName())).getOrThrow())
+                return quote(let $(pname) = $(typeNode.vtype).parse(ctx.$(fn)($(this.getName())).getOrThrow())
                 )
             }
         }
@@ -223,12 +165,12 @@ class HeaderParamVarGenerator <: ParamInfo {
 
     public override func genTokens(): Tokens {
         // header param
-        if (isOptionStringType()) {
+        if (typeNode.isOptionStringType()) {
             return quote(let $(pname) = ctx.readHeader($(this.getName()))
             )
         }
 
-        if (isStringType()) {
+        if (typeNode.isStringType()) {
             if (defValue != "") {
                 return quote(let $(pname) = ctx.readHeader($(this.getName())).getOrDefault({=>$(defValue)})
                 )
@@ -238,22 +180,22 @@ class HeaderParamVarGenerator <: ParamInfo {
             }
         }
 
-        if (isArrayStringType()) {
+        if (typeNode.isArrayStringType()) {
             return quote(let $(pname) = ctx.readHeaders($(this.getName())).toArray()
             )
         }
 
-        if (isArrayListStringType()) {
+        if (typeNode.isArrayListStringType()) {
             return quote(let $(pname) = ArrayList(ctx.readHeaders($(this.getName())))
             )
         }
 
-        if (isPrimitive) {
+        if (typeNode.isPrimitive) {
             if (defValue != "") {
-                return quote(let $(pname) = $(ptype).parse(ctx.readHeader($(this.getName())).getOrDefault({=>$(defValue)}))
+                return quote(let $(pname) = $(typeNode.vtype).parse(ctx.readHeader($(this.getName())).getOrDefault({=>$(defValue)}))
                 )
             } else {
-                return quote(let $(pname) = $(ptype).parse(ctx.readHeader($(this.getName())).getOrThrow())
+                return quote(let $(pname) = $(typeNode.vtype).parse(ctx.readHeader($(this.getName())).getOrThrow())
                 )
             }
         }
@@ -268,12 +210,12 @@ class CookieParamVarGenerator <: ParamInfo {
 
     public override func genTokens(): Tokens {
         // cookie param
-        if (isOptionStringType()) {
+        if (typeNode.isOptionStringType()) {
             return quote(let $(pname) = ctx.readCookie($(this.getName()))
             )
         }
 
-        if (isStringType()) {
+        if (typeNode.isStringType()) {
             if (defValue != "") {
                 return quote(let $(pname) = ctx.readCookie($(this.getName())).getOrDefault({=>$(defValue)})
                 )
@@ -283,12 +225,12 @@ class CookieParamVarGenerator <: ParamInfo {
             }
         }
 
-        if (isPrimitive) {
+        if (typeNode.isPrimitive) {
             if (defValue != "") {
-                return quote(let $(pname) = $(ptype).parse(ctx.readCookie($(this.getName())).getOrDefault({=>$(defValue)}))
+                return quote(let $(pname) = $(typeNode.vtype).parse(ctx.readCookie($(this.getName())).getOrDefault({=>$(defValue)}))
                 )
             } else {
-                return quote(let $(pname) = $(ptype).parse(ctx.readCookie($(this.getName())).getOrThrow())
+                return quote(let $(pname) = $(typeNode.vtype).parse(ctx.readCookie($(this.getName())).getOrThrow())
                 )
             }
         }
@@ -302,11 +244,11 @@ class ContextParamVarGenerator <: ParamInfo {
     }
 
     public override func genTokens(): Tokens {
-        if (ptype.value == "Option") {
-            return quote(let $(pname): ?$(pGenericType)= ctx.getCtxParm($(this.getName()))
+        if (typeNode.vtype.value == "Option") {
+            return quote(let $(pname): ?$(typeNode.genericType)= ctx.getCtxParm($(this.getName()))
             )
         } else {
-            return quote(let $(pname): $(ptype)= ctx.getCtxParm<$(ptype)>($(this.getName())).getOrThrow()
+            return quote(let $(pname): $(typeNode.vtype)= ctx.getCtxParm<$(typeNode.vtype)>($(this.getName())).getOrThrow()
             )
         }
     }
@@ -319,19 +261,19 @@ class BodyParamVarGenerator <: ParamInfo {
 
     public override func genTokens(): Tokens {
         // body param
-        if (isOptionStringType()) {
+        if (typeNode.isOptionStringType()) {
             return quote(let $(pname) = Some(ctx.readString())
             )
         }
-        if (isStringType()) {
+        if (typeNode.isStringType()) {
             return quote(let $(pname) = ctx.readString()
             )
         }
-        if (ptype.value == "Option") {
-            return quote(let $(pname): ?$(pGenericType) = ctx.readJson<$(pGenericType)>()
+        if (typeNode.vtype.value == "Option") {
+            return quote(let $(pname): ?$(typeNode.genericType) = ctx.readJson<$(typeNode.genericType)>()
             )
         } else {
-            return quote(let $(pname): $(ptype) = ctx.readJson<$(ptype)>().getOrThrow()
+            return quote(let $(pname): $(typeNode.vtype) = ctx.readJson<$(typeNode.vtype)>().getOrThrow()
             )
         }
     }
@@ -347,31 +289,6 @@ func createParamVarGenerator(catgory: ParamCatgory): ParamInfo {
         case PC_COOKIE => CookieParamVarGenerator()
         case PC_BODY => BodyParamVarGenerator()
         case PC_NONE => ParamInfo("", ParamCatgory.PC_NONE)
-    }
-}
-
-func parseKVAttr(attr: Tokens, marcroName: String, cb: (ident: Token, value: Token) -> Unit): Unit {
-    if ((attr.size + 1) % 4 != 0) {
-        diagReport(DiagReportLevel.ERROR, attr, "${marcroName} attriable should link 'attrname= value'", "")
-        throw Exception("${marcroName} attriable should link 'attrname= value'")
-    }
-
-    for (idx in 0..attr.size : 4) {
-        let ident = attr.get(idx)
-        if (ident.kind != TokenKind.IDENTIFIER) {
-            diagReport(DiagReportLevel.ERROR, attr,
-                "${marcroName} attriable name should be a identitier, but is ${ident.kind}", "")
-            throw Exception("${marcroName} attriable name should be a identitier")
-        }
-        let assign = attr.get(idx + 1)
-        if (assign.kind != TokenKind.ASSIGN) {
-            diagReport(DiagReportLevel.ERROR, attr, "${marcroName} attriable name should be =, but is ${ident.kind}", ""
-            )
-            throw Exception("${marcroName} attriable name should be =")
-        }
-
-        let value = attr.get(idx + 2)
-        cb(ident, value)
     }
 }
 

@@ -246,7 +246,7 @@ func cookiePost1(@CookieParam[name = "csrf-token"] token: ?String): String {
     token.getOrThrow().toString()
 }
 
-@Methods[path = "/cookie1", methods = "GET,POST"]
+@Handler[path = "/cookie1", methods = "GET,POST"]
 func testMethods(): String {
     "helloword"
 }

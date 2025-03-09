@@ -30,11 +30,10 @@ class DateTimeJsonFieldGenerator <: JsonFieldGenerator {
 
     public override func genDeserializeTokens(): Tokens {
         if (info.timeformat != "") {
-            return quote(
-                case $(info.jsonKeyName()) => obj.$(varId) = DateTime.parse(reader.readValue<String>(), $(info.timeformat))
-         )
+            return quote(case $(info.jsonKeyName()) => obj.$(varId) = DateTime.parse(reader.readValue<String>(), $(info.timeformat))
+            )
         }
         quote(case $(info.jsonKeyName()) => obj.$(varId) = DateTime.parse(reader.readValue<String>())
-      )
+        )
     }
 }

@@ -13,6 +13,7 @@ package cjoy.macros.generate
 import std.ast.*
 import std.collection.*
 import cjoy.*
+import cjoy.utils.parseKVAttr
 
 class MiddlewareInfo {
     let marcroName = "Middleware"
@@ -42,7 +43,7 @@ class MiddlewareInfo {
             })
     }
 
-    func genCodes(): Tokens {
+    func genTokens(): Tokens {
         let handlerName = Token(TokenKind.IDENTIFIER, decl.identifier.value.toAsciiTitle() + "Middleware")
         let funcName = decl.identifier
         quote(
@@ -71,5 +72,5 @@ public func parseMiddlewareFunc(attr: ?Tokens, input: Tokens): Tokens {
     if (let Some(a) <- attr) {
         funcInfo.parseAttr(a)
     }
-    funcInfo.genCodes()
+    funcInfo.genTokens()
 }

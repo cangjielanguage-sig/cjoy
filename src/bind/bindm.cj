@@ -1,0 +1,36 @@
+/*
+ * Copyright (c) lanlingx 2025-present. All rights resvered.
+ * CJoy is licensed under Mulan PSL v2.
+ * You can use this software according to the terms and conditions of the Mulan PSL v2.
+ * You may obtain a copy of Mulan PSL v2 at:
+ *          http://license.coscl.org.cn/MulanPSL2
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
+ * See the Mulan PSL v2 for more details.
+ */
+
+macro package cjoy.bind
+
+import std.ast.Tokens
+import cjoy.bind.generate.{BindFieldInfo, BindClassInfo}
+
+// reimport the dependent
+public import std.convert.*
+public import net.http.HttpRequest
+
+
+public macro QueryBind(input: Tokens): Tokens {
+    input + BindClassInfo.parse("QueryBind", input)
+}
+
+public macro PostFormBind(input: Tokens): Tokens {
+    input + BindClassInfo.parse("PostFormBind", input)
+}
+
+public macro HeaderBind(input: Tokens): Tokens {
+    input + BindClassInfo.parse("HeaderBind", input)
+}
+
+public macro BindField(attr: Tokens, input: Tokens): Tokens {
+    BindFieldInfo.parse(attr, input)
+    input
+}
