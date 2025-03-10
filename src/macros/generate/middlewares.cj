@@ -13,6 +13,7 @@ package cjoy.macros.generate
 import std.ast.*
 import std.collection.*
 import cjoy.*
+import cjoy.utils.parseKVAttr
 
 class MiddlewareInfo {
     let marcroName = "Middleware"

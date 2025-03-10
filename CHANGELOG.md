@@ -4,6 +4,8 @@ Changelog
 
 - 特性：支持Websocket，以及examples
 - 特性：支持multipart，以及examples
+- 特性：支持文件上传，以及examples
+
 
 # v0.21.0
 

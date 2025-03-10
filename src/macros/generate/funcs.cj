@@ -13,13 +13,14 @@ package cjoy.macros.generate
 import std.ast.*
 import std.collection.*
 import cjoy.*
+import cjoy.utils.parseKVAttr
 
 public enum MethodCatgory {
     MC_POST | MC_GET | MC_DELETE | MC_PUT | MC_PATCH | MC_HEAD | MC_HANDLER
 }
 
 class FuncInfo {
-    let marcroName: String
+    let macroName: String
     let catgory: MethodCatgory
 
     let decl: FuncDecl
@@ -28,27 +29,27 @@ class FuncInfo {
     var produce: String = ""
     var methods: String = ""
 
-    init(marcroName: String, catgory: MethodCatgory, decl: FuncDecl) {
-        this.marcroName = marcroName
+    init(macroName: String, catgory: MethodCatgory, decl: FuncDecl) {
+        this.macroName = macroName
         this.catgory = catgory
         this.decl = decl
     }
 
     func parseAttr(attr: Tokens): Unit {
-        parseKVAttr(attr, marcroName,
+        parseKVAttr(attr, macroName,
             {
                 ident: Token, value: Token => match (ident.value) {
                     case "path" => this.path = value.value
                     case "produce" => this.produce = value.value
                     case "methods" => this.methods = value.value
-                    case _ => throw Exception("${marcroName} attriable should be name, consumer, produce")
+                    case _ => throw Exception("${macroName} attriable should be name, consumer, produce")
                 }
             })
     }
 
     func getMethods(): Array<String> {
         if (methods.isEmpty()) {
-            return [marcroName.toAsciiUpper()]
+            return [macroName.toAsciiUpper()]
         }
 
         let array = methods.split(",", removeEmpty: true)
@@ -170,13 +171,13 @@ class FuncInfo {
     }
 }
 
-public func parseFunc(marcroName: String, catgory: MethodCatgory, attr: Tokens, input: Tokens): Tokens {
+public func parseFunc(macroName: String, catgory: MethodCatgory, attr: Tokens, input: Tokens): Tokens {
     let decl = parseDecl(input)
     if (!(decl is FuncDecl)) {
-        throw Exception("${marcroName} macro only using for func")
+        throw Exception("${macroName} macro only using for func")
     }
 
-    let funcInfo = FuncInfo(marcroName, catgory, (decl as FuncDecl).getOrThrow())
+    let funcInfo = FuncInfo(macroName, catgory, (decl as FuncDecl).getOrThrow())
     funcInfo.parseAttr(attr)
     let tokens = funcInfo.genTokens()
     ParamInfoCache.clear()
