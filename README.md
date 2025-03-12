@@ -388,7 +388,7 @@ joy.run("127.0.0.1", 18881)
 
 ### 参数绑定
 
-CJoy提供宏与API支持对Query，PostPost，Header多个参数绑定到一个对象上。
+CJoy提供宏与API支持对Query，PostForm，Header多个参数绑定到一个对象上。
 
 ```
 @QueryBind

@@ -30,9 +30,9 @@ public class BindClassInfo {
 
     func genVarTokens(): Tokens {
         match (macroName) {
-            case "QueryBind" => quote(let form_ = request.form
+            case "PostFormBind" => quote(let form_ = request.form
             )
-            case "PostFormBind" => quote(let form_ = request.url.queryForm
+            case "QueryBind" => quote(let form_ = request.url.queryForm
             )
             case "HeaderBind" => quote(let headers_ = request.headers
             )

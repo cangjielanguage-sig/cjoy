@@ -108,11 +108,10 @@ public class BindTestCaseSuit {
 
     @TestCase
     public func testPostFormBind() {
-        let u = "http://127.0.0.1:18881/test?str=1&str2=2&i64=1&int=2&i3_64=3&arr=1&arr=2&list=1&list=2"
         let r = HttpRequestBuilder()
             .post()
-            .url(URL.parse(u))
-            .body(u)
+            .url("http://127.0.0.1:18881/test")
+            .body("str=1&str2=2&i64=1&int=2&i3_64=3&arr=1&arr=2&list=1&list=2")
             .header("Content-Type", "application/x-www-form-urlencoded")
             .build()
         let obj = SPostBind.bind(r)
