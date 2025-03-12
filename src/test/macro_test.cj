@@ -13,8 +13,10 @@ package cjoy.test
 import cjoy.*
 import cjoy.json.*
 import cjoy.macros.*
+import cjoy.bind.*
 import std.deriving.*
 import std.collection.*
+import std.time.*
 
 // test not param
 @Get[path = "/test1"]
@@ -102,6 +104,27 @@ func pathGet7(@PathParam[name = p] a: Int32): UInt16 {
 @Get[path = "/path8/*"]
 func pathGet8(@PathParam[name = *] remainPath: String): UInt16 {
     println(remainPath)
+    200
+}
+
+// test path param datetime return status code
+@Get[path = "/path9/{p}"]
+func pathGet9(@PathParam[name = p] date: DateTime): UInt16 {
+    println(date)
+    200
+}
+
+// test path param datetime return status code
+@Get[path = "/path10/{p}"]
+func pathGet10(@PathParam[name = p] date: ?DateTime): UInt16 {
+    println(date)
+    200
+}
+
+// test path param datetime return status code
+@Get[path = "/path11/{p}"]
+func pathGet11(@PathParam[name = p] date: Option<DateTime>): UInt16 {
+    println(date)
     200
 }
 
@@ -244,6 +267,40 @@ func headerPost3(@HeaderParam[name = "X-Tokens"] token: ?String): String {
 @Post[path = "/cookie1", produce = json]
 func cookiePost1(@CookieParam[name = "csrf-token"] token: ?String): String {
     token.getOrThrow().toString()
+}
+
+@QueryBind
+@Derive[ToString]
+class QueryBindParams {
+    var a: String = ""
+}
+
+@Get[path = "/bind_query"]
+func bind1(@QueryBindParam param: QueryBindParams): String {
+    param.toString()
+}
+
+@PostFormBind
+@Derive[ToString]
+class FormBindParams {
+    var a: String = ""
+}
+
+@Post[path = "/bind_postform"]
+func bind2(@PostFormBindParam param: FormBindParams): String {
+    param.toString()
+}
+
+@HeaderBind
+@Derive[ToString]
+class HeaderParams {
+    @BindField[name = "content-type"]
+    var a: String = ""
+}
+
+@Get[path = "/bind_"]
+func bind3(@HeaderBindParam param: HeaderParams): String {
+    param.toString()
 }
 
 @Handler[path = "/cookie1", methods = "GET,POST"]

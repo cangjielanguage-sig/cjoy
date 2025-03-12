@@ -16,5 +16,12 @@ import net.http.HttpRequest
 * the interface of binding
 */
 public interface JoyBindable<T> {
+    /**
+    *
+    * bind http request query, postform or header params to object
+    * 
+    * @param request: the http request
+    * @return the object
+    */
     static func bind(request: HttpRequest): T
 }

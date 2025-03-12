@@ -63,6 +63,16 @@ public macro QueryParam(input: Tokens) {
 }
 
 /**
+ * QueryParam macro is used for annotation at the paramter of function
+ * which value from paramters in url query.
+ *
+ */
+public macro QueryBindParam(input: Tokens) {
+    parseParam(ParamCatgory.PC_QUERY_BIND, input)
+    input
+}
+
+/**
  * PostFormParam macro is used for annotation at the paramter of function
  * which value from named paramter in encoded url or post form.
  *
@@ -86,6 +96,15 @@ public macro PostFormParam(input: Tokens) {
 }
 
 /**
+ * PostFormParam macro is used for annotation at the paramter of function
+ * which value from paramters in encoded url or post form. 
+ */
+public macro PostFormBindParam(input: Tokens) {
+    parseParam(ParamCatgory.PC_POSTFORM_BIND, input)
+    input
+}
+
+/**
  * HeaderParam macro is used for annotation at the paramter of function
  * which value from named paramter in header.
  *
@@ -105,6 +124,16 @@ public macro HeaderParam(attr: Tokens, input: Tokens) {
  */
 public macro HeaderParam(input: Tokens) {
     parseParam(ParamCatgory.PC_HEADER, input)
+    input
+}
+
+/**
+ * HeaderParam macro is used for annotation at the paramter of function
+ * which value from paramters in header.
+ *
+ */
+public macro HeaderBindParam(input: Tokens) {
+    parseParam(ParamCatgory.PC_HEADER_BIND, input)
     input
 }
 

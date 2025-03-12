@@ -15,7 +15,17 @@ import std.collection.*
 import cjoy.utils.{parseKVAttr, TypeNodeInfo}
 
 public enum ParamCatgory {
-    PC_PATH | PC_QUERY | PC_POSTFORM | PC_HEADER | PC_CONTEXT | PC_BODY | PC_COOKIE | PC_NONE
+    PC_PATH | 
+    PC_QUERY | 
+    PC_QUERY_BIND |
+    PC_POSTFORM |
+    PC_POSTFORM_BIND |
+    PC_HEADER | 
+    PC_HEADER_BIND | 
+    PC_CONTEXT | 
+    PC_BODY | 
+    PC_COOKIE |  
+    PC_NONE 
 }
 
 open class ParamInfo {
@@ -33,6 +43,9 @@ open class ParamInfo {
 
     // the defalt value for query, postform, header
     var defValue: String = ""
+
+    // the timeformat of datatime
+    var timeformat: String = ""
 
     init(marcroName: String, catgory: ParamCatgory) {
         this.marcroName = marcroName
@@ -77,8 +90,9 @@ open class ParamInfo {
             {
                 ident: Token, value: Token => match (ident.value) {
                     case "name" => this.name = value.value
+                    case "timeformat" => this.timeformat = value.value
                     case "default" => this.defValue = value.value
-                    case _ => throw Exception("${marcroName} attriable should be name, defalut")
+                    case _ => throw Exception("${marcroName} attriable should be name, timeformat, defalut")
                 }
             })
     }
@@ -131,6 +145,27 @@ open class UrlParamVarGenerator <: ParamInfo {
                 )
             }
         }
+
+        if (typeNode.isDateTimeType() || typeNode.isOptionDateTimeType()) {
+            if (timeformat != "") {
+                if (defValue != "") {
+                    return quote(let $(pname) = DateTime.parse(ctx.$(fn)($(this.getName())).getOrDefault({=>$(defValue)}), $(timeformat))
+                    )
+                } else {
+                    return quote(let $(pname) = DateTime.parse(ctx.$(fn)($(this.getName())).getOrThrow(), $(timeformat))
+                    )
+                }
+            } else {
+                if (defValue != "") {
+                    return quote(let $(pname) = DateTime.parse(ctx.$(fn)($(this.getName())).getOrDefault({=>$(defValue)}))
+                    )
+                } else {
+                    return quote(let $(pname) = DateTime.parse(ctx.$(fn)($(this.getName())).getOrThrow())
+                    )
+                }
+            }
+        }
+
         Tokens()
     }
 }
@@ -199,6 +234,26 @@ class HeaderParamVarGenerator <: ParamInfo {
                 )
             }
         }
+
+        if (typeNode.isDateTimeType() || typeNode.isOptionDateTimeType()) {
+            if (timeformat != "") {
+                if (defValue != "") {
+                    return quote(let $(pname) = DateTime.parse(ctx.readHeader($(this.getName())).getOrDefault({=>$(defValue)}), $(timeformat))
+                    )
+                } else {
+                    return quote(let $(pname) = DateTime.parse(ctx.readHeader($(this.getName())).getOrThrow(), $(timeformat))
+                    )
+                }
+            } else {
+                if (defValue != "") {
+                    return quote(let $(pname) = DateTime.parse(ctx.readHeader($(this.getName())).getOrDefault({=>$(defValue)}))
+                    )
+                } else {
+                    return quote(let $(pname) = DateTime.parse(ctx.readHeader($(this.getName())).getOrThrow())
+                    )
+                }
+            }
+        }
         Tokens()
     }
 }
@@ -261,11 +316,7 @@ class BodyParamVarGenerator <: ParamInfo {
 
     public override func genTokens(): Tokens {
         // body param
-        if (typeNode.isOptionStringType()) {
-            return quote(let $(pname) = Some(ctx.readString())
-            )
-        }
-        if (typeNode.isStringType()) {
+        if (typeNode.isStringType() || typeNode.isOptionStringType()) {
             return quote(let $(pname) = ctx.readString()
             )
         }
@@ -274,6 +325,54 @@ class BodyParamVarGenerator <: ParamInfo {
             )
         } else {
             return quote(let $(pname): $(typeNode.vtype) = ctx.readJson<$(typeNode.vtype)>().getOrThrow()
+            )
+        }
+    }
+}
+
+class QueryBindParamVarGenerator <: ParamInfo {
+    init() {
+        super("QueryBindParam", ParamCatgory.PC_QUERY_BIND)
+    }
+
+    public override func genTokens(): Tokens {
+        if (typeNode.vtype.value == "Option") {
+            return quote(let $(pname): ?$(typeNode.genericType) = ctx.bindQuery<$(typeNode.genericType)>()
+            )
+        } else {
+            return quote(let $(pname): $(typeNode.vtype) = ctx.bindQuery<$(typeNode.vtype)>().getOrThrow()
+            )
+        }
+    }
+}
+
+class PostFormBindParamVarGenerator <: ParamInfo {
+    init() {
+        super("PostFormBindParam", ParamCatgory.PC_POSTFORM_BIND)
+    }
+
+    public override func genTokens(): Tokens {
+        if (typeNode.vtype.value == "Option") {
+            return quote(let $(pname): ?$(typeNode.genericType) = ctx.bindPostForm<$(typeNode.genericType)>()
+            )
+        } else {
+            return quote(let $(pname): $(typeNode.vtype) = ctx.bindPostForm<$(typeNode.vtype)>().getOrThrow()
+            )
+        }
+    }
+}
+
+class HeaderBindParamVarGenerator <: ParamInfo {
+    init() {
+        super("HeaderBindParam", ParamCatgory.PC_HEADER_BIND)
+    }
+
+    public override func genTokens(): Tokens {
+        if (typeNode.vtype.value == "Option") {
+            return quote(let $(pname): ?$(typeNode.genericType) = ctx.bindHeader<$(typeNode.genericType)>()
+            )
+        } else {
+            return quote(let $(pname): $(typeNode.vtype) = ctx.bindHeader<$(typeNode.vtype)>().getOrThrow()
             )
         }
     }
@@ -288,6 +387,9 @@ func createParamVarGenerator(catgory: ParamCatgory): ParamInfo {
         case PC_HEADER => HeaderParamVarGenerator()
         case PC_COOKIE => CookieParamVarGenerator()
         case PC_BODY => BodyParamVarGenerator()
+        case PC_QUERY_BIND => QueryBindParamVarGenerator()
+        case PC_POSTFORM_BIND => PostFormBindParamVarGenerator()
+        case PC_HEADER_BIND => HeaderBindParamVarGenerator()
         case PC_NONE => ParamInfo("", ParamCatgory.PC_NONE)
     }
 }

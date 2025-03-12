@@ -293,7 +293,7 @@ Handler注册宏，作用在函数上：
  - `@Head[path="/abc", produce=json]`
  - `@Handler[path="/abc", methods="PUT,POST", produce=json]`
 
-参数说明：
+以上宏属性说明：
 
  - `path`：必选，指定handler处理的URL全路由，如果存在对应Group，框架会自动查找，注册到对应的Group上；
  - `produce`：可选，只有响应返回json时指定，且方法返回值必须实现JsonSerializable接口，默认是返回文本Body；
@@ -305,33 +305,38 @@ Handler注册宏，作用在函数上：
   
 函数参数展开宏，作用在函数入参上：
   
-  - `@PathParam[name=id]`：获取param路由的参数值，指定`/abc/{id}`名称，当方法参数名与URL的提取参数名不一样时指定；
-  - `@PathParam`：获取param路由的参数值，方法参数名与URL的提取参数名一样；
-  - `@QueryParam[name=id，default="abc"]`：获取URL Query参数值，default可选；
-  - `@QueryParam`: 获取URL Query参数值，default可选；
-  - `@PostFormParam[name=id，default="abc"]`：获取PostForm参数值，default可选；
-  - `@PostFormParam`: 获取PostForm参数值，default可选；
-  - `@HeaderParam[name=id，default="abc"]`: 获取Header参数值，default可选；
-  - `@HeaderParam`: 获取Header参数值，default可选；
-  - `@ContextParam[name=id]`: 获取Context参数值；
-  - `@ContextParam`: 获取Context参数值；
-  - `@CookieParam[name=id]`: 获取Cookie参数值；
-  - `@CookieParam`: 获取Cookie参数值；
+  - `@PathParam[name=id, timeformat="HH:mm:ss MM/dd/yyyy OO"]`：获取param路由的参数值，如`/abc/{id}`，当方法参数名与URL的提取参数名不一样时指定name属性，属性都可选；
+  - `@QueryParam[name=id，default="abc", timeformat="HH:mm:ss MM/dd/yyyy OO"]`：获取URL Query参数值，属性都可选；
+  - `@PostFormParam[name=id，default="abc", timeformat="HH:mm:ss MM/dd/yyyy OO"]`：获取PostForm参数值，属性都可选；
+  - `@HeaderParam[name=id，default="abc", timeformat="HH:mm:ss MM/dd/yyyy OO"]`: 获取Header参数值，属性都可选；
+  - `@ContextParam[name=id]`: 获取Context参数值，属性都可选；
+  - `@CookieParam[name=id]`: 获取Cookie参数值，属性都可选；
   - `@BodyParam`: 获取Body参数值；
+  - `@QueryBindParam`: URL Query多个参数绑定到对象；
+  - `@PostFormBindParam`: PostForm多个参数绑定到对象；
+  - `@HeaderBindParam`: Header多个参数绑定到对象；
+
+以上宏属性参数说明：
+
+  - `name`: 映射的参数名称，可选，不指定取方法参数名称
+  - `default`: 默认值，可选
+  - `timeformat`: 当方法入参是`Datetime`，`?Datetime`时，指定转换的格式，可选
 
 支持的函数入参类型：
 
   - `String` ：QueryParam, PostFormParam, HeaderParam, CookieParam, BodyParam宏标注的参数；
+  - `?String`：同上；
   - `基本类型`：如Int，PathParam，QueryParam, PostFormParam, HeaderParam宏标注的参数，String转换对应的基本类型；
-  - `?String`：QueryParam, PostFormParam, HeaderParam, CookieParam, BodyParam宏标注的参数；
-  - `Option<String>`：同上；
+  - `Datetime`：QueryParam, PostFormParam, HeaderParam宏标注的参数，String转换Datetime；
+  - `?Datatime`: 同上；
   - `ArrayList<String>`：QueryParam, PostFormParam, HeaderParam宏标注的参数有多个值时；
   - `Array<String>` ：同上；
   - `任一类型`：ContextParam宏标注的参数；
-  - `Option<T> when T <: JsonDeserializable`: BodyParam宏标注的参数；
+  - `T <: JsonDeserializable`: BodyParam宏标注的参数；
   - `?T when T <: JsonDeserializable`: 同上；
-  - `T <: JsonDeserializable`: 同上；
   - `JoyContext`: 不需要宏标注；
+  - `T <: JoyBindable`: QueryBindParam, PostFormBindParam, HeaderBindParam宏标注的参数，参见绑定参数章节；
+  - `?T when T <: JoyBindable`: 同上；
 
 不支持的入参名称：
 
@@ -363,11 +368,10 @@ func testMiddleware(ctx: JoyContext, chain: JoyRequestHandlerChain): Unit {
 Middleware注册宏，作用在函数上：
 
 - `@Middleware[groups="/a,/b"]`
-- `@Middleware`
 
-参数说明：
+以上宏属性说明：
 
-- `groups`: 指定多个Group的全路径。如果路径是`/a/b/c`，会自动生成`let g = group("/a").group("/b").group("/c")`，但Middleware只会注册到`Group /a/b/c`，如果不带groups参数，则Middleware注册到根Group。
+- `groups`: 指定多个Group的全路径。如果路径是`/a/b/c`，会自动生成`let g = group("/a").group("/b").group("/c")`，但Middleware只会注册到`Group /a/b/c`，如果不带groups属性，则Middleware注册到根Group。
 
 #### 注册
 
@@ -382,6 +386,52 @@ joy.run("127.0.0.1", 18881)
  - 需要在服务实例启动之前，需要显示地调用`JoyMiddlewares.registerTo(joy)`与`JoyHandlers.registerTo(joy)`，把自动生成Handler注册到实例上；
  - Middleware要先于Handler注册，即`JoyMiddlewares.registerTo(joy)` 需要在 `JoyHandlers.registerTo(joy)` 前调用；
 
+### 参数绑定
+
+CJoy提供宏与API支持对Query，PostPost，Header多个参数绑定到一个对象上。
+
+```
+@QueryBind
+public struct BindParam {
+    var str: String = ""
+    var str2: ?String = None
+    var i64: Int64 = 0
+    @BindField[name = int]
+    var i2_64: Int = 0
+    var i3_64: ?Int = None
+    var arr: Array<String> = []
+    var list: ArrayList<String> = ArrayList<String>()
+}
+
+router.get("/bind", {ctx: JoyContext =>
+    // 自动把query参数绑定对BindParam对象上
+    let params = ctx.bindQuery<BindParam>()
+    ctx.string("bind")
+})
+```
+
+- `@QueryBind`: 作用于类与结构体上，支持对Query参数的绑定映射
+- `@PostFormBind`: 同上，支持对PostForm参数的绑定映射
+- `@HeaderBind`: 同上，支持对Header参数的绑定映射
+- `@BindField`: 作用类与结构体的成员变量上，变量需要采用var声明并要指定类型，宏`BindField`有如下属性：
+  - `name`：指定绑定映射的字段名称；
+  - `default`：当参数不存在时的默认值，可选；
+  - `timeformat`：指定DateTime字段解释格式，不指定默认为DateTime.parse方法默认格式；
+
+宏展开编译之后，此类与结构体会实现`cjoy.JoyBindable`接口。
+
+字段类型支持：
+
+  - `String`, `?String`
+  - `基本类型`, `?基本类型`
+  - `Array<String>`, `ArryList<Strng>`
+  - `DateTime`, `?DateTime`
+
+JoyContext提供三个方法
+
+ - `bindQuery`：把Query参数绑定到对象上；
+ - `bindPostForm`：把PostForm参数绑定到对象上；
+ - `bindHeader`：把Header参数绑定到对象上；
 
 ### Json
 
@@ -401,11 +451,11 @@ class UserInfo {
 ```
 
 - `@Json`：作用于类与结构体上，标注其自动生成Json序列化与反序列化函数，类与结构体需要无参数的构建函数。
-- `@JsonField`：作用类与结构体的成员变量上，变量需要采用var声明，并支持指定类型，宏JsonField有如下参数：
-  - `name`：指定Json的字段名称；
+- `@JsonField`：作用类与结构体的成员变量上，变量需要采用var声明并要指定类型，宏`JsonField`有如下属性：
+  - `name`：指定Json的字段名称，可选，不指定为成员变量名；
   - `omitempty`：值true/false，指定生成Json字符串时是否忽略空字符串或Option的None值，默认为false；
-  - `ignore`：值true/false，指定是否忽略此字段，默认为false；
-  - `timeformat`：指定DateTime字段序列化的格式，默认为DateTime.toString/parse方法默认格式。
+  - `ignore`：值true/false，指定是否忽略此字段，不指定默认为false；
+  - `timeformat`：指定DateTime字段序列化的格式，不指定默认为DateTime.toString/parse方法默认格式。
 
 宏展开编译之后，此类与结构体会实现encoding.json.stream包下JsonSerializable与JsonDeserializable接口。
 

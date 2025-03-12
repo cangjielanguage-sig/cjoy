@@ -238,6 +238,54 @@ public class JoyContext {
     }
 
     /**
+     *
+     * read the query form and bind to object
+     *
+     * @return the object of JoyBindable
+     */
+    public func bindQuery<T>(): ?T where T <: JoyBindable<T> {
+        if (_httpContext.request.url.queryForm.isEmpty()) {
+            return None
+        }
+        T.bind(_httpContext.request)
+    }
+
+    /**
+     *
+     * bind the post form to a object of T
+     *
+     * @return the object of JoyBindable
+     */
+    public func bindPostForm<T>(): ?T where T <: JoyBindable<T> {
+        if (_httpContext.request.form.isEmpty()) {
+            return None
+        }
+        T.bind(_httpContext.request)
+    }
+
+    /**
+     *
+     * bind the header params to a object of T
+     *
+     * @return the object of JoyBindable
+     */
+    public func bindHeader<T>(): ?T where T <: JoyBindable<T> {
+        if (_httpContext.request.headers.isEmpty()) {
+            return None
+        }
+        T.bind(_httpContext.request)
+    }
+
+    /**
+     * bind the request json body content to a object of T
+     *
+     * @return the object of JsonDeserializable
+     */
+    public func bindJsonBody<T>(): ?T where T <: JsonDeserializable<T> {
+        readJson<T>()
+    }
+
+    /**
      * reply response with serialized json body and status code
      *
      * @param status: the http status code

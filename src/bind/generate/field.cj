@@ -20,7 +20,7 @@ public class BindFieldInfo {
     let typeNode: TypeNodeInfo
     var bindName: String = ""
     var timeformat: String = ""
-    var defValue: String = ""
+    var defValue: ?String = ""
 
     init(vd: VarDecl) {
         let supportTypes = "String, PrimitiveType, Opition<String>, ArrayList<String>, Array<Strng>"
@@ -69,102 +69,231 @@ open class BindFieldGenerator {
     BindFieldGenerator(let varId: Token, let info: BindFieldInfo) {
     }
 
-    public open func genBindTokens(): Tokens {
-        quote()
-    }
-}
-
-open class FormBindFieldGenerator <: BindFieldGenerator {
-    init(varId: Token, info: BindFieldInfo) {
-        super(varId, info)
-    }
-
-    public open func genBindTokens(): Tokens {
+    public func genBindTokens(): Tokens {
         if (info.typeNode.isOptionStringType()) {
-            return quote(obj.$(varId) = form_.get($(info.keyName()))
-            )
+            return optStringTokens()
         }
         if (info.typeNode.isStringType()) {
-            return quote(obj.$(varId) = form_.get($(info.keyName())).getOrDefault({=>$(info.defValue)})
-            )
+            return stringTokens()
         }
         if (info.typeNode.isPrimitive) {
-            return quote(
-                obj.$(varId) = $(info.typeNode.vtype).parse(form_.get($(info.keyName())).getOrDefault({=>$(info.defValue)}))
-            )
+            return primitiveTokens()
         }
         if (info.typeNode.isOptionPrimitiveType()) {
-            return quote(
-                obj.$(varId) = $(info.typeNode.genericType).parse(form_.get($(info.keyName())).getOrDefault({=>$(info.defValue)}))
-            )
+            return optPrimitiveTokens()
         }
         if (info.typeNode.isArrayStringType()) {
-            return quote(obj.$(varId) = form_.getAll($(info.keyName())).toArray()
-            )
+            return arrayStringTokens()
         }
         if (info.typeNode.isArrayListStringType()) {
-            return quote(obj.$(varId) = form_.getAll($(info.keyName()))
-            )
+            return arrayListStringTokens()
         }
         if (info.typeNode.isDateTimeType() || info.typeNode.isOptionDateTimeType()) {
-            if (info.timeformat != "") {
-                return quote(
-                    obj.$(varId) = DateTime.parse(form_.get($(info.keyName())).getOrDefault({=>$(info.defValue)}), $(info.timeformat))
-                )
-            } else {
-                return quote(
-                    obj.$(varId) = DateTime.parse(form_.get($(info.keyName())).getOrDefault({=>$(info.defValue)}))
-                )
-            }
+            return datetimeTokens()
         }
+        Tokens()
+    }
+
+    protected open func optStringTokens(): Tokens {
+        Tokens()
+    }
+    protected open func stringTokens(): Tokens {
+        Tokens()
+    }
+    protected open func primitiveTokens(): Tokens {
+        Tokens()
+    }
+    protected open func optPrimitiveTokens(): Tokens {
+        Tokens()
+    }
+    protected open func arrayStringTokens(): Tokens {
+        Tokens()
+    }
+    protected open func arrayListStringTokens(): Tokens {
+        Tokens()
+    }
+    protected open func datetimeTokens(): Tokens {
         Tokens()
     }
 }
 
-open class HeaderBindFieldGenerator <: BindFieldGenerator {
+class FormBindFieldGenerator <: BindFieldGenerator {
     init(varId: Token, info: BindFieldInfo) {
         super(varId, info)
     }
 
-    public open func genBindTokens(): Tokens {
-        if (info.typeNode.isOptionStringType()) {
-            return quote(obj.$(varId) = headers_.getFirst($(info.keyName()))
+    public override func optStringTokens(): Tokens {
+        quote(obj.$(varId) = form_.get($(info.keyName()))
+        )
+    }
+
+    public override func stringTokens(): Tokens {
+        if (let Some(dv) <- info.defValue) {
+            quote(obj.$(varId) = form_.get($(info.keyName())).getOrDefault({=>$((dv))})
+            )
+        } else {
+            quote(
+                if (let Some(v) <- form_.get($(info.keyName()))) {
+                    obj.$(varId) = v
+                }
             )
         }
-        if (info.typeNode.isStringType()) {
-            return quote(
-                obj.$(varId) = headers_.getFirst($(info.keyName())).getOrDefault({=>$(info.defValue)})
+    }
+
+    public override func primitiveTokens(): Tokens {
+        if (let Some(dv) <- info.defValue) {
+            quote(
+                obj.$(varId) = $(info.typeNode.vtype).parse(form_.get($(info.keyName())).getOrDefault({=>$(dv)}))
+            )
+        } else {
+            quote(
+                if (let Some(v) <- form_.get($(info.keyName()))) {
+                    obj.$(varId) = $(info.typeNode.vtype).parse(v)
+                }
             )
         }
-        if (info.typeNode.isPrimitive) {
-            return quote(
-                obj.$(varId) = $(info.typeNode.vtype).parse(headers_.getFirst($(info.keyName())).getOrDefault({=>$(info.defValue)}))
+    }
+
+    public override func optPrimitiveTokens(): Tokens {
+        if (let Some(dv) <- info.defValue) {
+            quote(
+                obj.$(varId) = $(info.typeNode.genericType).parse(form_.get($(info.keyName())).getOrDefault({=>$((dv))}))
+            )
+        } else {
+            quote(
+                if (let Some(v) <- form_.get($(info.keyName()))) {
+                    obj.$(varId) = $(info.typeNode.genericType).parse(v)
+                }
             )
         }
-        if (info.typeNode.isOptionPrimitiveType()) {
-            return quote(
-                obj.$(varId) = $(info.typeNode.genericType).parse(headers_.getFirst($(info.keyName())).getOrDefault({=>$(info.defValue)}))
-            )
-        }
-        if (info.typeNode.isArrayStringType()) {
-            return quote(obj.$(varId) = headers_.get($(info.keyName())).toArray()
-            )
-        }
-        if (info.typeNode.isArrayListStringType()) {
-            return quote(obj.$(varId) = ArrayList(headers_.get($(info.keyName())))
-            )
-        }
-        if (info.typeNode.isDateTimeType() || info.typeNode.isOptionDateTimeType()) {
-            if (info.timeformat != "") {
-                return quote(
-                    obj.$(varId) = DateTime.parse(headers_.getFirst($(info.keyName())).getOrDefault({=>$(info.defValue)}), $(info.timeformat))
+    }
+
+    public override func arrayStringTokens(): Tokens {
+        quote(obj.$(varId) = form_.getAll($(info.keyName())).toArray()
+        )
+    }
+
+    public override func arrayListStringTokens(): Tokens {
+        quote(obj.$(varId) = form_.getAll($(info.keyName()))
+        )
+    }
+
+    public override func datetimeTokens(): Tokens {
+        if (info.timeformat != "") {
+            if (let Some(dv) <- info.defValue) {
+                quote(
+                    obj.$(varId) = DateTime.parse(form_.get($(info.keyName())).getOrDefault({=>$(dv)}), $(info.timeformat))
                 )
             } else {
-                return quote(
-                    obj.$(varId) = DateTime.parse(headers_.getFirst($(info.keyName())).getOrDefault({=>$(info.defValue)}))
+                quote(
+                    if (let Some(v) <- form_.get($(info.keyName()))) {
+                        obj.$(varId) = DateTime.parse(v, $(info.timeformat))
+                    }
+                )
+            }
+        } else {
+            if (let Some(dv) <- info.defValue) {
+                quote(
+                    obj.$(varId) = DateTime.parse(form_.get($(info.keyName())).getOrDefault({=>$(dv)}))
+                )
+            } else {
+                quote(
+                    if (let Some(v) <- form_.get($(info.keyName()))) {
+                        obj.$(varId) = DateTime.parse(v)
+                    }
                 )
             }
         }
-        Tokens()
+    }
+}
+
+class HeaderBindFieldGenerator <: BindFieldGenerator {
+    init(varId: Token, info: BindFieldInfo) {
+        super(varId, info)
+    }
+
+    public override func optStringTokens(): Tokens {
+        quote(obj.$(varId) = headers_.getFirst($(info.keyName()))
+        )
+    }
+
+    public override func stringTokens(): Tokens {
+        if (let Some(dv) <- info.defValue) {
+            quote(
+                obj.$(varId) = headers_.getFirst($(info.keyName())).getOrDefault({=>$(dv)})
+            )
+        } else {
+            quote(
+                if (let Some(v) <- headers_.getFirst($(info.keyName()))) {
+                    obj.$(varId) = v
+                }
+            )
+        }
+    }
+
+    public override func primitiveTokens(): Tokens {
+        if (let Some(dv) <- info.defValue) {
+            quote(
+                obj.$(varId) = $(info.typeNode.vtype).parse(headers_.getFirst($(info.keyName())).getOrDefault({=>$(dv)}))
+            )
+        } else {
+            quote(
+                if (let Some(v) <- headers_.getFirst($(info.keyName()))) {
+                    obj.$(varId) = $(info.typeNode.vtype).parse(v)
+                }
+            )
+        }
+    }
+
+    public override func optPrimitiveTokens(): Tokens {
+        if (let Some(dv) <- info.defValue) {
+            quote(
+                obj.$(varId) = $(info.typeNode.genericType).parse(headers_.getFirst($(info.keyName())).getOrDefault({=>$(dv)}))
+            )
+        } else {
+            quote(
+                if (let Some(v) <- headers_.getFirst($(info.keyName()))) {
+                    obj.$(varId) = $(info.typeNode.genericType).parse(v)
+                }
+            )
+        }
+    }
+
+    public override func arrayStringTokens(): Tokens {
+        quote(obj.$(varId) = headers_.get($(info.keyName())).toArray()
+        )
+    }
+
+    public override func arrayListStringTokens(): Tokens {
+        quote(obj.$(varId) = ArrayList(headers_.get($(info.keyName())))
+        )
+    }
+
+    public override func datetimeTokens(): Tokens {
+        if (info.timeformat != "") {
+            if (let Some(dv) <- info.defValue) {
+                quote(
+                    obj.$(varId) = DateTime.parse(headers_.getFirst($(info.keyName())).getOrDefault({=>$(dv)}), $(info.timeformat))
+                )
+            } else {
+                quote(
+                    if (let Some(v) <- headers_.getFirst($(info.keyName()))) {
+                        obj.$(varId) = DateTime.parse(v, $(info.timeformat))
+                    }
+                )
+            }
+        } else {
+            if (let Some(dv) <- info.defValue) {
+                quote(
+                    obj.$(varId) = DateTime.parse(headers_.getFirst($(info.keyName())).getOrDefault({=>$(dv)}))
+                )
+            } else {
+                quote(
+                    if (let Some(v) <- headers_.getFirst($(info.keyName()))) {
+                        obj.$(varId) = DateTime.parse(v)
+                    }
+                )
+            }
+        }
     }
 }
