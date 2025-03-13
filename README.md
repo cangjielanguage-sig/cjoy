@@ -91,13 +91,14 @@ main(): Int64 {
 
 ## 特性
 
-本项目参考了一些其它语言的开源设计与实现，基于Cangjie提供HTTP框架，在其API进一步封装以简化Web应用开发，增加如下能力：
+本项目参考了一些其它语言的开源设计与实现，在Cangjie提供的HTTP框架基础上进一步封装以简化Web应用开发，增加如下能力：
 
 - 基于压缩前辍树的路由管理，支持静态Path，参数匹配Path，正则匹配Path，全路径通配符Path的高效注册与查找，支持路由组；
 - 基于拦截器的中间件扩展能力，支持Basic认证等多种能力扩展；
 - 基于Context的上下文管理，支持快速获取请求参数与构建Json/Text响应；
-- 基于编译宏的Json序列化与反序列，支持对请求与响应消息的Json直接绑定映射；
-- 基于编译宏自动注册与参数注入请求处理函数与中间件函数；
+- 基于编译宏的Json序列化与反序列，支持对请求与响应消息的Json直接绑定映射;
+- 基于编译宏支持自动注册与参数注入请求处理函数与中间件函数;
+- 支持文件下载与上传，WebSocket, SEE等内置能力;
 
 应用场景 ：
 
@@ -145,7 +146,7 @@ main(): Int64 {
 
 路由查找优先级：static路由 > regex路由 > param路由 > catchAll路由。
 
-可以同时存在`/users/{name}`、`/users/abc`、`/users/{name:[a-z]{3,4}}` 与 `/users/*`，路由匹配优先级与注册的顺序无关。
+可以同时存在`/users/`开头的多个Path，路由匹配优先级与注册的顺序无关。
 
 ```
 router.get("/users/{name}", {ctx: JoyContext => })
@@ -191,13 +192,13 @@ JoyRouters接口的group方法支持对path进行分组，分组支持多级，�
 
  - 有相同的path前辍；
  - 使用相同的中间件，并继承父一级Path注册的中间件；
- - 调用`v1 = router.group("/v1")`：
-   - 会自动注册三个Path: `/v1`,  `/v1/`,  `/v1/*`的NotFoundHandler，Method: "GET", "POST", "DELETE", "PUT", "PATCH", "HEAD", "OPTIONS"，以便让其Group的中间件可拦截此Group的所有URL；
+ - 调用`router.group("/v1")`：
+   - 会默认自动注册三个Path: `/v1`,  `/v1/`,  `/v1/*`的NotFoundHandler，Method为"GET", "POST", "DELETE", "PUT", "PATCH", "HEAD", "OPTIONS"，以便让其Group的中间件可拦截此Group的所有URL；
    - 可以再注册 `v1.get("", ...)`  `v1.get("/", ...)`  `v1.get("/*", ...)` 覆盖上面的默认Handler；
 
 ### Handler
 
-CJoy支持两种路由处理的Handler实现：
+CJoy支持两种请求处理Handler实现：
 
   - 实现JoyRequestHandler接口；
   - 使用Lambda表达式函数；
@@ -221,9 +222,9 @@ router.get("/{name}", {ctx: JoyContext =>
 
 ### Middleware
 
-CJoy提供扩展机制支持Http请求进行拦截处理，机制类似于Java的Servlet的Filter。
+CJoy提供扩展机制支持HTTP请求进行拦截处理，机制类似于Java的Servlet Filter。
 
-中间件需要实现JoyMiddlewareHandle接口，其中chain中为所有MiddlewareHandler链，调用`chain.next(ctx)`执行下一个中间件，最后执行对应Handler。
+中间件需要实现JoyMiddlewareHandle接口，其中chain对象为所有MiddlewareHandler链，调用`chain.next(ctx)`执行下一个中间件，最后执行对应Handler。
 
 ```
 public interface JoyMiddlewareHandler {
@@ -234,7 +235,7 @@ public interface JoyMiddlewareHandler {
 使用方式有两种:
 
  - use(mw: JoyMiddlewareHandler)：作用于全局或对应的Group下所有请求Handler；
- - apply(mw: JoyMiddlewareHandler)：只作用于对应注册的Handler；
+ - apply(mw: JoyMiddlewareHandler)：只作用于对应本次注册请求Handler；
 
 ```
 // 如使用内置的BasicAuth中间件
@@ -267,7 +268,7 @@ joy.router
 
 #### Handler宏
 
-CJoy提供一系列的宏简化Handler的注册与参数展开，业务只需要实现最简洁的函数，样例可以参见 [test/macro_test.cj](src/test/macro_test.cj) 。
+CJoy提供一系列的宏简化Handler的注册与参数展开，业务只需要实现最简洁的函数。样例可以参见 [test/macro_test.cj](src/test/macro_test.cj) 。
 
 ```
 @Get[path = "/path/{p}"]
@@ -297,7 +298,7 @@ Handler注册宏，作用在函数上：
 
  - `path`：必选，指定handler处理的URL全路由，如果存在对应Group，框架会自动查找，注册到对应的Group上；
  - `produce`：可选，只有响应返回json时指定，且方法返回值必须实现JsonSerializable接口，默认是返回文本Body；
- - `methods`: 只有在Handler宏上使用，注册handler处理Method列表；
+ - `methods`: 只有在Handler宏上使用，注册handler的Method列表；
   
 备注：
 
@@ -320,15 +321,15 @@ Handler注册宏，作用在函数上：
 
   - `name`: 映射的参数名称，可选，不指定取方法参数名称
   - `default`: 默认值，可选
-  - `timeformat`: 当方法入参是`Datetime`，`?Datetime`时，指定转换的格式，可选
+  - `timeformat`: 当方法入参是`DateTime`，`?DateTime`时，指定转换的格式，可选
 
 支持的函数入参类型：
 
   - `String` ：QueryParam, PostFormParam, HeaderParam, CookieParam, BodyParam宏标注的参数；
   - `?String`：同上；
   - `基本类型`：如Int，PathParam，QueryParam, PostFormParam, HeaderParam宏标注的参数，String转换对应的基本类型；
-  - `Datetime`：QueryParam, PostFormParam, HeaderParam宏标注的参数，String转换Datetime；
-  - `?Datatime`: 同上；
+  - `DateTime`：QueryParam, PostFormParam, HeaderParam宏标注的参数，String转换Datetime；
+  - `?DateTime`: 同上；
   - `ArrayList<String>`：QueryParam, PostFormParam, HeaderParam宏标注的参数有多个值时；
   - `Array<String>` ：同上；
   - `任一类型`：ContextParam宏标注的参数；
@@ -375,7 +376,7 @@ Middleware注册宏，作用在函数上：
 
 #### 注册
 
-所有的 Handler 注册宏生成的类会自动加到JoyHandlers上，以及Middleware注册宏生成的类会自动加到JoyMiddlewares上，但目前没有自动加到在服务实例Joy上。
+所有的 Handler 注册宏生成的类会自动加到JoyHandlers上，Middleware注册宏生成的类会自动加到JoyMiddlewares上，但目前没有自动加到在服务实例Joy上。
 
 ```
 JoyMiddlewares.registerTo(joy)
@@ -461,7 +462,7 @@ class UserInfo {
 
 JoyContext提供两个函数支持对HTTP Body的绑定与映射：
 
- - `readJson`：对Body内容反序列化为类与结构体
+ - `readJson` 或者 `bindJsonBody`：对Body内容反序列化为类与结构体
  - `json`: 序列化类与结构体对象序列化并设置Body内容
 
 使用示例：[examples/rest](examples/rest/src/main.cj)
@@ -516,15 +517,15 @@ CJoy 提供文件服务器的封装，提供两个API：`staticFile` 与 `static
 
 示例：`router.staticFs("/static", "/var/www")`
 
-指定URL Path与本地路径，框架会注册`/static/*`的路由，支持如下：
+指定URL Path与本地路径，框架会注册`/static/*`的路由，支持如下映射：
 
   - `/static/a.png` <--> `/var/www/a.png`
   - `/static/a/b/c/d.png` <--> `/var/www/a/b/c/d.png`
 
 约束：
 
-- URL Path映射只能是本地文件，且不能是隐藏文件，不能是子目录
-- URL Path中禁止使用`..` 遍历上层路径
+- URL Path映射只能是本地文件，且不能是隐藏文件，不能是子目录;
+- URL Path中禁止使用`..` 遍历上层路径;
 
 ### WebSocket
 
@@ -551,7 +552,7 @@ CJoy 提供WebSocket的封装，简化WebSocket消息接收与响应。
 两个主要类，相关方法请参见源码：
 
  - `JoyWebSocketMessage`：Webscoket消息包装类
- - `JoyWebSocketSession`：Webscoket会话包装类，可以获取握手请求的一此URL参数(Path参数、Query参数，头域)，调用其`send`函数发送消息
+ - `JoyWebSocketSession`：Webscoket会话包装类，可以获取握手请求的一些URL参数(Path参数、Query参数，头域)，调用`send`函数发送消息
 
 约束：
 
