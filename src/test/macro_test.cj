@@ -269,7 +269,7 @@ func cookiePost1(@CookieParam[name = "csrf-token"] token: ?String): String {
     token.getOrThrow().toString()
 }
 
-@QueryBind
+@Bind
 @Derive[ToString]
 class QueryBindParams {
     var a: String = ""
@@ -280,7 +280,7 @@ func bind1(@QueryBindParam param: QueryBindParams): String {
     param.toString()
 }
 
-@PostFormBind
+@Bind
 @Derive[ToString]
 class FormBindParams {
     var a: String = ""
@@ -291,7 +291,7 @@ func bind2(@PostFormBindParam param: FormBindParams): String {
     param.toString()
 }
 
-@HeaderBind
+@Bind
 @Derive[ToString]
 class HeaderParams {
     @BindField[name = "content-type"]

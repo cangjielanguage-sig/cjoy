@@ -10,7 +10,8 @@
 
 package cjoy.framework
 
-import net.http.HttpRequest
+import encoding.url.Form
+import net.http.HttpHeaders
 
 /**
 * the interface of binding
@@ -23,5 +24,25 @@ public interface JoyBindable<T> {
     * @param request: the http request
     * @return the object
     */
-    static func bind(request: HttpRequest): T
+    static func bind(source: BindSource): T
+}
+
+public interface BindSource {
+    func getOne(name: String): ?String
+    func getAll(name: String): Collection<String>
+}
+
+extend Form <: BindSource {
+    public func getOne(name: String): ?String {
+        this.get(name)
+    }
+}
+
+extend HttpHeaders <: BindSource {
+    public func getOne(name: String): ?String {
+        this.getFirst(name)
+    }
+    public func getAll(name: String): Collection<String> {
+        this.get(name)
+    }
 }

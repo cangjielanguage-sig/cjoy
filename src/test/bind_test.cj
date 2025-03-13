@@ -20,7 +20,7 @@ import encoding.url.URL
 import std.unittest.*
 import std.unittest.testmacro.*
 
-@QueryBind
+@Bind
 public struct SQueryBind {
     var str: String = ""
     var str2: ?String = None
@@ -32,15 +32,9 @@ public struct SQueryBind {
     var i3_64: ?Int = None
     var arr: Array<String> = []
     var list: ArrayList<String> = ArrayList<String>()
-
-    //@BindField[name = "time1", timeformat = "HH:mm:ss MM/dd/yyyy OO"]
-    //var t1: DateTime = DateTime.now()
-
-    //@BindField[name = "time2", timeformat = "HH:mm:ss MM/dd/yyyy OO"]
-    //var t2: ?DateTime = None
 }
 
-@PostFormBind
+@Bind
 public struct SPostBind {
     var str: String = ""
     var str2: ?String = None
@@ -60,7 +54,7 @@ public struct SPostBind {
     //var t2: ?DateTime = None
 }
 
-@HeaderBind
+@Bind
 public struct SHeaderBind {
     @BindField[name = hstr1]
     var str: String = ""
@@ -96,7 +90,7 @@ public class BindTestCaseSuit {
     public func testQueryBind() {
         let u = "http://127.0.0.1:18881/test?str=1&str2=2&i64=1&int=2&i3_64=3&arr=1&arr=2&list=1&list=2"
         let r = HttpRequestBuilder().get().url(URL.parse(u)).build()
-        let obj = SQueryBind.bind(r)
+        let obj = SQueryBind.bind(r.url.queryForm)
         @Assert(obj.str, "1")
         @Assert(obj.str2, "2")
         @Assert(obj.i64, 1)
@@ -114,7 +108,7 @@ public class BindTestCaseSuit {
             .body("str=1&str2=2&i64=1&int=2&i3_64=3&arr=1&arr=2&list=1&list=2")
             .header("Content-Type", "application/x-www-form-urlencoded")
             .build()
-        let obj = SPostBind.bind(r)
+        let obj = SPostBind.bind(r.form)
         @Assert(obj.str, "1")
         @Assert(obj.str2, "2")
         @Assert(obj.i64, 1)
@@ -143,7 +137,7 @@ public class BindTestCaseSuit {
             .header("htime1", ts)
             .header("htime2", ts)
             .build()
-        let obj = SHeaderBind.bind(r)
+        let obj = SHeaderBind.bind(r.headers)
         @Assert(obj.str, "1")
         @Assert(obj.str2, "2")
         @Assert(obj.i64, 1)

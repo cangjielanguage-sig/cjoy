@@ -247,7 +247,7 @@ public class JoyContext {
         if (_httpContext.request.url.queryForm.isEmpty()) {
             return None
         }
-        T.bind(_httpContext.request)
+        T.bind(_httpContext.request.url.queryForm)
     }
 
     /**
@@ -260,7 +260,7 @@ public class JoyContext {
         if (_httpContext.request.form.isEmpty()) {
             return None
         }
-        T.bind(_httpContext.request)
+        T.bind(_httpContext.request.form)
     }
 
     /**
@@ -273,7 +273,7 @@ public class JoyContext {
         if (_httpContext.request.headers.isEmpty()) {
             return None
         }
-        T.bind(_httpContext.request)
+        T.bind(_httpContext.request.headers)
     }
 
     /**

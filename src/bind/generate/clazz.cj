@@ -24,19 +24,7 @@ public class BindClassInfo {
         this.classId = classId
         this.fields = ArrayList<BindFieldGenerator>()
         for (vd in vars) {
-            this.fields.add(BindInfoCache.create(vd, macroName))
-        }
-    }
-
-    func genVarTokens(): Tokens {
-        match (macroName) {
-            case "PostFormBind" => quote(let form_ = request.form
-            )
-            case "QueryBind" => quote(let form_ = request.url.queryForm
-            )
-            case "HeaderBind" => quote(let headers_ = request.headers
-            )
-            case _ => throw Exception("unsupport Macro ${macroName}")
+            this.fields.add(BindInfoCache.create(vd))
         }
     }
 
@@ -49,9 +37,8 @@ public class BindClassInfo {
             bindTokens += f.genBindTokens()
         }
         quote(
-            public static func bind(request: HttpRequest): $(classId) {
+            public static func bind(source: BindSource): $(classId) {
                 var obj = $(classId)()
-                $(genVarTokens())
                 $(bindTokens)
                 obj
             }

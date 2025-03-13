@@ -24,13 +24,8 @@ class BindInfoCache {
         FIELD_INFOS.add(vid, info)
     }
 
-    public static func create(vd: VarDecl, mtype: String): BindFieldGenerator {
+    public static func create(vd: VarDecl): BindFieldGenerator {
         let fieldInfo = FIELD_INFOS.get(vd.identifier.value).getOrDefault({=> BindFieldInfo(vd)})
-        match (mtype) {
-            case "QueryBind" => FormBindFieldGenerator(vd.identifier, fieldInfo)
-            case "PostFormBind" => FormBindFieldGenerator(vd.identifier, fieldInfo)
-            case "HeaderBind" => HeaderBindFieldGenerator(vd.identifier, fieldInfo)
-            case _ => BindFieldGenerator(vd.identifier, fieldInfo)
-        }
+        BindFieldGenerator(vd.identifier, fieldInfo)
     }
 }

@@ -392,7 +392,7 @@ joy.run("127.0.0.1", 18881)
 CJoy提供宏与API支持对Query，PostForm，Header多个参数绑定到一个对象上。
 
 ```
-@QueryBind
+@Bind
 public struct BindParam {
     var str: String = ""
     var str2: ?String = None
@@ -411,9 +411,7 @@ router.get("/bind", {ctx: JoyContext =>
 })
 ```
 
-- `@QueryBind`: 作用于类与结构体上，支持对Query参数的绑定映射
-- `@PostFormBind`: 同上，支持对PostForm参数的绑定映射
-- `@HeaderBind`: 同上，支持对Header参数的绑定映射
+- `@Bind`: 作用于类与结构体上，支持对Query参数的绑定映射
 - `@BindField`: 作用类与结构体的成员变量上，变量需要采用var声明并要指定类型，宏`BindField`有如下属性：
   - `name`：指定绑定映射的字段名称；
   - `default`：当参数不存在时的默认值，可选；

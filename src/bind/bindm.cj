@@ -18,16 +18,8 @@ public import std.convert.*
 public import net.http.HttpRequest
 
 
-public macro QueryBind(input: Tokens): Tokens {
-    input + BindClassInfo.parse("QueryBind", input)
-}
-
-public macro PostFormBind(input: Tokens): Tokens {
-    input + BindClassInfo.parse("PostFormBind", input)
-}
-
-public macro HeaderBind(input: Tokens): Tokens {
-    input + BindClassInfo.parse("HeaderBind", input)
+public macro Bind(input: Tokens): Tokens {
+    input + BindClassInfo.parse("Bind", input)
 }
 
 public macro BindField(attr: Tokens, input: Tokens): Tokens {
