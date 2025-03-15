@@ -49,6 +49,7 @@ public class JsonFieldInfo {
     }
 
     public static func parse(attr: Tokens, input: Tokens): Unit {
+        assertParentContext("Json")
         let varDecl: Decl = parseDecl(input)
         if (!(varDecl is VarDecl)) {
             diagReport(DiagReportLevel.ERROR, input, "JsonField macro only using for the var field of struct or class",

@@ -12,13 +12,13 @@ package cjoy.json.generate
 
 import std.ast.*
 import std.collection.ArrayList
-import cjoy.utils.ClassVarDeclVisitor
+import cjoy.utils.ClassGenentor
 
 public class JsonClassInfo {
     let classId: Token
     let fields: ArrayList<JsonFieldGenerator>
 
-    init(classId: Token, vars: Array<VarDecl>) {
+    init(classId: Token, vars: ArrayList<VarDecl>) {
         this.classId = classId
         this.fields = ArrayList<JsonFieldGenerator>()
         for (vd in vars) {
@@ -86,15 +86,13 @@ public class JsonClassInfo {
 
     public static func parse(input: Tokens): Tokens {
         let decl: Decl = parseDecl(input)
+        let classGen = ClassGenentor("Json", decl)
         if (!(decl is StructDecl) && !(decl is ClassDecl)) {
             throw Exception("Json macro only using for struct or class")
         }
 
         let ident = decl.identifier
-        let visitor = ClassVarDeclVisitor()
-        decl.traverse(visitor)
-        let vars = visitor.allVarDecls()
-        let classInfo = JsonClassInfo(ident, vars)
+        let classInfo = JsonClassInfo(ident, classGen.variables)
 
         let serTokens = classInfo.genSerializeFunc()
         let deserTokens = classInfo.genDeserializeFunc()

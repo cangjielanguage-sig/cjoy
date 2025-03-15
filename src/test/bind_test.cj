@@ -22,16 +22,16 @@ import std.unittest.testmacro.*
 
 @Bind
 public struct SQueryBind {
-    var str: String = ""
-    var str2: ?String = None
-    var i64: Int64 = 0
+    let str: String // 虽IDE飘红，但let变量会在生成的构造方法进行初始化而无问题
+    let str2: ?String
+    let i64: Int64
 
     @BindField[name = int]
-    var i2_64: Int = 0
+    let i2_64: Int
 
-    var i3_64: ?Int = None
-    var arr: Array<String> = []
-    var list: ArrayList<String> = ArrayList<String>()
+    let i3_64: ?Int
+    let arr: Array<String>
+    let list: ArrayList<String>
 }
 
 @Bind
@@ -72,10 +72,10 @@ public struct SHeaderBind {
     var list: ArrayList<String> = ArrayList<String>()
 
     @BindField[name = "htime1", timeformat = "HH:mm:ss MM/dd/yyyy OO"]
-    var t1: DateTime = DateTime.now()
+    let t1: DateTime
 
     @BindField[name = "htime2", timeformat = "HH:mm:ss MM/dd/yyyy OO"]
-    var t2: ?DateTime = None
+    let t2: ?DateTime
 }
 
 @Test

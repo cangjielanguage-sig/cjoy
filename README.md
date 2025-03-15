@@ -394,7 +394,7 @@ CJoy提供宏与API支持对Query，PostForm，Header多个参数绑定到一个
 ```
 @Bind
 public struct BindParam {
-    var str: String = ""
+    let str: String // 宏展开时会生成构造函数对其赋值，也可@BindField[default = abc] 指定默认值
     var str2: ?String = None
     var i64: Int64 = 0
     @BindField[name = int]
@@ -412,12 +412,12 @@ router.get("/bind", {ctx: JoyContext =>
 ```
 
 - `@Bind`: 作用于类与结构体上，支持对Query参数的绑定映射
-- `@BindField`: 作用类与结构体的成员变量上，变量需要采用var声明并要指定类型，宏`BindField`有如下属性：
+- `@BindField`: 作用类与结构体的成员变量上，变量需要指定类型，宏`BindField`有如下属性：
   - `name`：指定绑定映射的字段名称；
   - `default`：当参数不存在时的默认值，可选；
   - `timeformat`：指定DateTime字段解释格式，不指定默认为DateTime.parse方法默认格式；
 
-宏展开编译之后，此类与结构体会实现`cjoy.JoyBindable`接口。
+宏展开编译之后，此类与结构体会实现`cjoy.JoyBindable`接口，并自动生成所有成员变量带命名参数的构造方法。因此let字段未指定默认值时，会在构造方法采用系统默认值（如Int为0， String为"")。
 
 字段类型支持：
 

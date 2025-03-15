@@ -11,22 +11,7 @@
 package cjoy.utils
 
 import std.ast.*
-
-protected class ClassVarDeclVisitor <: Visitor {
-    private let varDecls: ArrayList<VarDecl> = ArrayList<VarDecl>()
-
-    public func allVarDecls(): Array<VarDecl> {
-        return varDecls.toArray()
-    }
-
-    public override func visit(varDecl: VarDecl) {
-        varDecls.add(varDecl)
-    }
-
-    public override func visit(_: FuncDecl) {
-        breakTraverse()
-    }
-}
+import std.collection.{ArrayList, map, collectArrayList}
 
 protected func parseKVAttr(attr: Tokens, marcroName: String, cb: (ident: Token, value: Token) -> Unit): Unit {
     if ((attr.size + 1) % 4 != 0) {
@@ -151,5 +136,179 @@ protected class TypeNodeInfo {
 
     protected func isOptionPrimitiveType(): Bool {
         vtype.value == "Option" && genericIsPrimitive
+    }
+}
+
+protected class ClassGenentor {
+    public let typeDecl: Decl
+    public let superTypes: ArrayList<TypeNode>
+    public let body: Body
+    public let isClass: Bool
+    public let variables: ArrayList<VarDecl>
+
+    public init(macroName: String, typeDecl: Decl) {
+        this.typeDecl = typeDecl
+        match (typeDecl) {
+            case vd: ClassDecl =>
+                isClass = true
+                superTypes = vd.superTypes
+                body = vd.body
+                this.variables = getMemberVariables(vd.body)
+            case vd: StructDecl =>
+                isClass = false
+                superTypes = vd.superTypes
+                body = vd.body
+                this.variables = getMemberVariables(vd.body)
+            case _ => throw Exception("${macroName} macro only using for struct or class")
+        }
+    }
+
+    private static func getMemberVariables(body: Body): ArrayList<VarDecl> {
+        let result = ArrayList<VarDecl>()
+        for (decl in body.decls) {
+            match (decl) {
+                case vd: VarDecl => result.add(vd)
+                case _ => ()
+            }
+        }
+        return result
+    }
+
+    func buildCtorFunc(): Tokens {
+        let params = ArrayList<Tokens>()
+        let paramsWithDefVal = ArrayList<Tokens>()
+
+        for (varDecl in variables) {
+            let v = Token(TokenKind.IDENTIFIER, varDecl.identifier.value)
+            let type_ = varDecl.declType.toTokens()
+            try {
+                let expr = varDecl.expr
+                paramsWithDefVal.add(quote($v!: $type_ = $expr))
+            } catch (_: ASTException) {
+                if (let Some(x) <- getDefValueOfType(varDecl.declType)) {
+                    paramsWithDefVal.add(quote($v!: $type_ = $x))
+                } else {
+                    params.add(quote($v!: $type_))
+                }
+            }
+        }
+
+        params.add(all: paramsWithDefVal)
+        let comma = Token(TokenKind.COMMA)
+
+        let body: Tokens = joinTokens(
+            variables |>
+                map {
+                varDecl: VarDecl =>
+                let id = Token(TokenKind.IDENTIFIER, varDecl.identifier.value)
+                return quote(this.$id = $id)
+            } |> collectArrayList,
+            Token(TokenKind.NL)
+        )
+        return quote(
+            public init($(joinTokens(params, comma))) {
+                $body
+            }
+        )
+    }
+
+    public func genTokens(newSupper: Tokens, funcs: Tokens): Tokens {
+        let ctor = buildCtorFunc()
+        let genericTypeParam = getGenericTypeParamsTokens(typeDecl)
+        let genericConstraint = getGenericConstraintsTokens(typeDecl)
+
+        let classOrStruct = if (isClass) {
+            Token(TokenKind.CLASS)
+        } else {
+            Token(TokenKind.STRUCT)
+        }
+
+        let allSuperTypes = if (superTypes.isEmpty()) {
+            newSupper
+        } else {
+            quote($(newSupper.toTokens()) & $(superTypes.toTokens()))
+        }
+
+        return quote(
+            $(typeDecl.modifiers) $classOrStruct $(typeDecl.identifier) $genericTypeParam <: $allSuperTypes $genericConstraint {
+                $(body.decls)
+                $ctor
+                $funcs
+            }
+        )
+    }
+}
+
+protected func joinTokens(tokensList: ArrayList<Tokens>, separator: Token): Tokens {
+    if (tokensList.isEmpty()) {
+        Tokens()
+    } else if (tokensList.size == 1) {
+        tokensList[0]
+    } else {
+        var ret = tokensList[0]
+        for (i in 1..tokensList.size) {
+            ret = ret + separator + tokensList[i]
+        }
+        ret
+    }
+}
+
+protected func getDefValueOfType(typeNode: TypeNode): Option<Tokens> {
+    match (typeNode) {
+        case varType: RefType => return match (varType.identifier.value) {
+            case "Option" => quote(None)
+            case "Array" => quote([])
+            case "ArrayList" => quote(ArrayList())
+            case "String" => quote("")
+            case _ => Option.None
+        }
+        case varType: PrefixType => return quote(None)
+        case varType: PrimitiveType =>
+            if (varType.keyword.value.startsWith("Int")) {
+                return quote(0)
+            } else if (varType.keyword.value.startsWith("UInt")) {
+                return quote(0)
+            } else if (varType.keyword.value.startsWith("Float")) {
+                return quote(0.0)
+            } else if (varType.keyword.value.startsWith("Bool")) {
+                return quote(false)
+            } else if (varType.keyword.value.startsWith("Rune")) {
+                return quote(Rune(b'\0'))
+            } else {
+                return None
+            }
+        case _ => return None
+    }
+}
+
+protected func getGenericTypeParamsTokens(decl: Decl): Tokens {
+    try {
+        let generic = decl.genericParam
+        return generic.toTokens()
+    } catch (_: ASTException) {
+        return Tokens()
+    }
+}
+
+protected func getGenericConstraintsTokens(decl: Decl): Tokens {
+    let tokens = Tokens()
+    for (c in decl.genericConstraint) {
+        tokens.append(c.toTokens())
+    }
+    return tokens
+}
+
+protected func getRemainExtendTokens(input: Tokens): Tokens {
+    var pos = 0
+    for (i in 0..input.size) {
+        if (input[i].value == "extend") {
+            pos = i
+            break
+        }
+    }
+    if (pos > 0) {
+        input[pos..]
+    } else {
+        Tokens()
     }
 }

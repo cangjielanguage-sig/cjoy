@@ -11,15 +11,15 @@
 package cjoy.bind.generate
 
 import std.ast.*
-import std.collection.ArrayList
-import cjoy.utils.ClassVarDeclVisitor
+import std.collection.{ArrayList, map, collectArrayList}
+import cjoy.utils.{ClassGenentor, joinTokens, getRemainExtendTokens}
 
 public class BindClassInfo {
     let classId: Token
     let fields: ArrayList<BindFieldGenerator>
     let macroName: String
 
-    init(macroName: String, classId: Token, vars: Array<VarDecl>) {
+    init(macroName: String, classId: Token, vars: ArrayList<VarDecl>) {
         this.macroName = macroName
         this.classId = classId
         this.fields = ArrayList<BindFieldGenerator>()
@@ -29,41 +29,31 @@ public class BindClassInfo {
     }
 
     func genBindFunc(): Tokens {
-        var bindTokens = Tokens()
-        for (f in this.fields) {
-            if (f.info.keyName() == "") {
-                continue
-            }
-            bindTokens += f.genBindTokens()
-        }
+        let params: Tokens = joinTokens(
+            fields |> map {
+                f: BindFieldGenerator => f.genBindTokens()
+            } |> collectArrayList,
+            Token(TokenKind.COMMA)
+        )
+
         quote(
             public static func bind(source: BindSource): $(classId) {
-                var obj = $(classId)()
-                $(bindTokens)
-                obj
+                $classId($params)
             }
         )
     }
 
     public static func parse(marcroName: String, input: Tokens): Tokens {
         let decl: Decl = parseDecl(input)
-        if (!(decl is StructDecl) && !(decl is ClassDecl)) {
-            throw Exception("Bind macro only using for struct or class")
-        }
-
+        let classGen = ClassGenentor("Bind", decl)
+        
         let ident = decl.identifier
-        let visitor = ClassVarDeclVisitor()
-        decl.traverse(visitor)
-        let vars = visitor.allVarDecls()
-        let classInfo = BindClassInfo(marcroName, ident, vars)
-
+        let classInfo = BindClassInfo(marcroName, ident, classGen.variables)
         let bindTokens = classInfo.genBindFunc()
-        BindInfoCache.clear()
+        let supperTokens = quote(JoyBindable<$(classInfo.classId)>)
+        let tokens =  classGen.genTokens(supperTokens, bindTokens)
 
-        quote(
-            extend $(classInfo.classId) <: JoyBindable<$(classInfo.classId)> {
-                $(bindTokens)
-            }
-        )
+        BindInfoCache.clear()
+        tokens + Token(TokenKind.NL) + getRemainExtendTokens(input)
     }
 }

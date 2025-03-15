@@ -13,19 +13,21 @@ package cjoy.bind.generate
 import std.ast.*
 import std.collection.Map
 import net.http.HttpRequest
-import cjoy.utils.{parseKVAttr, TypeNodeInfo}
+import cjoy.utils.{parseKVAttr, TypeNodeInfo, getDefValueOfType}
 
 public class BindFieldInfo {
     let filedName: String
     let typeNode: TypeNodeInfo
+    let declType: TypeNode
     var bindName: String = ""
     var timeformat: String = ""
     var defValue: ?String = ""
 
     init(vd: VarDecl) {
-        let supportTypes = "String, PrimitiveType, Opition<String>, ArrayList<String>, Array<Strng>"
+        let supportTypes = "String, Opition<String>, PrimitiveType, ArrayList<String>, Array<Strng>, DateTime"
         this.typeNode = TypeNodeInfo(supportTypes)
         this.typeNode.parse(vd.toTokens(), vd.declType)
+        this.declType = vd.declType
 
         let varId: String = vd.identifier.value
         this.filedName = varId
@@ -51,17 +53,18 @@ public class BindFieldInfo {
     }
 
     public static func parse(attr: Tokens, input: Tokens): Unit {
+        assertParentContext("Bind")
         let varDecl: Decl = parseDecl(input)
-        if (!(varDecl is VarDecl)) {
-            diagReport(DiagReportLevel.ERROR, input, "BindField macro only using for the var field of struct or class",
-                "")
-            throw Exception("BindField macro only using for the var field of struct or class")
+        match (varDecl) {
+            case vd: VarDecl =>
+                let info = BindFieldInfo(vd)
+                info.parseAttr(attr)
+                BindInfoCache.addCache(info.filedName, info)
+            case _ =>
+                diagReport(DiagReportLevel.ERROR, input,
+                    "BindField macro only using for the var field of struct or class", "")
+                throw Exception("BindField macro only using for the var field of struct or class")
         }
-
-        let vd = (varDecl as VarDecl).getOrThrow()
-        let info = BindFieldInfo(vd)
-        info.parseAttr(attr)
-        BindInfoCache.addCache(info.filedName, info)
     }
 }
 
@@ -72,81 +75,85 @@ class BindFieldGenerator {
     public func genBindTokens(): Tokens {
         if (info.typeNode.isOptionStringType()) {
             return optStringTokens()
-        }
-        if (info.typeNode.isStringType()) {
+        } else if (info.typeNode.isStringType()) {
             return stringTokens()
-        }
-        if (info.typeNode.isPrimitive) {
+        } else if (info.typeNode.isPrimitive) {
             return primitiveTokens()
-        }
-        if (info.typeNode.isOptionPrimitiveType()) {
+        } else if (info.typeNode.isOptionPrimitiveType()) {
             return optPrimitiveTokens()
-        }
-        if (info.typeNode.isArrayStringType()) {
+        } else if (info.typeNode.isArrayStringType()) {
             return arrayStringTokens()
-        }
-        if (info.typeNode.isArrayListStringType()) {
+        } else if (info.typeNode.isArrayListStringType()) {
             return arrayListStringTokens()
-        }
-        if (info.typeNode.isDateTimeType() || info.typeNode.isOptionDateTimeType()) {
+        } else if (info.typeNode.isDateTimeType() || info.typeNode.isOptionDateTimeType()) {
             return datetimeTokens()
         }
         Tokens()
     }
 
     public func optStringTokens(): Tokens {
-        quote(obj.$(varId) = source.getOne($(info.keyName()))
+        quote($(varId): source.getOne($(info.keyName()))
         )
     }
 
     public func stringTokens(): Tokens {
         if (let Some(dv) <- info.defValue) {
-            quote(obj.$(varId) = source.getOne($(info.keyName())).getOrDefault({=>$((dv))})
+            quote($(varId): source.getOne($(info.keyName())).getOrDefault({=>$dv})
             )
         } else {
-            quote(
-                if (let Some(v) <- source.getOne($(info.keyName()))) {
-                    obj.$(varId) = v
-                }
-            )
+            if (let Some(dv) <- getDefValueOfType(info.declType)) {
+                quote($(varId): source.getOne($(info.keyName())).getOrDefault({=>$dv)}
+                )
+            } else {
+                quote($(varId): source.getOne($(info.keyName())).getOrThrow()
+                )
+            }
         }
     }
 
     public func primitiveTokens(): Tokens {
         if (let Some(dv) <- info.defValue) {
             quote(
-                obj.$(varId) = $(info.typeNode.vtype).parse(source.getOne($(info.keyName())).getOrDefault({=>$(dv)}))
+                $(varId): $(info.typeNode.vtype).parse(source.getOne($(info.keyName())).getOrDefault({=>$dv}))
             )
         } else {
-            quote(
-                if (let Some(v) <- source.getOne($(info.keyName()))) {
-                    obj.$(varId) = $(info.typeNode.vtype).parse(v)
-                }
-            )
+            if (let Some(dv) <- getDefValueOfType(info.declType)) {
+                quote(
+                    $(varId): $(info.typeNode.vtype).parse(source.getOne($(info.keyName())).getOrDefault({=>$dv}))
+                )
+            } else {
+                quote(
+                    $(varId): $(info.typeNode.vtype).parse(source.getOne($(info.keyName())).getOrThrow())
+                )
+            }
         }
     }
 
     public func optPrimitiveTokens(): Tokens {
         if (let Some(dv) <- info.defValue) {
             quote(
-                obj.$(varId) = $(info.typeNode.genericType).parse(source.getOne($(info.keyName())).getOrDefault({=>$((dv))}))
+                $(varId): $(info.typeNode.genericType).parse(source.getOne($(info.keyName())).getOrDefault({=>$((dv))}))
             )
         } else {
-            quote(
-                if (let Some(v) <- source.getOne($(info.keyName()))) {
-                    obj.$(varId) = $(info.typeNode.genericType).parse(v)
-                }
-            )
+            if (let Some(dv) <- getDefValueOfType(info.declType)) {
+                quote(
+                     $(varId): $(info.typeNode.genericType).parse(source.getOne($(info.keyName())).getOrDefault({=>$((dv))}))
+                )
+            } else {
+                quote(
+                    $(varId): $(info.typeNode.genericType).parse(source.getOne($(info.keyName())).getOrThrow())
+                )
+            }
         }
     }
 
     public func arrayStringTokens(): Tokens {
-        quote(obj.$(varId) = source.getAll($(info.keyName())).toArray()
+        quote($(varId): source.getAll($(info.keyName())).toArray()
         )
     }
 
     public func arrayListStringTokens(): Tokens {
-        quote(obj.$(varId) = ArrayList(source.getAll($(info.keyName())))
+        quote($(varId): ArrayList(source.getAll($(info.keyName())))
         )
     }
 
@@ -154,26 +161,34 @@ class BindFieldGenerator {
         if (info.timeformat != "") {
             if (let Some(dv) <- info.defValue) {
                 quote(
-                    obj.$(varId) = DateTime.parse(source.getOne($(info.keyName())).getOrDefault({=>$(dv)}), $(info.timeformat))
+                    $(varId): DateTime.parse(source.getOne($(info.keyName())).getOrDefault({=>$(dv)}), $(info.timeformat))
                 )
             } else {
-                quote(
-                    if (let Some(v) <- source.getOne($(info.keyName()))) {
-                        obj.$(varId) = DateTime.parse(v, $(info.timeformat))
-                    }
-                )
+                if (let Some(dv) <- getDefValueOfType(info.declType)) {
+                    quote(
+                        $(varId): DateTime.parse(source.getOne($(info.keyName())).getOrDefault({=>$(dv)}), $(info.timeformat))
+                    )
+                } else {
+                    quote(
+                        $(varId): DateTime.parse(source.getOne($(info.keyName())).getOrThrow(), $(info.timeformat))
+                    )
+                }
             }
         } else {
             if (let Some(dv) <- info.defValue) {
                 quote(
-                    obj.$(varId) = DateTime.parse(source.getOne($(info.keyName())).getOrDefault({=>$(dv)}))
+                    $(varId): DateTime.parse(source.getOne($(info.keyName())).getOrDefault({=>$(dv)}))
                 )
             } else {
-                quote(
-                    if (let Some(v) <- source.getOne($(info.keyName()))) {
-                        obj.$(varId) = DateTime.parse(v)
-                    }
-                )
+                if (let Some(dv) <- getDefValueOfType(info.declType)) {
+                    quote(
+                        $(varId): DateTime.parse(source.getOne($(info.keyName())).getOrDefault({=>$(dv)}), $(info.timeformat))
+                    )
+                } else {
+                    quote(
+                        $(varId): DateTime.parse(source.getOne($(info.keyName())).getOrThrow(), $(info.timeformat))
+                    )
+                }
             }
         }
     }

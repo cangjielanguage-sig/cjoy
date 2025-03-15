@@ -17,9 +17,8 @@ import cjoy.bind.generate.{BindFieldInfo, BindClassInfo}
 public import std.convert.*
 public import net.http.HttpRequest
 
-
 public macro Bind(input: Tokens): Tokens {
-    input + BindClassInfo.parse("Bind", input)
+    BindClassInfo.parse("Bind", input)
 }
 
 public macro BindField(attr: Tokens, input: Tokens): Tokens {
