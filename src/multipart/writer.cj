@@ -11,7 +11,6 @@
 package cjoy.multipart
 
 import std.io.{OutputStream, BufferedOutputStream, ByteBuffer}
-import std.random.Random
 import std.time.DateTime
 
 public class JoyMultiPartWriter {
@@ -20,8 +19,6 @@ public class JoyMultiPartWriter {
 
     public init(output: OutputStream) {
         _buffer = BufferedOutputStream(output)
-        let random = Random()
-        random.seed = UInt64(DateTime.now().toUnixTimeStamp().toMilliseconds())
     }
 
     static func randBoundry(): Array<Byte> {

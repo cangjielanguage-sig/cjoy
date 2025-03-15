@@ -11,6 +11,7 @@
 package cjoy.framework
 
 import std.regex.Regex
+import std.sort.sort
 import std.collection.{ArrayList, HashMap, forEach}
 
 class Endpoint<T> <: ToString {
@@ -240,7 +241,7 @@ class TreeNode<T> {
             }
 
             if (let Some(re) <- xn._regex && nt == NT_REGEXP) {
-                if (re.matches(xsearch[0..p]).isNone()) {
+                if (!re.matches(xsearch[0..p])) {
                     continue
                 }
             } else if (xsearch[0..p].indexOf(b'/').isSome()) {
@@ -465,6 +466,7 @@ extend<T> TreeNodes<T> {
     func sortByLableTail() {
         // sort the list of nodes by label
         this.sortBy(comparator: {a, b => a._label.compare(b._label)})
+        //sort(this, by: {a, b => a._label.compare(b._label)})
         // pushes nodes with '/' as the tail to the end of the list for param nodes.
         let last = this.size - 1
         for (i in last..=0 : -1) {

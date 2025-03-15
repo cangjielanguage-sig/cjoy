@@ -15,7 +15,7 @@ import cjoy.json.generate.{JsonClassInfo, JsonFieldInfo}
 
 // reimport the dependent
 public import cjoy.json.utils.*
-public import std.time.{DateTime, DateTimeFormat}
+public import std.time.DateTime
 public import std.io.ByteBuffer
 public import encoding.json.stream.*
 

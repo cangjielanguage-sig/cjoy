@@ -21,7 +21,7 @@ class DateTimeJsonFieldGenerator <: JsonFieldGenerator {
     public override func genSerializeTokens(): Tokens {
         if (info.timeformat != "") {
             return quote(
-                writer.writeName($(info.jsonKeyName())).writeValue($(varId).toString(DateTimeFormat.of($(info.timeformat))))
+                writer.writeName($(info.jsonKeyName())).writeValue($(varId).format($(info.timeformat)))
          )
         }
         quote(writer.writeName($(info.jsonKeyName())).writeValue($(varId).toString())

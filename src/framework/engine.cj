@@ -10,7 +10,7 @@
 
 package cjoy.framework
 
-import std.console.Console
+import std.env.getStdOut
 import std.collection.concurrent.ConcurrentHashMap
 import std.collection.ArrayList
 import std.fs.{File, OpenMode}
@@ -48,7 +48,7 @@ public class JoyConfig {
     mut prop logger: Logger {
         get() {
             if (_logger.isNone()) {
-                _logger = Some(SimpleLogger(Console.stdOut))
+                _logger = Some(SimpleLogger(getStdOut()))
             }
             return _logger.getOrThrow()
         }
@@ -95,7 +95,7 @@ public class Joy {
             return _INSTANCES.get("default").getOrThrow()
         }
         let joy = create()
-        _INSTANCES.put("default", joy)
+        _INSTANCES.add("default", joy)
         return joy
     }
 
@@ -121,7 +121,7 @@ public class Joy {
             throw IllegalArgumentException("the instance name is already existing, name=${name}")
         }
         let joy = Joy(config, name)
-        _INSTANCES.put(name, joy)
+        _INSTANCES.add(name, joy)
         joy
     }
 

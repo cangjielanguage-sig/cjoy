@@ -120,7 +120,7 @@ public class BindTestCaseSuit {
 
     @TestCase
     public func testHeaderBind() {
-        let ts = DateTime.now().toString(DateTimeFormat.of("HH:mm:ss MM/dd/yyyy OO"))
+        let ts = DateTime.now().format("HH:mm:ss MM/dd/yyyy OO")
         let u = "http://127.0.0.1:18881/test"
         let r = HttpRequestBuilder()
             .get()
@@ -145,7 +145,7 @@ public class BindTestCaseSuit {
         @Assert(obj.i3_64, 3)
         @Assert(obj.arr, ["1", "2"])
         @Assert(obj.list, ArrayList(["1", "2"]))
-        @Assert(obj.t1, DateTime.parse(ts, DateTimeFormat.of("HH:mm:ss MM/dd/yyyy OO")))
-        @Assert(obj.t2, DateTime.parse(ts, DateTimeFormat.of("HH:mm:ss MM/dd/yyyy OO")))
+        @Assert(obj.t1, DateTime.parse(ts, "HH:mm:ss MM/dd/yyyy OO"))
+        @Assert(obj.t2, DateTime.parse(ts, "HH:mm:ss MM/dd/yyyy OO"))
     }
 }

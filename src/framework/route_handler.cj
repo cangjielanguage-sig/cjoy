@@ -135,7 +135,7 @@ class JoyFileSystemServeHandler <: JoyRequestHandler {
                 }
 
                 let fh = FileHandler(fp)
-                cache.putIfAbsent(fp, fh)
+                cache.addIfAbsent(fp, fh)
                 fh.handle(ctx.httpContext)
         }
     }
