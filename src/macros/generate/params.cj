@@ -132,7 +132,7 @@ open class UrlParamVarGenerator <: ParamInfo {
 
         if (typeNode.isArrayListStringType() && array) {
             let fnl = Token(TokenKind.IDENTIFIER, fname + "List")
-            return quote(let $(pname) = ctx.$(fnl)($(this.getName()))
+            return quote(let $(pname) = ArrayList(ctx.$(fnl)($(this.getName())))
             )
         }
 
@@ -193,68 +193,11 @@ class PostFormParamVarGenerator <: UrlParamVarGenerator {
     }
 }
 
-class HeaderParamVarGenerator <: ParamInfo {
+class HeaderParamVarGenerator <: UrlParamVarGenerator {
     init() {
-         super("HeaderParam", ParamCatgory.PC_HEADER)
-    }
-
-    public override func genTokens(): Tokens {
-        // header param
-        if (typeNode.isOptionStringType()) {
-            return quote(let $(pname) = ctx.readHeader($(this.getName()))
-            )
-        }
-
-        if (typeNode.isStringType()) {
-            if (defValue != "") {
-                return quote(let $(pname) = ctx.readHeader($(this.getName())).getOrDefault({=>$(defValue)})
-                )
-            } else {
-                return quote(let $(pname) = ctx.readHeader($(this.getName())).getOrThrow()
-                )
-            }
-        }
-
-        if (typeNode.isArrayStringType()) {
-            return quote(let $(pname) = ctx.readHeaders($(this.getName())).toArray()
-            )
-        }
-
-        if (typeNode.isArrayListStringType()) {
-            return quote(let $(pname) = ArrayList(ctx.readHeaders($(this.getName())))
-            )
-        }
-
-        if (typeNode.isPrimitive) {
-            if (defValue != "") {
-                return quote(let $(pname) = $(typeNode.vtype).parse(ctx.readHeader($(this.getName())).getOrDefault({=>$(defValue)}))
-                )
-            } else {
-                return quote(let $(pname) = $(typeNode.vtype).parse(ctx.readHeader($(this.getName())).getOrThrow())
-                )
-            }
-        }
-
-        if (typeNode.isDateTimeType() || typeNode.isOptionDateTimeType()) {
-            if (timeformat != "") {
-                if (defValue != "") {
-                    return quote(let $(pname) = DateTime.parse(ctx.readHeader($(this.getName())).getOrDefault({=>$(defValue)}), $(timeformat))
-                    )
-                } else {
-                    return quote(let $(pname) = DateTime.parse(ctx.readHeader($(this.getName())).getOrThrow(), $(timeformat))
-                    )
-                }
-            } else {
-                if (defValue != "") {
-                    return quote(let $(pname) = DateTime.parse(ctx.readHeader($(this.getName())).getOrDefault({=>$(defValue)}))
-                    )
-                } else {
-                    return quote(let $(pname) = DateTime.parse(ctx.readHeader($(this.getName())).getOrThrow())
-                    )
-                }
-            }
-        }
-        Tokens()
+        super("PostFormParam", ParamCatgory.PC_POSTFORM)
+        this.fname = "getHeader"
+        this.array = true
     }
 }
 
@@ -266,26 +209,26 @@ class CookieParamVarGenerator <: ParamInfo {
     public override func genTokens(): Tokens {
         // cookie param
         if (typeNode.isOptionStringType()) {
-            return quote(let $(pname) = ctx.readCookie($(this.getName()))
+            return quote(let $(pname) = ctx.getCookie($(this.getName()))
             )
         }
 
         if (typeNode.isStringType()) {
             if (defValue != "") {
-                return quote(let $(pname) = ctx.readCookie($(this.getName())).getOrDefault({=>$(defValue)})
+                return quote(let $(pname) = ctx.getCookie($(this.getName())).getOrDefault({=>$(defValue)})
                 )
             } else {
-                return quote(let $(pname) = ctx.readCookie($(this.getName())).getOrThrow()
+                return quote(let $(pname) = ctx.getCookie($(this.getName())).getOrThrow()
                 )
             }
         }
 
         if (typeNode.isPrimitive) {
             if (defValue != "") {
-                return quote(let $(pname) = $(typeNode.vtype).parse(ctx.readCookie($(this.getName())).getOrDefault({=>$(defValue)}))
+                return quote(let $(pname) = $(typeNode.vtype).parse(ctx.getCookie($(this.getName())).getOrDefault({=>$(defValue)}))
                 )
             } else {
-                return quote(let $(pname) = $(typeNode.vtype).parse(ctx.readCookie($(this.getName())).getOrThrow())
+                return quote(let $(pname) = $(typeNode.vtype).parse(ctx.getCookie($(this.getName())).getOrThrow())
                 )
             }
         }

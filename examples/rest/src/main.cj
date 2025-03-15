@@ -20,7 +20,7 @@ class UserHandler {
     let users: HashMap<String, UserInfo> = HashMap()
 
     public func create(ctx: JoyContext): Unit {
-        let user = ctx.readJson<UserInfo>()
+        let user = ctx.bindJsonBody<UserInfo>()
         if (let Some(u) <- user) {
             users.add(u.name, u)
             ctx.logger.info("save user info, name=${u.name}")

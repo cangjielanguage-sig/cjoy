@@ -30,7 +30,7 @@ main(): Int64 {
     // 注册路由
     joy.router.get("/{name}", {ctx: JoyContext => 
         let name = ctx.getParam("name").getOrDefault({=>"no name"})
-        ctx.string("name in paramter path, name=${name}")
+        ctx.string("name in parameter path, name=${name}")
     })
     joy.router.get("/abc", {ctx: JoyContext => 
         ctx.string("static path abc")

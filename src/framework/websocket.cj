@@ -245,14 +245,14 @@ public class JoyWebSocketSession {
     /*
      * obtain the handleshake header
      */
-    public func readHeader(name: String): ?String {
+    public func getHeader(name: String): ?String {
         _headers.getFirst(name)
     }
 
     /*
      * obtain the handleshake headers
      */
-    public func readHeaders(name: String): Collection<String> {
+    public func getHeaderList(name: String): Collection<String> {
         _headers.get(name)
     }
 

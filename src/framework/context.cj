@@ -413,7 +413,7 @@ public class JoyContext {
      */
     public func getClientIP(): String {
         for (x in _config.remoteIPHeaders) {
-            let ip = readHeader(x).map({it => IPAddress.tryParse(it)}).map({it => it.toString()})
+            let ip = getHeader(x).map({it => IPAddress.tryParse(it)}).map({it => it.toString()})
             if (ip.isSome()) {
                 return ip.getOrThrow()
             }
@@ -450,7 +450,7 @@ public class JoyContext {
      * @param name: the header name
      * @return the header value
      */
-    public func readHeader(name: String): ?String {
+    public func getHeader(name: String): ?String {
         _httpContext.request.headers.getFirst(name)
     }
 
@@ -460,7 +460,7 @@ public class JoyContext {
      * @param name: the header name
      * @return the header values
      */
-    public func readHeaders(name: String): Collection<String> {
+    public func getHeaderList(name: String): Collection<String> {
         _httpContext.request.headers.get(name)
     }
 
@@ -521,7 +521,7 @@ public class JoyContext {
      * @return the cookie value
      *
      */
-    public func readCookie(name: String): ?String {
+    public func getCookie(name: String): ?String {
         if (!_cookieCache.isEmpty()) {
             return _cookieCache.get(name)
         }

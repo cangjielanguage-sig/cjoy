@@ -40,7 +40,7 @@ public class BasicAuth <: JoyMiddlewareHandler {
     }
 
     private func basicAuth(ctx: JoyContext): (String, String, Bool) {
-        let auth = ctx.readHeader("Authorization")
+        let auth = ctx.getHeader("Authorization")
         if (auth.isNone()) {
             return ("", "", false)
         }

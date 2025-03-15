@@ -46,12 +46,6 @@ public struct SPostBind {
     var i3_64: ?Int = None
     var arr: Array<String> = []
     var list: ArrayList<String> = ArrayList<String>()
-
-    //@BindField[name = "time1", timeformat = "HH:mm:ss MM/dd/yyyy OO"]
-    //var t1: DateTime = DateTime.now()
-
-    //@BindField[name = "time2", timeformat = "HH:mm:ss MM/dd/yyyy OO"]
-    //var t2: ?DateTime = None
 }
 
 @Bind
