@@ -84,7 +84,7 @@ public class BindTestCaseSuit {
     public func testQueryBind() {
         let u = "http://127.0.0.1:18881/test?str=1&str2=2&i64=1&int=2&i3_64=3&arr=1&arr=2&list=1&list=2"
         let r = HttpRequestBuilder().get().url(URL.parse(u)).build()
-        let obj = SQueryBind.bind(r.url.queryForm)
+        let obj = SQueryBind.bind(r.url.queryForm, "", None, None).getOrThrow()
         @Assert(obj.str, "1")
         @Assert(obj.str2, "2")
         @Assert(obj.i64, 1)
@@ -102,7 +102,7 @@ public class BindTestCaseSuit {
             .body("str=1&str2=2&i64=1&int=2&i3_64=3&arr=1&arr=2&list=1&list=2")
             .header("Content-Type", "application/x-www-form-urlencoded")
             .build()
-        let obj = SPostBind.bind(r.form)
+        let obj = SPostBind.bind(r.form, "", None, None).getOrThrow()
         @Assert(obj.str, "1")
         @Assert(obj.str2, "2")
         @Assert(obj.i64, 1)
@@ -131,7 +131,7 @@ public class BindTestCaseSuit {
             .header("htime1", ts)
             .header("htime2", ts)
             .build()
-        let obj = SHeaderBind.bind(r.headers)
+        let obj = SHeaderBind.bind(r.headers, "", None, None).getOrThrow()
         @Assert(obj.str, "1")
         @Assert(obj.str2, "2")
         @Assert(obj.i64, 1)

@@ -37,7 +37,7 @@ public class BindClassInfo {
         )
 
         quote(
-            public static func bind(source: BindSource): $(classId) {
+            public static func bind(source: JoyBindSource, _: String, _: ?String, _: ?String): ?$(classId) {
                 $classId($params)
             }
         )

@@ -15,17 +15,17 @@ import std.collection.*
 import cjoy.utils.{parseKVAttr, TypeNodeInfo}
 
 public enum ParamCatgory {
-    PC_PATH | 
-    PC_QUERY | 
-    PC_QUERY_BIND |
-    PC_POSTFORM |
-    PC_POSTFORM_BIND |
-    PC_HEADER | 
-    PC_HEADER_BIND | 
-    PC_CONTEXT | 
-    PC_BODY | 
-    PC_COOKIE |  
-    PC_NONE 
+    PC_PATH
+    | PC_QUERY
+    | PC_QUERY_BIND
+    | PC_POSTFORM
+    | PC_POSTFORM_BIND
+    | PC_HEADER
+    | PC_HEADER_BIND
+    | PC_CONTEXT
+    | PC_BODY
+    | PC_COOKIE
+    | PC_NONE
 }
 
 open class ParamInfo {
@@ -43,6 +43,8 @@ open class ParamInfo {
 
     // the defalt value for query, postform, header
     var defValue: String = ""
+
+    var paramType: ?TypeNode = None
 
     // the timeformat of datatime
     var timeformat: String = ""
@@ -78,11 +80,32 @@ open class ParamInfo {
         }
     }
 
+    func getDefValue(): Tokens {
+        if (defValue != "") {
+            return quote($(defValue))
+        }
+        return quote(Option<String>.None)
+    }
+
+    func getTimeformat(): Tokens {
+        if (timeformat != "") {
+            return quote($(timeformat))
+        }
+        return quote(Option<String>.None)
+    }
+
+    func getType(): Tokens {
+        match (paramType.getOrThrow()) {
+            case x: PrefixType => quote(Option<$(x.baseType)>)
+            case _ => paramType.getOrThrow().toTokens()
+        }
+    }
+
     private func parseFuncParam(input: Tokens): Unit {
         let funcParam = FuncParam(input)
         pname = funcParam.identifier
-        let paramType = funcParam.paramType
-        typeNode.parse(input, paramType)
+        this.paramType = funcParam.paramType
+        typeNode.parse(input, this.paramType.getOrThrow())
     }
 
     func parseAttr(attr: Tokens): Unit {
@@ -98,141 +121,58 @@ open class ParamInfo {
     }
 }
 
-open class UrlParamVarGenerator <: ParamInfo {
-    var fname: String = ""
-    var array: Bool = false
-
-    init(marcroName: String, catgory: ParamCatgory) {
-        super(marcroName, catgory)
+class PathParamVarGenerator <: ParamInfo {
+    init() {
+        super("PathParam", ParamCatgory.PC_PATH)
     }
 
     public override func genTokens(): Tokens {
-        // query, param, postform
-        let fn = Token(TokenKind.IDENTIFIER, fname)
-        if (typeNode.isOptionStringType()) {
-            return quote(let $(pname) = ctx.$(fn)($(this.getName()))
-            )
-        }
-
-        if (typeNode.isStringType()) {
-            if (defValue != "") {
-                return quote(let $(pname) = ctx.$(fn)($(this.getName())).getOrDefault({=>$(defValue)})
-                )
-            } else {
-                return quote(let $(pname) = ctx.$(fn)($(this.getName())).getOrThrow()
-                )
-            }
-        }
-
-        if (typeNode.isArrayStringType() && array) {
-            let fnl = Token(TokenKind.IDENTIFIER, fname + "List")
-            return quote(let $(pname) = ctx.$(fnl)($(this.getName())).toArray()
-            )
-        }
-
-        if (typeNode.isArrayListStringType() && array) {
-            let fnl = Token(TokenKind.IDENTIFIER, fname + "List")
-            return quote(let $(pname) = ArrayList(ctx.$(fnl)($(this.getName())))
-            )
-        }
-
-        if (typeNode.isPrimitive) {
-            if (defValue != "") {
-                return quote(let $(pname) = $(typeNode.vtype).parse(ctx.$(fn)($(this.getName())).getOrDefault({=>$(defValue)}))
-                )
-            } else {
-                return quote(let $(pname) = $(typeNode.vtype).parse(ctx.$(fn)($(this.getName())).getOrThrow())
-                )
-            }
-        }
-
-        if (typeNode.isDateTimeType() || typeNode.isOptionDateTimeType()) {
-            if (timeformat != "") {
-                if (defValue != "") {
-                    return quote(let $(pname) = DateTime.parse(ctx.$(fn)($(this.getName())).getOrDefault({=>$(defValue)}), $(timeformat))
-                    )
-                } else {
-                    return quote(let $(pname) = DateTime.parse(ctx.$(fn)($(this.getName())).getOrThrow(), $(timeformat))
-                    )
-                }
-            } else {
-                if (defValue != "") {
-                    return quote(let $(pname) = DateTime.parse(ctx.$(fn)($(this.getName())).getOrDefault({=>$(defValue)}))
-                    )
-                } else {
-                    return quote(let $(pname) = DateTime.parse(ctx.$(fn)($(this.getName())).getOrThrow())
-                    )
-                }
-            }
-        }
-
-        Tokens()
+        return quote(
+            let $(pname) = $(getType()).bind(ctx.params, $(getName()), $(getDefValue()), $(getTimeformat())).getOrThrow() )
     }
 }
 
-class PathParamVarGenerator <: UrlParamVarGenerator {
-    init() {
-        super("PathParam", ParamCatgory.PC_PATH)
-        this.fname = "getParam"
-    }
-}
-
-class QueryParamVarGenerator <: UrlParamVarGenerator {
+class QueryParamVarGenerator <: ParamInfo {
     init() {
         super("QueryParam", ParamCatgory.PC_QUERY)
-        this.fname = "getQuery"
-        this.array = true
+    }
+
+    public override func genTokens(): Tokens {
+        return quote(
+            let $(pname) = $(getType()).bind(ctx.httpContext.request.url.queryForm, $(getName()), $(getDefValue()), $(getTimeformat())).getOrThrow() )
     }
 }
 
-class PostFormParamVarGenerator <: UrlParamVarGenerator {
+class PostFormParamVarGenerator <: ParamInfo {
     init() {
         super("PostFormParam", ParamCatgory.PC_POSTFORM)
-        this.fname = "getPostForm"
-        this.array = true
+    }
+
+    public override func genTokens(): Tokens {
+        return quote(
+            let $(pname) = $(getType()).bind(ctx.httpContext.request.form, $(getName()), $(getDefValue()), $(getTimeformat())).getOrThrow() )
     }
 }
 
-class HeaderParamVarGenerator <: UrlParamVarGenerator {
+class HeaderParamVarGenerator <: ParamInfo {
     init() {
         super("PostFormParam", ParamCatgory.PC_POSTFORM)
-        this.fname = "getHeader"
-        this.array = true
+    }
+
+    public override func genTokens(): Tokens {
+        return quote(
+            let $(pname) = $(getType()).bind(ctx.httpContext.request.headers, $(getName()), $(getDefValue()), $(getTimeformat())).getOrThrow() )
     }
 }
 
 class CookieParamVarGenerator <: ParamInfo {
     init() {
-         super("CookieParam", ParamCatgory.PC_COOKIE)
+        super("CookieParam", ParamCatgory.PC_COOKIE)
     }
 
     public override func genTokens(): Tokens {
-        // cookie param
-        if (typeNode.isOptionStringType()) {
-            return quote(let $(pname) = ctx.getCookie($(this.getName()))
-            )
-        }
-
-        if (typeNode.isStringType()) {
-            if (defValue != "") {
-                return quote(let $(pname) = ctx.getCookie($(this.getName())).getOrDefault({=>$(defValue)})
-                )
-            } else {
-                return quote(let $(pname) = ctx.getCookie($(this.getName())).getOrThrow()
-                )
-            }
-        }
-
-        if (typeNode.isPrimitive) {
-            if (defValue != "") {
-                return quote(let $(pname) = $(typeNode.vtype).parse(ctx.getCookie($(this.getName())).getOrDefault({=>$(defValue)}))
-                )
-            } else {
-                return quote(let $(pname) = $(typeNode.vtype).parse(ctx.getCookie($(this.getName())).getOrThrow())
-                )
-            }
-        }
-        Tokens()
+        return quote(
+            let $(pname) = $(getType()).bind(ctx.cookies, $(getName()), $(getDefValue()), $(getTimeformat())).getOrThrow() )
     }
 }
 
@@ -246,7 +186,8 @@ class ContextParamVarGenerator <: ParamInfo {
             return quote(let $(pname): ?$(typeNode.genericType)= ctx.getCtxParm($(this.getName()))
             )
         } else {
-            return quote(let $(pname): $(typeNode.vtype)= ctx.getCtxParm<$(typeNode.vtype)>($(this.getName())).getOrThrow()
+            return quote(
+                let $(pname): $(typeNode.vtype)= ctx.getCtxParm<$(typeNode.vtype)>($(this.getName())).getOrThrow()
             )
         }
     }
@@ -296,10 +237,12 @@ class PostFormBindParamVarGenerator <: ParamInfo {
 
     public override func genTokens(): Tokens {
         if (typeNode.vtype.value == "Option") {
-            return quote(let $(pname): ?$(typeNode.genericType) = ctx.bindPostForm<$(typeNode.genericType)>()
+            return quote(
+                let $(pname): ?$(typeNode.genericType) = ctx.bindPostForm<$(typeNode.genericType)>()
             )
         } else {
-            return quote(let $(pname): $(typeNode.vtype) = ctx.bindPostForm<$(typeNode.vtype)>().getOrThrow()
+            return quote(
+                let $(pname): $(typeNode.vtype) = ctx.bindPostForm<$(typeNode.vtype)>().getOrThrow()
             )
         }
     }

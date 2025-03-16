@@ -26,6 +26,7 @@ public class JoyContext {
     private let _paramMap: HashMap<String, String>
     private let _ctxParamMap: HashMap<String, Any>
     private var _cookieCache: HashMap<String, String> = HashMap()
+    private var _parsedCookie: Bool = false
 
     // the index of executing handler chain
     var _handlerIndex: Int = 0
@@ -77,6 +78,38 @@ public class JoyContext {
     public prop config: JoyConfig {
         get() {
             _config
+        }
+    }
+
+    /**
+     * return the path params
+     */
+    public prop params: HashMap<String, String> {
+        get() {
+            _paramMap
+        }
+    }
+
+    /**
+     * return the cookies
+     */
+    public prop cookies: HashMap<String, String> {
+        get() {
+            if (_parsedCookie) {
+                return _cookieCache
+            }
+            let cookies = _httpContext.request.headers.get("cookie")
+            for (c in cookies) {
+                let arr = c.split(";")
+                for (a in arr) {
+                    let kv = a.split("=")
+                    if (kv.size == 2) {
+                        _cookieCache.add(kv[0].trimAscii(), kv[1].trimAscii())
+                    }
+                }
+            }
+            _parsedCookie = true
+            _cookieCache
         }
     }
 
@@ -247,7 +280,7 @@ public class JoyContext {
         if (_httpContext.request.url.queryForm.isEmpty()) {
             return None
         }
-        T.bind(_httpContext.request.url.queryForm)
+        T.bind(_httpContext.request.url.queryForm, "", None, None)
     }
 
     /**
@@ -260,7 +293,7 @@ public class JoyContext {
         if (_httpContext.request.form.isEmpty()) {
             return None
         }
-        T.bind(_httpContext.request.form)
+        T.bind(_httpContext.request.form, "", None, None)
     }
 
     /**
@@ -273,7 +306,7 @@ public class JoyContext {
         if (_httpContext.request.headers.isEmpty()) {
             return None
         }
-        T.bind(_httpContext.request.headers)
+        T.bind(_httpContext.request.headers, "", None, None)
     }
 
     /**
@@ -522,21 +555,7 @@ public class JoyContext {
      *
      */
     public func getCookie(name: String): ?String {
-        if (!_cookieCache.isEmpty()) {
-            return _cookieCache.get(name)
-        }
-
-        let cookies = _httpContext.request.headers.get("cookie")
-        for (c in cookies) {
-            let arr = c.split(";")
-            for (a in arr) {
-                let kv = a.split("=")
-                if (kv.size == 2) {
-                    _cookieCache.add(kv[0].trimAscii(), kv[1].trimAscii())
-                }
-            }
-        }
-        _cookieCache.get(name)
+        this.cookies.get(name)
     }
 
     /**
