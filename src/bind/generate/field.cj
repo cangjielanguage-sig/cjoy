@@ -19,12 +19,14 @@ public class BindFieldInfo {
     let filedName: String
     let typeNode: TypeNodeInfo
     let declType: TypeNode
+    let varDecl: VarDecl
     var bindName: String = ""
     var timeformat: String = ""
-    var defValue: ?String = ""
+    var defValue: ?String = None
 
     init(vd: VarDecl) {
         let supportTypes = "String, Opition<String>, PrimitiveType, ArrayList<String>, Array<Strng>, DateTime"
+        this.varDecl = vd
         this.typeNode = TypeNodeInfo(supportTypes)
         this.typeNode.parse(vd.toTokens(), vd.declType)
         this.declType = vd.declType
@@ -85,15 +87,41 @@ class BindFieldGenerator {
             return arrayStringTokens()
         } else if (info.typeNode.isArrayListStringType()) {
             return arrayListStringTokens()
-        } else if (info.typeNode.isDateTimeType() || info.typeNode.isOptionDateTimeType()) {
+        } else if (info.typeNode.isDateTimeType()) {
             return datetimeTokens()
+        } else if (info.typeNode.isOptionDateTimeType()) {
+            return optDatetimeTokens()
         }
         Tokens()
     }
 
     public func optStringTokens(): Tokens {
-        quote($(varId): source.getOne($(info.keyName()))
-        )
+         if (let Some(dv) <- info.defValue) {
+            quote($(varId): source.getOne($(info.keyName())).getOrDefault({=>$dv})
+            )
+        } else {
+            if (let Some(dv) <- getDefValueOfType(info.varDecl)) {
+                quote($(varId): {=>
+                        let r: ?String = if (let Some(v)<-source.getOne($(info.keyName()))) {
+                            Some(v)
+                        } else {
+                            $dv
+                        }
+                        r
+                    }()
+                )
+            } else {
+                quote($(varId): {=>
+                        let r: ?String = if (let Some(v)<-source.getOne($(info.keyName()))) {
+                            Some(v)
+                        } else {
+                            None
+                        }
+                        r
+                    }()
+                )
+            }
+        }
     }
 
     public func stringTokens(): Tokens {
@@ -101,8 +129,8 @@ class BindFieldGenerator {
             quote($(varId): source.getOne($(info.keyName())).getOrDefault({=>$dv})
             )
         } else {
-            if (let Some(dv) <- getDefValueOfType(info.declType)) {
-                quote($(varId): source.getOne($(info.keyName())).getOrDefault({=>$dv)}
+            if (let Some(dv) <- getDefValueOfType(info.varDecl)) {
+                quote($(varId): source.getOne($(info.keyName())).getOrDefault({=>$dv})
                 )
             } else {
                 quote($(varId): source.getOne($(info.keyName())).getOrThrow()
@@ -117,9 +145,15 @@ class BindFieldGenerator {
                 $(varId): $(info.typeNode.vtype).parse(source.getOne($(info.keyName())).getOrDefault({=>$dv}))
             )
         } else {
-            if (let Some(dv) <- getDefValueOfType(info.declType)) {
-                quote(
-                    $(varId): $(info.typeNode.vtype).parse(source.getOne($(info.keyName())).getOrDefault({=>$dv}))
+            if (let Some(dv) <- getDefValueOfType(info.varDecl)) {
+                quote($(varId): {=>
+                        let r: $(info.typeNode.vtype) = if (let Some(v)<-source.getOne($(info.keyName()))) {
+                            $(info.typeNode.vtype).parse(v)
+                        } else {
+                            $dv
+                        }
+                        r
+                    }() 
                 )
             } else {
                 quote(
@@ -135,13 +169,25 @@ class BindFieldGenerator {
                 $(varId): $(info.typeNode.genericType).parse(source.getOne($(info.keyName())).getOrDefault({=>$((dv))}))
             )
         } else {
-            if (let Some(dv) <- getDefValueOfType(info.declType)) {
-                quote(
-                     $(varId): $(info.typeNode.genericType).parse(source.getOne($(info.keyName())).getOrDefault({=>$((dv))}))
+            if (let Some(dv) <- getDefValueOfType(info.varDecl)) {
+                quote($(varId): {=>
+                        let r: ?$(info.typeNode.genericType) = if (let Some(v)<-source.getOne($(info.keyName()))) {
+                            Some($(info.typeNode.genericType).parse(v))
+                        } else {
+                            $dv
+                        }
+                        r
+                    }() 
                 )
             } else {
-                quote(
-                    $(varId): $(info.typeNode.genericType).parse(source.getOne($(info.keyName())).getOrThrow())
+                quote($(varId): {=>
+                        let r: ?$(info.typeNode.genericType) = if (let Some(v)<-source.getOne($(info.keyName()))) {
+                            Some($(info.typeNode.genericType).parse(v))
+                        } else {
+                            None
+                        }
+                        r
+                    }()
                 )
             }
         }
@@ -164,9 +210,15 @@ class BindFieldGenerator {
                     $(varId): DateTime.parse(source.getOne($(info.keyName())).getOrDefault({=>$(dv)}), $(info.timeformat))
                 )
             } else {
-                if (let Some(dv) <- getDefValueOfType(info.declType)) {
-                    quote(
-                        $(varId): DateTime.parse(source.getOne($(info.keyName())).getOrDefault({=>$(dv)}), $(info.timeformat))
+                if (let Some(dv) <- getDefValueOfType(info.varDecl)) {
+                    quote($(varId): {=>
+                            let r: DateTime = if (let Some(v)<-source.getOne($(info.keyName()))) {
+                                DateTime.parse(v, $(info.timeformat))
+                            } else {
+                                $dv
+                            }
+                            r
+                        }() 
                     )
                 } else {
                     quote(
@@ -180,13 +232,79 @@ class BindFieldGenerator {
                     $(varId): DateTime.parse(source.getOne($(info.keyName())).getOrDefault({=>$(dv)}))
                 )
             } else {
-                if (let Some(dv) <- getDefValueOfType(info.declType)) {
-                    quote(
-                        $(varId): DateTime.parse(source.getOne($(info.keyName())).getOrDefault({=>$(dv)}), $(info.timeformat))
+                if (let Some(dv) <- getDefValueOfType(info.varDecl)) {
+                    quote($(varId): {=>
+                            let r: DateTime = if (let Some(v)<-source.getOne($(info.keyName()))) {
+                                DateTime.parse(v)
+                            } else {
+                                $dv
+                            }
+                            r
+                        }() 
                     )
                 } else {
                     quote(
-                        $(varId): DateTime.parse(source.getOne($(info.keyName())).getOrThrow(), $(info.timeformat))
+                        $(varId): DateTime.parse(source.getOne($(info.keyName())).getOrThrow())
+                    )
+                }
+            }
+        }
+    }
+
+    public func optDatetimeTokens(): Tokens {
+        if (info.timeformat != "") {
+            if (let Some(dv) <- info.defValue) {
+                quote(
+                    $(varId): DateTime.parse(source.getOne($(info.keyName())).getOrDefault({=>$(dv)}), $(info.timeformat))
+                )
+            } else {
+                if (let Some(dv) <- getDefValueOfType(info.varDecl)) {
+                    quote($(varId): {=>
+                            let r: ?DateTime = if (let Some(v)<-source.getOne($(info.keyName()))) {
+                                Some(DateTime.parse(v, $(info.timeformat)))
+                            } else {
+                                $dv
+                            }
+                            r
+                        }() 
+                    )
+                } else {
+                    quote($(varId): {=>
+                            let r: ?DateTime = if (let Some(v)<-source.getOne($(info.keyName()))) {
+                                Some(DateTime.parse(v, $(info.timeformat)))
+                            } else {
+                                None
+                            }
+                            r
+                        }()
+                    )
+                }
+            }
+        } else {
+            if (let Some(dv) <- info.defValue) {
+                quote(
+                    $(varId): DateTime.parse(source.getOne($(info.keyName())).getOrDefault({=>$(dv)}))
+                )
+            } else {
+                if (let Some(dv) <- getDefValueOfType(info.varDecl)) {
+                    quote($(varId): {=>
+                            let r: ?DateTime = if (let Some(v)<-source.getOne($(info.keyName()))) {
+                                Some(DateTime.parse(v))
+                            } else {
+                                $dv
+                            }
+                            r
+                        }() 
+                    )
+                } else {
+                    quote($(varId): {=>
+                            let r: ?DateTime = if (let Some(v)<-source.getOne($(info.keyName()))) {
+                                Some(DateTime.parse(v))
+                            } else {
+                                None
+                            }
+                            r
+                        }() 
                     )
                 }
             }

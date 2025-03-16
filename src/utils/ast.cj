@@ -253,11 +253,25 @@ protected func joinTokens(tokensList: ArrayList<Tokens>, separator: Token): Toke
     }
 }
 
+protected func getDefValueOfType(varDecl: VarDecl): Option<Tokens> {
+    try {
+        let expr = varDecl.expr
+        return expr.toTokens()
+    } catch (_: ASTException) {
+        if (let Some(x) <- getDefValueOfType(varDecl.declType)) {
+            x
+        } else {
+            None
+        }
+    }
+}
+
 protected func getDefValueOfType(typeNode: TypeNode): Option<Tokens> {
     match (typeNode) {
         case varType: RefType => return match (varType.identifier.value) {
             case "Option" => quote(None)
             case "Array" => quote([])
+            case "Int" | "UInt" => quote(0)
             case "ArrayList" => quote(ArrayList())
             case "String" => quote("")
             case _ => Option.None
