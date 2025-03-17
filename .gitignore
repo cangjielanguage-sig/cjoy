@@ -11,3 +11,4 @@ target/
 */*.bchir2
 */*.cjo
 /tmpFile*
+.arts

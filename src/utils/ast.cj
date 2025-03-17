@@ -17,7 +17,7 @@ protected func parseKVAttr(attr: Tokens, marcroName: String, cb: (ident: Token, 
     if ((attr.size + 1) % 4 != 0) {
         diagReport(DiagReportLevel.ERROR, attr, "${marcroName} attriable should link 'attrname= value'", "")
         throw Exception("${marcroName} attriable should link 'attrname= value'")
-    }
+    }genBindTokens
 
     for (idx in 0..attr.size : 4) {
         let ident = attr.get(idx)
@@ -116,26 +116,6 @@ protected class TypeNodeInfo {
 
     protected func isStringType(): Bool {
         vtype.value == "String" && genericType.value == ""
-    }
-
-    protected func isArrayStringType(): Bool {
-        vtype.value == "Array" && genericType.value == "String"
-    }
-
-    protected func isArrayListStringType(): Bool {
-        vtype.value == "ArrayList" && genericType.value == "String"
-    }
-
-    protected func isDateTimeType(): Bool {
-        vtype.value == "DateTime" && genericType.value == ""
-    }
-
-    protected func isOptionDateTimeType(): Bool {
-        vtype.value == "Option" && genericType.value == "DateTime"
-    }
-
-    protected func isOptionPrimitiveType(): Bool {
-        vtype.value == "Option" && genericIsPrimitive
     }
 }
 

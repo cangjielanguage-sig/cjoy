@@ -66,14 +66,14 @@ public class BindFieldInfo {
         if (let Some(v) <- defValue) {
             return quote($(v))
         }
-        return quote(Option<String>.None)
+        return quote(None)
     }
 
     func getTimeformat(): Tokens {
         if (timeformat != "") {
             return quote($(timeformat))
         }
-        return quote(Option<String>.None)
+        return quote(None)
     }
 }
 
@@ -86,7 +86,13 @@ class BindFieldGenerator {
             case x: PrefixType => quote(Option<$(x.baseType)>)
             case _ => info.declType.toTokens()
         }
-        return quote(
-            $(varId): $(vType).bind(source, $(info.keyName()), $(info.getDefValue()), $(info.getTimeformat())).getOrThrow() )
+        if (let Some(dv) <- getDefValueOfType(info.declType)) {
+            return quote(
+                $(varId): $(vType).bind(source, $(info.keyName()), $(info.getDefValue()), $(info.getTimeformat())).getOrDefault({=>$dv}))
+        } else {
+            return quote(
+                $(varId): $(vType).bind(source, $(info.keyName()), $(info.getDefValue()), $(info.getTimeformat())).getOrThrow())
+        }
+        
     }
 }
