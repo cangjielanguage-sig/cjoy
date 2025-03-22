@@ -596,9 +596,9 @@ router.post("/saveUserInfo1", {ctx: JoyContext =>
   - `parse()`: 解释表单内容
   - `getPart(name)`: 获取MultiPart对象
 - `JoyMultiPart`
-  - `text()`: 获取表单文本内容
-  - `file()`: 获取表单上传文件缓存磁盘文件对象，用户可移动，拷贝到其它目标目录。当`JoyMultiPartConfig.fileCacheDir`不为空时，文件缓存在指定的目录下
-  - `fileContent()`: 获取表单上传文件缓存在内存中内容。当`JoyMultiPartConfig.fileCacheDir`为空时，默认缓存在内存中
+  - `text`: 获取表单文本内容
+  - `file`: 获取表单上传文件缓存磁盘文件对象，用户可移动，拷贝到其它目标目录。当`JoyMultiPartConfig.fileCacheDir`不为空时，文件缓存在指定的目录下
+  - `fileContent`: 获取表单上传文件缓存在内存中内容。当`JoyMultiPartConfig.fileCacheDir`为空时，默认缓存在内存中
   - `name`: 获取表单名称
   - `fileName`: 获取表单上传文件名
   - `contentType` : 获取表单上传文件类型

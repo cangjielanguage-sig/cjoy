@@ -63,22 +63,28 @@ public class JoyMultiPart {
     /**
      * return text value in memory
      */
-    public func text(): ?String {
-        _memoryHandler?.getContent(this.name).map({bb => String.fromUtf8(bb.bytes())}) ?? None
+    public prop text: ?String {
+        get() {
+            _memoryHandler?.getContent(this.name).map({bb => String.fromUtf8(bb.bytes())}) ?? None
+        }
     }
 
     /**
      * return file in cache dir, you can move or copy to other dir
      */
-    public func file(): ?File {
-        _diskHandler?.getFile(this.name) ?? None
+    public prop file: ?File {
+        get() {
+            _diskHandler?.getFile(this.name) ?? None
+        }
     }
 
     /**
      * return file content in memory
      */
-    public func fileContent(): ?ByteBuffer {
-        _memoryHandler?.getContent(this.name) ?? None
+    public prop fileContent: ?ByteBuffer {
+        get() {
+            _memoryHandler?.getContent(this.name) ?? None
+        }
     }
 
     func read(r: JoyMultiPartParser, buffer: BufferReader): Unit {

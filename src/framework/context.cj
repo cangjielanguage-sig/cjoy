@@ -245,7 +245,6 @@ public class JoyContext {
             return None
         }
 
-        let buffer = ByteBuffer()
         let reader = JsonReader(_httpContext.request.body)
         T.fromJson(reader)
     }

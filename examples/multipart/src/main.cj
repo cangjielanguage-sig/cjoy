@@ -36,11 +36,11 @@ main(): Int64 {
             try (form = JoyMultiPartForm.create(ctx, config)) {
                 form.parse()
                 // 获取form-data; name="id"
-                if (let Some(id) <- (form.getPart("id")?.text() ?? None)) {
+                if (let Some(id) <- (form.getPart("id")?.text ?? None)) {
                     println(id)
                 }
                 // 获取form-data; name="photo"; filename="00009527.png"
-                if (let Some(file) <- (form.getPart("photo")?.file() ?? None)) {
+                if (let Some(file) <- (form.getPart("photo")?.file ?? None)) {
                     let tempPath = Path("./photos")
                     copy(file.info.path, to: tempPath.join(file.info.name))
                 }

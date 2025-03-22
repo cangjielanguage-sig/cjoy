@@ -76,171 +76,87 @@ extend<T> Option<T> <: JoyBindable<Option<T>> where T <: JoyBindable<T> {
     }
 }
 
+func bindParsable<T>(source: JoyBindSource, name: String, defaultValue: ?String): ?T where T <: Parsable<T> {
+    if (let Some(dv) <- defaultValue) {
+        T.tryParse(source.getOne(name).getOrDefault({=> dv}))
+    } else {
+        if (let Some(v) <- source.getOne(name)) {
+            T.tryParse(v)
+        } else {
+            None
+        }
+    }
+}
+
 extend Int8 <: JoyBindable<Int8> {
     public static func bind(source: JoyBindSource, name: String, defaultValue: ?String, _: ?String): ?Int8 {
-        if (let Some(dv) <- defaultValue) {
-            Int8.tryParse(source.getOne(name).getOrDefault({=> dv}))
-        } else {
-            if (let Some(v) <- source.getOne(name)) {
-                Int8.tryParse(v)
-            } else {
-                None
-            }
-        }
+        bindParsable<Int8>(source, name, defaultValue)
     }
 }
 
 extend Int16 <: JoyBindable<Int16> {
     public static func bind(source: JoyBindSource, name: String, defaultValue: ?String, _: ?String): ?Int16 {
-        if (let Some(dv) <- defaultValue) {
-            Int16.tryParse(source.getOne(name).getOrDefault({=> dv}))
-        } else {
-            if (let Some(v) <- source.getOne(name)) {
-                Int16.tryParse(v)
-            } else {
-                None
-            }
-        }
+        bindParsable<Int16>(source, name, defaultValue)
     }
 }
 
 extend Int32 <: JoyBindable<Int32> {
     public static func bind(source: JoyBindSource, name: String, defaultValue: ?String, _: ?String): ?Int32 {
-        if (let Some(dv) <- defaultValue) {
-            Int32.tryParse(source.getOne(name).getOrDefault({=> dv}))
-        } else {
-            if (let Some(v) <- source.getOne(name)) {
-                Int32.tryParse(v)
-            } else {
-                None
-            }
-        }
+        bindParsable<Int32>(source, name, defaultValue)
     }
 }
 
 extend Int64 <: JoyBindable<Int64> {
     public static func bind(source: JoyBindSource, name: String, defaultValue: ?String, _: ?String): ?Int64 {
-        if (let Some(dv) <- defaultValue) {
-            Int64.tryParse(source.getOne(name).getOrDefault({=> dv}))
-        } else {
-            if (let Some(v) <- source.getOne(name)) {
-                Int64.tryParse(v)
-            } else {
-                None
-            }
-        }
+        bindParsable<Int64>(source, name, defaultValue)
     }
 }
 
 extend UInt8 <: JoyBindable<UInt8> {
     public static func bind(source: JoyBindSource, name: String, defaultValue: ?String, _: ?String): ?UInt8 {
-        if (let Some(dv) <- defaultValue) {
-            UInt8.tryParse(source.getOne(name).getOrDefault({=> dv}))
-        } else {
-            if (let Some(v) <- source.getOne(name)) {
-                UInt8.tryParse(v)
-            } else {
-                None
-            }
-        }
+        bindParsable<UInt8>(source, name, defaultValue)
     }
 }
 
 extend UInt16 <: JoyBindable<UInt16> {
     public static func bind(source: JoyBindSource, name: String, defaultValue: ?String, _: ?String): ?UInt16 {
-        if (let Some(dv) <- defaultValue) {
-            UInt16.tryParse(source.getOne(name).getOrDefault({=> dv}))
-        } else {
-            if (let Some(v) <- source.getOne(name)) {
-                UInt16.tryParse(v)
-            } else {
-                None
-            }
-        }
+        bindParsable<UInt16>(source, name, defaultValue)
     }
 }
 
 extend UInt32 <: JoyBindable<UInt32> {
     public static func bind(source: JoyBindSource, name: String, defaultValue: ?String, _: ?String): ?UInt32 {
-        if (let Some(dv) <- defaultValue) {
-            UInt32.tryParse(source.getOne(name).getOrDefault({=> dv}))
-        } else {
-            if (let Some(v) <- source.getOne(name)) {
-                UInt32.tryParse(v)
-            } else {
-                None
-            }
-        }
+        bindParsable<UInt32>(source, name, defaultValue)
     }
 }
 
 extend UInt64 <: JoyBindable<UInt64> {
     public static func bind(source: JoyBindSource, name: String, defaultValue: ?String, _: ?String): ?UInt64 {
-        if (let Some(dv) <- defaultValue) {
-            UInt64.tryParse(source.getOne(name).getOrDefault({=> dv}))
-        } else {
-            if (let Some(v) <- source.getOne(name)) {
-                UInt64.tryParse(v)
-            } else {
-                None
-            }
-        }
+        bindParsable<UInt64>(source, name, defaultValue)
     }
 }
 
 extend Float16 <: JoyBindable<Float16> {
     public static func bind(source: JoyBindSource, name: String, defaultValue: ?String, _: ?String): ?Float16 {
-        if (let Some(dv) <- defaultValue) {
-            Float16.tryParse(source.getOne(name).getOrDefault({=> dv}))
-        } else {
-            if (let Some(v) <- source.getOne(name)) {
-                Float16.tryParse(v)
-            } else {
-                None
-            }
-        }
+        bindParsable<Float16>(source, name, defaultValue)
     }
 }
 
 extend Float32 <: JoyBindable<Float32> {
     public static func bind(source: JoyBindSource, name: String, defaultValue: ?String, _: ?String): ?Float32 {
-        if (let Some(dv) <- defaultValue) {
-            Float32.tryParse(source.getOne(name).getOrDefault({=> dv}))
-        } else {
-            if (let Some(v) <- source.getOne(name)) {
-                Float32.tryParse(v)
-            } else {
-                None
-            }
-        }
+        bindParsable<Float32>(source, name, defaultValue)
     }
 }
 
 extend Float64 <: JoyBindable<Float64> {
     public static func bind(source: JoyBindSource, name: String, defaultValue: ?String, _: ?String): ?Float64 {
-        if (let Some(dv) <- defaultValue) {
-            Float64.tryParse(source.getOne(name).getOrDefault({=> dv}))
-        } else {
-            if (let Some(v) <- source.getOne(name)) {
-                Float64.tryParse(v)
-            } else {
-                None
-            }
-        }
+        bindParsable<Float64>(source, name, defaultValue)
     }
 }
 
 extend Bool <: JoyBindable<Bool> {
     public static func bind(source: JoyBindSource, name: String, defaultValue: ?String, _: ?String): ?Bool {
-        if (let Some(dv) <- defaultValue) {
-            Bool.tryParse(source.getOne(name).getOrDefault({=> dv}))
-        } else {
-            if (let Some(v) <- source.getOne(name)) {
-                Bool.tryParse(v)
-            } else {
-                None
-            }
-        }
+        bindParsable<Bool>(source, name, defaultValue)
     }
 }
 
