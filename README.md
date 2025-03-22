@@ -334,10 +334,10 @@ Handler注册宏，作用在函数上：
   - `Array<String>` ：同上；
   - `任一类型`：ContextParam宏标注的参数；
   - `T <: JsonDeserializable`: BodyParam宏标注的参数；
-  - `?T when T <: JsonDeserializable`: 同上；
+  - `?T where T <: JsonDeserializable`: 同上；
   - `JoyContext`: 不需要宏标注；
   - `T <: JoyBindable`: QueryBindParam, PostFormBindParam, HeaderBindParam宏标注的参数，参见绑定参数章节；
-  - `?T when T <: JoyBindable`: 同上；
+  - `?T where T <: JoyBindable`: 同上；
 
 不支持的入参名称：
 
@@ -348,11 +348,11 @@ Handler注册宏，作用在函数上：
   - `String`：响应为`Content-Type=plain/text`，`StatusCode=200`；
   - `(UInt16, String)`：响应为`Content-Type=plain/text`，`StatusCode=${statusCode}`；
   - `(String, UInt16)`：同上；
-  - `T when T <: JsonSerializable` ：响应为`Content-Type=application/json`，同时Handler需要指定`produce=json`，`StatusCode=200`；
-  - `(UInt16, T when T <: JsonSerializable)`：响应为`Content-Type=application/json`，响应的状态码statusCode，同时Handler需要指定`produce=json`，`StatusCode=${statusCode}`；
-  - `(T when T <: JsonSerializable, UInt16)`： 同上；
-  - `(UInt16, T when T <: ToString)`：响应为`Content-Type=plain/text`，`StatusCode=${statusCode}`；
-  - `(T when T <: ToString, UInt16)`：同上；
+  - `T where T <: JsonSerializable` ：响应为`Content-Type=application/json`，同时Handler需要指定`produce=json`，`StatusCode=200`；
+  - `(UInt16, T where T <: JsonSerializable)`：响应为`Content-Type=application/json`，响应的状态码statusCode，同时Handler需要指定`produce=json`，`StatusCode=${statusCode}`；
+  - `(T where T <: JsonSerializable, UInt16)`： 同上；
+  - `(UInt16, T where T <: ToString)`：响应为`Content-Type=plain/text`，`StatusCode=${statusCode}`；
+  - `(T where T <: ToString, UInt16)`：同上；
   - `UInt16`: 响应`StatusCode=${statusCode}`；
   - `Unit`: 无返回类型，响应`StatusCode=200`；
   - ` `: 无返回类型，响应`StatusCode=200`；

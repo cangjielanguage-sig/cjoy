@@ -16,6 +16,7 @@ import std.net.IPAddress
 import log.Logger
 import net.http.{HttpContext, RedirectHandler, NotFoundHandler, HttpStatusCode, HttpResponseBuilder, Cookie}
 import encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonReader, JsonWriter}
+import cjoy.bind.api.JoyBindable
 
 /**
  * the context which holds the engine config, params, context params and any you need.

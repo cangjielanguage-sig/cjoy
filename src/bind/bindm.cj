@@ -16,6 +16,7 @@ import cjoy.bind.generate.{BindFieldInfo, BindClassInfo}
 // reimport the dependent
 public import std.convert.*
 public import net.http.HttpRequest
+public import cjoy.bind.api.*
 
 public macro Bind(input: Tokens): Tokens {
     BindClassInfo.parse("Bind", input)

@@ -8,7 +8,7 @@
  * See the Mulan PSL v2 for more details.
  */
 
-package cjoy.framework
+package cjoy.bind.api
 
 import std.convert.*
 import std.collection.{HashMap, ArrayList, map, collectArray, collectArrayList}
@@ -29,12 +29,6 @@ public interface JoyBindable<T> {
      * @return the object
      */
     static func bind(source: JoyBindSource, name: String, defaultValue: ?String, timeformat: ?String): ?T
-}
-
-public interface JoyBindMeta {
-    prop name: String
-    prop defaultValue: ?String
-    prop timeformat: ?String
 }
 
 public interface JoyBindSource {

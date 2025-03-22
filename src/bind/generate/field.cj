@@ -14,7 +14,6 @@ import std.ast.*
 import std.collection.Map
 import net.http.HttpRequest
 import cjoy.utils.{parseKVAttr, TypeNodeInfo, getDefValueOfType}
-import cjoy.JoyBindMeta
 
 public class BindFieldInfo {
     let filedName: String

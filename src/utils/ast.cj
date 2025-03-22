@@ -17,7 +17,7 @@ protected func parseKVAttr(attr: Tokens, marcroName: String, cb: (ident: Token, 
     if ((attr.size + 1) % 4 != 0) {
         diagReport(DiagReportLevel.ERROR, attr, "${marcroName} attriable should link 'attrname= value'", "")
         throw Exception("${marcroName} attriable should link 'attrname= value'")
-    }genBindTokens
+    }
 
     for (idx in 0..attr.size : 4) {
         let ident = attr.get(idx)
