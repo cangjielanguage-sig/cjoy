@@ -291,18 +291,3 @@ protected func getGenericConstraintsTokens(decl: Decl): Tokens {
     }
     return tokens
 }
-
-protected func getRemainExtendTokens(input: Tokens): Tokens {
-    var pos = 0
-    for (i in 0..input.size) {
-        if (input[i].value == "extend") {
-            pos = i
-            break
-        }
-    }
-    if (pos > 0) {
-        input[pos..]
-    } else {
-        Tokens()
-    }
-}

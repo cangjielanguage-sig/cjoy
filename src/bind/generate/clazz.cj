@@ -44,7 +44,7 @@ public class BindClassInfo {
     }
 
     public static func parse(marcroName: String, input: Tokens): Tokens {
-        let decl: Decl = parseDecl(input)
+        let (decl, pos) = parseDeclFragment(input)
         let classGen = ClassGenentor("Bind", decl)
         
         let ident = decl.identifier
@@ -54,6 +54,6 @@ public class BindClassInfo {
         let tokens =  classGen.genTokens(supperTokens, bindTokens)
 
         BindInfoCache.clear()
-        tokens + Token(TokenKind.NL) + getRemainExtendTokens(input)
+        tokens + Token(TokenKind.NL) + input[pos..]
     }
 }
