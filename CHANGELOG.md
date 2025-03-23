@@ -1,11 +1,17 @@
 Changelog
 ------
+# v0.30.0
+
+- 特性：支持Query, PostForm， Header参数绑定到对象
+- 优化：重构Bind相关的代码减少重复代码
+- 变更：Context.readXXX方法变更为getXXX
+- 变更：JoyMultiPart.file, text, fileContent由方法变更为属性
+
 # v0.22.0
 
 - 特性：支持Websocket，以及examples
 - 特性：支持multipart，以及examples
 - 特性：支持文件上传，以及examples
-
 
 # v0.21.0
 
