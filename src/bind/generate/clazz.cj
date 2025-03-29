@@ -12,7 +12,7 @@ package cjoy.bind.generate
 
 import std.ast.*
 import std.collection.{ArrayList, map, collectArrayList}
-import cjoy.utils.{ClassGenentor, joinTokens, getRemainExtendTokens}
+import cjoy.utils.{ClassGenentor, joinTokens}
 
 public class BindClassInfo {
     let classId: Token
