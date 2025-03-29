@@ -14,7 +14,34 @@ a fast，lightweight and joy web framework.<br/>
 <img alt="" src="https://img.shields.io/badge/domain-HOS/Cloud-brightgreen" style="display: inline-block;" />
 </p>
 
-## 样例
+## 快速开始
+
+**⚠️注意**
+
+请选择对应的仓颉版本：<img alt="" src="https://img.shields.io/badge/cangjie-v0.59.6-brightgreen" style="display: inline-block;" />
+
+### 添加对本项目的依赖
+
+在您的项目cjpm.toml文件增加如下：
+
+```
+[dependencies]
+  magic = { git = "https://gitcode.com/Cangjie-SIG/cjoy.git", branch = "main" }
+```
+
+### 运行本项目的示例
+
+您可以先 `git clone https://gitcode.com/Cangjie-SIG/cjoy.git` 到您本地。
+
+通过 `cjpm run --name <package-name>` 运行对应样例：
+
+```
+cjpm test 
+cjpm build 
+cjpm run --name cjoy.examples.tls
+```
+
+## 快速了解
 
 ### 使用API
 
@@ -87,7 +114,7 @@ main(): Int64 {
 }
 ```
 
-更多的样例请参见 [examples](examples/README.md) 。
+更多的样例请参见 [examples](src/examples/README.md) 。
 
 ## 特性
 
@@ -463,7 +490,7 @@ JoyContext提供两个函数支持对HTTP Body的绑定与映射：
  - `readJson` 或者 `bindJsonBody`：对Body内容反序列化为类与结构体
  - `json`: 序列化类与结构体对象序列化并设置Body内容
 
-使用示例：[examples/rest](examples/rest/src/main.cj)
+使用示例：[examples/rest](src/examples/rest/main.cj)
 
 ### 分块传输
 
@@ -556,13 +583,13 @@ CJoy 提供WebSocket的封装，简化WebSocket消息接收与响应。
 
  - 受限于Cangjie SDK，`JoyWebSocketHandler`处理与发送消息要在同一线程中。
 
-使用示例：[examples/websocket](examples/websocket/src/main.cj) 。
+使用示例：[examples/websocket](src/examples/websocket/main.cj) 。
 
 ### MultiPart
 
 CJoy 提供对 `multipart` 的解释、数据缓存，提供API简化使用。
 
-使用示例：[examples/multipart](examples/multipart/src/main.cj) 。
+使用示例：[examples/multipart](src/examples/multipart/main.cj) 。
 
 #### 内置缓存
 

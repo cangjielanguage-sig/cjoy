@@ -2,7 +2,7 @@
  * Copyright (c) lanlingx 2024-present. All rights resvered.
  */
 
-package rest
+package cjoy.examples.rest
 
 import std.collection.*
 import net.http.HttpStatusCode

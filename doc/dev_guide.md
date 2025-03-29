@@ -33,19 +33,19 @@
     ├── middleware
     │   ├── *.cj
     └── test
-        ├── *_test.cj
+    │    ├── *_test.cj
+    ├── examples
+    │   ├── README.md
+    │   ├── chuncked
+    │   ├── macros
+    │   ├── rest
+    │   ├── simple
+    │   ├── sse
+    │   └── tls
 ├── doc
 │   ├── dev_guide.md
 │   └── imgs
 │       └── *.png
-├── examples
-│   ├── README.md
-│   ├── chuncked
-│   ├── macros
-│   ├── rest
-│   ├── simple
-│   ├── sse
-│   └── tls
 ```
 
  - `src/framework`：框架代码
@@ -53,8 +53,8 @@
  - `src/middleware`：中间件
  - `src/test`：测试
  - `src/json`：json序列化宏实现
+ - `src/examples`：样例
  - `doc`：文档
- - `examples`：样例
   
 原则：
 

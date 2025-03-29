@@ -2,7 +2,7 @@
  * Copyright (c) lanlingx 2025-present. All rights resvered.
  */
 
-package multipart
+package cjoy.examples.multipart
 
 import std.io.*
 import std.fs.*

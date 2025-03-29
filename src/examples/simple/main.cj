@@ -2,7 +2,7 @@
  * Copyright (c) lanlingx 2024-present. All rights resvered.
  */
 
-package simple
+package cjoy.examples.simple
 
 import std.collection.*
 import cjoy.*

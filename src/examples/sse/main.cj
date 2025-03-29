@@ -2,7 +2,7 @@
  * Copyright (c) lanlingx 2025-present. All rights resvered.
  */
 
-package sse
+package cjoy.examples.sse
 
 import cjoy.*
 
