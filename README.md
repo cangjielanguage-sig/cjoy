@@ -26,7 +26,7 @@ a fast，lightweight and joy web framework.<br/>
 
 ```
 [dependencies]
-  magic = { git = "https://gitcode.com/Cangjie-SIG/cjoy.git", branch = "main" }
+  cjoy = { git = "https://gitcode.com/Cangjie-SIG/cjoy.git", branch = "main" }
 ```
 
 ### 运行本项目的示例
