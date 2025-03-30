@@ -14,6 +14,7 @@ package cjoy.multipart
 
 import std.collection.{HashMap, ArrayList}
 import std.io.ByteBuffer
+import cjoy.utils.{StrFunc, HexUtils}
 
 public class JoyMediaType {
     private static let ERR = JoyMediaType("")
@@ -273,7 +274,7 @@ public func percentHexUnescape(str: String): String {
         }
 
         percents++
-        if (i + 2 >= str.size || !ishex(str[i + 1]) || !ishex(str[i + 2])) {
+        if (i + 2 >= str.size || !HexUtils.ishex(str[i + 1]) || !HexUtils.ishex(str[i + 2])) {
             val = str[i..str.size]
             if (str.size > 3) {
                 val = str[0..3]
@@ -294,7 +295,7 @@ public func percentHexUnescape(str: String): String {
     while (i < val.size) {
         match (val[i]) {
             case b'%' =>
-                bs[j] = unhex(val[i + 1]) << 4 | unhex(val[i + 2])
+                bs[j] = HexUtils.unhex(val[i + 1]) << 4 | HexUtils.unhex(val[i + 2])
                 j += 1
                 i += 3
             case _ =>
@@ -306,24 +307,6 @@ public func percentHexUnescape(str: String): String {
     return String.fromUtf8(bs)
 }
 
-private func ishex(c: Byte): Bool {
-    match {
-        case b'0' <= c && c <= b'9' => true
-        case b'a' <= c && c <= b'f' => true
-        case b'A' <= c && c <= b'F' => true
-        case _ => false
-    }
-}
-
-private func unhex(c: Byte): Byte {
-    match {
-        case b'0' <= c && c <= b'9' => c - b'0'
-        case b'a' <= c && c <= b'f' => c - b'a' + 10
-        case b'A' <= c && c <= b'F' => c - b'A' + 10
-        case _ => b'\0'
-    }
-}
-
 private let specail_chars = #"()<>@,;:\"/[]?="#.toArray()
 
 private func isTSpecial(b: Byte): Bool {
@@ -332,22 +315,4 @@ private func isTSpecial(b: Byte): Bool {
 
 private func isNotTokenChar(b: Byte): Bool {
     return !(b > 0x20 && b < 0x7f && !isTSpecial(b))
-}
-
-extend String {
-    func cut(b: Byte): (String, String, Bool) {
-        if (let Some(i) <- this.indexOf(b)) {
-            return (this[0..i], this[i + 1..this.size], true)
-        }
-        return (this, "", false)
-    }
-
-    func indexFunc(f: (x: Byte) -> Bool): Int {
-        for (i in 0..size) {
-            if (f(this[i])) {
-                return i
-            }
-        }
-        -1
-    }
 }

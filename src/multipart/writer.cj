@@ -15,6 +15,7 @@ import std.collection.{map, collectArray}
 import std.convert.*
 import std.random.Random
 import net.http.HttpHeaders
+import cjoy.utils.StrFunc
 
 /**
 * multi part writer

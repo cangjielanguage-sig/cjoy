@@ -14,9 +14,9 @@ import std.ast.Tokens
 import cjoy.macros.generate.{parseParam, ParamCatgory, parseFunc, MethodCatgory, parseMiddlewareFunc}
 
 // reimport the dependent
-public import std.convert.*
+public import std.convert.Parsable
 public import cjoy.{JoyHandlers, JoyRequestHandler, JoyMiddlewares, JoyMiddlewareHandler, JoyRequestHandlerChain}
-public import cjoy.bind.api.*
+public import cjoy.bind.api.{JoyBindable, JoyBindSource}
 
 /**
  * PathParam macro is used for annotation at the paramter of function

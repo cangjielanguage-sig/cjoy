@@ -10,7 +10,7 @@
 
 package cjoy.bind.api
 
-import std.convert.*
+import std.convert.Parsable
 import std.collection.{HashMap, ArrayList, map, collectArray, collectArrayList}
 import std.time.DateTime
 import encoding.url.Form

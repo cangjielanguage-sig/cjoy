@@ -14,9 +14,9 @@ import std.ast.Tokens
 import cjoy.bind.generate.{BindFieldInfo, BindClassInfo}
 
 // reimport the dependent
-public import std.convert.*
+public import std.convert.Parsable
 public import net.http.HttpRequest
-public import cjoy.bind.api.*
+public import cjoy.bind.api.{JoyBindable, JoyBindSource}
 
 public macro Bind(input: Tokens): Tokens {
     BindClassInfo.parse("Bind", input)
