@@ -20,15 +20,15 @@ a fast，lightweight and joy web framework.<br/>
 
 请选择对应的仓颉版本：<img alt="" src="https://img.shields.io/badge/cangjie-v0.60.5-brightgreen" style="display: inline-block;" />
 
-本项目依赖STDX包，请先下载对应版本的STDX包，使用说明见 [仓颉编程语言 stdx](https://gitcode.com/Cangjie/Cangjie-STDX) 。
+本项目依赖Cangjie stdx包，请先下载对应版本的stdx包，使用说明参见 [仓颉编程语言 stdx](https://gitcode.com/Cangjie/Cangjie-STDX) 。
 
 本项目配置要求，请把对应的STDX包解压到与Cangjie SDK并列目录cangjiestdx下：
 
- - cangjia ： Cangjie SDK目录
+ - cangjie ： Cangjie SDK目录
  - cangjiestdx ： 新建此目录
-   - linux_x86_64_llvm ： 解压对应的STDX包
+   - linux_x86_64_llvm ： 解压对应的STDX包，不同OS目录名称不同
 
-如果STDX包不是按上述目录配置，请修改cjoy中cjpm.toml对应`[target.xx.bin-dependencies]`的`path-option`。
+如果stdx包不是按上述目录配置，请修改cjoy中cjpm.toml对应`[target.xx.bin-dependencies]`的`path-option`。
 
 ### 添加对本项目的依赖
 
