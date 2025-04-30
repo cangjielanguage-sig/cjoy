@@ -8,7 +8,7 @@ a fast，lightweight and joy web framework.<br/>
 
 <p align="center">
 <img alt="" src="https://img.shields.io/badge/release-v0.30.0-brightgreen" style="display: inline-block;" />
-<img alt="" src="https://img.shields.io/badge/cjc-v0.59.6-brightgreen" style="display: inline-block;" />
+<img alt="" src="https://img.shields.io/badge/cjc-v0.60.5-brightgreen" style="display: inline-block;" />
 <img alt="" src="https://img.shields.io/badge/cjcov-70%25+-brightgreen" style="display: inline-block;" />
 <img alt="" src="https://img.shields.io/badge/state-孵化-brightgreen" style="display: inline-block;" />
 <img alt="" src="https://img.shields.io/badge/domain-HOS/Cloud-brightgreen" style="display: inline-block;" />
@@ -18,7 +18,17 @@ a fast，lightweight and joy web framework.<br/>
 
 **⚠️注意**
 
-请选择对应的仓颉版本：<img alt="" src="https://img.shields.io/badge/cangjie-v0.59.6-brightgreen" style="display: inline-block;" />
+请选择对应的仓颉版本：<img alt="" src="https://img.shields.io/badge/cangjie-v0.60.5-brightgreen" style="display: inline-block;" />
+
+本项目依赖STDX包，请先下载对应版本的STDX包，使用说明见 [仓颉编程语言 stdx](https://gitcode.com/Cangjie/Cangjie-STDX) 。
+
+本项目配置要求，请把对应的STDX包解压到与Cangjie SDK并列目录cangjiestdx下：
+
+ - cangjia ： Cangjie SDK目录
+ - cangjiestdx ： 新建此目录
+   - linux_x86_64_llvm ： 解压对应的STDX包
+
+如果STDX包不是按上述目录配置，请修改cjoy中cjpm.toml对应`[target.xx.bin-dependencies]`的`path-option`。
 
 ### 添加对本项目的依赖
 
@@ -125,7 +135,7 @@ main(): Int64 {
 - 基于Context的上下文管理，支持快速获取请求参数与构建Json/Text响应；
 - 基于编译宏的Json序列化与反序列，支持对请求与响应消息的Json直接绑定映射;
 - 基于编译宏支持自动注册与参数注入请求处理函数与中间件函数;
-- 支持文件下载与上传，WebSocket, SEE等内置能力;
+- 支持文件下载与上传，WebSocket, SSE等内置能力;
 
 应用场景 ：
 
@@ -411,7 +421,7 @@ JoyHandlers.registerTo(joy)
 joy.run("127.0.0.1", 18881)
 ```
 
- - 需要在服务实例启动之前，需要显示地调用`JoyMiddlewares.registerTo(joy)`与`JoyHandlers.registerTo(joy)`，把自动生成Handler注册到实例上；
+ - 需要在服务实例启动之前，需要显式地调用`JoyMiddlewares.registerTo(joy)`与`JoyHandlers.registerTo(joy)`，把自动生成Handler注册到实例上；
  - Middleware要先于Handler注册，即`JoyMiddlewares.registerTo(joy)` 需要在 `JoyHandlers.registerTo(joy)` 前调用；
 
 ### 参数绑定
@@ -630,7 +640,7 @@ router.post("/saveUserInfo1", {ctx: JoyContext =>
   - `fileName`: 获取表单上传文件名
   - `contentType` : 获取表单上传文件类型
 
-#### 用户自定义Handler
+#### 自定义Handler
 
 框架支持对每个Part注册处理类，可在边解释Http Body时边回调，减少对内存与文件复制，适合于上传的文件直接存储到第三方的文件系统。
 

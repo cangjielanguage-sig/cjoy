@@ -13,7 +13,7 @@ package cjoy.test
 import std.io.*
 import std.unittest.*
 import std.unittest.testmacro.*
-import net.http.*
+import stdx.net.http.*
 import cjoy.*
 import cjoy.json.*
 

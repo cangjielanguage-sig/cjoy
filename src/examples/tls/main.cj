@@ -5,7 +5,7 @@
 package cjoy.examples.tls
 
 import cjoy.*
-import net.http.*
+import stdx.net.http.*
 
 main(): Int64 {
     var cfg = JoyConfig()

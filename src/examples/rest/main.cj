@@ -5,7 +5,7 @@
 package cjoy.examples.rest
 
 import std.collection.*
-import net.http.HttpStatusCode
+import stdx.net.http.HttpStatusCode
 import cjoy.*
 import cjoy.json.*
 

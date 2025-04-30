@@ -12,7 +12,7 @@ package cjoy.multipart
 
 import std.collection.HashMap
 import std.fs.File
-import net.http.HttpRequest
+import stdx.net.http.HttpRequest
 import cjoy.JoyContext
 
 public class JoyMultiPartForm <: JoyMultiPartHandler & Resource & Iterable<JoyMultiPart> {

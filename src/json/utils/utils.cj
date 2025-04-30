@@ -11,7 +11,7 @@
 package cjoy.json.utils
 
 import std.io.ByteBuffer
-import encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonReader, JsonWriter}
+import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonReader, JsonWriter}
 
 /**
  * json util tool

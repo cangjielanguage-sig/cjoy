@@ -11,7 +11,7 @@
 package cjoy.framework
 
 import std.collection.{forEach, ArrayList, HashMap}
-import net.http.{notFound, HttpStatusCode, OptionsHandler}
+import stdx.net.http.{notFound, HttpStatusCode, OptionsHandler}
 
 /**
 * the interface of request handler

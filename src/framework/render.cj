@@ -10,7 +10,7 @@
 
 package cjoy.framework
 
-import net.http.{HttpResponseBuilder, HttpStatusCode}
+import stdx.net.http.{HttpResponseBuilder, HttpStatusCode}
 
 /**
 * the interface of render

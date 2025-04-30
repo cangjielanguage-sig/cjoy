@@ -15,7 +15,7 @@ import std.collection.*
 import std.fs.remove
 import std.unittest.*
 import std.unittest.testmacro.*
-import net.http.*
+import stdx.net.http.*
 
 @Test
 public class MultiPartFormTestCaseSuit {

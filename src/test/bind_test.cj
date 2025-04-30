@@ -15,8 +15,8 @@ import cjoy.bind.*
 import std.deriving.*
 import std.collection.*
 import std.time.*
-import net.http.*
-import encoding.url.URL
+import stdx.net.http.*
+import stdx.encoding.url.URL
 import std.unittest.*
 import std.unittest.testmacro.*
 

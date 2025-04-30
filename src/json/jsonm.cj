@@ -17,7 +17,7 @@ import cjoy.json.generate.{JsonClassInfo, JsonFieldInfo}
 public import cjoy.json.utils.JsonTool
 public import std.time.DateTime
 public import std.io.ByteBuffer
-public import encoding.json.stream.*
+public import stdx.encoding.json.stream.*
 
 /**
  * Json macro is used for annotation the object of class or struct can be serialized and deserialized.

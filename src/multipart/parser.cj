@@ -12,7 +12,7 @@ package cjoy.multipart
 
 import std.collection.{HashMap, ArrayList}
 import std.io.{InputStream, BufferedInputStream, ByteBuffer, SeekPosition}
-import net.http.HttpHeaders
+import stdx.net.http.HttpHeaders
 
 type ParseState = Int
 

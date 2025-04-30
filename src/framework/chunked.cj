@@ -11,8 +11,8 @@
 package cjoy.framework
 
 import std.io.ByteBuffer
-import net.http.{HttpContext, HttpResponseWriter, HttpStatusCode}
-import encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonReader, JsonWriter}
+import stdx.net.http.{HttpContext, HttpResponseWriter, HttpStatusCode}
+import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonReader, JsonWriter}
 
 public class JoyServerEventBuilder {
     private let _sb: StringBuilder = StringBuilder()

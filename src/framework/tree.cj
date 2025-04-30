@@ -465,8 +465,8 @@ type TreeNodes<T> = ArrayList<TreeNode<T>>
 extend<T> TreeNodes<T> {
     func sortByLableTail() {
         // sort the list of nodes by label
-        this.sortBy(comparator: {a, b => a._label.compare(b._label)})
-        //sort(this, by: {a, b => a._label.compare(b._label)})
+        //this.sortBy(comparator: {a, b => a._label.compare(b._label)})
+        sort(this, by: {a, b => a._label.compare(b._label)})
         // pushes nodes with '/' as the tail to the end of the list for param nodes.
         let last = this.size - 1
         for (i in last..=0 : -1) {

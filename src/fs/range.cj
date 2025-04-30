@@ -11,7 +11,7 @@
 package cjoy.fs
 
 import std.collection.ArrayList
-import net.http.HttpHeaders
+import stdx.net.http.HttpHeaders
 import cjoy.utils.StrFunc
 import std.convert.Parsable
 

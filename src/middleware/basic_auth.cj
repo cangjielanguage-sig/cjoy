@@ -11,8 +11,8 @@
 package cjoy.middleware
 
 import std.collection.HashMap
-import net.http.HttpStatusCode
-import encoding.base64.fromBase64String
+import stdx.net.http.HttpStatusCode
+import stdx.encoding.base64.fromBase64String
 import cjoy.{JoyMiddlewareHandler, JoyRequestHandlerChain, JoyContext}
 
 public class BasicAuth <: JoyMiddlewareHandler {

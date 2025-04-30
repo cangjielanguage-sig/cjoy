@@ -14,7 +14,7 @@ import std.io.{OutputStream, BufferedOutputStream, ByteBuffer}
 import std.collection.{map, collectArray}
 import std.convert.*
 import std.random.Random
-import net.http.HttpHeaders
+import stdx.net.http.HttpHeaders
 import cjoy.utils.StrFunc
 
 /**

@@ -13,8 +13,8 @@ package cjoy.bind.api
 import std.convert.Parsable
 import std.collection.{HashMap, ArrayList, map, collectArray, collectArrayList}
 import std.time.DateTime
-import encoding.url.Form
-import net.http.HttpHeaders
+import stdx.encoding.url.Form
+import stdx.net.http.HttpHeaders
 
 /**
  * the interface of binding

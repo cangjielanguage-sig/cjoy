@@ -12,7 +12,7 @@ package cjoy.bind.generate
 
 import std.ast.*
 import std.collection.Map
-import net.http.HttpRequest
+import stdx.net.http.HttpRequest
 import cjoy.utils.{parseKVAttr, TypeNodeInfo, getDefValueOfType}
 
 public class BindFieldInfo {

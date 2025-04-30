@@ -11,7 +11,7 @@
 package cjoy.middleware
 
 import std.collection.HashMap
-import net.http.HttpStatusCode
+import stdx.net.http.HttpStatusCode
 import cjoy.{JoyMiddlewareHandler, JoyRequestHandlerChain, JoyContext}
 
 public class ExceptionHandler <: JoyMiddlewareHandler {
