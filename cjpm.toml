@@ -53,11 +53,11 @@
 [target.x86_64-unknown-windows-gnu]
   compile-option = "--cfg \"ohos=false\""
   [target.x86_64-unknown-windows-gnu.bin-dependencies]
-    path-option = ["${CANGJIE_HOME}/../cangjiestdx/windows_x86_64_llvm/static/stdx"]
+    path-option = ["${CANGJIE_HOME}/../cangjiestdx/windows_x86_64_llvm/dynamic/stdx"]
 [target.x86_64-w64-mingw32]
   compile-option = "--cfg \"ohos=false\""
   [target.x86_64-w64-mingw32.bin-dependencies]
-    path-option = ["${CANGJIE_HOME}/../cangjiestdx/windows_x86_64_llvm/static/stdx"]
+    path-option = ["${CANGJIE_HOME}/../cangjiestdx/windows_x86_64_llvm/dynamic/stdx"]
 
 [target.x86_64-apple-darwin]
   compile-option = "--cfg \"ohos=false\""

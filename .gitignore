@@ -3,8 +3,7 @@
 .vscode
 */.vscode
 src/*.macrocall
-*/src/*.macrocall
-src/*/*.macrocall
+src/**/*.macrocall
 target/
 */target/
 */*.exe

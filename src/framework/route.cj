@@ -12,7 +12,7 @@ package cjoy.framework
 
 import std.collection.{ArrayList, HashMap, forEach}
 import std.fs.{canonicalize, FSException, exists, FileInfo}
-import std.objectpool.ObjectPool 
+//import std.objectpool.ObjectPool 
 import stdx.encoding.url.URL
 import stdx.net.http.{HttpRequestDistributor, HttpRequestHandler, HttpRequest, HttpContext}
 import stdx.log.Logger
@@ -145,11 +145,11 @@ class TreeRouteDistributor <: HttpRequestDistributor & HttpRequestHandler {
     var _root: TreeNode<JoyRequestHandler> = TreeNode(NT_STATIC, b'\0', "")
     let _config: JoyConfig
     let _groups: HashMap<String, JoyRouters> = HashMap()
-    let _handlerPool: ObjectPool<JoyRouteHandler>
+    //let _handlerPool: ObjectPool<JoyRouteHandler>
 
     init(config: JoyConfig) {
         this._config = config
-        this._handlerPool = ObjectPool({ => JoyRouteHandler(config) }, resetFunc: JoyRouteHandler.reset)
+        //this._handlerPool = ObjectPool({ => JoyRouteHandler(config) }, resetFunc: JoyRouteHandler.reset)
     }
 
     public func register(_: String, _: HttpRequestHandler): Unit {
@@ -162,13 +162,13 @@ class TreeRouteDistributor <: HttpRequestDistributor & HttpRequestHandler {
     }
 
     public func handle(ctx: HttpContext) {
-        let handler = _handlerPool.get()
-        try {
+        let handler = JoyRouteHandler(_config)
+        //try {
             lookup(ctx.request, handler)
             handler.handle(ctx)
-        } finally {
-            _handlerPool.put(handler)
-        }
+        //} finally {
+        //    _handlerPool.put(handler)
+        //}
     }
 
     private func lookup(req: HttpRequest, obj: JoyRouteHandler): Unit {
