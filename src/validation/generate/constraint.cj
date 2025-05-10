@@ -81,17 +81,17 @@ class FieldInfoCache {
         PARAMS.add(info)
     }
 
-    static func addCache(identifier: Token, inFunc: Bool, constraint: Tokens): Unit {
+    static func addCache(identifier: Token, inFunc: Bool, JoyConstraint: Tokens): Unit {
         let name = identifier.value
         for (fd in PARAMS) {
             if (fd.name() == name) {
-                fd.constraints.add(constraint)
+                fd.constraints.add(JoyConstraint)
                 return
             }
         }
 
         let info: FieldInfo = FieldInfo(identifier, inFunc)
-        info.constraints.add(constraint)
+        info.constraints.add(JoyConstraint)
         addCache(info)
     }
 
@@ -287,29 +287,29 @@ public func parseConstraint(catgory: ConstraintCatgory, input: Tokens): Unit {
 }
 
 public func parseConstraint(catgory: ConstraintCatgory, attr: ?Tokens, input: Tokens): Unit {
-    let constraint: ConstraintGenerator = createConstraintGenerator(catgory)
+    let JoyConstraint: ConstraintGenerator = createConstraintGenerator(catgory)
     if (let Some(a) <- attr) {
-        constraint.parseAttr(a)
+        JoyConstraint.parseAttr(a)
     }
 
     try {
         let varDecl: Decl = parseDecl(input)
         match (varDecl) {
-            case vd: VarDecl => FieldInfoCache.addCache(vd.identifier, false, constraint.toConstraint())
+            case vd: VarDecl => FieldInfoCache.addCache(vd.identifier, false, JoyConstraint.toConstraint())
             case _ =>
                 diagReport(DiagReportLevel.ERROR, input,
-                    "${constraint.marcroName} macro only using for the var field of struct or class", "")
-                throw Exception("${constraint.marcroName} macro only using for the var field of struct or class")
+                    "${JoyConstraint.marcroName} macro only using for the var field of struct or class", "")
+                throw Exception("${JoyConstraint.marcroName} macro only using for the var field of struct or class")
         }
     } catch (_: Exception) {
         try {
             let funcParam = FuncParam(input)
             println(funcParam.identifier.value)
-            FieldInfoCache.addCache(funcParam.identifier, true, constraint.toConstraint())
+            FieldInfoCache.addCache(funcParam.identifier, true, JoyConstraint.toConstraint())
         } catch (_: Exception) {
-            diagReport(DiagReportLevel.ERROR, input, "${constraint.marcroName} macro only using for the func paramter",
+            diagReport(DiagReportLevel.ERROR, input, "${JoyConstraint.marcroName} macro only using for the func paramter",
                 "")
-            throw Exception("${constraint.marcroName} macro only using for the func paramter")
+            throw Exception("${JoyConstraint.marcroName} macro only using for the func paramter")
         }
     }
 }

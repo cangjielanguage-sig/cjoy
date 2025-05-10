@@ -11,38 +11,38 @@
 package cjoy.validation.api
 
 import std.convert.Parsable
-import std.unicode.UnicodeStringExtension
 import std.collection.{HashMap, ArrayList}
 import std.time.DateTime
+import std.unicode.UnicodeStringExtension
 
-public interface Validatable {
-    func validate(field: String, nestedValid: Bool, constraints: Array<Constraint>): Unit
+public interface JoyValidatable {
+    func validate(field: String, nestedValid: Bool, constraints: Array<JoyConstraint>): Unit
 
     func validate(): Unit {
         validate("", false)
     }
 }
 
-extend String <: Validatable {
-    public func validate(field: String, nestedValid: Bool, constraints: Array<Constraint>): Unit {
+extend String <: JoyValidatable {
+    public func validate(field: String, nestedValid: Bool, constraints: Array<JoyConstraint>): Unit {
         for (condition in constraints) {
             match (condition) {
                 case c: LengthConstraint =>
                     if (this.size > c.min || this.size > c.max) {
-                        throw ValidationException(c.message, field, c)
+                        throw JoyValidationException(c.message, field, c)
                     }
                 case c: NotEmptyConstraint =>
                     if (this.isEmpty()) {
-                        throw ValidationException(c.message, field, c)
+                        throw JoyValidationException(c.message, field, c)
                     }
                 case c: NotBlankConstraint =>
                     let val = this.trim()
                     if (val.isEmpty()) {
-                        throw ValidationException(c.message, field, c)
+                        throw JoyValidationException(c.message, field, c)
                     }
                 case c: PattenConstraint =>
                     if (!c.regex.matches(this)) {
-                        throw ValidationException(c.message, field, c)
+                        throw JoyValidationException(c.message, field, c)
                     }
                 case _ => ()
             }
@@ -50,8 +50,8 @@ extend String <: Validatable {
     }
 }
 
-extend<T> Option<T> <: Validatable where T <: Validatable {
-    public func validate(field: String, nestedValid: Bool, constraints: Array<Constraint>): Unit {
+extend<T> Option<T> <: JoyValidatable where T <: JoyValidatable {
+    public func validate(field: String, nestedValid: Bool, constraints: Array<JoyConstraint>): Unit {
         match (this) {
             case Some(v) => v.validate(field, nestedValid, constraints)
             case _ => ()
@@ -59,90 +59,94 @@ extend<T> Option<T> <: Validatable where T <: Validatable {
     }
 }
 
-func validateNumber<T>(value: T, field: String, constraints: Array<Constraint>): Unit where T <: Parsable<T> & Comparable<T> {
+func validateNumber<T>(value: T, field: String, constraints: Array<JoyConstraint>): Unit where T <: Parsable<T> & Comparable<T> & ToString {
     for (condition in constraints) {
         match (condition) {
             case c: RangeConstraint =>
                 if (value < T.parse(c.min) || value > T.parse(c.max)) {
-                    throw ValidationException(c.message, field, c)
+                    throw JoyValidationException(c.message, field, c)
                 }
+             case c: PattenConstraint =>
+                    if (!c.regex.matches(value.toString())) {
+                        throw JoyValidationException(c.message, field, c)
+                    }
             case _ => ()
         }
     }
 }
 
-extend Int8 <: Validatable {
-    public func validate(field: String, nestedValid: Bool, constraints: Array<Constraint>): Unit {
+extend Int8 <: JoyValidatable {
+    public func validate(field: String, nestedValid: Bool, constraints: Array<JoyConstraint>): Unit {
         validateNumber(this, field, constraints)
     }
 }
 
-extend Int16 <: Validatable {
-    public func validate(field: String, nestedValid: Bool, constraints: Array<Constraint>): Unit {
+extend Int16 <: JoyValidatable {
+    public func validate(field: String, nestedValid: Bool, constraints: Array<JoyConstraint>): Unit {
         validateNumber(this, field, constraints)
     }
 }
 
-extend Int32 <: Validatable {
-    public func validate(field: String, nestedValid: Bool, constraints: Array<Constraint>): Unit {
+extend Int32 <: JoyValidatable {
+    public func validate(field: String, nestedValid: Bool, constraints: Array<JoyConstraint>): Unit {
         validateNumber(this, field, constraints)
     }
 }
 
-extend Int64 <: Validatable {
-    public func validate(field: String, nestedValid: Bool, constraints: Array<Constraint>): Unit {
+extend Int64 <: JoyValidatable {
+    public func validate(field: String, nestedValid: Bool, constraints: Array<JoyConstraint>): Unit {
         validateNumber(this, field, constraints)
     }
 }
 
-extend UInt8 <: Validatable {
-    public func validate(field: String, nestedValid: Bool, constraints: Array<Constraint>): Unit {
+extend UInt8 <: JoyValidatable {
+    public func validate(field: String, nestedValid: Bool, constraints: Array<JoyConstraint>): Unit {
         validateNumber(this, field, constraints)
     }
 }
 
-extend UInt16 <: Validatable {
-    public func validate(field: String, nestedValid: Bool, constraints: Array<Constraint>): Unit {
+extend UInt16 <: JoyValidatable {
+    public func validate(field: String, nestedValid: Bool, constraints: Array<JoyConstraint>): Unit {
         validateNumber(this, field, constraints)
     }
 }
 
-extend UInt32 <: Validatable {
-    public func validate(field: String, nestedValid: Bool, constraints: Array<Constraint>): Unit {
+extend UInt32 <: JoyValidatable {
+    public func validate(field: String, nestedValid: Bool, constraints: Array<JoyConstraint>): Unit {
         validateNumber(this, field, constraints)
     }
 }
 
-extend UInt64 <: Validatable {
-    public func validate(field: String, nestedValid: Bool, constraints: Array<Constraint>): Unit {
+extend UInt64 <: JoyValidatable {
+    public func validate(field: String, nestedValid: Bool, constraints: Array<JoyConstraint>): Unit {
         validateNumber(this, field, constraints)
     }
 }
 
-extend Float16 <: Validatable {
-    public func validate(field: String, nestedValid: Bool, constraints: Array<Constraint>): Unit {
+extend Float16 <: JoyValidatable {
+    public func validate(field: String, nestedValid: Bool, constraints: Array<JoyConstraint>): Unit {
         validateNumber(this, field, constraints)
     }
 }
 
-extend Float32 <: Validatable {
-    public func validate(field: String, nestedValid: Bool, constraints: Array<Constraint>): Unit {
+extend Float32 <: JoyValidatable {
+    public func validate(field: String, nestedValid: Bool, constraints: Array<JoyConstraint>): Unit {
         validateNumber(this, field, constraints)
     }
 }
 
-extend Float64 <: Validatable {
-    public func validate(field: String, nestedValid: Bool, constraints: Array<Constraint>): Unit {
+extend Float64 <: JoyValidatable {
+    public func validate(field: String, nestedValid: Bool, constraints: Array<JoyConstraint>): Unit {
         validateNumber(this, field, constraints)
     }
 }
 
-func validateCollection<T>(col: Collection<T>, field: String, nestedValid: Bool, constraints: Array<Constraint>): Unit {
+func validateCollection<T>(col: Collection<T>, field: String, nestedValid: Bool, constraints: Array<JoyConstraint>): Unit {
     for (condition in constraints) {
         match (condition) {
             case c: SizeConstraint =>
                 if (col.size < c.min || col.size > c.max) {
-                    throw ValidationException(c.message, field, c)
+                    throw JoyValidationException(c.message, field, c)
                 }
             case _ => ()
         }
@@ -152,7 +156,7 @@ func validateCollection<T>(col: Collection<T>, field: String, nestedValid: Bool,
         var idx = 0
         for (c in col) {
             match (c) {
-                case v: Validatable => v.validate("${field}.${idx}", nestedValid, constraints)
+                case v: JoyValidatable => v.validate("${field}.${idx}", nestedValid, constraints)
                 case _ => ()
             }
             idx++
@@ -160,32 +164,32 @@ func validateCollection<T>(col: Collection<T>, field: String, nestedValid: Bool,
     }
 }
 
-extend<T> Array<T> <: Validatable {
-    public func validate(field: String, nestedValid: Bool, constraints: Array<Constraint>): Unit {
+extend<T> Array<T> <: JoyValidatable {
+    public func validate(field: String, nestedValid: Bool, constraints: Array<JoyConstraint>): Unit {
         validateCollection(this, field, nestedValid, constraints)
     }
 }
 
-extend<T> ArrayList<T> <: Validatable {
-    public func validate(field: String, nestedValid: Bool, constraints: Array<Constraint>): Unit {
+extend<T> ArrayList<T> <: JoyValidatable {
+    public func validate(field: String, nestedValid: Bool, constraints: Array<JoyConstraint>): Unit {
         validateCollection(this, field, nestedValid, constraints)
     }
 }
 
-extend<K, V> HashMap<K, V> <: Validatable {
-    public func validate(field: String, nestedValid: Bool, constraints: Array<Constraint>): Unit {
+extend<K, V> HashMap<K, V> <: JoyValidatable {
+    public func validate(field: String, nestedValid: Bool, constraints: Array<JoyConstraint>): Unit {
         validateCollection(this.keys(), field, nestedValid, constraints)
         validateCollection(this.values(), field, nestedValid, constraints)
     }
 }
 
-extend DateTime <: Validatable {
-    public func validate(field: String, nestedValid: Bool, constraints: Array<Constraint>): Unit {
+extend DateTime <: JoyValidatable {
+    public func validate(field: String, nestedValid: Bool, constraints: Array<JoyConstraint>): Unit {
         for (condition in constraints) {
             match (condition) {
                 case c: DateTimeRangeConstraint =>
                     if (this < c.before || this > c.after) {
-                        throw ValidationException(c.message, field, c)
+                        throw JoyValidationException(c.message, field, c)
                     }
                 case _ => ()
             }

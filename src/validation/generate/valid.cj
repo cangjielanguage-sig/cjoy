@@ -33,7 +33,7 @@ public class ValidClassInfo {
             tokens += f.genValidateTokens()
         }
         quote(
-            public func validate(field: String, nestedValid: Bool, constraints: Array<Constraint>): Unit {
+            public func validate(field: String, nestedValid: Bool, constraints: Array<JoyConstraint>): Unit {
                 $(tokens)
             }
         )
@@ -53,7 +53,7 @@ public class ValidClassInfo {
         FieldInfoCache.clear()
 
         quote(
-            extend $(classInfo.classId) <: Validatable {
+            extend $(classInfo.classId) <: JoyValidatable {
                 $(validTokens)
             }
         )

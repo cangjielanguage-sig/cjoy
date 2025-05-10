@@ -12,17 +12,18 @@ package cjoy.validation.api
 
 import std.regex.Regex
 import std.time.DateTime
+import std.collection.HashMap
 
-public interface Constraint {}
+public interface JoyConstraint {}
 
 /**
  * for collection
  */
-public class SizeConstraint <: Constraint {
+public class SizeConstraint <: JoyConstraint {
     public let message: String
     public SizeConstraint(public let min: Int, public let max: Int, let msg: String) {
         if (msg.isEmpty()) {
-            this.message = "this constraint of value is size[${min}, ${max}]"
+            this.message = "this JoyConstraint of value is size[${min}, ${max}]"
         } else {
             this.message = msg.replace("{min}", min.toString()).replace("{max}", max.toString())
         }
@@ -32,11 +33,11 @@ public class SizeConstraint <: Constraint {
 /**
  * for string
  */
-public class LengthConstraint <: Constraint {
+public class LengthConstraint <: JoyConstraint {
     public let message: String
     public LengthConstraint(public let min: Int, public let max: Int, let msg: String) {
         if (msg.isEmpty()) {
-            this.message = "this constraint of value is Length[${min}, ${max}]"
+            this.message = "this JoyConstraint of value is Length[${min}, ${max}]"
         } else {
             this.message = msg.replace("{min}", min.toString()).replace("{max}", max.toString())
         }
@@ -46,11 +47,11 @@ public class LengthConstraint <: Constraint {
 /**
  * for string
  */
-public class NotEmptyConstraint <: Constraint {
+public class NotEmptyConstraint <: JoyConstraint {
     public let message: String
     public NotEmptyConstraint(let msg: String) {
         if (msg.isEmpty()) {
-            this.message = "this constraint of value is NOT EMPTY"
+            this.message = "this JoyConstraint of value is NOT EMPTY"
         } else {
             this.message = msg
         }
@@ -60,11 +61,11 @@ public class NotEmptyConstraint <: Constraint {
 /**
  * for string
  */
-public class NotBlankConstraint <: Constraint {
+public class NotBlankConstraint <: JoyConstraint {
     public let message: String
     public NotBlankConstraint(let msg: String) {
         if (msg.isEmpty()) {
-            this.message = "this constraint of value is NOT BLANK"
+            this.message = "this JoyConstraint of value is NOT BLANK"
         } else {
             this.message = msg
         }
@@ -74,11 +75,11 @@ public class NotBlankConstraint <: Constraint {
 /**
  * for number
  */
-public class RangeConstraint <: Constraint {
+public class RangeConstraint <: JoyConstraint {
     public let message: String
     public RangeConstraint(public let min: String, public let max: String, let msg: String) {
         if (msg.isEmpty()) {
-            this.message = "this constraint of value is rang[${min}, ${max}]"
+            this.message = "this JoyConstraint of value is rang[${min}, ${max}]"
         } else {
             this.message = msg.replace("{min}", min.toString()).replace("{max}", max.toString())
         }
@@ -88,13 +89,13 @@ public class RangeConstraint <: Constraint {
 /**
  * for string
  */
-public class PattenConstraint <: Constraint {
+public class PattenConstraint <: JoyConstraint {
     public let message: String
     public let regex: Regex
     public PattenConstraint(let regexStr: String, let msg: String) {
         this.regex = Regex(regexStr)
         if (msg.isEmpty()) {
-            this.message = "this constraint of value is pattern[${regexStr}]"
+            this.message = "this JoyConstraint of value is pattern[${regexStr}]"
         } else {
             this.message = msg.replace("{regex}", regexStr)
         }
@@ -104,17 +105,24 @@ public class PattenConstraint <: Constraint {
 /**
  * for datetime
  */
-public class DateTimeRangeConstraint <: Constraint {
+public class DateTimeRangeConstraint <: JoyConstraint {
     public DateTimeRangeConstraint(public let before: DateTime, public let after: DateTime, public let message: String) {}
 }
 
-public class ValidationException <: Exception {
+public class JoyValidationException <: Exception {
     public let field: String
-    public let condition: Constraint
+    public let condition: JoyConstraint
 
-    public init(message: String, field: String, condition: Constraint) {
+    public init(message: String, field: String, condition: JoyConstraint) {
         super(message)
         this.field = field
         this.condition = condition
+    }
+
+    public func toMap(): HashMap<String, String> {
+        let res: HashMap<String, String> = HashMap()
+        res.add("field", field)
+        res.add("errMsg", message)
+        res
     }
 }

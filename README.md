@@ -32,15 +32,6 @@ a fast，lightweight and joy web framework.<br/>
 
 推荐在Linux(或WSL)，MacOS中运行仓颉。
 
-### 添加对本项目的依赖
-
-在您的项目cjpm.toml文件增加如下：
-
-```
-[dependencies]
-  cjoy = { git = "https://gitcode.com/Cangjie-SIG/cjoy.git", branch = "main" }
-```
-
 ### 运行本项目的示例
 
 您可以先 `git clone https://gitcode.com/Cangjie-SIG/cjoy.git` 到您本地。
@@ -52,6 +43,16 @@ cjpm test
 cjpm build 
 cjpm run --name cjoy.examples.tls
 ```
+
+### 添加对本项目的依赖
+
+在您的项目cjpm.toml文件增加如下：
+
+```
+[dependencies]
+  cjoy = { git = "https://gitcode.com/Cangjie-SIG/cjoy.git", branch = "main" }
+```
+
 
 ## 快速了解
 
@@ -96,6 +97,7 @@ class UserInfo {
     var gender: Int = 0
 }
 
+// 处理 GET /users/{name}
 @Get[path = "/users/{name}", produce="json"]
 func getUser(@PathParam name: String): (UInt16, UserInfo) {
     let usr = UserInfo()
@@ -105,6 +107,7 @@ func getUser(@PathParam name: String): (UInt16, UserInfo) {
     (200, usr)
 }
 
+// 处理 GET /users
 @Get[path = "/users", produce="json"]
 func listUsers(@QueryParam[name = id, default = 00009527] id: String): Array<UserInfo> {
     let usr = UserInfo()
@@ -137,7 +140,8 @@ main(): Int64 {
 - 基于Context的上下文管理，支持快速获取请求参数与构建Json/Text响应；
 - 基于编译宏的Json序列化与反序列，支持对请求与响应消息的Json直接绑定映射;
 - 基于编译宏支持自动注册与参数注入请求处理函数与中间件函数;
-- 支持文件下载与上传，WebSocket, SSE等内置能力;
+- 基于编译宏支持对请求参数校验；
+- 支持文件下载与上传，WebSocket，SSE等内置能力;
 
 应用场景 ：
 
@@ -177,9 +181,9 @@ main(): Int64 {
   - 如`/{page:[0-9]+}-delete`，可以匹配`/post/1-delete`或`/post/2-delete`。
 - catchAll路由：捕获所有字段通配符匹配，路径中字段以`*`开头，可能匹配路径中多段。
   - 如`/images/*`： 
-    - 可以匹配`/images/abc`，参数`*`值为`abc`; 
-    - 也可以匹配`/images/abc/def`，参数`*`值为`abc/def`; 
-    - 也可匹配只字符串`/images/`; 参数`*`值为``。
+    - 可以匹配`/images/abc`，参数`*`的值为`abc`; 
+    - 也可以匹配`/images/abc/def`，参数`*`的值为`abc/def`; 
+    - 也可以匹配`/images/`; 参数`*`的值为空字符串。
 
 #### 路由优先级
 
@@ -232,7 +236,7 @@ JoyRouters接口的group方法支持对path进行分组，分组支持多级，�
  - 有相同的path前辍；
  - 使用相同的中间件，并继承父一级Path注册的中间件；
  - 调用`router.group("/v1")`：
-   - 会默认自动注册三个Path: `/v1`,  `/v1/`,  `/v1/*`的NotFoundHandler，Method为"GET", "POST", "DELETE", "PUT", "PATCH", "HEAD", "OPTIONS"，以便让其Group的中间件可拦截此Group的所有URL；
+   - 会默认自动注册三个Path: `/v1`,  `/v1/`,  `/v1/*`的`NotFoundHandler`，Method为"GET", "POST", "DELETE", "PUT", "PATCH", "HEAD", "OPTIONS"，以便让其Group的中间件可拦截此Group的所有URL；
    - 可以再注册 `v1.get("", ...)`  `v1.get("/", ...)`  `v1.get("/*", ...)` 覆盖上面的默认Handler；
 
 ### Handler
@@ -325,58 +329,63 @@ func testGet(c: JoyContext): (UInt16, String) {
 
 Handler注册宏，作用在函数上：
 
- - `@Get[path="/abc/{id}", produce=json]`
- - `@Post[path="/abc/{name:[a-z]{3,4}}", produce=json]`
- - `@Put[path="/abc/def", produce=json]`
- - `@Delete[path="/abc", produce=json]`
- - `@Patch[path="/abc", produce=json]`
- - `@Head[path="/abc", produce=json]`
- - `@Handler[path="/abc", methods="PUT,POST", produce=json]`
+|宏|属性参数|说明|
+|---|---|---|
+|`@Get`|path="/abc/{id}",produce=json|GET请求。|
+|`@Post`|path="/abc/{name:[a-z]{3,4}}",produce=json|POST请求。|
+|`@Put`|path="/abc/def",produce=json|PUT请求。|
+|`@Delete`|path="/abc",produce=json|DELETE请求。|
+|`@Patch`|path="/abc",produce=json|PATCH请求。|
+|`@Head`|path="/abc",produce=json|HEAD请求。|
+|`@Handler`|path="/abc",produce=json，methods="PUT,POST"|通过methods指定METHOD请求。|
 
-以上宏属性说明：
+|宏属性参数|默认值|是否可选|说明|
+|---|---|---|---|
+|`path`||否|指定handler处理的URL全路由，如果存在对应Group，框架会自动查找，注册到对应的Group上|
+|`produce`|text|是|值为text/json，只有响应返回json时指定，且方法返回值必须实现JsonSerializable接口，默认是返回文本Body|
+|`methods`||是|只有在Handler宏上使用，注册handler的Method列表|
 
- - `path`：必选，指定handler处理的URL全路由，如果存在对应Group，框架会自动查找，注册到对应的Group上；
- - `produce`：可选，只有响应返回json时指定，且方法返回值必须实现JsonSerializable接口，默认是返回文本Body；
- - `methods`: 只有在Handler宏上使用，注册handler的Method列表；
-  
 备注：
 
   - `@Get[path="/users/{id}"]`，如果存在`@Middleware[groups="/users"]`，则它会创建`Group /users`，则此GET Handler会注册到`Group /users`下
   
 函数参数展开宏，作用在函数入参上：
-  
-  - `@PathParam[name=id, timeformat="HH:mm:ss MM/dd/yyyy OO"]`：获取param路由的参数值，如`/abc/{id}`，当方法参数名与URL的提取参数名不一样时指定name属性，属性都可选；
-  - `@QueryParam[name=id，default="abc", timeformat="HH:mm:ss MM/dd/yyyy OO"]`：获取URL Query参数值，属性都可选；
-  - `@PostFormParam[name=id，default="abc", timeformat="HH:mm:ss MM/dd/yyyy OO"]`：获取PostForm参数值，属性都可选；
-  - `@HeaderParam[name=id，default="abc", timeformat="HH:mm:ss MM/dd/yyyy OO"]`: 获取Header参数值，属性都可选；
-  - `@ContextParam[name=id]`: 获取Context参数值，属性都可选；
-  - `@CookieParam[name=id]`: 获取Cookie参数值，属性都可选；
-  - `@BodyParam`: 获取Body参数值；
-  - `@QueryBindParam`: URL Query多个参数绑定到对象；
-  - `@PostFormBindParam`: PostForm多个参数绑定到对象；
-  - `@HeaderBindParam`: Header多个参数绑定到对象；
 
-以上宏属性参数说明：
+|宏|属性参数|说明|
+|---|---|---|
+|`@PathParam`|name=id, timeformat="HH:mm:ss MM/dd/yyyy OO"|获取param路由的参数值，如`/abc/{id}`，当方法参数名与URL的提取参数名不一样时指定name属性，属性都可选。|
+|`@QueryParam`|name=id，default="abc", timeformat="HH:mm:ss MM/dd/yyyy OO"|获取URL Query参数值，属性都可选。|
+|`@PostFormParam`|name=id，default="abc", timeformat="HH:mm:ss MM/dd/yyyy OO"获取PostForm参数值，属性都可选。|
+|`@HeaderParam`|name=id，default="abc", timeformat="HH:mm:ss MM/dd/yyyy OO"|获取Header参数值，属性都可选。|
+|`@ContextParam`|name=id|获取Context参数值，属性都可选。|
+|`@CookieParam`|name=id|获取Cookie参数值，属性都可选。|
+|`@BodyParam`||获取Body参数值。|
+|`@QueryBindParam`||URL Query多个参数绑定到对象。|
+|`@PostFormBindParam`||PostForm多个参数绑定到对象。|
+|`@HeaderBindParam`||Header多个参数绑定到对象。|
 
-  - `name`: 映射的参数名称，可选，不指定取方法参数名称
-  - `default`: 默认值，可选
-  - `timeformat`: 当方法入参是`DateTime`，`?DateTime`时，指定转换的格式，可选
+以上宏属性参数说明： 
+
+|宏属性参数|是否可选|说明|
+|---|---|---|
+|`name`|是|映射的参数名称，指定取方法参数名称。|
+|`default`|是|获取不到时的默认值。|
+|`timeformat`|是|当方法入参是`DateTime`，`?DateTime`时，指定转换的格式。|
 
 支持的函数入参类型：
 
-  - `String` ：QueryParam, PostFormParam, HeaderParam, CookieParam, BodyParam宏标注的参数；
-  - `?String`：同上；
-  - `基本类型`：如Int，PathParam，QueryParam, PostFormParam, HeaderParam宏标注的参数，String转换对应的基本类型；
-  - `DateTime`：QueryParam, PostFormParam, HeaderParam宏标注的参数，String转换Datetime；
-  - `?DateTime`: 同上；
-  - `ArrayList<String>`：QueryParam, PostFormParam, HeaderParam宏标注的参数有多个值时；
-  - `Array<String>` ：同上；
-  - `任一类型`：ContextParam宏标注的参数；
-  - `T <: JsonDeserializable`: BodyParam宏标注的参数；
-  - `?T where T <: JsonDeserializable`: 同上；
-  - `JoyContext`: 不需要宏标注；
-  - `T <: JoyBindable`: QueryBindParam, PostFormBindParam, HeaderBindParam宏标注的参数，参见绑定参数章节；
-  - `?T where T <: JoyBindable`: 同上；
+|参数类型|绑定的宏|说明|
+|---|---|---|
+|`String`, `?String`|PathParam，QueryParam, PostFormParam, HeaderParam, CookieParam, BodyParam||
+|`基本类型`, `?基本类型`|PathParam，QueryParam, PostFormParam, HeaderParam, CookieParam|如Int,String转换对应的基本类型|
+|`DateTime`, `?DateTime`|PathParam，QueryParam, PostFormParam, HeaderParam|String转换Datetime|
+|`ArrayList<String>`|QueryParam, PostFormParam, HeaderParam|宏标注的参数有多个值时|
+|`Array<String>`|QueryParam, PostFormParam, HeaderParam|宏标注的参数有多个值时|
+|`任一类型`|ContextParam||
+|`T <: JsonDeserializable`，`?T where T <: JsonDeserializable`|BodyParam|Json Body|
+|`T <: JoyBindable`, `?T where T <: JoyBindable`|QueryBindParam, PostFormBindParam, HeaderBindParam|参见绑定参数章节|
+|`JoyContext`||不需要宏标注|
+
 
 不支持的入参名称：
 
@@ -384,17 +393,19 @@ Handler注册宏，作用在函数上：
 
 支持的函数返回类型：
 
-  - `String`：响应为`Content-Type=plain/text`，`StatusCode=200`；
-  - `(UInt16, String)`：响应为`Content-Type=plain/text`，`StatusCode=${statusCode}`；
-  - `(String, UInt16)`：同上；
-  - `T where T <: JsonSerializable` ：响应为`Content-Type=application/json`，同时Handler需要指定`produce=json`，`StatusCode=200`；
-  - `(UInt16, T where T <: JsonSerializable)`：响应为`Content-Type=application/json`，响应的状态码statusCode，同时Handler需要指定`produce=json`，`StatusCode=${statusCode}`；
-  - `(T where T <: JsonSerializable, UInt16)`： 同上；
-  - `(UInt16, T where T <: ToString)`：响应为`Content-Type=plain/text`，`StatusCode=${statusCode}`；
-  - `(T where T <: ToString, UInt16)`：同上；
-  - `UInt16`: 响应`StatusCode=${statusCode}`；
-  - `Unit`: 无返回类型，响应`StatusCode=200`；
-  - ` `: 无返回类型，响应`StatusCode=200`；
+|返回值个数|类型|说明|
+|---|---|---|
+|0||无返回类型，响应`StatusCode=200`|
+|1|`String`|响应为`Content-Type=plain/text`，`StatusCode=200`|
+|1|`T where T <: JsonSerializable`|响应为`Content-Type=application/json`，同时Handler需要指定`produce=json`，`StatusCode=200`|
+|1|`UInt16`|响应`StatusCode=${statusCode}`|
+|1|`Unit`|响应`StatusCode=200`|
+|2|`(UInt16, String)`|响应为`Content-Type=plain/text`，`StatusCode=${statusCode}`|
+|2|`(String, UInt16)`|同上|
+|2|`(UInt16, T where T <: JsonSerializable)`|响应为`Content-Type=application/json`，响应的状态码statusCode，同时Handler需要指定`produce=json`，`StatusCode=${statusCode}`|
+|2|`(T where T <: JsonSerializable, UInt16)`|同上|
+|2|`(UInt16, T where T <: ToString)`|响应为`Content-Type=plain/text`，`StatusCode=${statusCode}`|
+|2|`(T where T <: ToString, UInt16)`|同上|
 
 #### Middleware宏
 
@@ -407,11 +418,9 @@ func testMiddleware(ctx: JoyContext, chain: JoyRequestHandlerChain): Unit {
 
 Middleware注册宏，作用在函数上：
 
-- `@Middleware[groups="/a,/b"]`
-
-以上宏属性说明：
-
-- `groups`: 指定多个Group的全路径。如果路径是`/a/b/c`，会自动生成`let g = group("/a").group("/b").group("/c")`，但Middleware只会注册到`Group /a/b/c`，如果不带groups属性，则Middleware注册到根Group。
+|宏|属性参数|说明|
+|---|---|---|
+|`@Middleware`|groups="/a,/b"|指定多个Group的全路径。<br/>如果路径是`/a/b/c`，会自动生成`let g = group("/a").group("/b").group("/c")`，<br/>但Middleware只会注册到`Group /a/b/c`，如果不带groups属性，则Middleware注册到根Group。|
 
 #### 注册
 
@@ -431,6 +440,8 @@ joy.run("127.0.0.1", 18881)
 CJoy提供宏与API支持对Query，PostForm，Header多个参数绑定到一个对象上。
 
 ```
+import cjoy.bind.*
+
 @Bind
 public struct BindParam {
     let str: String // 宏展开时会生成构造函数对其赋值，也可@BindField[default = abc] 指定默认值
@@ -450,11 +461,18 @@ router.get("/bind", {ctx: JoyContext =>
 })
 ```
 
-- `@Bind`: 作用于类与结构体上，支持对Query参数的绑定映射
-- `@BindField`: 作用类与结构体的成员变量上，变量需要指定类型，宏`BindField`有如下属性：
-  - `name`：指定绑定映射的字段名称；
-  - `default`：当参数不存在时的默认值，可选；
-  - `timeformat`：指定DateTime字段解释格式，不指定默认为DateTime.parse方法默认格式；
+|宏|属性参数|说明|
+|---|---|---|
+|`@Bind`||作用于类与结构体上，支持对Query参数的绑定映射。|
+|`@BindField`|name=xx,default=xxx,timeformat="..."| 作用类与结构体的成员变量上，变量需要指定类型。|
+
+以上宏的属性参数说明：
+
+|宏属性参数|默认值|是否可选|说明|
+|---|---|---|---|
+|`name`||是|指定绑定映射的字段名称，不指定为成员变量名|
+|`default`||是|当参数不存在时的默认值|
+|`timeformat`|DateTime.toString/parse方法默认格式|是|指定DateTime字段序列化的格式|
 
 宏展开编译之后，此类与结构体会实现`cjoy.JoyBindable`接口，并自动生成所有成员变量带命名参数的构造方法。因此let字段未指定默认值时，会在构造方法采用系统默认值（如Int为0， String为"")。
 
@@ -488,12 +506,19 @@ class UserInfo {
 }
 ```
 
-- `@Json`：作用于类与结构体上，标注其自动生成Json序列化与反序列化函数，类与结构体需要无参数的构建函数。
-- `@JsonField`：作用类与结构体的成员变量上，变量需要采用var声明并要指定类型，宏`JsonField`有如下属性：
-  - `name`：指定Json的字段名称，可选，不指定为成员变量名；
-  - `omitempty`：值true/false，指定生成Json字符串时是否忽略空字符串或Option的None值，默认为false；
-  - `ignore`：值true/false，指定是否忽略此字段，不指定默认为false；
-  - `timeformat`：指定DateTime字段序列化的格式，不指定默认为DateTime.toString/parse方法默认格式。
+|宏|属性参数|说明|
+|---|---|---|
+|`@Json`||作用于类与结构体上，标注其自动生成Json序列化与反序列化函数，类与结构体需要无参数的构建函数。|
+|`@JsonField`|name=xx,omitempty=true,ignore=false,timeformat="..."|作用类与结构体的成员变量上，变量需要采用var声明并要指定类型。|
+
+以上宏的属性参数说明：
+
+|宏属性参数|默认值|是否可选|说明|
+|---|---|---|---|
+|`name`||是|指定Json的字段名称，不指定为成员变量名|
+|`omitempty`|false|是|值true/false，指定生成Json字符串时是否忽略空字符串或Option的None值|
+|`ignore`|false|是|值true/false，指定是否忽略此字段|
+|`timeformat`|DateTime.toString/parse方法默认格式|是|指定DateTime字段序列化的格式|
 
 宏展开编译之后，此类与结构体会实现encoding.json.stream包下JsonSerializable与JsonDeserializable接口。
 
@@ -503,6 +528,77 @@ JoyContext提供两个函数支持对HTTP Body的绑定与映射：
  - `json`: 序列化类与结构体对象序列化并设置Body内容
 
 使用示例：[examples/rest](src/examples/rest/main.cj)
+
+### 校验
+
+CJoy 内置校验框架，支持通过宏对类，结构，函数参数进行校验。
+
+#### 类与结构体
+
+```
+import cjoy.validation.*
+import cjoy.json.*
+
+@Valid
+@Json
+public struct Data {
+    @Length[min = 0, max = 10, msg = "failure message tip"]
+    @NotBlank
+    @NotEmpty
+    var str: String = "str"
+
+    @NumberRange[min = 0, max = 123456789]
+    var u32: UInt32 = 12345678
+
+    @Size[max = 6]
+    @NestedValid
+    @NumberRange[min = 0, max = 123456789]
+    var arr: Array<Int32> = [1, 2, 3, 4]
+
+    @DateTimeRange[before = "DateTime.now().addDays(1)"]
+    var data: DateTime = DateTime.now()
+
+    @NestedValid
+    var nestedData: NestedData = NestedData()
+}
+```
+
+- 宏展开之后，会自动实现`JoyValidatable`接口，可以调用其`validate`方法进行对成员属性校验，若校验未通过，则抛出`ValidationException`异常。
+- 宏`@Valid`可以与`@Json`,`@Bind`一起使用。
+
+#### 函数参数
+
+```
+@Validated
+func test(@Size[max = 6] arrparam: Array<Int32>): Unit {
+}
+```
+
+宏展开之后会修改函数的实现，在最前面对宏标注的参数进行检查。
+
+```
+func test( arrparam: Array<Int32>): Unit {
+    // 自动插入代码
+    arrparam.validate("", false, SizeConstraint(0, 6, ""))
+}
+```
+
+**注：** 目前受仓颉宏限制，不支持一个函数参数使用多个宏标注。函数参数校验 **仅为实验性探索**。参见Issue：[【需求】函数的参数支持多个宏标注](https://gitcode.com/Cangjie/UsersForum/issues/1924)
+
+#### 宏说明
+
+|宏|属性参数|说明|
+|---|---|---|
+|`@Size`|min=0, max=100, msg="..."|对Collection对象的Size进行校验|
+|`@Length`|min=0, max=100, msg"..."|对字符串对象的长度进行校验|
+|`@NumberRange`|min=0, max=100, msg"..."|对数字范围进行校验|
+|`@NotEmpty`|msg="..."|对字符串对象非空进行校验|
+|`@NotBlank`|msg="..."|对字符串对象非空白进行校验，先trim再检查|
+|`@Patten`|regex="...", msg="..."|对字符串，数字正则检查|
+|`@DateTimeRange`|before="...", after="...", msg="..."|对DateTime范围进行校验，before与before支持写表达式，要求值为DateTime|
+|`@Valid`||作用于类或结构体，生成代码实现`JoyValidatable`接口|
+|`@NestedValid`||作用于类或结构体的成员变量，表示对此成员类与结构嵌套校验，如果是HashMap，Array, ArrayList，则会对其容器内元素校验，校验规则共用此成员变量的宏标注|
+|`@Validated`||作用于函数上，生成代码会修改函数体增加调用参数的`validate`方法|
 
 ### 分块传输
 
