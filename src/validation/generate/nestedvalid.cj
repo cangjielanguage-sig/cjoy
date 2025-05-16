@@ -19,18 +19,16 @@ public func parseNestedValid(input: Tokens): Unit {
         match (varDecl) {
             case vd: VarDecl => FieldInfoCache.setNestedValid(vd.identifier, false)
             case _ =>
-                diagReport(DiagReportLevel.ERROR, input, "NestedValid macro only using for the var field of struct or class",
-                    "")
+                diagReport(DiagReportLevel.ERROR, input,
+                    "NestedValid macro only using for the var field of struct or class", "")
                 throw Exception("NestedValid macro only using for the var field of struct or class")
         }
-    } catch (_ : Exception) {
+    } catch (_: Exception) {
         try {
             let funcParam = FuncParam(input)
             FieldInfoCache.setNestedValid(funcParam.identifier, true)
         } catch (ex: Exception) {
-            ex.printStackTrace()
-            diagReport(DiagReportLevel.ERROR, input,
-                "NestedValid macro only using for the func paramter", ex.message)
+            diagReport(DiagReportLevel.ERROR, input, "NestedValid macro only using for the func paramter", ex.message)
             throw Exception("NestedValid macro only using for the func paramter")
         }
     }

@@ -11,7 +11,9 @@
 package cjoy.json.utils
 
 import std.io.ByteBuffer
-import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonReader, JsonWriter}
+import std.collection.{ArrayList, HashMap}
+import std.convert.Parsable
+import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonReader, JsonWriter, JsonToken}
 
 /**
  * json util tool
@@ -20,7 +22,7 @@ public class JsonTool {
     /**
      * Deserialize the json string to T
      *
-     * @param jsonStr the json string
+     * @param jsonStr: the json string
      * @return T the object of T
      */
     public static func fromJson<T>(jsonStr: String): T where T <: JsonDeserializable<T> {
@@ -33,8 +35,8 @@ public class JsonTool {
     /**
      * serialize the object of T to json string
      *
-     * @param val the object of T
-     * @param indent output indent using '\t'
+     * @param val: the object of T
+     * @param indent: output indent using '\t'
      * @return String the json string
      */
     public static func toJson<T>(val: T, indent!: Bool = false): String where T <: JsonSerializable {
@@ -46,5 +48,65 @@ public class JsonTool {
         writer.writeValue(val)
         writer.flush()
         String.fromUtf8(stream.bytes())
+    }
+
+    /**
+     * deserialize json string to object
+     *
+     * @param jsonStr: the json string
+     * @return ?Any the object
+     */
+    public static func fromJsonToAny(jsonStr: String): Any {
+        var buffer = ByteBuffer()
+        unsafe { buffer.write(jsonStr.rawData()) }
+        let reader = JsonReader(buffer)
+        return fromJsonToAny(reader)
+    }
+
+    /**
+     * deserialize json string to object
+     *
+     * @param reader: the json reader
+     * @return ?Any the object
+     */
+    public static func fromJsonToAny(reader: JsonReader): Any {
+        while (let Some(v) <- reader.peek()) {
+            match (v) {
+                case BeginObject =>
+                    reader.startObject()
+                    let map: HashMap<String, Any> = HashMap()
+                    while (reader.peek() != EndObject) {
+                        let name = reader.readName()
+                        let value = JsonTool.fromJsonToAny(reader)
+                        map.add(name, value)
+                    }
+                    reader.endObject()
+                    return map
+                case BeginArray =>
+                    reader.startArray()
+                    let list: ArrayList<Any> = ArrayList()
+                    while (reader.peek() != EndArray) {
+                        let value = JsonTool.fromJsonToAny(reader)
+                        list.add(value)
+                    }
+                    reader.endArray()
+                    return list
+                case JsonBool =>
+                    return reader.readValue<Bool>()
+                case JsonString =>
+                    return reader.readValue<String>()
+                case JsonNumber =>
+                    let value = reader.readValue<String>()
+                    if (value.indexOf(b'.').isSome()) {
+                        return Float64.parse(value)
+                    } else {
+                        return Int64.parse(value)
+                    }
+                case JsonNull =>
+                    reader.readValue<String>()
+                    return Option<Any>.None
+                case _ => throw Exception("the token is invalid")
+            }
+        }
     }
 }

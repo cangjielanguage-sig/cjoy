@@ -66,10 +66,10 @@ func validateNumber<T>(value: T, field: String, constraints: Array<JoyConstraint
                 if (value < T.parse(c.min) || value > T.parse(c.max)) {
                     throw JoyValidationException(c.message, field, c)
                 }
-             case c: PattenConstraint =>
-                    if (!c.regex.matches(value.toString())) {
-                        throw JoyValidationException(c.message, field, c)
-                    }
+            case c: PattenConstraint =>
+                if (!c.regex.matches(value.toString())) {
+                    throw JoyValidationException(c.message, field, c)
+                }
             case _ => ()
         }
     }

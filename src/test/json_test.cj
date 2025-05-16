@@ -12,6 +12,7 @@ package cjoy.test
 
 import cjoy.json.*
 import std.collection.*
+import std.deriving.Derive
 import std.unittest.*
 import std.unittest.testmacro.*
 
@@ -122,6 +123,13 @@ public class DataNested2 {
     var list: ArrayList<DataClass> = ArrayList<DataClass>()
 
     var map: HashMap<String, DataClass> = HashMap<String, DataClass>()
+}
+
+@Json
+public class DataAny {
+    var a: Any = 1
+    var b: Any = 2
+    var c: Any = HashMap<String, Any>()
 }
 
 @Test
@@ -263,4 +271,21 @@ public class JsonTestCaseSuit {
         @Assert(dc.height, 2)
     }
 
+    @TestCase
+    public func testToAny1(): Unit {
+        let str = ###"{"a": 1, "b": 2, "c": {"c1": "c1v", "c2": 1.1}, "d":[{"d1": true, "d2": null},{"d1": false, "d2": "d2v"}]}"###
+        let ts = JsonTool.fromJsonToAny(str)
+        match (ts) {
+            case m: HashMap<String, Any> =>  @Assert(4, m.size )
+            case _ => @Fail("deserialize failed")
+        }
+    }
+
+    @TestCase
+    public func testToAny2(): Unit {
+        let str = ###"{"a": 1, "b": 2, "c": {"c1": "c1v", "c2": 1.1}, "d":[{"d1": true, "d2": null},{"d1": false, "d2": "d2v"}]}"###
+        let dc = JsonTool.fromJson<DataAny>(str)
+        @Assert((dc.a as Int64).getOrThrow(), 1)
+        @Assert((dc.b as Int64).getOrThrow(), 2)        
+    }
 }

@@ -33,6 +33,7 @@ class JsonInfoCache {
             case "Option" | "?" => OptionJsonFieldGenerator(vd, fieldInfo)
             case "Rune" => RuneJsonFieldGenerator(vd, fieldInfo)
             case "DateTime" => DateTimeJsonFieldGenerator(vd, fieldInfo)
+            case "Any" => AnyJsonFieldGenerator(vd, fieldInfo)
             case _ => JsonFieldGenerator(vd, fieldInfo)
         }
     }

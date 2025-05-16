@@ -304,7 +304,6 @@ public func parseConstraint(catgory: ConstraintCatgory, attr: ?Tokens, input: To
     } catch (_: Exception) {
         try {
             let funcParam = FuncParam(input)
-            println(funcParam.identifier.value)
             FieldInfoCache.addCache(funcParam.identifier, true, JoyConstraint.toConstraint())
         } catch (_: Exception) {
             diagReport(DiagReportLevel.ERROR, input, "${JoyConstraint.marcroName} macro only using for the func paramter",
