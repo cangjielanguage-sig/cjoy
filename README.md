@@ -238,13 +238,19 @@ JoyRouters接口的group方法支持对path进行分组，分组支持多级，�
  - 调用`router.group("/v1")`：
    - 会默认自动注册三个Path: `/v1`,  `/v1/`,  `/v1/*`的`NotFoundHandler`，Method为"GET", "POST", "DELETE", "PUT", "PATCH", "HEAD", "OPTIONS"，以便让其Group的中间件可拦截此Group的所有URL；
    - 可以再注册 `v1.get("", ...)`  `v1.get("/", ...)`  `v1.get("/*", ...)` 覆盖上面的默认Handler；
+  
 
-### Handler
+JoyRouters定义参见  [route.cj](src/framework/route.cj) 。
 
-CJoy支持两种请求处理Handler实现：
+### 请求处理
 
-  - 实现JoyRequestHandler接口；
-  - 使用Lambda表达式函数；
+#### Handler
+
+CJoy支持两种请求处理Handler实现。
+
+##### 实现接口
+
+JoyRequestHandler定义参见  [handler.cj](src/framework/handler.cj) 。
 
 ```
 // 实现JoyRequestHandler
@@ -255,7 +261,11 @@ class UserHandler <: JoyRequestHandler {
     }
 }
 router.get("/{name}", UserHandler())
+```
 
+##### Lambda表达式函数
+
+```
 // 直接采用Lambda表达式函数
 router.get("/{name}", {ctx: JoyContext => 
 	let name = ctx.getParam("name").getOrDefault({=>"no name"})
@@ -263,7 +273,28 @@ router.get("/{name}", {ctx: JoyContext =>
 })
 ```
 
-### Middleware
+##### 处理上下文
+
+Handler的入参JoyContext提供对上下文支持Http获取与回响应处理，主要API如下，请多的API请参见源码 [context.cj](src/framework/context.cj)  。
+
+|函数|说明|
+|---|---|
+|getCtxParm|获取上下文参数，如在Middleware中设置上下文信息|
+|getParam|获取URL Path上的参数|
+|getQuery|获取URL QueryString上的参数|
+|getPostForm|获取PostForm的参数|
+|getHeader|获取Header|
+|getCookie|获取Cookie|
+|bindJsonBody|获取Body并绑定为Json对象|
+|readString|获取String Body|
+|setCtxParam|设置上下文参数|
+|json|回响应Json Body|
+|string|回响应Text Body|
+|data|回响应Binary Body|
+|header|设置Header|
+|cookie|设置Cookie|
+
+#### Middleware
 
 CJoy提供扩展机制支持HTTP请求进行拦截处理，机制类似于Java的Servlet Filter。
 
@@ -493,6 +524,9 @@ JoyContext提供三个方法
 
 CJoy内置支持采用宏对类与结构体标注，简化对HTTP Body的Json序列化与反序列化绑定与映射。
 
+
+#### 基础用法
+
 ```
 import cjoy.json.*
 
@@ -520,7 +554,7 @@ class UserInfo {
 |`ignore`|false|是|值true/false，指定是否忽略此字段|
 |`timeformat`|DateTime.toString/parse方法默认格式|是|指定DateTime字段序列化的格式|
 
-宏展开编译之后，此类与结构体会实现encoding.json.stream包下JsonSerializable与JsonDeserializable接口。
+宏展开编译之后，此类与结构体会实现stdx.encoding.json.stream包下JsonSerializable与JsonDeserializable接口。
 
 JoyContext提供两个函数支持对HTTP Body的绑定与映射：
 
@@ -528,6 +562,56 @@ JoyContext提供两个函数支持对HTTP Body的绑定与映射：
  - `json`: 序列化类与结构体对象序列化并设置Body内容
 
 使用示例：[examples/rest](src/examples/rest/main.cj)
+
+#### 高级用法
+
+一些反序列化场景，可以通过定义Any类型泛化接收不同Json类型，如下所示。
+
+假定反序列的字符串为：
+
+```
+{
+  "a": 1, 
+  "b": 1.1, 
+  "c": {
+    "c1": "c1v", 
+    "c2": 1.1
+  }, 
+  "d":[
+    {
+      "d1": true, 
+      "d2": null
+    },
+    {
+      "d1": false, 
+      "d2": "d2v"
+    }
+  ]
+}
+```
+
+可以指定如下类来接收绑定：
+
+```
+@Json
+public class DataAny {
+    var a: Any = 1 // 实际反序列化之后类型为Int64
+    var b: Any = 2 // 实际反序列化之后类型为Int64
+    var c: Any = Option<Any>.None // 实际反序列化之后类型为HashMap<String, Any>
+    var d: Any = Option<Any>.None // 实际反序列化之后类型为List<HashMap<String, Any>>
+}
+```
+
+反序列化映射关系如下，可以把Any向下转型为对应仓颉数据类型。
+
+|Json类型|仓颉类型|
+|---|---|
+|JsonObject|HashMap<String, Any>|
+|JsonAray|ArrayList<Any>|
+|JsonBool|Bool|
+|JsonNumber|Int64或Float64|
+|JsonString|String|
+|JsonNull|Option<Any>.None|
 
 ### 校验
 

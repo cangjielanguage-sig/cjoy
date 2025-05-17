@@ -288,4 +288,13 @@ public class JsonTestCaseSuit {
         @Assert((dc.a as Int64).getOrThrow(), 1)
         @Assert((dc.b as Int64).getOrThrow(), 2)        
     }
+
+    @TestCase
+    public func testAnyToJson(): Unit {
+        var dc  = DataAny()
+        dc.c = HashMap<String, String>([("c1", "v1"), ("c2", "v2")])
+        let str = JsonTool.toJson(dc)
+        let expect = ###"{"a":1,"b":2,"c":{"c1":"v1","c2":"v2"}}"###
+        @Assert(str, expect)
+    }
 }
