@@ -28,7 +28,7 @@ extend String <: JoyValidatable {
         for (condition in constraints) {
             match (condition) {
                 case c: LengthConstraint =>
-                    if (this.size > c.min || this.size > c.max) {
+                    if (this.size < c.min || this.size > c.max) {
                         throw JoyValidationException(c.message, field, c)
                     }
                 case c: NotEmptyConstraint =>
@@ -188,7 +188,7 @@ extend DateTime <: JoyValidatable {
         for (condition in constraints) {
             match (condition) {
                 case c: DateTimeRangeConstraint =>
-                    if (this < c.before || this > c.after) {
+                    if (this < c.after || this > c.before) {
                         throw JoyValidationException(c.message, field, c)
                     }
                 case _ => ()

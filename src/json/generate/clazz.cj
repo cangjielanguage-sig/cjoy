@@ -52,13 +52,6 @@ public class JsonClassInfo {
             deserTokens += f.genDeserializeTokens()
         }
 
-        var addonFuncTokens = Tokens()
-        for (f in this.fields) {
-            if (f.info.jsonKeyName() == "") {
-                continue
-            }
-            addonFuncTokens += f.genAddonFuncTokens()
-        }
         quote(
             public static func fromJson(reader: JsonReader): $(classId) {
                 var obj = $(classId)()
@@ -80,29 +73,26 @@ public class JsonClassInfo {
                 }
                 obj
             }
-            $(addonFuncTokens)
         )
     }
 
     public static func parse(input: Tokens): Tokens {
-        let decl: Decl = parseDecl(input)
+        let (decl, pos) = parseDeclFragment(input)
         let classGen = ClassGenentor("Json", decl)
-        if (!(decl is StructDecl) && !(decl is ClassDecl)) {
-            throw Exception("Json macro only using for struct or class")
-        }
 
         let ident = decl.identifier
         let classInfo = JsonClassInfo(ident, classGen.variables)
+        let supperTokens = quote(JsonSerializable & JsonDeserializable<$(classInfo.classId)>)
 
         let serTokens = classInfo.genSerializeFunc()
         let deserTokens = classInfo.genDeserializeFunc()
+        let bindTokens = quote(
+            $(serTokens)
+            $(deserTokens)
+        )
+        let tokens =  classGen.genTokens(supperTokens, bindTokens)
         JsonInfoCache.clear()
 
-        quote(
-            extend $(classInfo.classId) <: JsonSerializable & JsonDeserializable<$(classInfo.classId)> {
-                $(serTokens)
-                $(deserTokens)
-            }
-        )
+        tokens + Token(TokenKind.NL) + input[pos..]
     }
 }

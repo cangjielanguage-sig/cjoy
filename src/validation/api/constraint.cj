@@ -23,7 +23,7 @@ public class SizeConstraint <: JoyConstraint {
     public let message: String
     public SizeConstraint(public let min: Int, public let max: Int, let msg: String) {
         if (msg.isEmpty()) {
-            this.message = "this JoyConstraint of value is size[${min}, ${max}]"
+            this.message = "this constraint of value is Size[${min}, ${max}]"
         } else {
             this.message = msg.replace("{min}", min.toString()).replace("{max}", max.toString())
         }
@@ -37,7 +37,7 @@ public class LengthConstraint <: JoyConstraint {
     public let message: String
     public LengthConstraint(public let min: Int, public let max: Int, let msg: String) {
         if (msg.isEmpty()) {
-            this.message = "this JoyConstraint of value is Length[${min}, ${max}]"
+            this.message = "this constraint of value is Length[${min}, ${max}]"
         } else {
             this.message = msg.replace("{min}", min.toString()).replace("{max}", max.toString())
         }
@@ -51,7 +51,7 @@ public class NotEmptyConstraint <: JoyConstraint {
     public let message: String
     public NotEmptyConstraint(let msg: String) {
         if (msg.isEmpty()) {
-            this.message = "this JoyConstraint of value is NOT EMPTY"
+            this.message = "this constraint of value is NOT EMPTY"
         } else {
             this.message = msg
         }
@@ -65,7 +65,7 @@ public class NotBlankConstraint <: JoyConstraint {
     public let message: String
     public NotBlankConstraint(let msg: String) {
         if (msg.isEmpty()) {
-            this.message = "this JoyConstraint of value is NOT BLANK"
+            this.message = "this constraint of value is NOT BLANK"
         } else {
             this.message = msg
         }
@@ -79,7 +79,7 @@ public class RangeConstraint <: JoyConstraint {
     public let message: String
     public RangeConstraint(public let min: String, public let max: String, let msg: String) {
         if (msg.isEmpty()) {
-            this.message = "this JoyConstraint of value is rang[${min}, ${max}]"
+            this.message = "this constraint of value is NumberRange[${min}, ${max}]"
         } else {
             this.message = msg.replace("{min}", min.toString()).replace("{max}", max.toString())
         }
@@ -95,7 +95,7 @@ public class PattenConstraint <: JoyConstraint {
     public PattenConstraint(let regexStr: String, let msg: String) {
         this.regex = Regex(regexStr)
         if (msg.isEmpty()) {
-            this.message = "this JoyConstraint of value is pattern[${regexStr}]"
+            this.message = "this constraint of value is Pattern[${regexStr}]"
         } else {
             this.message = msg.replace("{regex}", regexStr)
         }
@@ -106,17 +106,24 @@ public class PattenConstraint <: JoyConstraint {
  * for datetime
  */
 public class DateTimeRangeConstraint <: JoyConstraint {
-    public DateTimeRangeConstraint(public let before: DateTime, public let after: DateTime, public let message: String) {}
+    public let message: String
+    public DateTimeRangeConstraint(public let before: DateTime, public let after: DateTime, public let msg: String) {
+        if (msg.isEmpty()) {
+            this.message = "this constraint of value is DateTimeRange[${after}, ${before}]"
+        } else {
+            this.message = msg.replace("{after}", after.toString()).replace("{before}", before.toString())
+        }
+    }
 }
 
 public class JoyValidationException <: Exception {
     public let field: String
-    public let condition: JoyConstraint
+    public let constraint: JoyConstraint
 
-    public init(message: String, field: String, condition: JoyConstraint) {
+    public init(message: String, field: String, constraint: JoyConstraint) {
         super(message)
         this.field = field
-        this.condition = condition
+        this.constraint = constraint
     }
 
     public func toMap(): HashMap<String, String> {

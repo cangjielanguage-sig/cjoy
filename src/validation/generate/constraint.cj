@@ -60,11 +60,27 @@ open class FieldInfo {
         } else {
             let fieldName = Token(TokenKind.IDENTIFIER, "\"\${field}." + name() + "\"")
             if (constraints.isEmpty()) {
-                quote($(id()).validate({=> if(field.isEmpty()) {$(name())} else { $fieldName } }(), $nestedValid) 
-                )
+                if (name() == "Any") {
+                    quote(match($(id())) {
+                            case x: JoyValidatable => x.validate({=> if(field.isEmpty()) {$(name())} else { $fieldName } }(), $nestedValid) 
+                            case _ => ()
+                        }
+                    )
+                } else {
+                    quote($(id()).validate({=> if(field.isEmpty()) {$(name())} else { $fieldName } }(), $nestedValid) 
+                    )
+                }
             } else {
-                quote($(id()).validate({=> if(field.isEmpty()) {$(name())} else { $fieldName } }(), $nestedValid, $tokens) 
-                )
+                if (name() == "Any") {
+                    quote(match($(id())) {
+                            case x: JoyValidatable => x.$(id()).validate({=> if(field.isEmpty()) {$(name())} else { $fieldName } }(), $nestedValid, $tokens) 
+                            case _ => ()
+                        }
+                    )
+                } else {
+                    quote($(id()).validate({=> if(field.isEmpty()) {$(name())} else { $fieldName } }(), $nestedValid, $tokens) 
+                    )
+                }
             }
         }
     }

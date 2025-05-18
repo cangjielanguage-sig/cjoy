@@ -91,10 +91,8 @@ public class JsonTool {
                     }
                     reader.endArray()
                     return list
-                case JsonBool =>
-                    return reader.readValue<Bool>()
-                case JsonString =>
-                    return reader.readValue<String>()
+                case JsonBool => return reader.readValue<Bool>()
+                case JsonString => return reader.readValue<String>()
                 case JsonNumber =>
                     let value = reader.readValue<String>()
                     if (value.indexOf(b'.').isSome()) {
@@ -108,5 +106,19 @@ public class JsonTool {
                 case _ => throw Exception("the token is invalid")
             }
         }
+    }
+
+    /**
+     * deserialize json string feild to rune type
+     *
+     * @param reader: the json reader
+     * @return rune
+     */
+    public static func readRune(reader: JsonReader): Rune {
+        let str = reader.readValue<String>()
+        if (str.toRuneArray().size != 1) {
+            throw Exception("the json value is not Rune")
+        }
+        Rune(str[0])
     }
 }

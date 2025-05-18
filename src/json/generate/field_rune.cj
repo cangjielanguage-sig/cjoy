@@ -24,19 +24,7 @@ class RuneJsonFieldGenerator <: JsonFieldGenerator {
     }
 
     public override func genDeserializeTokens(): Tokens {
-        quote(case $(info.jsonKeyName()) => obj.$(varId) = readRune(reader)
+        quote(case $(info.jsonKeyName()) => obj.$(varId) = JsonTool.readRune(reader)
       )
-    }
-
-    public override func genAddonFuncTokens(): Tokens {
-        quote(
-            private static func readRune(reader: JsonReader): Rune {
-                let str = reader.readValue<String>()
-                if (str.toRuneArray().size != 1) {
-                    throw Exception("the json value is not Rune")
-                }
-                Rune(str[0])
-            }
-        )
     }
 }

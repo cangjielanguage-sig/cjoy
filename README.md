@@ -240,8 +240,6 @@ JoyRouters接口的group方法支持对path进行分组，分组支持多级，�
    - 可以再注册 `v1.get("", ...)`  `v1.get("/", ...)`  `v1.get("/*", ...)` 覆盖上面的默认Handler；
   
 
-JoyRouters定义参见  [route.cj](src/framework/route.cj) 。
-
 ### 请求处理
 
 #### Handler
@@ -273,9 +271,11 @@ router.get("/{name}", {ctx: JoyContext =>
 })
 ```
 
-##### 处理上下文
+HTTP的Handler通过调用JoyRouters的get, post, put等方法注册到路由分组上。JoyRouters接口定义参见 [route.cj](src/framework/route.cj) 。
 
-Handler的入参JoyContext提供对上下文支持Http获取与回响应处理，主要API如下，请多的API请参见源码 [context.cj](src/framework/context.cj)  。
+#### 处理上下文
+
+Handler的入参JoyContext提供上下文支持对HTTP获取与回响应处理，主要API如下，请多的API请参见源码 [context.cj](src/framework/context.cj)  。
 
 |函数|说明|
 |---|---|
@@ -505,7 +505,10 @@ router.get("/bind", {ctx: JoyContext =>
 |`default`||是|当参数不存在时的默认值|
 |`timeformat`|DateTime.toString/parse方法默认格式|是|指定DateTime字段序列化的格式|
 
-宏展开编译之后，此类与结构体会实现`cjoy.JoyBindable`接口，并自动生成所有成员变量带命名参数的构造方法。因此let字段未指定默认值时，会在构造方法采用系统默认值（如Int为0， String为"")。
+宏展开编译之后，此类与结构体会：
+
+ - 并自动生成所有成员变量带命名参数的构造方法。因此let成员变量未指定默认值时，会在构造方法采用系统默认值，如Int为`0`， String为`""`。
+ - 实现`cjoy.JoyBindable`接口，
 
 字段类型支持：
 
@@ -524,7 +527,6 @@ JoyContext提供三个方法
 
 CJoy内置支持采用宏对类与结构体标注，简化对HTTP Body的Json序列化与反序列化绑定与映射。
 
-
 #### 基础用法
 
 ```
@@ -540,6 +542,10 @@ class UserInfo {
 }
 ```
 
+约束：
+
+ - 每个成员变量需要指定类型与默认值
+
 |宏|属性参数|说明|
 |---|---|---|
 |`@Json`||作用于类与结构体上，标注其自动生成Json序列化与反序列化函数，类与结构体需要无参数的构建函数。|
@@ -554,7 +560,10 @@ class UserInfo {
 |`ignore`|false|是|值true/false，指定是否忽略此字段|
 |`timeformat`|DateTime.toString/parse方法默认格式|是|指定DateTime字段序列化的格式|
 
-宏展开编译之后，此类与结构体会实现stdx.encoding.json.stream包下JsonSerializable与JsonDeserializable接口。
+宏展开编译之后，此类或结构体:
+
+- 并自动生成所有成员变量带命名参数的构造方法。成员变量未指定默认值时，会在构造方法采用系统默认值，如Int为`0`， String为`""`。
+- 实现stdx.encoding.json.stream包下JsonSerializable与JsonDeserializable接口。
 
 JoyContext提供两个函数支持对HTTP Body的绑定与映射：
 
@@ -567,7 +576,7 @@ JoyContext提供两个函数支持对HTTP Body的绑定与映射：
 
 一些反序列化场景，可以通过定义Any类型泛化接收不同Json类型，如下所示。
 
-假定反序列的字符串为：
+假定字符串为：
 
 ```
 {
