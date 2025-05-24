@@ -399,7 +399,7 @@ Handler注册宏，作用在函数上：
 
 |宏属性参数|是否可选|说明|
 |---|---|---|
-|`name`|是|映射的参数名称，指定取方法参数名称。|
+|`name`|是|映射的参数名称，不指定取方法参数名称。|
 |`default`|是|获取不到时的默认值。|
 |`timeformat`|是|当方法入参是`DateTime`，`?DateTime`时，指定转换的格式。|
 
@@ -559,6 +559,7 @@ class UserInfo {
 |`omitempty`|false|是|值true/false，指定生成Json字符串时是否忽略空字符串或Option的None值|
 |`ignore`|false|是|值true/false，指定是否忽略此字段|
 |`timeformat`|DateTime.toString/parse方法默认格式|是|指定DateTime字段序列化的格式|
+|`raw`|false|是|当类型为Any，不反序列化此字段赋值原始字符串字节Array<Byte>|
 
 宏展开编译之后，此类或结构体:
 
@@ -622,6 +623,34 @@ public class DataAny {
 |JsonString|String|
 |JsonNull|Option<Any>.None|
 
+当一个字段反序列化时，不展开解释只获取原始字节，可以通过`@JsonField`指定`raw=true`：
+
+```
+@Json
+public class DataAny {
+    var a: Any = 1 /
+    var b: Any = 2 
+    var c: Any = Option<Any>.None 
+    @JsonField[raw = true]
+    var d: Any = Option<Any>.None // 实际反序列化之后类型为Array<Byte>
+}
+```
+
+上述`d`的实际值为下面的字符串对应的`Array<Byte>`类型：
+
+```
+[
+  {
+    "d1": true, 
+    "d2": null
+  },
+  {
+    "d1": false, 
+    "d2": "d2v"
+  }
+]
+```
+
 ### 校验
 
 CJoy 内置校验框架，支持通过宏对类，结构，函数参数进行校验。
@@ -656,7 +685,7 @@ public struct Data {
 }
 ```
 
-- 宏展开之后，会自动实现`JoyValidatable`接口，可以调用其`validate`方法进行对成员属性校验，若校验未通过，则抛出`ValidationException`异常。
+- 宏展开之后，会自动实现`JoyValidatable`接口，可以调用其`validate`方法进行对成员属性校验，若校验未通过，则抛出`JoyValidationException`异常。
 - 宏`@Valid`可以与`@Json`,`@Bind`一起使用。
 
 #### 函数参数

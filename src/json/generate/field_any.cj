@@ -26,7 +26,12 @@ class AnyJsonFieldGenerator <: JsonFieldGenerator {
     }
 
     public override func genDeserializeTokens(): Tokens {
-        quote(case $(info.jsonKeyName()) => obj.$(varId) = JsonTool.fromJsonToAny(reader)
-        )
+        if (info.raw) {
+            quote(case $(info.jsonKeyName()) => obj.$(varId) = reader.readValueBytes()
+            )
+        } else {
+            quote(case $(info.jsonKeyName()) => obj.$(varId) = JsonTool.fromJsonToAny(reader)
+            )
+        }
     }
 }

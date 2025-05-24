@@ -132,6 +132,14 @@ public class DataAny {
     var c: Any = HashMap<String, Any>()
 }
 
+@Json
+public class DataAny2 {
+    var a: Any = 1
+    var b: Any = 2
+    @JsonField[raw = true]
+    var c: Any = HashMap<String, Any>()
+}
+
 @Test
 public class JsonTestCaseSuit {
     @TestCase
@@ -287,6 +295,14 @@ public class JsonTestCaseSuit {
         let dc = JsonTool.fromJson<DataAny>(str)
         @Assert((dc.a as Int64).getOrThrow(), 1)
         @Assert((dc.b as Int64).getOrThrow(), 2)        
+    }
+
+    @TestCase
+    public func testToAny3(): Unit {
+        let str = ###"{"a": 1, "b": 2, "c": {"c1": "c1v", "c2": 1.1}, "d":[{"d1": true, "d2": null},{"d1": false, "d2": "d2v"}]}"###
+        let dc = JsonTool.fromJson<DataAny2>(str)
+        let c = String.fromUtf8((dc.c as Array<Byte>).getOrThrow())
+        @Assert(c, ###"{"c1": "c1v", "c2": 1.1}"###)
     }
 
     @TestCase

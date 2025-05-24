@@ -20,6 +20,7 @@ public class JsonFieldInfo {
     var ignore: Bool = false
     var omitempty: Bool = false
     var timeformat: String = ""
+    var raw: Bool = false
 
     init(name: String) {
         this.originName = name
@@ -43,7 +44,8 @@ public class JsonFieldInfo {
                     case "ignore" => this.ignore = "true" == value.value
                     case "omitempty" => this.omitempty = "true" == value.value
                     case "timeformat" => this.timeformat = value.value
-                    case _ => throw Exception("JsonField attriable should be name, ignore, omitempty, timeformat")
+                    case "raw" => this.raw = "true" == value.value
+                    case _ => throw Exception("JsonField attriable should be name, ignore, omitempty, timeformat, raw")
                 }
             })
     }
