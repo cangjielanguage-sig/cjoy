@@ -12,17 +12,19 @@ macro package cjoy.validation
 
 import std.ast.Tokens
 import cjoy.validation.generate.{parseConstraint, parseNestedValid, parseValidated, ConstraintCatgory, ValidClassInfo}
+
+// reimport the dependent
 public import cjoy.validation.api.*
 
 /**
- * for class & struct
+ * apply to a class & struct to generate code to implement the 'JoyValidatable' interface
  */
 public macro Valid(input: Tokens): Tokens {
     input + ValidClassInfo.parse(input)
 }
 
 /**
- * for field nested valid
+ * indicating nested validation of this member class or structure
  */
 public macro NestedValid(input: Tokens): Tokens {
     parseNestedValid(input)
@@ -30,52 +32,104 @@ public macro NestedValid(input: Tokens): Tokens {
 }
 
 /**
- * for method
+ * apply to a function to generated code it modify the function body to add a 'validate' method for calling parameters
  */
 public macro Validated(input: Tokens): Tokens {
     parseValidated(input)
 }
 
+/**
+* Validate the Size of collection
+*
+* @attribute min: the min size
+* @attribute max: the max size
+* @attribute msg: the verification error tip
+*/
 public macro Size(attr: Tokens, input: Tokens): Tokens {
     parseConstraint(ConstraintCatgory.C_SIZE, attr, input)
     input
 }
 
+/**
+* Validate the Length of string
+*
+* @attribute min: the min size
+* @attribute max: the max size
+* @attribute msg: the verification error tip
+*/
 public macro Length(attr: Tokens, input: Tokens): Tokens {
     parseConstraint(ConstraintCatgory.C_LENGTH, attr, input)
     input
 }
 
+/**
+* Validate string is Not empty
+*
+* @attribute msg: the verification error tip
+*/
 public macro NotEmpty(attr: Tokens, input: Tokens): Tokens {
     parseConstraint(ConstraintCatgory.C_NOT_EMTPY, attr, input)
     input
 }
 
+/**
+* Validate string is Not blank
+*
+* @attribute msg: the verification error tip
+*/
 public macro NotBlank(attr: Tokens, input: Tokens): Tokens {
     parseConstraint(ConstraintCatgory.C_NOT_BLANK, attr, input)
     input
 }
 
+/**
+* Validate string is Not empty
+*
+*/
 public macro NotEmpty(input: Tokens): Tokens {
     parseConstraint(ConstraintCatgory.C_NOT_EMTPY, input)
     input
 }
 
+/**
+* Validate string is Not blank
+*
+*/
 public macro NotBlank(input: Tokens): Tokens {
     parseConstraint(ConstraintCatgory.C_NOT_BLANK, input)
     input
 }
 
+/**
+* Validate the range of number like int, float etc.
+*
+* @attribute min: the min value
+* @attribute max: the max value
+* @attribute msg: the verification error tip
+*/
 public macro NumberRange(attr: Tokens, input: Tokens): Tokens {
     parseConstraint(ConstraintCatgory.C_NUBMER_RANGE, attr, input)
     input
 }
 
+/**
+* Validate number or string match whether the regex pettern
+*
+* @attribute regex: the regex pettern
+* @attribute msg: the verification error tip
+*/
 public macro Patten(attr: Tokens, input: Tokens): Tokens {
     parseConstraint(ConstraintCatgory.C_PATTERN, attr, input)
     input
 }
 
+/**
+* Validate the range of datetime
+*
+* @attribute before: before this time
+* @attribute after: after this time
+* @attribute msg: the verification error tip
+*/
 public macro DateTimeRange(attr: Tokens, input: Tokens): Tokens {
     parseConstraint(ConstraintCatgory.C_DATETIME_RANGE, attr, input)
     input

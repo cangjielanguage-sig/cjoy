@@ -18,10 +18,20 @@ public import std.convert.Parsable
 public import stdx.net.http.HttpRequest
 public import cjoy.bind.api.{JoyBindable, JoyBindSource}
 
+/**
+* Apply to class or structure to bind mapping of parameters
+*/
 public macro Bind(input: Tokens): Tokens {
     BindClassInfo.parse("Bind", input)
 }
 
+/**
+* set bind info of this member class or structure
+*
+* @attribute name: the field mapping name
+* @attribute default: the default value when parameter does not exist
+* @attribute timeformat: the format for Datetime field
+*/
 public macro BindField(attr: Tokens, input: Tokens): Tokens {
     BindFieldInfo.parse(attr, input)
     input

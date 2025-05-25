@@ -33,6 +33,7 @@ public macro Json(input: Tokens): Tokens {
  * @attribute omitempty: vaule is true/false, whether to ignore empty strings or Options.None
  * @attribute ignore：vaule is true/false, whether to ignore the field
  * @attribute timeformat：the format for Datetime field
+ * @attribute raw：vaule is true/false, deserialize to orgin raw array bytes
  */
 public macro JsonField(attr: Tokens, input: Tokens): Tokens {
     JsonFieldInfo.parse(attr, input)

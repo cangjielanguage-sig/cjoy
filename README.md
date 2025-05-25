@@ -494,7 +494,7 @@ router.get("/bind", {ctx: JoyContext =>
 
 |宏|属性参数|说明|
 |---|---|---|
-|`@Bind`||作用于类与结构体上，支持对Query参数的绑定映射。|
+|`@Bind`||作用于类与结构体上，支持对参数的绑定映射。|
 |`@BindField`|name=xx,default=xxx,timeformat="..."| 作用类与结构体的成员变量上，变量需要指定类型。|
 
 以上宏的属性参数说明：
@@ -712,8 +712,8 @@ func test( arrparam: Array<Int32>): Unit {
 |宏|属性参数|说明|
 |---|---|---|
 |`@Size`|min=0, max=100, msg="..."|对Collection对象的Size进行校验|
-|`@Length`|min=0, max=100, msg"..."|对字符串对象的长度进行校验|
-|`@NumberRange`|min=0, max=100, msg"..."|对数字范围进行校验|
+|`@Length`|min=0, max=100, msg="..."|对字符串对象的长度进行校验|
+|`@NumberRange`|min=0, max=100, msg="..."|对数字范围进行校验|
 |`@NotEmpty`|msg="..."|对字符串对象非空进行校验|
 |`@NotBlank`|msg="..."|对字符串对象非空白进行校验，先trim再检查|
 |`@Patten`|regex="...", msg="..."|对字符串，数字正则检查|
