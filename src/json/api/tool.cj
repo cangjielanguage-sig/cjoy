@@ -8,7 +8,7 @@
  * See the Mulan PSL v2 for more details.
  */
 
-package cjoy.json.utils
+package cjoy.json.api
 
 import std.io.ByteBuffer
 import std.collection.{ArrayList, HashMap}

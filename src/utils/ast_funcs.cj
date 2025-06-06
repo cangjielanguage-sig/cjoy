@@ -1,0 +1,112 @@
+/*
+ * Copyright (c) lanlingx 2025-present. All rights resvered.
+ * CJoy is licensed under Mulan PSL v2.
+ * You can use this software according to the terms and conditions of the Mulan PSL v2.
+ * You may obtain a copy of Mulan PSL v2 at:
+ *          http://license.coscl.org.cn/MulanPSL2
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
+ * See the Mulan PSL v2 for more details.
+ */
+
+package cjoy.utils
+
+import std.ast.*
+import std.collection.ArrayList
+
+protected func parseKVAttr(attr: Tokens, marcroName: String, cb: (ident: Token, value: Token) -> Unit): Unit {
+    if ((attr.size + 1) % 4 != 0) {
+        diagReport(DiagReportLevel.ERROR, attr, "${marcroName} attriable should link 'attrname= value'", "")
+        throw Exception("${marcroName} attriable should link 'attrname= value'")
+    }
+
+    for (idx in 0..attr.size : 4) {
+        let ident = attr.get(idx)
+        if (ident.kind != TokenKind.IDENTIFIER) {
+            diagReport(DiagReportLevel.ERROR, attr,
+                "${marcroName} attriable name should be a identitier, but is ${ident.kind}", "")
+            throw Exception("${marcroName} attriable name should be a identitier")
+        }
+        let assign = attr.get(idx + 1)
+        if (assign.kind != TokenKind.ASSIGN) {
+            diagReport(DiagReportLevel.ERROR, attr, "${marcroName} attriable name should be =, but is ${ident.kind}", ""
+            )
+            throw Exception("${marcroName} attriable name should be =")
+        }
+
+        let value = attr.get(idx + 2)
+        cb(ident, value)
+    }
+}
+
+protected func joinTokens(tokensList: ArrayList<Tokens>, separator: Token): Tokens {
+    if (tokensList.isEmpty()) {
+        Tokens()
+    } else if (tokensList.size == 1) {
+        tokensList[0]
+    } else {
+        var ret = tokensList[0]
+        for (i in 1..tokensList.size) {
+            ret = ret + separator + tokensList[i]
+        }
+        ret
+    }
+}
+
+protected func getDefValueOfType(varDecl: VarDecl): Option<Tokens> {
+    try {
+        let expr = varDecl.expr
+        return expr.toTokens()
+    } catch (_: ASTException) {
+        if (let Some(x) <- getDefValueOfType(varDecl.declType)) {
+            x
+        } else {
+            None
+        }
+    }
+}
+
+protected func getDefValueOfType(typeNode: TypeNode): Option<Tokens> {
+    match (typeNode) {
+        case varType: RefType => return match (varType.identifier.value) {
+            case "Option" => quote(None)
+            case "Array" => quote([])
+            case "Int" | "UInt" => quote(0)
+            case "ArrayList" => quote(ArrayList())
+            case "String" => quote("")
+            case _ => Option.None
+        }
+        case varType: PrefixType => return quote(None)
+        case varType: PrimitiveType =>
+            if (varType.keyword.value.startsWith("Int")) {
+                return quote(0)
+            } else if (varType.keyword.value.startsWith("UInt")) {
+                return quote(0)
+            } else if (varType.keyword.value.startsWith("Float")) {
+                return quote(0.0)
+            } else if (varType.keyword.value.startsWith("Bool")) {
+                return quote(false)
+            } else if (varType.keyword.value.startsWith("Rune")) {
+                return quote(Rune(b'\0'))
+            } else {
+                return None
+            }
+        case _ => return None
+    }
+}
+
+protected func getGenericTypeParamsTokens(decl: Decl): Tokens {
+    try {
+        let generic = decl.genericParam
+        return generic.toTokens()
+    } catch (_: ASTException) {
+        return Tokens()
+    }
+}
+
+protected func getGenericConstraintsTokens(decl: Decl): Tokens {
+    let tokens = Tokens()
+    for (c in decl.genericConstraint) {
+        tokens.append(c.toTokens())
+    }
+    return tokens
+}
