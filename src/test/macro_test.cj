@@ -69,14 +69,14 @@ func pathGet2(@PathParam[name = p] a: String): String {
 @Get[path = "/path3/{p}"]
 func pathGet3(@PathParam[name = p] a: ?String): String {
     println(a)
-    a.getOrDefault({=> "p"})
+    a ?? "p"
 }
 
 // test path param with a new name type is Option 
 @Get[path = "/path4/{p}"]
 func pathGet4(@PathParam[name = p] a: Option<String>): String {
     println(a)
-    a.getOrDefault({=> "p"})
+    a ?? "p"
 }
 
 // test path param with a new name type is convert to Int 

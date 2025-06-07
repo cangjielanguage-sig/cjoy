@@ -24,7 +24,7 @@ public interface JoyValidatable {
 }
 
 extend String <: JoyValidatable {
-    public func validate(field: String, nestedValid: Bool, constraints: Array<JoyConstraint>): Unit {
+    public func validate(field: String, _: Bool, constraints: Array<JoyConstraint>): Unit {
         for (condition in constraints) {
             match (condition) {
                 case c: LengthConstraint =>
@@ -76,67 +76,67 @@ func validateNumber<T>(value: T, field: String, constraints: Array<JoyConstraint
 }
 
 extend Int8 <: JoyValidatable {
-    public func validate(field: String, nestedValid: Bool, constraints: Array<JoyConstraint>): Unit {
+    public func validate(field: String, _: Bool, constraints: Array<JoyConstraint>): Unit {
         validateNumber(this, field, constraints)
     }
 }
 
 extend Int16 <: JoyValidatable {
-    public func validate(field: String, nestedValid: Bool, constraints: Array<JoyConstraint>): Unit {
+    public func validate(field: String, _: Bool, constraints: Array<JoyConstraint>): Unit {
         validateNumber(this, field, constraints)
     }
 }
 
 extend Int32 <: JoyValidatable {
-    public func validate(field: String, nestedValid: Bool, constraints: Array<JoyConstraint>): Unit {
+    public func validate(field: String, _: Bool, constraints: Array<JoyConstraint>): Unit {
         validateNumber(this, field, constraints)
     }
 }
 
 extend Int64 <: JoyValidatable {
-    public func validate(field: String, nestedValid: Bool, constraints: Array<JoyConstraint>): Unit {
+    public func validate(field: String, _: Bool, constraints: Array<JoyConstraint>): Unit {
         validateNumber(this, field, constraints)
     }
 }
 
 extend UInt8 <: JoyValidatable {
-    public func validate(field: String, nestedValid: Bool, constraints: Array<JoyConstraint>): Unit {
+    public func validate(field: String, _: Bool, constraints: Array<JoyConstraint>): Unit {
         validateNumber(this, field, constraints)
     }
 }
 
 extend UInt16 <: JoyValidatable {
-    public func validate(field: String, nestedValid: Bool, constraints: Array<JoyConstraint>): Unit {
+    public func validate(field: String, _: Bool, constraints: Array<JoyConstraint>): Unit {
         validateNumber(this, field, constraints)
     }
 }
 
 extend UInt32 <: JoyValidatable {
-    public func validate(field: String, nestedValid: Bool, constraints: Array<JoyConstraint>): Unit {
+    public func validate(field: String, _: Bool, constraints: Array<JoyConstraint>): Unit {
         validateNumber(this, field, constraints)
     }
 }
 
 extend UInt64 <: JoyValidatable {
-    public func validate(field: String, nestedValid: Bool, constraints: Array<JoyConstraint>): Unit {
+    public func validate(field: String, _: Bool, constraints: Array<JoyConstraint>): Unit {
         validateNumber(this, field, constraints)
     }
 }
 
 extend Float16 <: JoyValidatable {
-    public func validate(field: String, nestedValid: Bool, constraints: Array<JoyConstraint>): Unit {
+    public func validate(field: String, _: Bool, constraints: Array<JoyConstraint>): Unit {
         validateNumber(this, field, constraints)
     }
 }
 
 extend Float32 <: JoyValidatable {
-    public func validate(field: String, nestedValid: Bool, constraints: Array<JoyConstraint>): Unit {
+    public func validate(field: String, _: Bool, constraints: Array<JoyConstraint>): Unit {
         validateNumber(this, field, constraints)
     }
 }
 
 extend Float64 <: JoyValidatable {
-    public func validate(field: String, nestedValid: Bool, constraints: Array<JoyConstraint>): Unit {
+    public func validate(field: String, _: Bool, constraints: Array<JoyConstraint>): Unit {
         validateNumber(this, field, constraints)
     }
 }
@@ -184,7 +184,7 @@ extend<K, V> HashMap<K, V> <: JoyValidatable {
 }
 
 extend DateTime <: JoyValidatable {
-    public func validate(field: String, nestedValid: Bool, constraints: Array<JoyConstraint>): Unit {
+    public func validate(field: String, _: Bool, constraints: Array<JoyConstraint>): Unit {
         for (condition in constraints) {
             match (condition) {
                 case c: DateTimeRangeConstraint =>

@@ -16,41 +16,42 @@ import std.convert.Parsable
 
 protected interface TokenVisitor<T> {
     func onArrayBegin(): T
-    func onArrayItem(value: T): Unit
-    func onArrayEnd(): Unit
+    func onArrayItem(list: T, value: T): Unit
+    func onArrayEnd(list: T): Unit
 
     func onObjBegin(): T
-    func onObjItem(key: String, value: T): Unit
-    func onObjEnd(): Unit
+    func onObjItem(map: T, key: String, value: T): Unit
+    func onObjEnd(map: T): Unit
 
     func onVaule(value: Token): T
 }
 
 protected class TokenStrValueVisitor <: TokenVisitor<ToString> {
-    var list: ArrayList<ToString> = ArrayList()
-    var map: HashMap<String, ToString> = HashMap()
     public func onArrayBegin(): ToString {
-        list = ArrayList()
-        list
+        ListToString()
     }
 
-    public func onArrayItem(value: ToString): Unit {
-        list.add(value)
+    public func onArrayItem(list: ToString, value: ToString): Unit {
+        let l: ListToString = (list as ListToString).getOrThrow()
+        l.add(value)
     }
 
-    public func onArrayEnd(): Unit {
+    public func onArrayEnd(list: ToString): Unit {
     }
 
     public func onObjBegin(): ToString {
-        map = HashMap<String, ToString>()
-        map
+        MapToString()
     }
 
-    public func onObjItem(key: String, value: ToString): Unit {
-        map.add(key, value)
+    public func onObjItem(map: ToString, key: String, value: ToString): Unit {
+        let m: MapToString = (map as MapToString).getOrThrow()
+        if (m.contains(key)) {
+            throw Exception("duplicated key in map, key: ${key}")
+        }
+        m.add(key, value)
     }
 
-    public func onObjEnd(): Unit {
+    public func onObjEnd(map: ToString): Unit {
     }
 
     public func onVaule(value: Token): ToString {
@@ -83,17 +84,19 @@ protected open class TokenParser<T> {
         }
     }
 
-    func assert(kind: TokenKind) {
+    func assertToken(kind: TokenKind) {
         if (_currToken.kind != kind) {
             _currToken.dump()
-            throw Exception("fail to assert the current token kind. expecting: ${kind}")
+            throw Exception(
+                "fail to assertToken the current token kind. expecting: ${kind}, real: ${_currToken.kind}, pos: ${_pos}"
+            )
         }
     }
 
     func next(skipNL!: Bool = true) {
         do {
             _pos += 1
-        } while (_pos < _tokens.size && (skipNL && _tokens[_pos].kind == TokenKind.NL))
+        } while (_pos < _tokens.size && skipNL && _tokens[_pos].kind == TokenKind.NL)
 
         _currToken = if (_pos < _tokens.size) {
             _tokens[_pos]
@@ -103,12 +106,12 @@ protected open class TokenParser<T> {
     }
 
     func skip(kind: TokenKind) {
-        assert(kind)
+        assertToken(kind)
         next()
     }
 
     func skipNLs() {
-        while (_currToken.kind == TokenKind.IDENTIFIER) {
+        while (_pos < _tokens.size && _currToken.kind == TokenKind.NL) {
             _pos += 1
             _currToken = if (_pos < _tokens.size) {
                 _tokens[_pos]
@@ -136,7 +139,7 @@ protected open class TokenParser<T> {
     func isValueToken() {
         match (_currToken.kind) {
             case TokenKind.IDENTIFIER | TokenKind.INTEGER_LITERAL | TokenKind.FLOAT_LITERAL | TokenKind.STRING_LITERAL
-                | TokenKind.MULTILINE_STRING | TokenKind.MULTILINE_RAW_STRING | TokenKind.BOOL_LITERAL => true
+                | TokenKind.MULTILINE_STRING | TokenKind.MULTILINE_RAW_STRING | TokenKind.BOOL_LITERAL | TokenKind.MUL => true
             case _ => false
         }
     }
@@ -146,7 +149,7 @@ protected open class TokenParser<T> {
             next() // '=' or ':'
         } else {
             _currToken.dump()
-            throw Exception("fail to parse attributes. expecting '=' or ':'.")
+            throw Exception("fail to parse, expecting: '=' or ':', real: ${_currToken.value}")
         }
     }
 
@@ -161,7 +164,7 @@ protected open class TokenParser<T> {
                     checkMidToken()
 
                     let value = parse(parseValue: true)
-                    _visitor.onObjItem(key, value)
+                    _visitor.onObjItem(map, key, value)
                     next()
                 case TokenKind.COMMA => next() // ','
                 case TokenKind.ILLEGAL => break
@@ -170,53 +173,57 @@ protected open class TokenParser<T> {
                     throw Exception("unknown token ${_currToken.value} in parsing")
             }
         }
-        _visitor.onObjEnd()
+        _visitor.onObjEnd(map)
         map
     }
 
     func parseArray(): T {
         skip(TokenKind.LSQUARE)
         _depth += 1
+        let depth = _depth
 
         let arr = _visitor.onArrayBegin()
         while (_pos < _tokens.size) {
             match (_currToken.kind) {
                 case TokenKind.COMMA => next() // ','
-                case TokenKind.RSQUARE => break
+                case TokenKind.RSQUARE =>
+                    if (_depth == depth) {
+                        break
+                    }
                 case _ =>
                     let value = parse(parseValue: true)
-                    _visitor.onArrayItem(value)
+                    _visitor.onArrayItem(arr, value)
                     next()
             }
         }
         _depth -= 1
-        if (_depth != 0) {
-            _currToken.dump()
-            throw Exception("unknown token ${_currToken.value} in parsing")
-        }
-        skip(TokenKind.RSQUARE)
-        _visitor.onArrayEnd()
+        assertToken(TokenKind.RSQUARE)
+        _visitor.onArrayEnd(arr)
         arr
     }
 
     func parseMap(): T {
         skip(TokenKind.LCURL)
         _depth += 1
+        let depth = _depth
 
         let map = _visitor.onObjBegin()
         while (_pos < _tokens.size) {
             match (_currToken.kind) {
-                case TokenKind.IDENTIFIER =>
+                case TokenKind.IDENTIFIER | TokenKind.STRING_LITERAL =>
                     let key = _currToken.value
                     next()
-                    
+
                     checkMidToken()
 
                     let value = parse(parseValue: true)
-                    _visitor.onObjItem(key, value)
+                    _visitor.onObjItem(map, key, value)
                     next()
                 case TokenKind.COMMA => next() // ','
-                case TokenKind.RCURL => break
+                case TokenKind.RCURL =>
+                    if (_depth == depth) {
+                        break
+                    }
                 case _ =>
                     _currToken.dump()
                     throw Exception("unknown token ${_currToken.value} in parsing")
@@ -224,12 +231,8 @@ protected open class TokenParser<T> {
         }
 
         _depth -= 1
-        if (_depth != 0) {
-            _currToken.dump()
-            throw Exception("unknown token ${_currToken.value} in parsing Attr")
-        }
-        skip(TokenKind.RCURL)
-        _visitor.onArrayEnd()
+        assertToken(TokenKind.RCURL)
+        _visitor.onObjEnd(map)
         map
     }
 }

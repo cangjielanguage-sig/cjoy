@@ -19,7 +19,7 @@ main(): Int64 {
         "/{name}",
         {
             ctx: JoyContext =>
-            let name = ctx.getParam("name").getOrDefault({=> "no name"})
+            let name = ctx.getParam("name") ?? "no name"
             ctx.string("name in paramter path, name=${name}")
         }
     )

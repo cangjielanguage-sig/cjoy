@@ -52,7 +52,7 @@ public class RouteTestCaseSuit {
                 "/users/{name}",
                 {
                     ctx: JoyContext =>
-                    let name = ctx.getParam("name").getOrDefault({=> "no name"})
+                    let name = ctx.getParam("name") ?? "no name"
                     ctx.string("/users/${name}")
                 }
             )
@@ -60,8 +60,8 @@ public class RouteTestCaseSuit {
                 "/users/{name}/posts/{postid}",
                 {
                     ctx: JoyContext =>
-                    let name = ctx.getParam("name").getOrDefault({=> "no name"})
-                    let postid = ctx.getParam("postid").getOrDefault({=> "no post id"})
+                    let name = ctx.getParam("name") ?? "no name"
+                    let postid = ctx.getParam("postid") ?? "no post id"
                     ctx.string("/users/${name}/posts/${postid}")
                 }
             )

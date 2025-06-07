@@ -46,7 +46,7 @@ public class JoyMultiPart {
     public prop name: String {
         get() {
             parseContentDisposition()
-            _dispositionParams.get("name").getOrDefault({=> ""})
+            _dispositionParams.get("name") ?? ""
         }
     }
 
@@ -56,7 +56,7 @@ public class JoyMultiPart {
     public prop fileName: String {
         get() {
             parseContentDisposition()
-            _dispositionParams.get("filename").getOrDefault({=> ""})
+            _dispositionParams.get("filename") ?? ""
         }
     }
 

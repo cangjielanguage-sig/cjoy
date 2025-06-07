@@ -183,7 +183,7 @@ public class JoyContext {
      */
     public func getQuery(name: String, defaultValue: String): String {
         let val = _httpContext.request.url.queryForm.get(name)
-        val.getOrDefault({=> defaultValue})
+        val ?? defaultValue
     }
 
     /**
@@ -218,7 +218,7 @@ public class JoyContext {
      */
     public func getPostForm(name: String, defaultValue: String): String {
         let val = _httpContext.request.form.get(name)
-        val.getOrDefault({=> defaultValue})
+        val ?? defaultValue
     }
 
     /**
@@ -474,7 +474,7 @@ public class JoyContext {
      * @return the content type
      */
     public func getContentType(): String {
-        _httpContext.request.headers.getFirst("content-type").getOrDefault({=> ""})
+        _httpContext.request.headers.getFirst("content-type") ?? ""
     }
 
     /**

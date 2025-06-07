@@ -23,7 +23,7 @@ public class ValidClassInfo {
         this.fields = ArrayList<FieldInfo>()
         for (vd in vars) {
             let name = vd.identifier.value
-            this.fields.add(FieldInfoCache.findByName(name).getOrDefault({=> FieldInfo(vd.identifier, false)}))
+            this.fields.add(FieldInfoCache.findByName(name) ?? FieldInfo(vd.identifier, false))
         }
     }
 

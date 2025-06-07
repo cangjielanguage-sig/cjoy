@@ -69,7 +69,7 @@ main(): Int64 {
 
     // 注册路由
     joy.router.get("/{name}", {ctx: JoyContext => 
-        let name = ctx.getParam("name").getOrDefault({=>"no name"})
+        let name = ctx.getParam("name") ?? "no name"
         ctx.string("name in parameter path, name=${name}")
     })
     joy.router.get("/abc", {ctx: JoyContext => 
@@ -254,8 +254,7 @@ JoyRequestHandler定义参见  [handler.cj](src/framework/handler.cj) 。
 // 实现JoyRequestHandler
 class UserHandler <: JoyRequestHandler {
     public func handle(ctx: JoyContext): Unit {
-	    let name = ctx.getParam("name").getOrDefault({=>"no name"})
-	    ...
+	    let name = ctx.getParam("name") ?? "no name"	    ...
     }
 }
 router.get("/{name}", UserHandler())
@@ -266,7 +265,7 @@ router.get("/{name}", UserHandler())
 ```
 // 直接采用Lambda表达式函数
 router.get("/{name}", {ctx: JoyContext => 
-	let name = ctx.getParam("name").getOrDefault({=>"no name"})
+	let name = ctx.getParam("name") ?? "no name"
 	...
 })
 ```
@@ -348,7 +347,7 @@ CJoy提供一系列的宏简化Handler的注册与参数展开，业务只需要
 @Get[path = "/path/{p}"]
 func pathGet(@PathParam[name = p] a: ?String): String {
     println(a)
-    a.getOrDefault({=> "p"})
+    a ?? "p"
 }
 
 @Get[path = "/test"]

@@ -12,7 +12,7 @@ package cjoy.json.generate
 
 import std.ast.*
 import std.collection.Map
-import cjoy.utils.parseKVAttr
+import cjoy.utils.{parserAttrs, MapToString, MapListGetFunc}
 
 public class JsonFieldInfo {
     let originName: String
@@ -37,17 +37,13 @@ public class JsonFieldInfo {
     }
 
     func parseAttr(attr: Tokens): Unit {
-        parseKVAttr(attr, "JsonField",
-            {
-                ident: Token, value: Token => match (ident.value) {
-                    case "name" => this.newName = value.value
-                    case "ignore" => this.ignore = "true" == value.value
-                    case "omitempty" => this.omitempty = "true" == value.value
-                    case "timeformat" => this.timeformat = value.value
-                    case "raw" => this.raw = "true" == value.value
-                    case _ => throw Exception("JsonField attriable should be name, ignore, omitempty, timeformat, raw")
-                }
-            })
+        let map: MapToString = parserAttrs(attr, validKeys: ["name", "ignore", "omitempty", "timeformat", "raw"],
+            macroName: "JsonField")
+        this.newName = map.getString("name") ?? ""
+        this.ignore = map.getBool("ignore") ?? false
+        this.omitempty = map.getBool("omitempty") ?? false
+        this.raw = map.getBool("raw") ?? false
+        this.timeformat = map.getString("timeformat") ?? ""
     }
 
     public static func parse(attr: Tokens, input: Tokens): Unit {

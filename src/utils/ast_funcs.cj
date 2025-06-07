@@ -11,31 +11,29 @@
 package cjoy.utils
 
 import std.ast.*
-import std.collection.ArrayList
+import std.collection.{ArrayList, HashSet}
 
-protected func parseKVAttr(attr: Tokens, marcroName: String, cb: (ident: Token, value: Token) -> Unit): Unit {
-    if ((attr.size + 1) % 4 != 0) {
-        diagReport(DiagReportLevel.ERROR, attr, "${marcroName} attriable should link 'attrname= value'", "")
-        throw Exception("${marcroName} attriable should link 'attrname= value'")
+func checkAttr(attrNames: Array<String>, validAttrNames: Array<String>): (Bool, String) {
+    let names = HashSet(attrNames)
+    if (names.size != attrNames.size) {
+        return (false, "duplicated attributes")
     }
-
-    for (idx in 0..attr.size : 4) {
-        let ident = attr.get(idx)
-        if (ident.kind != TokenKind.IDENTIFIER) {
-            diagReport(DiagReportLevel.ERROR, attr,
-                "${marcroName} attriable name should be a identitier, but is ${ident.kind}", "")
-            throw Exception("${marcroName} attriable name should be a identitier")
-        }
-        let assign = attr.get(idx + 1)
-        if (assign.kind != TokenKind.ASSIGN) {
-            diagReport(DiagReportLevel.ERROR, attr, "${marcroName} attriable name should be =, but is ${ident.kind}", ""
-            )
-            throw Exception("${marcroName} attriable name should be =")
-        }
-
-        let value = attr.get(idx + 2)
-        cb(ident, value)
+    names.remove(all: validAttrNames)
+    if (!names.isEmpty()) {
+        return (false, "invalid attributes ${names}")
     }
+    return (true, "ok")
+}
+
+protected func parserAttrs(tokens: Tokens, validKeys!: Array<String>, macroName!: String): MapToString {
+    let visitor = TokenStrValueVisitor()
+    let parser = TokenParser(visitor, tokens)
+    let resust = (parser.parse() as MapToString).getOrThrow()
+    let (status, info) = checkAttr(resust.keys().toArray(), validKeys)
+    if (!status) {
+        throw Exception("@${macroName} has invalid attributes. ${info}")
+    }
+    resust
 }
 
 protected func joinTokens(tokensList: ArrayList<Tokens>, separator: Token): Tokens {

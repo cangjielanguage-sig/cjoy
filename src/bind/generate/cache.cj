@@ -25,7 +25,7 @@ class BindInfoCache {
     }
 
     public static func create(vd: VarDecl): BindFieldGenerator {
-        let fieldInfo = FIELD_INFOS.get(vd.identifier.value).getOrDefault({=> BindFieldInfo(vd)})
+        let fieldInfo = FIELD_INFOS.get(vd.identifier.value) ?? BindFieldInfo(vd)
         BindFieldGenerator(vd.identifier, fieldInfo)
     }
 }

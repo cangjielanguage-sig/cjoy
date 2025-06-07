@@ -12,7 +12,7 @@ package cjoy.validation.generate
 
 import std.collection.{ArrayList, filter, first}
 import cjoy.validation.api.*
-import cjoy.utils.{parseKVAttr, joinTokens}
+import cjoy.utils.{parserAttrs, MapToString, MapListGetFunc, joinTokens}
 import std.convert.Parsable
 import std.time.DateTime
 import std.ast.*
@@ -148,15 +148,10 @@ abstract class MinMaxBaseConstraintGenerator <: ConstraintGenerator {
     }
 
     protected func parseAttr(attr: Tokens): Unit {
-        parseKVAttr(attr, marcroName,
-            {
-                ident: Token, value: Token => match (ident.value) {
-                    case "min" => this.min = value.value
-                    case "max" => this.max = value.value
-                    case "msg" => this.msg = value.value
-                    case _ => throw Exception("${marcroName} attriable should be min, max, msg")
-                }
-            })
+        let map: MapToString = parserAttrs(attr, validKeys: ["min", "max", "msg"], macroName: marcroName)
+        this.min = map.getString("min") ?? "0"
+        this.max = map.getString("max") ?? "100"
+        this.msg = map.getString("msg") ?? ""
     }
 }
 
@@ -168,13 +163,8 @@ abstract class MsgBaseConstraintGenerator <: ConstraintGenerator {
     }
 
     protected func parseAttr(attr: Tokens): Unit {
-        parseKVAttr(attr, marcroName,
-            {
-                ident: Token, value: Token => match (ident.value) {
-                    case "msg" => this.msg = value.value
-                    case _ => throw Exception("${marcroName} attriable should be msg")
-                }
-            })
+        let map: MapToString = parserAttrs(attr, validKeys: ["msg"], macroName: marcroName)
+        this.msg = map.getString("msg") ?? ""
     }
 }
 
@@ -235,14 +225,9 @@ class PatternConstraintGenerator <: ConstraintGenerator {
     }
 
     protected func parseAttr(attr: Tokens): Unit {
-        parseKVAttr(attr, marcroName,
-            {
-                ident: Token, value: Token => match (ident.value) {
-                    case "msg" => this.msg = value.value
-                    case "regex" => this.regex = value.value
-                    case _ => throw Exception("${marcroName} attriable should be regex, msg")
-                }
-            })
+        let map: MapToString = parserAttrs(attr, validKeys: ["regex", "msg"], macroName: marcroName)
+        this.regex = map.getString("regex") ?? ""
+        this.msg = map.getString("msg") ?? ""
     }
 
     protected func toConstraint(): Tokens {
@@ -256,19 +241,14 @@ class DateTimeRangeConstraintGenerator <: ConstraintGenerator {
     var after: String = "DateTime.now()"
 
     init() {
-        super("Pattern")
+        super("DateTimeRange")
     }
 
     protected func parseAttr(attr: Tokens): Unit {
-        parseKVAttr(attr, marcroName,
-            {
-                ident: Token, value: Token => match (ident.value) {
-                    case "msg" => this.msg = value.value
-                    case "before" => this.before = value.value
-                    case "after" => this.after = value.value
-                    case _ => throw Exception("${marcroName} attriable should be before, after, msg")
-                }
-            })
+        let map: MapToString = parserAttrs(attr, validKeys: ["before", "after", "msg"], macroName: marcroName)
+        this.before = map.getString("before") ?? "DateTime.now().addYears(1)"
+        this.after = map.getString("after") ?? "DateTime.now()"
+        this.msg = map.getString("msg") ?? ""
     }
 
     protected func toConstraint(): Tokens {

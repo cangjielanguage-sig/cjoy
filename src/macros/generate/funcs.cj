@@ -13,7 +13,7 @@ package cjoy.macros.generate
 import std.ast.*
 import std.collection.*
 import cjoy.*
-import cjoy.utils.parseKVAttr
+import cjoy.utils.{parserAttrs, MapToString, MapListGetFunc}
 
 public enum MethodCatgory {
     MC_POST | MC_GET | MC_DELETE | MC_PUT | MC_PATCH | MC_HEAD | MC_HANDLER
@@ -36,15 +36,10 @@ class FuncInfo {
     }
 
     func parseAttr(attr: Tokens): Unit {
-        parseKVAttr(attr, macroName,
-            {
-                ident: Token, value: Token => match (ident.value) {
-                    case "path" => this.path = value.value
-                    case "produce" => this.produce = value.value
-                    case "methods" => this.methods = value.value
-                    case _ => throw Exception("${macroName} attriable should be name, consumer, produce")
-                }
-            })
+        let map: MapToString = parserAttrs(attr, validKeys: ["path", "produce", "methods"], macroName: macroName)
+        this.path = map.getString("path") ?? ""
+        this.produce = map.getString("produce") ?? ""
+        this.methods = map.getString("methods") ?? ""
     }
 
     func getMethods(): Array<String> {

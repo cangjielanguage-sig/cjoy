@@ -27,7 +27,7 @@ class JsonInfoCache {
     public static func create(vd: VarDecl): JsonFieldGenerator {
         let vtypeTokens = vd.declType.toTokens()
         let vtypeName = vtypeTokens[0].value
-        let fieldInfo = FIELD_INFOS.get(vd.identifier.value).getOrDefault({=> JsonFieldInfo(vd.identifier.value)})
+        let fieldInfo = FIELD_INFOS.get(vd.identifier.value) ?? JsonFieldInfo(vd.identifier.value)
         match (vtypeName) {
             case "String" => StringJsonFieldGenerator(vd, fieldInfo)
             case "Option" | "?" => OptionJsonFieldGenerator(vd, fieldInfo)
