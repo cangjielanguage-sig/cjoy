@@ -549,6 +549,7 @@ class UserInfo {
 |---|---|---|
 |`@Json`||作用于类与结构体上，标注其自动生成Json序列化与反序列化函数，类与结构体需要无参数的构建函数。|
 |`@JsonField`|name=xx,omitempty=true,ignore=false,timeformat="..."|作用类与结构体的成员变量上，变量需要采用var声明并要指定类型。|
+|`@Jsonable`||原生Json DSL，作用于满足JSON格式的一串符号上，把它转成JsonSerializable对象，可以调用JsonTool.toJson方法序列化为json字符串。|
 
 以上宏的属性参数说明：
 
@@ -570,9 +571,13 @@ JoyContext提供两个函数支持对HTTP Body的绑定与映射：
  - `readJson` 或者 `bindJsonBody`：对Body内容反序列化为类与结构体
  - `json`: 序列化类与结构体对象序列化并设置Body内容
 
-使用示例：[examples/rest](src/examples/rest/main.cj)
+使用示例：[examples/rest](src/examples/rest/main.cj) 。
 
 #### 高级用法
+
+更多的使用方式请参考 [test/json_test](src/test/json_test.cj) 。
+
+##### Any类型绑定
 
 一些反序列化场景，可以通过定义Any类型泛化接收不同Json类型，如下所示。
 
@@ -605,7 +610,7 @@ JoyContext提供两个函数支持对HTTP Body的绑定与映射：
 @Json
 public class DataAny {
     var a: Any = 1 // 实际反序列化之后类型为Int64
-    var b: Any = 2 // 实际反序列化之后类型为Int64
+    var b: Any = 2 // 实际反序列化之后类型为Float64
     var c: Any = Option<Any>.None // 实际反序列化之后类型为HashMap<String, Any>
     var d: Any = Option<Any>.None // 实际反序列化之后类型为List<HashMap<String, Any>>
 }
@@ -615,19 +620,21 @@ public class DataAny {
 
 |Json类型|仓颉类型|
 |---|---|
-|JsonObject|HashMap<String, Any>|
-|JsonAray|ArrayList<Any>|
+|JsonObject|`HashMap<String, Any>`|
+|JsonAray|`ArrayList<Any>`|
 |JsonBool|Bool|
 |JsonNumber|Int64或Float64|
 |JsonString|String|
-|JsonNull|Option<Any>.None|
+|JsonNull|`Option<Any>.None`|
+
+##### 获取原始Json内容
 
 当一个字段反序列化时，不展开解释只获取原始字节，可以通过`@JsonField`指定`raw=true`：
 
 ```
 @Json
 public class DataAny {
-    var a: Any = 1 /
+    var a: Any = 1 
     var b: Any = 2 
     var c: Any = Option<Any>.None 
     @JsonField[raw = true]
@@ -648,6 +655,50 @@ public class DataAny {
     "d2": "d2v"
   }
 ]
+```
+
+##### Json DSL
+
+宏`@Jsonable`用于构建原生Json对象，如下所示：
+
+```
+let x = "xyz"
+let d = @Jsonable(
+    {
+        "a":{
+            "a1":1,
+            "a2":x,
+            "a3":{
+                "a3a":1,
+                "a3b":x,
+                "a3c":true
+            },
+            "a4":[1,2]
+        },
+        "b":[1,2],
+        "c":true
+    }
+)
+let str = JsonTool.toJson(d)
+println(str) // 输出 {"a":{"a1":1,"a2":"xyz","a3":{"a3a":1,"a3b":"xyz","a3c":true},"a4":[1,2]},"b":[1,2],"c":true}
+```
+
+`@Jsonable`支持：
+
+ - 变量替换，如上述的`x`变量
+ - 字符串插值，如@Jsonable(["${x}", "abc"])
+
+搭配在请求处理Handler中使用示例：
+
+```
+@Get[path = "/json"]
+func pathGet(): JsonSerializable {
+  let x = "xyz"
+  @Jsonable({
+      "a": x, 
+      "b": "123"
+  })
+}
 ```
 
 ### 校验

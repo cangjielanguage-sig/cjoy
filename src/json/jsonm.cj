@@ -11,7 +11,7 @@
 macro package cjoy.json
 
 import std.ast.Tokens
-import cjoy.json.generate.{JsonClassInfo, JsonFieldInfo}
+import cjoy.json.generate.{JsonClassInfo, JsonFieldInfo, parseJsonable}
 
 // reimport the dependent
 public import cjoy.json.api.{JsonTool, JsonBox}
@@ -38,4 +38,11 @@ public macro Json(input: Tokens): Tokens {
 public macro JsonField(attr: Tokens, input: Tokens): Tokens {
     JsonFieldInfo.parse(attr, input)
     input
+}
+
+/**
+* Convert it to JsonSerializable obj, then you can JsonTool.toJson(obj) serialize it to json string
+*/
+public macro Jsonable(input: Tokens): Tokens {
+    parseJsonable(input)
 }

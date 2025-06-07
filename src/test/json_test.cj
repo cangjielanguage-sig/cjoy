@@ -284,7 +284,7 @@ public class JsonTestCaseSuit {
         let str = ###"{"a": 1, "b": 2, "c": {"c1": "c1v", "c2": 1.1}, "d":[{"d1": true, "d2": null},{"d1": false, "d2": "d2v"}]}"###
         let ts = JsonTool.fromJsonToAny(str)
         match (ts) {
-            case m: HashMap<String, Any> =>  @Assert(4, m.size )
+            case m: HashMap<String, Any> => @Assert(4, m.size )
             case _ => @Fail("deserialize failed")
         }
     }
@@ -294,7 +294,7 @@ public class JsonTestCaseSuit {
         let str = ###"{"a": 1, "b": 2, "c": {"c1": "c1v", "c2": 1.1}, "d":[{"d1": true, "d2": null},{"d1": false, "d2": "d2v"}]}"###
         let dc = JsonTool.fromJson<DataAny>(str)
         @Assert((dc.a as Int64).getOrThrow(), 1)
-        @Assert((dc.b as Int64).getOrThrow(), 2)        
+        @Assert((dc.b as Int64).getOrThrow(), 2)
     }
 
     @TestCase
@@ -307,10 +307,101 @@ public class JsonTestCaseSuit {
 
     @TestCase
     public func testAnyToJson(): Unit {
-        var dc  = DataAny()
+        var dc = DataAny()
         dc.c = HashMap<String, String>([("c1", "v1"), ("c2", "v2")])
         let str = JsonTool.toJson(dc)
         let expect = ###"{"a":1,"b":2,"c":{"c1":"v1","c2":"v2"}}"###
+        @Assert(str, expect)
+    }
+
+    @TestCase
+    public func testToJsonSimpleObj(): Unit {
+        let d = @Jsonable(
+            {
+                "a": 1,
+                "b": "xyz",
+                "c": 1.1,
+                "d": true
+            }
+        )
+        let str = JsonTool.toJson(d)
+        println(str)
+        let expect = ###"{"a":1,"b":"xyz","c":1.1,"d":true}"###
+        @Assert(str, expect)
+    }
+
+    @TestCase
+    public func testToJsonSimpleObjWithVar1(): Unit {
+        let b = "xyz"
+        let d = @Jsonable(
+            {
+                "a": 1,
+                "b": "${b}",
+                "c": 1.1,
+                "d": true
+            }
+        )
+        let str = JsonTool.toJson(d)
+        println(str)
+        let expect = ###"{"a":1,"b":"xyz","c":1.1,"d":true}"###
+        @Assert(str, expect)
+    }
+
+    @TestCase
+    public func testToJsonSimpleObjWithVar2(): Unit {
+        let b = "xyz"
+        let d = @Jsonable(
+            {
+                "a": 1,
+                "b": b,
+                "c": 1.1,
+                "d": true
+            }
+        )
+        let str = JsonTool.toJson(d)
+        println(str)
+        let expect = ###"{"a":1,"b":"xyz","c":1.1,"d":true}"###
+        @Assert(str, expect)
+    }
+
+    @TestCase
+    public func testToJsonSimpleArr(): Unit {
+        let d = @Jsonable(
+            [
+                1,
+                "xyz",
+                1.1,
+                true
+            ]
+        )
+        let str = JsonTool.toJson(d)
+        println(str)
+        let expect = ###"[1,"xyz",1.1,true]"###
+        @Assert(str, expect)
+    }
+
+    @TestCase
+    public func testToJsonComplex1(): Unit {
+        let x = "xyz"
+        let d = @Jsonable(
+            {
+                "a":{
+                    "a1":1,
+                    "a2":x,
+                    "a3":{
+                        "a3a":1,
+                        "a3b":x,
+                        "a3c":true
+                    },
+                    "a4":[1,2]
+                },
+                "b":[1,2],
+                "c":true
+            }
+        )
+        let str = JsonTool.toJson(d)
+        println(str)
+        let expect = ###"{"a":{"a1":1,"a2":"xyz","a3":{"a3a":1,"a3b":"xyz","a3c":true},"a4":[1,2]},"b":[1,2],"c":true}"###
         @Assert(str, expect)
     }
 }
