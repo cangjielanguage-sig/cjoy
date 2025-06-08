@@ -1,5 +1,5 @@
 /*
- * Copyright (c) lanlingx 2025-present. All rights resvered.
+ * Copyright (c) 2025 lanlingx(xiaotengfei) All rights resvered.
  * CJoy is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -15,8 +15,8 @@ import cjoy.bind.*
 import std.deriving.*
 import std.collection.*
 import std.time.*
-import net.http.*
-import encoding.url.URL
+import stdx.net.http.*
+import stdx.encoding.url.URL
 import std.unittest.*
 import std.unittest.testmacro.*
 

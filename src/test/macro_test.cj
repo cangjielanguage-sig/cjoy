@@ -1,5 +1,5 @@
 /*
- * Copyright (c) lanlingx 2025-present. All rights resvered.
+ * Copyright (c) 2025 lanlingx(xiaotengfei) All rights resvered.
  * CJoy is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -69,14 +69,14 @@ func pathGet2(@PathParam[name = p] a: String): String {
 @Get[path = "/path3/{p}"]
 func pathGet3(@PathParam[name = p] a: ?String): String {
     println(a)
-    a.getOrDefault({=> "p"})
+    a ?? "p"
 }
 
 // test path param with a new name type is Option 
 @Get[path = "/path4/{p}"]
 func pathGet4(@PathParam[name = p] a: Option<String>): String {
     println(a)
-    a.getOrDefault({=> "p"})
+    a ?? "p"
 }
 
 // test path param with a new name type is convert to Int 

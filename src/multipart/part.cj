@@ -1,5 +1,5 @@
 /*
- * Copyright (c) lanlingx 2025-present. All rights resvered.
+ * Copyright (c) 2025 lanlingx(xiaotengfei) All rights resvered.
  * CJoy is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -13,7 +13,7 @@ package cjoy.multipart
 import std.collection.HashMap
 import std.fs.File
 import std.io.{InputStream, ByteBuffer}
-import net.http.HttpHeaders
+import stdx.net.http.HttpHeaders
 
 public class JoyMultiPart {
     let _headers: HttpHeaders = HttpHeaders()
@@ -46,7 +46,7 @@ public class JoyMultiPart {
     public prop name: String {
         get() {
             parseContentDisposition()
-            _dispositionParams.get("name").getOrDefault({=> ""})
+            _dispositionParams.get("name") ?? ""
         }
     }
 
@@ -56,7 +56,7 @@ public class JoyMultiPart {
     public prop fileName: String {
         get() {
             parseContentDisposition()
-            _dispositionParams.get("filename").getOrDefault({=> ""})
+            _dispositionParams.get("filename") ?? ""
         }
     }
 

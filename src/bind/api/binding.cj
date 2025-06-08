@@ -1,5 +1,5 @@
 /*
- * Copyright (c) lanlingx 2025-present. All rights resvered.
+ * Copyright (c) 2025 lanlingx(xiaotengfei) All rights resvered.
  * CJoy is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -10,11 +10,11 @@
 
 package cjoy.bind.api
 
-import std.convert.*
+import std.convert.Parsable
 import std.collection.{HashMap, ArrayList, map, collectArray, collectArrayList}
 import std.time.DateTime
-import encoding.url.Form
-import net.http.HttpHeaders
+import stdx.encoding.url.Form
+import stdx.net.http.HttpHeaders
 
 /**
  * the interface of binding
@@ -63,7 +63,7 @@ extend HashMap<String, String> <: JoyBindSource {
 extend String <: JoyBindable<String> {
     public static func bind(source: JoyBindSource, name: String, defaultValue: ?String, _: ?String): ?String {
         if (let Some(dv) <- defaultValue) {
-            source.getOne(name).getOrDefault({=> dv})
+            source.getOne(name) ?? dv
         } else {
             source.getOne(name)
         }
@@ -78,7 +78,7 @@ extend<T> Option<T> <: JoyBindable<Option<T>> where T <: JoyBindable<T> {
 
 func bindParsable<T>(source: JoyBindSource, name: String, defaultValue: ?String): ?T where T <: Parsable<T> {
     if (let Some(dv) <- defaultValue) {
-        T.tryParse(source.getOne(name).getOrDefault({=> dv}))
+        T.tryParse(source.getOne(name) ?? dv)
     } else {
         if (let Some(v) <- source.getOne(name)) {
             T.tryParse(v)
@@ -190,9 +190,9 @@ extend DateTime <: JoyBindable<DateTime> {
     public static func bind(source: JoyBindSource, name: String, defaultValue: ?String, timeformat: ?String): ?DateTime {
         if (let Some(dv) <- defaultValue) {
             if (let Some(f) <- timeformat) {
-                DateTime.parse(source.getOne(name).getOrDefault({=> dv}), f)
+                DateTime.parse(source.getOne(name) ?? dv, f)
             } else {
-                DateTime.parse(source.getOne(name).getOrDefault({=> dv}))
+                DateTime.parse(source.getOne(name) ?? dv)
             }
         } else {
             if (let Some(v) <- source.getOne(name)) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) lanlingx 2025-present. All rights resvered.
+ * Copyright (c) 2025 lanlingx(xiaotengfei) All rights resvered.
  * CJoy is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -17,7 +17,7 @@ import std.unittest.testmacro.*
 
 @Test
 public class MultiPartParserTestCaseSuit {
-    private func checkPart(name: String, value: String, parser: JoyMultiPartParser, handler: JoyMemoryMultiPartHandler): JoyMultiPart {
+    static func checkPart(name: String, value: String, parser: JoyMultiPartParser, handler: JoyMemoryMultiPartHandler): JoyMultiPart {
         let part = parser.getPart(name).getOrThrow()
         let content = handler.getContent(name)
         let rc = String.fromUtf8(content.getOrThrow().bytes())
@@ -27,7 +27,7 @@ public class MultiPartParserTestCaseSuit {
         part
     }
 
-    private func checkPartProp(part: JoyMultiPart, filename: String, contType: String): Unit {
+    static func checkPartProp(part: JoyMultiPart, filename: String, contType: String): Unit {
         if (part.fileName != filename) {
             @Fail("the file name is not match, expect=${filename}, real=${part.fileName}")
         }

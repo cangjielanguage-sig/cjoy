@@ -1,5 +1,5 @@
 /*
- * Copyright (c) lanlingx 2024-present. All rights resvered.
+ * Copyright (c) 2025 lanlingx(xiaotengfei) All rights resvered.
  */
 
 package cjoy.examples.simple
@@ -21,7 +21,7 @@ main(): Int64 {
         "/{name}",
         {
             ctx: JoyContext =>
-            let name = ctx.getParam("name").getOrDefault({=> "no name"})
+            let name = ctx.getParam("name") ?? "no name"
             ctx.string("/{name}, name=${name}")
         }
     )
@@ -38,7 +38,7 @@ main(): Int64 {
         "/{name}",
         {
             ctx: JoyContext =>
-            let name = ctx.getParam("name").getOrDefault({=> "no name"})
+            let name = ctx.getParam("name") ?? "no name"
             ctx.string("/v1/{name}, name=${name}")
         }
     )
@@ -52,7 +52,7 @@ main(): Int64 {
         "/*",
         {
             ctx: JoyContext =>
-            let name = ctx.getParam("*").getOrDefault({=> "no name"})
+            let name = ctx.getParam("*") ?? "no name"
             ctx.string("/v1/*, name=${name}")
         }
     )
@@ -63,7 +63,7 @@ main(): Int64 {
         "/{name}",
         {
             ctx: JoyContext =>
-            let name = ctx.getParam("name").getOrDefault({=> "no name"})
+            let name = ctx.getParam("name") ?? "no name"
             ctx.string("/v1/user/{name}, name=${name}")
         }
     )
@@ -81,7 +81,7 @@ main(): Int64 {
         "/{name}",
         {
             ctx: JoyContext =>
-            let name = ctx.getParam("name").getOrDefault({=> "no name"})
+            let name = ctx.getParam("name") ?? "no name"
             ctx.string("/auth/{name}, name=${name}")
         }
     )

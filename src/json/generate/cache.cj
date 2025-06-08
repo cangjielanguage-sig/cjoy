@@ -1,5 +1,5 @@
 /*
- * Copyright (c) lanlingx 2024-present. All rights resvered.
+ * Copyright (c) 2025 lanlingx(xiaotengfei) All rights resvered.
  * CJoy is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -27,12 +27,13 @@ class JsonInfoCache {
     public static func create(vd: VarDecl): JsonFieldGenerator {
         let vtypeTokens = vd.declType.toTokens()
         let vtypeName = vtypeTokens[0].value
-        let fieldInfo = FIELD_INFOS.get(vd.identifier.value).getOrDefault({=> JsonFieldInfo(vd.identifier.value)})
+        let fieldInfo = FIELD_INFOS.get(vd.identifier.value) ?? JsonFieldInfo(vd.identifier.value)
         match (vtypeName) {
             case "String" => StringJsonFieldGenerator(vd, fieldInfo)
             case "Option" | "?" => OptionJsonFieldGenerator(vd, fieldInfo)
             case "Rune" => RuneJsonFieldGenerator(vd, fieldInfo)
             case "DateTime" => DateTimeJsonFieldGenerator(vd, fieldInfo)
+            case "Any" => AnyJsonFieldGenerator(vd, fieldInfo)
             case _ => JsonFieldGenerator(vd, fieldInfo)
         }
     }

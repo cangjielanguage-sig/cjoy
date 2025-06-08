@@ -1,5 +1,5 @@
 /*
- * Copyright (c) lanlingx 2024-present. All rights resvered.
+ * Copyright (c) 2025 lanlingx(xiaotengfei) All rights resvered.
  * CJoy is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -229,7 +229,7 @@ class TreeNode<T> {
             ret = n
 
             // label for param nodes is the delimiter byte
-            var p = xsearch.indexOf(xn._tail).getOrDefault({=> -1})
+            var p = xsearch.indexOf(xn._tail) ?? -1
             if (p < 0) {
                 if (xn._tail == b'/') {
                     p = xsearch.size
@@ -373,7 +373,7 @@ class TreeNode<T> {
                     continue
                 }
             } else if (node._type == NT_PARAM || node._type == NT_REGEXP) {
-                idx = pattern.lastIndexOf(b'}').getOrDefault({=> -1}) + 1
+                idx = (pattern.lastIndexOf(b'}') ?? -1) + 1
             } else if (node._type == NT_CATCH_ALL) {
                 idx = longestPrefix(pattern, "*")
             }
@@ -465,8 +465,8 @@ type TreeNodes<T> = ArrayList<TreeNode<T>>
 extend<T> TreeNodes<T> {
     func sortByLableTail() {
         // sort the list of nodes by label
-        this.sortBy(comparator: {a, b => a._label.compare(b._label)})
-        //sort(this, by: {a, b => a._label.compare(b._label)})
+        //this.sortBy(comparator: {a, b => a._label.compare(b._label)})
+        sort(this, by: {a, b => a._label.compare(b._label)})
         // pushes nodes with '/' as the tail to the end of the list for param nodes.
         let last = this.size - 1
         for (i in last..=0 : -1) {
@@ -556,8 +556,8 @@ class Segment {
     }
 
     private func parse(pattern: String): Unit {
-        let ps = pattern.indexOf(b'{').getOrDefault({=> -1})
-        let ws = pattern.indexOf(b'*').getOrDefault({=> -1})
+        let ps = pattern.indexOf(b'{') ?? -1
+        let ws = pattern.indexOf(b'*') ?? -1
         let len = pattern.size
 
         if (ps < 0 && ws < 0) {

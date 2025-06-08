@@ -1,5 +1,5 @@
 /*
- * Copyright (c) lanlingx 2025-present. All rights resvered.
+ * Copyright (c) 2025 lanlingx(xiaotengfei) All rights resvered.
  * CJoy is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -13,7 +13,7 @@ package cjoy.test
 import std.io.*
 import std.unittest.*
 import std.unittest.testmacro.*
-import net.http.*
+import stdx.net.http.*
 import cjoy.*
 import cjoy.json.*
 
@@ -52,7 +52,7 @@ public class RouteTestCaseSuit {
                 "/users/{name}",
                 {
                     ctx: JoyContext =>
-                    let name = ctx.getParam("name").getOrDefault({=> "no name"})
+                    let name = ctx.getParam("name") ?? "no name"
                     ctx.string("/users/${name}")
                 }
             )
@@ -60,8 +60,8 @@ public class RouteTestCaseSuit {
                 "/users/{name}/posts/{postid}",
                 {
                     ctx: JoyContext =>
-                    let name = ctx.getParam("name").getOrDefault({=> "no name"})
-                    let postid = ctx.getParam("postid").getOrDefault({=> "no post id"})
+                    let name = ctx.getParam("name") ?? "no name"
+                    let postid = ctx.getParam("postid") ?? "no post id"
                     ctx.string("/users/${name}/posts/${postid}")
                 }
             )

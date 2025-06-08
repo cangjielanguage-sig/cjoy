@@ -1,5 +1,5 @@
 /*
- * Copyright (c) lanlingx 2025-present. All rights resvered.
+ * Copyright (c) 2025 lanlingx(xiaotengfei) All rights resvered.
  * CJoy is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -12,7 +12,7 @@ package cjoy.macros.generate
 
 import std.ast.*
 import std.collection.*
-import cjoy.utils.{parseKVAttr, TypeNodeInfo}
+import cjoy.utils.{parserAttrs, MapToString, MapListGetFunc, TypeNodeInfo}
 
 public enum ParamCatgory {
     PC_PATH
@@ -109,15 +109,10 @@ open class ParamInfo {
     }
 
     func parseAttr(attr: Tokens): Unit {
-        parseKVAttr(attr, marcroName,
-            {
-                ident: Token, value: Token => match (ident.value) {
-                    case "name" => this.name = value.value
-                    case "timeformat" => this.timeformat = value.value
-                    case "default" => this.defValue = value.value
-                    case _ => throw Exception("${marcroName} attriable should be name, timeformat, defalut")
-                }
-            })
+        let map: MapToString = parserAttrs(attr, validKeys: ["name", "timeformat", "default"], macroName: marcroName)
+        this.name = map.getString("name") ?? ""
+        this.timeformat = map.getString("timeformat") ?? ""
+        this.defValue = map.getString("default") ?? ""
     }
 }
 

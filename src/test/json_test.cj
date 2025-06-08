@@ -1,5 +1,5 @@
 /*
- * Copyright (c) lanlingx 2024-present. All rights resvered.
+ * Copyright (c) 2025 lanlingx(xiaotengfei) All rights resvered.
  * CJoy is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -12,6 +12,7 @@ package cjoy.test
 
 import cjoy.json.*
 import std.collection.*
+import std.deriving.Derive
 import std.unittest.*
 import std.unittest.testmacro.*
 
@@ -122,6 +123,49 @@ public class DataNested2 {
     var list: ArrayList<DataClass> = ArrayList<DataClass>()
 
     var map: HashMap<String, DataClass> = HashMap<String, DataClass>()
+}
+
+@Json
+public class DataAny {
+    var a: Any = 1
+    var b: Any = 2
+    var c: Any = HashMap<String, Any>()
+}
+
+@Json
+public class DataAny2 {
+    var a: Any = 1
+    var b: Any = 2
+    @JsonField[raw = true]
+    var c: Any = HashMap<String, Any>()
+}
+
+@Json[description: "user info"]
+class UserSchema {
+    @JsonField[description: "the user name"]
+    var name: String = ""
+    @JsonField[description: "the address of user", required: false]
+    var address: String = ""
+    @JsonField[description: "the user gender"]
+    var gender: Int = 0
+
+    @JsonField[schema: {
+      "type": "object",
+      "description": "the user addon info",
+      "properties": {
+        "info1": {
+           "type": "string",
+           "description": "xxxx",
+        }
+      },
+      "required": [info1]
+    }]
+    var addOnInfo: HashMap<String, String> = HashMap()
+
+    @JsonField[description: "option desc"]
+    var f1: Option<String> = None
+    @JsonField[description: "arr desc"]
+    var arr: Array<String> = Array()
 }
 
 @Test
@@ -263,4 +307,138 @@ public class JsonTestCaseSuit {
         @Assert(dc.height, 2)
     }
 
+    @TestCase
+    public func testToAny1(): Unit {
+        let str = ###"{"a": 1, "b": 2, "c": {"c1": "c1v", "c2": 1.1}, "d":[{"d1": true, "d2": null},{"d1": false, "d2": "d2v"}]}"###
+        let ts = JsonTool.fromJsonToAny(str)
+        match (ts) {
+            case m: HashMap<String, Any> => @Assert(4, m.size )
+            case _ => @Fail("deserialize failed")
+        }
+    }
+
+    @TestCase
+    public func testToAny2(): Unit {
+        let str = ###"{"a": 1, "b": 2, "c": {"c1": "c1v", "c2": 1.1}, "d":[{"d1": true, "d2": null},{"d1": false, "d2": "d2v"}]}"###
+        let dc = JsonTool.fromJson<DataAny>(str)
+        @Assert((dc.a as Int64).getOrThrow(), 1)
+        @Assert((dc.b as Int64).getOrThrow(), 2)
+    }
+
+    @TestCase
+    public func testToAny3(): Unit {
+        let str = ###"{"a": 1, "b": 2, "c": {"c1": "c1v", "c2": 1.1}, "d":[{"d1": true, "d2": null},{"d1": false, "d2": "d2v"}]}"###
+        let dc = JsonTool.fromJson<DataAny2>(str)
+        let c = String.fromUtf8((dc.c as Array<Byte>).getOrThrow())
+        @Assert(c, ###"{"c1": "c1v", "c2": 1.1}"###)
+    }
+
+    @TestCase
+    public func testAnyToJson(): Unit {
+        var dc = DataAny()
+        dc.c = HashMap<String, String>([("c1", "v1"), ("c2", "v2")])
+        let str = JsonTool.toJson(dc)
+        let expect = ###"{"a":1,"b":2,"c":{"c1":"v1","c2":"v2"}}"###
+        @Assert(str, expect)
+    }
+
+    @TestCase
+    public func testToJsonSimpleObj(): Unit {
+        let d = @Jsonable(
+            {
+                "a": 1,
+                "b": "xyz",
+                "c": 1.1,
+                "d": true
+            }
+        )
+        let str = JsonTool.toJson(d)
+        println(str)
+        let expect = ###"{"a":1,"b":"xyz","c":1.1,"d":true}"###
+        @Assert(str, expect)
+    }
+
+    @TestCase
+    public func testToJsonSimpleObjWithVar1(): Unit {
+        let b = "xyz"
+        let d = @Jsonable(
+            {
+                "a": 1,
+                "b": "${b}",
+                "c": 1.1,
+                "d": true
+            }
+        )
+        let str = JsonTool.toJson(d)
+        println(str)
+        let expect = ###"{"a":1,"b":"xyz","c":1.1,"d":true}"###
+        @Assert(str, expect)
+    }
+
+    @TestCase
+    public func testToJsonSimpleObjWithVar2(): Unit {
+        let b = "xyz"
+        let d = @Jsonable(
+            {
+                "a": 1,
+                "b": b,
+                "c": 1.1,
+                "d": true
+            }
+        )
+        let str = JsonTool.toJson(d)
+        println(str)
+        let expect = ###"{"a":1,"b":"xyz","c":1.1,"d":true}"###
+        @Assert(str, expect)
+    }
+
+    @TestCase
+    public func testToJsonSimpleArr(): Unit {
+        let d = @Jsonable(
+            [
+                1,
+                "xyz",
+                1.1,
+                true
+            ]
+        )
+        let str = JsonTool.toJson(d)
+        println(str)
+        let expect = ###"[1,"xyz",1.1,true]"###
+        @Assert(str, expect)
+    }
+
+    @TestCase
+    public func testToJsonComplex1(): Unit {
+        let x = "xyz"
+        let d = @Jsonable(
+            {
+                "a":{
+                    "a1":1,
+                    "a2":x,
+                    "a3":{
+                        "a3a":1,
+                        "a3b":x,
+                        "a3c":true
+                    },
+                    "a4":[1,2]
+                },
+                "b":[1,2],
+                "c":true
+            }
+        )
+        let str = JsonTool.toJson(d)
+        println(str)
+        let expect = ###"{"a":{"a1":1,"a2":"xyz","a3":{"a3a":1,"a3b":"xyz","a3c":true},"a4":[1,2]},"b":[1,2],"c":true}"###
+        @Assert(str, expect)
+    }
+    
+    @TestCase
+    public func testToJsonSchema(): Unit {
+        let schema = UserSchema.toJsonSchema()
+        let json = JsonTool.toJson(schema)
+        println(json)
+        let expect = ###"{"type":"object","description":"user info","properties":{"name":{"type":"string","description":"the user name"},"address":{"type":"string","description":"the address of user"},"gender":{"type":"integer","description":"the user gender"},"addOnInfo":{"type":"object","description":"the user addon info","properties":{"info1":{"type":"string","description":"xxxx"}},"required":["info1"]},"f1":{"type":"string","description":"option desc"},"arr":{"type":"array","description":"arr desc","items":{"type":"string"}}},"required":["name","gender","addOnInfo","arr"]}"###
+        @Assert(json, expect)
+    }
 }

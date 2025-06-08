@@ -1,5 +1,5 @@
 /*
- * Copyright (c) lanlingx 2024-present. All rights resvered.
+ * Copyright (c) 2025 lanlingx(xiaotengfei) All rights resvered.
  * CJoy is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -13,9 +13,9 @@ package cjoy.framework
 import std.collection.{HashMap, ArrayList}
 import std.io.{InputStream, ByteBuffer, copy, StringReader}
 import std.net.IPAddress
-import log.Logger
-import net.http.{HttpContext, RedirectHandler, NotFoundHandler, HttpStatusCode, HttpResponseBuilder, Cookie}
-import encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonReader, JsonWriter}
+import stdx.log.Logger
+import stdx.net.http.{HttpContext, RedirectHandler, NotFoundHandler, HttpStatusCode, HttpResponseBuilder, Cookie}
+import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonReader, JsonWriter}
 import cjoy.bind.api.JoyBindable
 
 /**
@@ -183,7 +183,7 @@ public class JoyContext {
      */
     public func getQuery(name: String, defaultValue: String): String {
         let val = _httpContext.request.url.queryForm.get(name)
-        val.getOrDefault({=> defaultValue})
+        val ?? defaultValue
     }
 
     /**
@@ -218,7 +218,7 @@ public class JoyContext {
      */
     public func getPostForm(name: String, defaultValue: String): String {
         let val = _httpContext.request.form.get(name)
-        val.getOrDefault({=> defaultValue})
+        val ?? defaultValue
     }
 
     /**
@@ -474,7 +474,7 @@ public class JoyContext {
      * @return the content type
      */
     public func getContentType(): String {
-        _httpContext.request.headers.getFirst("content-type").getOrDefault({=> ""})
+        _httpContext.request.headers.getFirst("content-type") ?? ""
     }
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) lanlingx 2024-present. All rights resvered.
+ * Copyright (c) 2025 lanlingx(xiaotengfei) All rights resvered.
  * CJoy is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -24,19 +24,7 @@ class RuneJsonFieldGenerator <: JsonFieldGenerator {
     }
 
     public override func genDeserializeTokens(): Tokens {
-        quote(case $(info.jsonKeyName()) => obj.$(varId) = readRune(reader)
+        quote(case $(info.jsonKeyName()) => obj.$(varId) = JsonTool.readRune(reader)
       )
-    }
-
-    public override func genAddonFuncTokens(): Tokens {
-        quote(
-            private static func readRune(reader: JsonReader): Rune {
-                let str = reader.readValue<String>()
-                if (str.toRuneArray().size != 1) {
-                    throw Exception("the json value is not Rune")
-                }
-                Rune(str[0])
-            }
-        )
     }
 }

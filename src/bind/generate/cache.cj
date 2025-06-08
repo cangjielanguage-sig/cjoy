@@ -1,5 +1,5 @@
 /*
- * Copyright (c) lanlingx 2025-present. All rights resvered.
+ * Copyright (c) 2025 lanlingx(xiaotengfei) All rights resvered.
  * CJoy is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -25,7 +25,7 @@ class BindInfoCache {
     }
 
     public static func create(vd: VarDecl): BindFieldGenerator {
-        let fieldInfo = FIELD_INFOS.get(vd.identifier.value).getOrDefault({=> BindFieldInfo(vd)})
+        let fieldInfo = FIELD_INFOS.get(vd.identifier.value) ?? BindFieldInfo(vd)
         BindFieldGenerator(vd.identifier, fieldInfo)
     }
 }

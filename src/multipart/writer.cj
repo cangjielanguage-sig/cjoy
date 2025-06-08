@@ -1,5 +1,5 @@
 /*
- * Copyright (c) lanlingx 2025-present. All rights resvered.
+ * Copyright (c) 2025 lanlingx(xiaotengfei) All rights resvered.
  * CJoy is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -11,17 +11,159 @@
 package cjoy.multipart
 
 import std.io.{OutputStream, BufferedOutputStream, ByteBuffer}
-import std.time.DateTime
+import std.collection.{map, collectArray}
+import std.convert.*
+import std.random.Random
+import stdx.net.http.HttpHeaders
+import cjoy.utils.StrFunc
 
-public class JoyMultiPartWriter {
+/**
+* multi part writer
+*/
+public class JoyMultiPartWriter <: Resource {
     private let _buffer: BufferedOutputStream<OutputStream>
-    private var _boundry: Array<Byte> = Array<Byte>(30, repeat: b'0')
+    private let _boundary: String
+    private var _lastPart: ?TmpPart = None
+    private var _closed: Bool = false
 
-    public init(output: OutputStream) {
+    public init(output: OutputStream, boundry!: ?String = None) {
         _buffer = BufferedOutputStream(output)
+        if (let Some(b) <- boundry) {
+            checkBoundary(b)
+            _boundary = b
+        } else {
+            _boundary = randBoundary()
+        }
     }
 
-    static func randBoundry(): Array<Byte> {
-        Array()
+    public prop boundary: String {
+        get() {
+            _boundary
+        }
     }
+
+    public prop formDataContentType: String {
+        get() {
+            var b: String = _boundary
+            if (b.indexFunc(isTSpecialAndSpace) >= 0) {
+                b = #'"${b}"'#
+            }
+            "multipart/form-data; boundary=" + b
+        }
+    }
+
+    public func createPart(headers: HttpHeaders) {
+        if (let Some(p) <- _lastPart) {
+            p.close()
+        }
+
+        if (_lastPart.isSome()) {
+            _buffer.write("\r\n--${_boundary}\r\n".toArray())
+        } else {
+            _buffer.write("--${_boundary}\r\n".toArray())
+        }
+
+        for ((name, values) in headers) {
+            _buffer.write("${name}: ${values.toArray()[0]}\r\n".toArray())
+        }
+
+        _buffer.write([b'\r', b'\n'])
+        _lastPart = TmpPart()
+    }
+
+    public func writePartData(bs: Array<Byte>) {
+        if (_lastPart.isNone()) {
+            throw IllegalArgumentException("part is not exist, must create it firstly.")
+        }
+        if (let Some(p) <- _lastPart) {
+            if (p._closed) {
+                throw IllegalArgumentException("can't write to finished part")
+            }
+        }
+        _buffer.write(bs)
+    }
+
+    public func createFromFile(fieldname: String, filename: String, contentType!: String = "application/octet-stream") {
+        let headers = HttpHeaders()
+        headers.add("Content-Disposition",
+            "form-data; name=\"${escapeQuotes(fieldname)}\"; filename=\"${escapeQuotes(filename)}\"")
+        headers.add("Content-Type", contentType)
+        createPart(headers)
+    }
+
+    public func createFormField(fieldname: String) {
+        let headers = HttpHeaders()
+        headers.add("Content-Disposition", "form-data; name=\"${escapeQuotes(fieldname)}\"")
+        createPart(headers)
+    }
+
+    public func writeField(fieldname: String, value: String) {
+        createFormField(fieldname)
+        writePartData(value.toArray())
+    }
+
+    private static func randBoundary(): String {
+        let r = Random()
+        let bs = r.nextBytes(30)
+        let array = bs |> map {b => b.format("x")} |> collectArray
+        String.join(array)
+    }
+
+    private static func checkBoundary(boundary: String) {
+        if (boundary.size < 1 || boundary.size > 70) {
+            throw IllegalArgumentException("invalid boundary length")
+        }
+
+        var idx = 0
+        for (c in boundary) {
+            idx++
+            if (b'A' <= c && c <= b'Z' || b'a' <= c && c <= b'z' || b'0' <= c && c <= b'9') {
+                continue
+            }
+            match (c) {
+                case b'\'' | b'(' | b')' | b'+' | b'_' | b',' | b'-' | b'.' | b'/' | b':' | b'=' | b'?' => continue
+                case ' ' =>
+                    if (idx != boundary.size) {
+                        continue
+                    }
+                case _ => ()
+            }
+            throw IllegalArgumentException("invalid boundary character")
+        }
+    }
+
+    private static func escapeQuotes(s: String): String {
+        s.replace("\\", "\\\\").replace(#'"'#, "\\\"")
+    }
+
+    public func close() {
+        if (_closed) {
+            return
+        }
+
+        if (let Some(p) <- _lastPart) {
+            p.close()
+            _lastPart = None
+        }
+        _buffer.write("\r\n--${_boundary}--\r\n".toArray())
+        _buffer.flush()
+        _closed = true
+    }
+
+    public func isClosed(): Bool {
+        _closed
+    }
+}
+
+private class TmpPart {
+    var _closed: Bool = false
+    func close() {
+        _closed = true
+    }
+}
+
+private let specail_chars = #"()<>@,;:\"/[]?= "#.toArray()
+
+private func isTSpecialAndSpace(b: Byte): Bool {
+    specail_chars.contains(b)
 }

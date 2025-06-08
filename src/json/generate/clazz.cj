@@ -1,5 +1,5 @@
 /*
- * Copyright (c) lanlingx 2024-present. All rights resvered.
+ * Copyright (c) 2025 lanlingx(xiaotengfei) All rights resvered.
  * CJoy is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -12,17 +12,25 @@ package cjoy.json.generate
 
 import std.ast.*
 import std.collection.ArrayList
-import cjoy.utils.ClassGenentor
+import cjoy.utils.{ClassGenentor, parserAttrs, MapToString, MapListGetFunc}
 
 public class JsonClassInfo {
     let classId: Token
     let fields: ArrayList<JsonFieldGenerator>
+    let description: String
 
-    init(classId: Token, vars: ArrayList<VarDecl>) {
+    init(attr: ?Tokens, classId: Token, vars: ArrayList<VarDecl>) {
         this.classId = classId
         this.fields = ArrayList<JsonFieldGenerator>()
         for (vd in vars) {
             this.fields.add(JsonInfoCache.create(vd))
+        }
+        
+        if (attr.isSome()) {
+            let map: MapToString = parserAttrs(attr.getOrThrow(), validKeys: ["description"], macroName: "Json")
+            this.description = map.getString("description") ?? ""
+        } else {
+            this.description = ""
         }
     }
 
@@ -52,13 +60,6 @@ public class JsonClassInfo {
             deserTokens += f.genDeserializeTokens()
         }
 
-        var addonFuncTokens = Tokens()
-        for (f in this.fields) {
-            if (f.info.jsonKeyName() == "") {
-                continue
-            }
-            addonFuncTokens += f.genAddonFuncTokens()
-        }
         quote(
             public static func fromJson(reader: JsonReader): $(classId) {
                 var obj = $(classId)()
@@ -80,29 +81,57 @@ public class JsonClassInfo {
                 }
                 obj
             }
-            $(addonFuncTokens)
         )
     }
 
-    public static func parse(input: Tokens): Tokens {
-        let decl: Decl = parseDecl(input)
-        let classGen = ClassGenentor("Json", decl)
-        if (!(decl is StructDecl) && !(decl is ClassDecl)) {
-            throw Exception("Json macro only using for struct or class")
+    func genToSchemaFunc(): Tokens {
+        var tokens = Tokens()
+        for (f in this.fields) {
+            if (f.info.jsonKeyName() == "") {
+                continue
+            }
+            let ts = f.genSchemaTokens()
+            if (ts.size == 0) {
+                continue
+            }
+            if (tokens.size > 0) {
+                tokens += Token(TokenKind.COMMA)
+                tokens += Token(TokenKind.NL)
+            }
+            tokens += ts
         }
+        quote(
+            public static func toSchema(): JsonSchemaType {
+                JsonSchemaType.Obj([
+                    $tokens
+                ])
+            }
+
+            public static func toJsonSchema(): JsonSerializable {
+                toSchema().toJson(description: $description)
+            }
+        )
+    }
+
+    public static func parse(attr: ?Tokens, input: Tokens): Tokens {
+        let (decl, pos) = parseDeclFragment(input)
+        let classGen = ClassGenentor("Json", decl)
 
         let ident = decl.identifier
-        let classInfo = JsonClassInfo(ident, classGen.variables)
+        let classInfo = JsonClassInfo(attr, ident, classGen.variables)
+        let supperTokens = quote(JsonSerializable & JsonDeserializable<$(classInfo.classId)> & ToJsonSchema)
 
         let serTokens = classInfo.genSerializeFunc()
         let deserTokens = classInfo.genDeserializeFunc()
+        let schemaTokens = classInfo.genToSchemaFunc()
+        let bindTokens = quote(
+            $(serTokens)
+            $(deserTokens)
+            $(schemaTokens)
+        )
+        let tokens =  classGen.genTokens(supperTokens, bindTokens)
         JsonInfoCache.clear()
 
-        quote(
-            extend $(classInfo.classId) <: JsonSerializable & JsonDeserializable<$(classInfo.classId)> {
-                $(serTokens)
-                $(deserTokens)
-            }
-        )
+        tokens + Token(TokenKind.NL) + input[pos..]
     }
 }

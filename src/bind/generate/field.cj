@@ -1,5 +1,5 @@
 /*
- * Copyright (c) lanlingx 2025-present. All rights resvered.
+ * Copyright (c) 2025 lanlingx(xiaotengfei) All rights resvered.
  * CJoy is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -12,8 +12,8 @@ package cjoy.bind.generate
 
 import std.ast.*
 import std.collection.Map
-import net.http.HttpRequest
-import cjoy.utils.{parseKVAttr, TypeNodeInfo, getDefValueOfType}
+import stdx.net.http.HttpRequest
+import cjoy.utils.{parserAttrs, MapToString, MapListGetFunc, TypeNodeInfo, getDefValueOfType}
 
 public class BindFieldInfo {
     let filedName: String
@@ -35,15 +35,10 @@ public class BindFieldInfo {
     }
 
     func parseAttr(attr: Tokens): Unit {
-        parseKVAttr(attr, "BindField",
-            {
-                ident: Token, value: Token => match (ident.value) {
-                    case "name" => this.bindName = value.value
-                    case "timeformat" => this.timeformat = value.value
-                    case "default" => this.defValue = value.value
-                    case _ => throw Exception("BindField attriable should be name, from, timeformat")
-                }
-            })
+        let map: MapToString = parserAttrs(attr, validKeys: ["name", "timeformat", "default"], macroName: "BindField")
+        this.bindName = map.getString("name") ?? ""
+        this.timeformat = map.getString("timeformat") ?? ""
+        this.defValue = map.getString("default")
     }
 
     public static func parse(attr: Tokens, input: Tokens): Unit {
@@ -92,6 +87,5 @@ class BindFieldGenerator {
             return quote(
                 $(varId): $(vType).bind(source, $(info.keyName()), $(info.getDefValue()), $(info.getTimeformat())).getOrThrow())
         }
-        
     }
 }

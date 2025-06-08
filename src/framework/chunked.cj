@@ -1,5 +1,5 @@
 /*
- * Copyright (c) lanlingx 2024-present. All rights resvered.
+ * Copyright (c) 2025 lanlingx(xiaotengfei) All rights resvered.
  * CJoy is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -11,8 +11,8 @@
 package cjoy.framework
 
 import std.io.ByteBuffer
-import net.http.{HttpContext, HttpResponseWriter, HttpStatusCode}
-import encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonReader, JsonWriter}
+import stdx.net.http.{HttpContext, HttpResponseWriter, HttpStatusCode}
+import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonReader, JsonWriter}
 
 public class JoyServerEventBuilder {
     private let _sb: StringBuilder = StringBuilder()

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) lanlingx 2025-present. All rights resvered.
+ * Copyright (c) 2025 lanlingx(xiaotengfei) All rights resvered.
  * CJoy is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -13,10 +13,10 @@ package cjoy.macros.generate
 import std.ast.*
 import std.collection.*
 import cjoy.*
-import cjoy.utils.parseKVAttr
+import cjoy.utils.{parserAttrs, MapToString, MapListGetFunc}
 
 class MiddlewareInfo {
-    let marcroName = "Middleware"
+    let macroName = "Middleware"
 
     let decl: FuncDecl
 
@@ -34,13 +34,8 @@ class MiddlewareInfo {
     }
 
     func parseAttr(attr: Tokens): Unit {
-        parseKVAttr(attr, marcroName,
-            {
-                ident: Token, value: Token => match (ident.value) {
-                    case "groups" => this.groups = value.value
-                    case _ => throw Exception("${marcroName} attriable should be groups")
-                }
-            })
+        let map: MapToString = parserAttrs(attr, validKeys: ["groups"], macroName: macroName)
+        this.groups = map.getString("groups") ?? ""
     }
 
     func genTokens(): Tokens {

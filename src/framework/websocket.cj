@@ -1,5 +1,5 @@
 /*
- * Copyright (c) lanlingx 2025-present. All rights resvered.
+ * Copyright (c) 2025 lanlingx(xiaotengfei) All rights resvered.
  * CJoy is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -12,10 +12,10 @@ package cjoy.framework
 
 import std.collection.{ArrayList, HashMap}
 import std.io.ByteBuffer
-import log.Logger
-import net.http.{WebSocket, WebSocketException, WebSocketFrameType, HttpHeaders}
-import encoding.url.Form
-import encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonReader, JsonWriter}
+import stdx.log.Logger
+import stdx.net.http.{WebSocket, WebSocketException, WebSocketFrameType, HttpHeaders}
+import stdx.encoding.url.Form
+import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonReader, JsonWriter}
 
 /**
  * the websocket message type.

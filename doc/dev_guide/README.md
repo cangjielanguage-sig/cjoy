@@ -24,7 +24,7 @@
     │   ├── generate
     │   │   ├── *.cj
     │   ├── jsonm.cj
-    │   └── utils
+    │   └── api
     │       └── *.cj
     ├── macros
     │   ├── generate
@@ -43,7 +43,8 @@
     │   ├── sse
     │   └── tls
 ├── doc
-│   ├── dev_guide.md
+│   ├── dev_guide
+│   ├── usage_guide
 │   └── imgs
 │       └── *.png
 ```
@@ -118,7 +119,7 @@ Json的序列化与反序列化基于`encoding.json.stream`接口，提供宏对
    - generate
      - JsonClassInfo：Json类宏的解释与代码生成
      - JsonFieldInfo：JsonField宏的解释与代码生成
-   - utils
+   - api
      - JsonTool：对象<->String互转辅助类
 
 原则：
@@ -151,3 +152,7 @@ Json的序列化与反序列化基于`encoding.json.stream`接口，提供宏对
 - chore: 构建过程或辅助工具的变动
 - revert: 回滚到上一个版本。
 - version: 版本管理、版本发布、源代码相关（含：依赖组件版本管理）
+
+
+----
+<< [返回](../../README.md)

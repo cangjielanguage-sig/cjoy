@@ -1,5 +1,5 @@
 /*
- * Copyright (c) lanlingx 2024-present. All rights resvered.
+ * Copyright (c) 2025 lanlingx(xiaotengfei) All rights resvered.
  * CJoy is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -11,8 +11,9 @@
 package cjoy.middleware
 
 import std.collection.HashMap
-import net.http.HttpStatusCode
+import stdx.net.http.HttpStatusCode
 import cjoy.{JoyMiddlewareHandler, JoyRequestHandlerChain, JoyContext}
+import cjoy.validation.JoyValidationException
 
 public class ExceptionHandler <: JoyMiddlewareHandler {
     public func handle(ctx: JoyContext, chain: JoyRequestHandlerChain): Unit {
@@ -23,11 +24,16 @@ public class ExceptionHandler <: JoyMiddlewareHandler {
                 ex.printStackTrace()
             }
             ctx.logger.error("handle request occurs an error, message=${ex.message}")
-            if (ex is NoneValueException || ex is IllegalArgumentException) {
-                // for Option.getOrThrow, Parable.parse
-                ctx.error(HttpStatusCode.STATUS_BAD_REQUEST)
-            } else {
-                ctx.error(HttpStatusCode.STATUS_INTERNAL_SERVER_ERROR)
+            match (ex) {
+                case e: NoneValueException =>
+                    // for Option.getOrThrow, Parable.parse
+                    ctx.error(HttpStatusCode.STATUS_BAD_REQUEST)
+                case e: IllegalArgumentException =>
+                    ctx.error(HttpStatusCode.STATUS_BAD_REQUEST)
+                case e: JoyValidationException =>
+                    ctx.json(HttpStatusCode.STATUS_BAD_REQUEST, e.toMap())
+                case _ => 
+                    ctx.error(HttpStatusCode.STATUS_INTERNAL_SERVER_ERROR)
             }
         }
     }

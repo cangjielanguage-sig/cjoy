@@ -1,5 +1,5 @@
 /*
- * Copyright (c) lanlingx 2024-present. All rights resvered.
+ * Copyright (c) 2025 lanlingx(xiaotengfei) All rights resvered.
  * CJoy is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -11,8 +11,8 @@
 package cjoy.middleware
 
 import std.collection.HashMap
-import net.http.HttpStatusCode
-import encoding.base64.fromBase64String
+import stdx.net.http.HttpStatusCode
+import stdx.encoding.base64.fromBase64String
 import cjoy.{JoyMiddlewareHandler, JoyRequestHandlerChain, JoyContext}
 
 public class BasicAuth <: JoyMiddlewareHandler {
