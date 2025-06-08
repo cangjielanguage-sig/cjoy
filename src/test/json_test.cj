@@ -140,6 +140,29 @@ public class DataAny2 {
     var c: Any = HashMap<String, Any>()
 }
 
+@Json
+class UserSchema {
+    @JsonField[description: "the user name"]
+    var name: String = ""
+    @JsonField[description: "the address of user", required: false]
+    var address: String = ""
+    @JsonField[description: "the user gender"]
+    var gender: Int = 0
+
+    @JsonField[schema: {
+      "type": "object",
+      "description": "the user addon info",
+      "properties": {
+        "info1": {
+           "type": "string",
+           "description": "xxxx",
+        }
+      },
+      "required": [info1]
+    }]
+    var addOnInfo: HashMap<String, String> = HashMap()
+}
+
 @Test
 public class JsonTestCaseSuit {
     @TestCase
@@ -403,5 +426,13 @@ public class JsonTestCaseSuit {
         println(str)
         let expect = ###"{"a":{"a1":1,"a2":"xyz","a3":{"a3a":1,"a3b":"xyz","a3c":true},"a4":[1,2]},"b":[1,2],"c":true}"###
         @Assert(str, expect)
+    }
+    
+    @TestCase
+    public func testToJsonSchema(): Unit {
+        let schema = UserSchema.toJsonSchema()
+        println(schema)
+        let expect = ###"{"type":"object","properties":{"name":{"type":"string","description":"the user name"},"address":{"type":"string","description":"the address of user"},"gender":{"type":"integer","description":"the user gender"},"addOnInfo":{{"type":"object","description":"the user addon info","properties":{"info1":{"type":"string","description":"xxxx"}},"required":["info1"]}}},"required":["name","gender","addOnInfo"]}"###
+        @Assert(schema, expect)
     }
 }

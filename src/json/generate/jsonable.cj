@@ -57,6 +57,5 @@ public func parseJsonable(input: Tokens): Tokens {
     let visitor = JsonTokenVisitor()
     let parser = TokenParser(visitor, input)
     let res = parser.parse()
-    println(res.toString())
     res
 }

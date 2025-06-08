@@ -76,19 +76,46 @@ public class JsonClassInfo {
         )
     }
 
+    func genToSchemaFunc(): Tokens {
+        var tokens = Tokens()
+        for (f in this.fields) {
+            if (f.info.jsonKeyName() == "") {
+                continue
+            }
+            let ts = f.genSchemaTokens()
+            if (ts.size == 0) {
+                continue
+            }
+            if (tokens.size > 0) {
+                tokens += Token(TokenKind.COMMA)
+                tokens += Token(TokenKind.NL)
+            }
+            tokens += ts
+        }
+        quote(
+            public static func toSchema(): JsonSchemaType {
+                JsonSchemaType.Obj([
+                    $tokens
+                ])
+            }
+        )
+    }
+
     public static func parse(input: Tokens): Tokens {
         let (decl, pos) = parseDeclFragment(input)
         let classGen = ClassGenentor("Json", decl)
 
         let ident = decl.identifier
         let classInfo = JsonClassInfo(ident, classGen.variables)
-        let supperTokens = quote(JsonSerializable & JsonDeserializable<$(classInfo.classId)>)
+        let supperTokens = quote(JsonSerializable & JsonDeserializable<$(classInfo.classId)> & ToJsonSchema)
 
         let serTokens = classInfo.genSerializeFunc()
         let deserTokens = classInfo.genDeserializeFunc()
+        let schemaTokens = classInfo.genToSchemaFunc()
         let bindTokens = quote(
             $(serTokens)
             $(deserTokens)
+            $(schemaTokens)
         )
         let tokens =  classGen.genTokens(supperTokens, bindTokens)
         JsonInfoCache.clear()

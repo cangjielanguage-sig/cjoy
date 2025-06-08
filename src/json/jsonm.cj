@@ -14,7 +14,7 @@ import std.ast.Tokens
 import cjoy.json.generate.{JsonClassInfo, JsonFieldInfo, parseJsonable}
 
 // reimport the dependent
-public import cjoy.json.api.{JsonTool, JsonBox}
+public import cjoy.json.api.{JsonTool, JsonBox, JsonSchemaInfo, JsonSchemaType, ToJsonSchema}
 public import std.time.DateTime
 public import std.io.ByteBuffer
 public import stdx.encoding.json.stream.*

@@ -11,8 +11,10 @@
 package cjoy.json.generate
 
 import std.ast.*
-import std.collection.Map
-import cjoy.utils.{parserAttrs, MapToString, MapListGetFunc}
+import std.collection.HashMap
+import cjoy.utils.{parserAttrs, MapToString, MapListGetFunc, converterMap}
+import std.io.ByteBuffer
+import stdx.encoding.json.stream.{JsonSerializable, JsonWriter}
 
 public class JsonFieldInfo {
     let originName: String
@@ -21,6 +23,11 @@ public class JsonFieldInfo {
     var omitempty: Bool = false
     var timeformat: String = ""
     var raw: Bool = false
+    
+    // 
+    var description: String = ""
+    var required: Bool = true
+    var schema: String = ""
 
     init(name: String) {
         this.originName = name
@@ -37,13 +44,32 @@ public class JsonFieldInfo {
     }
 
     func parseAttr(attr: Tokens): Unit {
-        let map: MapToString = parserAttrs(attr, validKeys: ["name", "ignore", "omitempty", "timeformat", "raw"],
+        let map: MapToString = parserAttrs(attr, validKeys: ["name", "ignore", "omitempty", "timeformat", "raw", "description", "required", "schema"],
             macroName: "JsonField")
         this.newName = map.getString("name") ?? ""
         this.ignore = map.getBool("ignore") ?? false
         this.omitempty = map.getBool("omitempty") ?? false
         this.raw = map.getBool("raw") ?? false
         this.timeformat = map.getString("timeformat") ?? ""
+        
+        this.description = map.getString("description") ?? ""
+        this.required = map.getBool("required") ?? true
+        /* the schama like 
+        {
+            "type": "interger",
+            "description": "description"
+        }
+        */
+        this.schema =  match(map.getMap("schema")) {
+            case Some(val) => 
+                let stream = ByteBuffer()
+                let writer = JsonWriter(stream)
+                let x: HashMap<String, JsonSerializable> = converterMap(val);
+                writer.writeValue(x)
+                writer.flush()
+                String.fromUtf8(stream.bytes())
+            case _ =>""
+        }
     }
 
     public static func parse(attr: Tokens, input: Tokens): Unit {
@@ -66,11 +92,18 @@ open class JsonFieldGenerator {
     protected let varId: Token
     protected let varType: TypeNode
     protected let info: JsonFieldInfo
+    private let isOption: Bool
+    private let notSchema: Bool
 
     init(vd: VarDecl, info: JsonFieldInfo) {
         this.varId = vd.identifier
         this.varType = vd.declType
         this.info = info
+
+        let vtypeTokens = varType.toTokens()
+        let vtypeName = vtypeTokens[0].value
+        this.isOption = vtypeName == "Option" || vtypeName == "?"
+        this.notSchema = vtypeName =="Any" || vtypeName == "HashMap"
     }
 
     public open func genSerializeTokens(): Tokens {
@@ -81,5 +114,18 @@ open class JsonFieldGenerator {
     public open func genDeserializeTokens(): Tokens {
         quote(case $(info.jsonKeyName()) => obj.$(varId) = reader.readValue<$(varType)>()
         )
+    }
+
+    public func genSchemaTokens(): Tokens {
+        if (info.schema != "") {
+            return quote(JsonSchemaInfo($(info.jsonKeyName()), schema: $(info.schema)))
+        }
+
+        if (notSchema) {
+            return Tokens()
+        }
+
+        let required = !isOption && info.required
+        quote(JsonSchemaInfo($(info.jsonKeyName()), schemaType:JsonTool.getSchema<$(varType)>(), description:$(info.description), required: $required))
     }
 }

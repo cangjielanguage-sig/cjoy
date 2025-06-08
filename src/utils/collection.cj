@@ -12,6 +12,40 @@ package cjoy.utils
 
 import std.collection.{ArrayList, HashMap}
 
+protected func converterList<T, R>(list: ArrayList<T>): ArrayList<R> {
+    let res = ArrayList<R>()
+    for (it in list) {
+        match (it) {
+            case x: R => res.add(x)
+            case x: HashMap<String, T> => 
+                let r: HashMap<String, R> = converterMap(x)
+                res.add((r as R).getOrThrow())
+            case x: ArrayList<T> => 
+                let r: ArrayList<R> = converterList(x)
+                res.add((r as R).getOrThrow())
+            case _ => ()
+        }
+    }
+    res
+}
+
+protected func converterMap<T, R>(map: HashMap<String, T>): HashMap<String, R> {
+    let res = HashMap<String, R>()
+    for ((k, v) in map) {
+        match (v) {
+            case x: R => res.add(k, x)
+            case x: HashMap<String, T> => 
+                let r: HashMap<String, R> = converterMap(x)
+                res.add(k, (r as R).getOrThrow())
+            case x: ArrayList<T> => 
+                let r: ArrayList<R> = converterList(x)
+                res.add(k, (r as R).getOrThrow())
+            case _ => ()
+        }
+    }
+    res
+}
+
 protected type MapToString = HashMap<String, ToString>
 
 protected type ListToString = ArrayList<ToString>
@@ -55,7 +89,7 @@ extend MapToString <: MapListGetFunc<String> {
     }
 }
 
-extend ListToString <: MapListGetFunc<Int64>{
+extend ListToString <: MapListGetFunc<Int64> {
     public func getString(idx: Int64): ?String {
         let x = this.get(idx)
         match (x) {

@@ -551,7 +551,7 @@ class UserInfo {
 |`@JsonField`|name=xx,omitempty=true,ignore=false,timeformat="..."|作用类与结构体的成员变量上，变量需要采用var声明并要指定类型。|
 |`@Jsonable`||原生Json DSL，作用于满足JSON格式的一串符号上，把它转成JsonSerializable对象，可以调用JsonTool.toJson方法序列化为json字符串。|
 
-以上宏的属性参数说明：
+以上宏的属性参数说明，属性可以采用`=`与`:`赋值，如`@JsonField[name=xx]`与`@JsonField[name:xx]`等价：
 
 |宏属性参数|默认值|是否可选|说明|
 |---|---|---|---|
@@ -560,6 +560,9 @@ class UserInfo {
 |`ignore`|false|是|值true/false，指定是否忽略此字段|
 |`timeformat`|DateTime.toString/parse方法默认格式|是|指定DateTime字段序列化的格式|
 |`raw`|false|是|当类型为Any，不反序列化此字段赋值原始字符串字节Array<Byte>|
+|`description`|false|是|用于构建字段的Json Schema中description|
+|`required`|true|是|用于构建字段的Json Schema中required，当类型为Option时默认为false|
+|`schema`|true|是|描述字段的完整Json Schema|
 
 宏展开编译之后，此类或结构体:
 
@@ -698,6 +701,40 @@ func pathGet(): JsonSerializable {
       "a": x, 
       "b": "123"
   })
+}
+```
+
+##### Json Schema
+
+宏`@Json`展开生成代码会实现`ToJsonSchema`接口，调用`toJsonSchema`方法获取此类型的JSON Schema。
+
+两种方式指定：
+
+ - 通过`description`与`required`指定
+ - 通过`schema` 指定完整的Json Schema，当schema属性存在时，忽略指定的`description`与`required`
+
+```
+@Json
+class UserInfo {
+    @JsonField[description: "the user name"]
+    var name: String = ""
+    @JsonField[description: "the address of user", required: false]
+    var address: String = ""
+    @JsonField[description: "the user gender"]
+    var gender: Int = 0
+
+    @JsonField[schema: {
+      "type": "object",
+      "description": "the user addon info",
+      "properties": {
+        "info1": {
+           "type": "string",
+           "description": "xxxx",
+        }
+      },
+      "required": [info1]
+    }]
+    var addOnInfo: HashMap<String, String> = HashMap()
 }
 ```
 

@@ -14,6 +14,7 @@ import std.io.ByteBuffer
 import std.collection.{ArrayList, HashMap}
 import std.convert.Parsable
 import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonReader, JsonWriter, JsonToken}
+import cjoy.utils.{converterMap, converterList}
 
 /**
  * json util tool
@@ -48,6 +49,19 @@ public class JsonTool {
         writer.writeValue(val)
         writer.flush()
         String.fromUtf8(stream.bytes())
+    }
+
+    public static func write(writer: JsonWriter, val: Any): Unit {
+        match (val) {
+            case x: HashMap<String, Any> => 
+                let map: HashMap<String, JsonSerializable> = converterMap(x)
+                map.toJson(writer)
+            case x: ArrayList<Any> =>  
+                let list: ArrayList<JsonSerializable> = converterList(x)
+                list.toJson(writer)
+            case x: JsonSerializable => x.toJson(writer)
+            case _ => ()
+        }
     }
 
     /**
@@ -120,5 +134,9 @@ public class JsonTool {
             throw Exception("the json value is not Rune")
         }
         Rune(str[0])
+    }
+
+    public static func getSchema<T>() where T <: ToJsonSchema {
+        T.toSchema()
     }
 }
