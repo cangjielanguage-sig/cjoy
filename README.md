@@ -547,8 +547,8 @@ class UserInfo {
 
 |宏|属性参数|说明|
 |---|---|---|
-|`@Json`||作用于类与结构体上，标注其自动生成Json序列化与反序列化函数，类与结构体需要无参数的构建函数。|
-|`@JsonField`|name=xx,omitempty=true,ignore=false,timeformat="..."|作用类与结构体的成员变量上，变量需要采用var声明并要指定类型。|
+|`@Json`|description:".."|作用于类与结构体上，标注其自动生成Json序列化与反序列化函数，类与结构体需要无参数的构建函数。|
+|`@JsonField`|name:xx,omitempty:true,ignore:false,timeformat:"...",description:"..",required:false:schema={...}|作用类与结构体的成员变量上，变量需要采用var声明并要指定类型。|
 |`@Jsonable`||原生Json DSL，作用于满足JSON格式的一串符号上，把它转成JsonSerializable对象，可以调用JsonTool.toJson方法序列化为json字符串。|
 
 以上宏的属性参数说明，属性可以采用`=`与`:`赋值，如`@JsonField[name=xx]`与`@JsonField[name:xx]`等价：
@@ -714,7 +714,7 @@ func pathGet(): JsonSerializable {
  - 通过`schema` 指定完整的Json Schema，当schema属性存在时，忽略指定的`description`与`required`
 
 ```
-@Json
+@Json[description: "user info"]
 class UserInfo {
     @JsonField[description: "the user name"]
     var name: String = ""

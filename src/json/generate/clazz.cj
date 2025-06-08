@@ -12,17 +12,25 @@ package cjoy.json.generate
 
 import std.ast.*
 import std.collection.ArrayList
-import cjoy.utils.ClassGenentor
+import cjoy.utils.{ClassGenentor, parserAttrs, MapToString, MapListGetFunc}
 
 public class JsonClassInfo {
     let classId: Token
     let fields: ArrayList<JsonFieldGenerator>
+    let description: String
 
-    init(classId: Token, vars: ArrayList<VarDecl>) {
+    init(attr: ?Tokens, classId: Token, vars: ArrayList<VarDecl>) {
         this.classId = classId
         this.fields = ArrayList<JsonFieldGenerator>()
         for (vd in vars) {
             this.fields.add(JsonInfoCache.create(vd))
+        }
+        
+        if (attr.isSome()) {
+            let map: MapToString = parserAttrs(attr.getOrThrow(), validKeys: ["description"], macroName: "Json")
+            this.description = map.getString("description") ?? ""
+        } else {
+            this.description = ""
         }
     }
 
@@ -98,15 +106,19 @@ public class JsonClassInfo {
                     $tokens
                 ])
             }
+
+            public static func toJsonSchema(): JsonSerializable {
+                toSchema().toJson(description: $description)
+            }
         )
     }
 
-    public static func parse(input: Tokens): Tokens {
+    public static func parse(attr: ?Tokens, input: Tokens): Tokens {
         let (decl, pos) = parseDeclFragment(input)
         let classGen = ClassGenentor("Json", decl)
 
         let ident = decl.identifier
-        let classInfo = JsonClassInfo(ident, classGen.variables)
+        let classInfo = JsonClassInfo(attr, ident, classGen.variables)
         let supperTokens = quote(JsonSerializable & JsonDeserializable<$(classInfo.classId)> & ToJsonSchema)
 
         let serTokens = classInfo.genSerializeFunc()

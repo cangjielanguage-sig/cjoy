@@ -51,16 +51,16 @@ public class JsonTool {
         String.fromUtf8(stream.bytes())
     }
 
-    public static func write(writer: JsonWriter, val: Any): Unit {
+    public static func toSerializable(val: Any): JsonSerializable {
         match (val) {
             case x: HashMap<String, Any> => 
                 let map: HashMap<String, JsonSerializable> = converterMap(x)
-                map.toJson(writer)
+                (map as JsonSerializable).getOrThrow()
             case x: ArrayList<Any> =>  
                 let list: ArrayList<JsonSerializable> = converterList(x)
-                list.toJson(writer)
-            case x: JsonSerializable => x.toJson(writer)
-            case _ => ()
+                (list as JsonSerializable).getOrThrow()
+            case x: JsonSerializable => x
+            case _ => throw Exception("can't conver to JsonSerializable")
         }
     }
 

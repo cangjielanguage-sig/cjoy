@@ -10,12 +10,13 @@
 
 package cjoy.json.api
 
-import stdx.encoding.json.stream.{JsonSerializable, JsonWriter}
+import std.io.ByteBuffer
+import stdx.encoding.json.stream.{JsonSerializable}
 import std.collection.{HashMap, ArrayList}
 import std.time.DateTime
 import std.math.numeric.{BigInt, Decimal}
 
-public class JsonSchemaInfo <: JsonSerializable {
+public class JsonSchemaInfo {
     public JsonSchemaInfo(
         public let name: String,
         public let schemaType!: JsonSchemaType = JsonSchemaType.Str,
@@ -24,26 +25,16 @@ public class JsonSchemaInfo <: JsonSerializable {
         public let schema!: String = ""
     ) {}
 
-    public func toJson(writer: JsonWriter): Unit {
+    public func toJson(): JsonSerializable {
         if (schema != "") {
             let obj = JsonTool.fromJsonToAny(schema)
-            writer.startObject()
-            JsonTool.write(writer, obj)
-            writer.endObject()
-            return
+            return JsonTool.toSerializable(obj)
         }
-
-        //
-        writer.startObject()
-        schemaType.toJson(writer)
-        if (this.description != "") {
-            writer.writeName("description").writeValue(description)
-        }
-        writer.endObject()
+        schemaType.toJson(description: description)
     }
 }
 
-public enum JsonSchemaType <: JsonSerializable {
+public enum JsonSchemaType {
     | Str
     | Int
     | Number
@@ -51,40 +42,53 @@ public enum JsonSchemaType <: JsonSerializable {
     | Arr(JsonSchemaType)
     | Obj(Array<JsonSchemaInfo>)
 
-    public func toJson(writer: JsonWriter): Unit {
+    public func toJson(description!: String = ""): JsonSerializable {
+        let res: HashMap<String, JsonSerializable> = HashMap()
+        let addDesc = {
+            => if (description != "") {
+                res.add("description", description)
+            }
+        }
         match (this) {
-            case Str => writer.writeName("type").writeValue("string")
-            case Int => writer.writeName("type").writeValue("integer")
-            case Number => writer.writeName("type").writeValue("number")
-            case Boolean => writer.writeName("type").writeValue("boolean")
+            case Str =>
+                res.add("type", "string");
+                addDesc()
+            case Int =>
+                res.add("type", "integer");
+                addDesc()
+            case Number =>
+                res.add("type", "number");
+                addDesc()
+            case Boolean =>
+                res.add("type", "boolean");
+                addDesc()
             case Arr(item) =>
-                writer.startObject()
-                writer.writeName("type").writeValue("array")
-                writer.writeName("arrayItem").writeValue(item)
-                writer.endObject()
+                res.add("type", "array")
+                addDesc()
+                res.add("items", item.toJson())
             case Obj(fields) =>
-                writer.startObject()
-                writer.writeName("type").writeValue("object")
+                res.add("type", "object")
+                addDesc()
                 let properties = HashMap<String, JsonSerializable>()
-                let required = ArrayList<JsonSerializable>()
+                let required = ArrayList<String>()
                 for (f in fields) {
-                    properties.add(f.name, f)
+                    properties.add(f.name, f.toJson())
                     if (f.required) {
                         required.add(f.name)
                     }
                 }
-                writer.writeName("properties").writeValue(properties)
-                writer.writeName("required").writeValue(required)
-                writer.endObject()
+                res.add("properties", properties)
+                res.add("required", required)
         }
+        res
     }
 }
 
 public interface ToJsonSchema {
     static func toSchema(): JsonSchemaType
 
-    static func toJsonSchema(): String {
-        JsonTool.toJson(toSchema())
+    static func toJsonSchema(): JsonSerializable {
+        toSchema().toJson(description: "")
     }
 }
 
@@ -192,7 +196,6 @@ extend<T> ArrayList<T> <: ToJsonSchema where T <: ToJsonSchema {
 
 extend<T> HashMap<String, T> <: ToJsonSchema where T <: ToJsonSchema {
     public static func toSchema(): JsonSchemaType {
-        // JsonSchemaType.Obj(Array<JsonSchemaInfo>(..))
         throw Exception("HashMap has no schema")
     }
 }

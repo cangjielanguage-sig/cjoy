@@ -23,7 +23,16 @@ public import stdx.encoding.json.stream.*
  * Json macro is used for annotation the object of class or struct can be serialized and deserialized.
  */
 public macro Json(input: Tokens): Tokens {
-    JsonClassInfo.parse(input)
+    JsonClassInfo.parse(None, input)
+}
+
+/**
+ * Json macro is used for annotation the object of class or struct can be serialized and deserialized.
+ *
+ * @attribute description: the description of class or struct
+ */
+public macro Json(attr: Tokens, input: Tokens): Tokens {
+    JsonClassInfo.parse(attr, input)
 }
 
 /**
@@ -34,6 +43,9 @@ public macro Json(input: Tokens): Tokens {
  * @attribute ignore：vaule is true/false, whether to ignore the field
  * @attribute timeformat：the format for Datetime field
  * @attribute raw：vaule is true/false, deserialize to orgin raw array bytes
+ * @attribute description: the description of field
+ * @attribute required：vaule is true/false, required is json schame
+ * @attribute schame：the full schema of field
  */
 public macro JsonField(attr: Tokens, input: Tokens): Tokens {
     JsonFieldInfo.parse(attr, input)
@@ -41,8 +53,8 @@ public macro JsonField(attr: Tokens, input: Tokens): Tokens {
 }
 
 /**
-* Convert it to JsonSerializable obj, then you can JsonTool.toJson(obj) serialize it to json string
-*/
+ * Convert it to JsonSerializable obj, then you can JsonTool.toJson(obj) serialize it to json string
+ */
 public macro Jsonable(input: Tokens): Tokens {
     parseJsonable(input)
 }

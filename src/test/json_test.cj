@@ -140,7 +140,7 @@ public class DataAny2 {
     var c: Any = HashMap<String, Any>()
 }
 
-@Json
+@Json[description: "user info"]
 class UserSchema {
     @JsonField[description: "the user name"]
     var name: String = ""
@@ -161,6 +161,11 @@ class UserSchema {
       "required": [info1]
     }]
     var addOnInfo: HashMap<String, String> = HashMap()
+
+    @JsonField[description: "option desc"]
+    var f1: Option<String> = None
+    @JsonField[description: "arr desc"]
+    var arr: Array<String> = Array()
 }
 
 @Test
@@ -431,8 +436,9 @@ public class JsonTestCaseSuit {
     @TestCase
     public func testToJsonSchema(): Unit {
         let schema = UserSchema.toJsonSchema()
-        println(schema)
-        let expect = ###"{"type":"object","properties":{"name":{"type":"string","description":"the user name"},"address":{"type":"string","description":"the address of user"},"gender":{"type":"integer","description":"the user gender"},"addOnInfo":{{"type":"object","description":"the user addon info","properties":{"info1":{"type":"string","description":"xxxx"}},"required":["info1"]}}},"required":["name","gender","addOnInfo"]}"###
-        @Assert(schema, expect)
+        let json = JsonTool.toJson(schema)
+        println(json)
+        let expect = ###"{"type":"object","description":"user info","properties":{"name":{"type":"string","description":"the user name"},"address":{"type":"string","description":"the address of user"},"gender":{"type":"integer","description":"the user gender"},"addOnInfo":{"type":"object","description":"the user addon info","properties":{"info1":{"type":"string","description":"xxxx"}},"required":["info1"]},"f1":{"type":"string","description":"option desc"},"arr":{"type":"array","description":"arr desc","items":{"type":"string"}}},"required":["name","gender","addOnInfo","arr"]}"###
+        @Assert(json, expect)
     }
 }
