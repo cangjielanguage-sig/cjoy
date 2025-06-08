@@ -43,7 +43,7 @@ public interface JSONRPCMessage {}
 @Json
 public class JSONRPCRequest <: JSONRPCMessage {
     public var jsonrpc: String = McpConsts.JSON_RPC_VERSION
-    public var id: String = ""
+    public var id: Any = Option<Any>.None
     public var method: String = ""
     @JsonField[raw = true]
     public var params: Any = Option<Any>.None
@@ -59,7 +59,7 @@ public class JSONRPCError {
 @Json
 public class JSONRPCResponse <: JSONRPCMessage {
     public var jsonrpc: String = McpConsts.JSON_RPC_VERSION
-    public var id: String = ""
+    public var id: Any = Option<Any>.None
     @JsonField[raw = true]
     public var result: Any = Option<Any>.None
     public var error: ?JSONRPCError = None
@@ -86,14 +86,12 @@ public class PaginatedResult {
     public var nextCursor: String = ""
 }
 
-@Json
-public class JsonSchema {
-    @JsonField[name = "type"]
-    public var type_: String = ""
-    public var properties: Any = HashMap<String, Any>()
-    public var required: ArrayList<String> = ArrayList()
-    public var additionalProperties: Bool = false
-    @JsonField[name = "$defs"]
-    public var defs: Any = HashMap<String, Any>()
-    public var definitions: Any = HashMap<String, Any>()
+
+public class McpException <: Exception {
+    let error: JSONRPCError
+    
+    public init(error: JSONRPCError) {
+        super(error.message ?? "")
+        this.error = error
+    }
 }

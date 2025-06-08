@@ -42,6 +42,8 @@ public open class Content {
 
 @Json
 public class TextContent {
+    @JsonField[name = "type"]
+    public var type_: String = ""
     public var text: String = ""
 }
 
