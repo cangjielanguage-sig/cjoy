@@ -23,7 +23,7 @@ public class JsonFieldInfo {
     var omitempty: Bool = false
     var timeformat: String = ""
     var raw: Bool = false
-    
+
     // 
     var description: String = ""
     var required: Bool = true
@@ -44,14 +44,15 @@ public class JsonFieldInfo {
     }
 
     func parseAttr(attr: Tokens): Unit {
-        let map: MapToString = parserAttrs(attr, validKeys: ["name", "ignore", "omitempty", "timeformat", "raw", "description", "required", "schema"],
+        let map: MapToString = parserAttrs(attr,
+            validKeys: ["name", "ignore", "omitempty", "timeformat", "raw", "description", "required", "schema"],
             macroName: "JsonField")
         this.newName = map.getString("name") ?? ""
         this.ignore = map.getBool("ignore") ?? false
         this.omitempty = map.getBool("omitempty") ?? false
         this.raw = map.getBool("raw") ?? false
         this.timeformat = map.getString("timeformat") ?? ""
-        
+
         this.description = map.getString("description") ?? ""
         this.required = map.getBool("required") ?? true
         /* the schama like 
@@ -59,16 +60,16 @@ public class JsonFieldInfo {
             "type": "interger",
             "description": "description"
         }
-        */
-        this.schema =  match(map.getMap("schema")) {
-            case Some(val) => 
+         */
+        this.schema = match (map.getMap("schema")) {
+            case Some(val) =>
                 let stream = ByteBuffer()
                 let writer = JsonWriter(stream)
                 let x: HashMap<String, JsonSerializable> = converterMap(val);
                 writer.writeValue(x)
                 writer.flush()
                 String.fromUtf8(stream.bytes())
-            case _ =>""
+            case _ => ""
         }
     }
 
@@ -103,7 +104,7 @@ open class JsonFieldGenerator {
         let vtypeTokens = varType.toTokens()
         let vtypeName = vtypeTokens[0].value
         this.isOption = vtypeName == "Option" || vtypeName == "?"
-        this.notSchema = vtypeName =="Any" || vtypeName == "HashMap"
+        this.notSchema = vtypeName == "Any" || vtypeName == "HashMap" || vtypeName == "JsonBox"
     }
 
     public open func genSerializeTokens(): Tokens {

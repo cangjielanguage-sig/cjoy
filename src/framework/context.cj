@@ -321,29 +321,15 @@ public class JoyContext {
     /**
      * reply response with serialized json body and status code
      *
-     * @param status: the http status code
      * @param body: the object of T
      */
-    public func json<T>(status: UInt16, body: T): Unit where T <: JsonSerializable {
+    public func json<T>(body: T): JoyContext where T <: JsonSerializable {
         let buffer = ByteBuffer()
         let writer = JsonWriter(buffer)
         writer.writeValue(body)
         writer.flush()
-        _httpContext
-            .responseBuilder
-            .status(status)
-            .header("content-type", "application/json;charset=UTF-8")
-            .body(buffer)
-            .build()
-    }
-
-    /**
-     * reply response with serialized json body and status code OK(200)
-     *
-     * @param body: the object of T
-     */
-    public func json<T>(body: T): Unit where T <: JsonSerializable {
-        json(HttpStatusCode.STATUS_OK, body)
+        _httpContext.responseBuilder.header("content-type", "application/json; charset=UTF-8").body(buffer)
+        this
     }
 
     /**
@@ -352,18 +338,9 @@ public class JoyContext {
      * @param status: the http status code
      * @param body: the string body
      */
-    public func json(status: UInt16, body: String): Unit {
-        string(status, "application/json;charset=UTF-8", body)
-    }
-
-    /**
-     * reply response with json body and and status code OK(200)
-     *
-     * @param status: the http status code
-     * @param body: the string body
-     */
-    public func json(body: String): Unit {
-        string(HttpStatusCode.STATUS_OK, "application/json;charset=UTF-8", body)
+    public func json(body: String): JoyContext {
+        string("application/json; charset=UTF-8", body)
+        this
     }
 
     /**
@@ -373,70 +350,51 @@ public class JoyContext {
      * @param status: the http status code
      * @param body: the string body
      */
-    public func string(status: UInt16, contentType: String, body: String): Unit {
-        _httpContext.responseBuilder.status(status).header("content-type", contentType).body(body).build()
-    }
-
-    /**
-     * reply response with text plain body and status code
-     *
-     * @param status: the http status code
-     * @param body: the string body
-     */
-    public func string(status: UInt16, body: String): Unit {
-        string(status, "text/plain", body)
+    public func string(contentType: String, body: String): JoyContext {
+        _httpContext.responseBuilder.header("content-type", contentType).body(body)
+        this
     }
 
     /**
      * reply response with text plain body and status code OK(200)
      *
-     * @param status: the http status code
      * @param body: the string body
      */
-    public func string(body: String): Unit {
-        string(HttpStatusCode.STATUS_OK, "text/plain", body)
+    public func string(body: String): JoyContext {
+        string("text/plain", body)
+        this
     }
 
     /**
      * reply response with the body of content type and status code
      *
      * @param contentType: the content type
-     * @param status: the http status code
      * @param body: the bytes body
      */
-    public func data(status: UInt16, contentType: String, body: Array<Byte>): Unit {
-        _httpContext.responseBuilder.status(status).header("content-type", contentType).body(body).build()
-    }
-
-    /**
-     * reply response with the body of content type and status code OK(200)
-     *
-     * @param contentType: the content type
-     * @param body: the bytes body
-     */
-    public func data(contentType: String, body: Array<Byte>): Unit {
-        data(HttpStatusCode.STATUS_OK, contentType, body)
+    public func data(body: Array<Byte>): JoyContext {
+        _httpContext.responseBuilder.body(body)
+        this
     }
 
     /**
      * reply response with the body of content type and status code
      *
      * @param contentType: the content type
-     * @param status: the http status code
      * @param body: the stream body
      */
-    public func data(status: UInt16, contentType: String, body: InputStream): Unit {
-        _httpContext.responseBuilder.status(status).header("content-type", contentType).body(body).build()
+    public func data(body: InputStream): JoyContext {
+        _httpContext.responseBuilder.body(body)
+        this
     }
 
     /**
-     * reply response with the body of content type and status code OK(200)
+     * set the content type
      *
      * @param contentType: the content type
-     * @param body: the stream body
      */
-    public func data(contentType: String, body: InputStream): Unit {
-        data(HttpStatusCode.STATUS_OK, contentType, body)
+    public func contentType(contentType: String): JoyContext {
+        _httpContext.responseBuilder.header("content-type", contentType)
+        this
     }
 
     /**
@@ -511,28 +469,8 @@ public class JoyContext {
     /**
      * reply OK(200) response
      */
-    public func ok(): Unit {
-        _httpContext.responseBuilder.status(HttpStatusCode.STATUS_OK).build()
-    }
-
-    /**
-     * reply error response with status code
-     *
-     * @param status: the http status code
-     *
-     */
-    public func error(status: UInt16): Unit {
-        _httpContext.responseBuilder.status(status).build()
-    }
-
-    /**
-     * reply success response with status code
-     *
-     * @param status: the http status code
-     *
-     */
-    public func success(status: UInt16): Unit {
-        _httpContext.responseBuilder.status(status).build()
+    public func ok(): JoyContext {
+        status(HttpStatusCode.STATUS_OK)
     }
 
     /**

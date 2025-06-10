@@ -10,7 +10,6 @@
 
 package cjoy.framework
 
-import std.env.getStdOut
 import std.collection.concurrent.ConcurrentHashMap
 import std.collection.ArrayList
 import std.fs.{File, OpenMode}
@@ -18,8 +17,8 @@ import std.io.{readToEnd}
 import stdx.net.tls.TlsServerConfig
 import stdx.net.http.{Server, ServerBuilder}
 import stdx.log.{LogLevel, Logger}
-import stdx.logger.SimpleLogger
 import stdx.crypto.x509.{X509Certificate, PrivateKey}
+import cjoy.log.LogTool
 
 /**
  * joy config
@@ -43,17 +42,12 @@ public class JoyConfig {
     // set method not allowed handler 
     public var methodNotAllowedHandler: JoyRequestHandler = JoyMethodNotAllowedHandler()
 
-    private var _logger: ?Logger = None
-
     mut prop logger: Logger {
         get() {
-            if (_logger.isNone()) {
-                _logger = Some(SimpleLogger(getStdOut()))
-            }
-            return _logger.getOrThrow()
+            LogTool.logger
         }
         set(value) {
-            _logger = Some(value)
+            LogTool.logger = value
         }
     }
 }

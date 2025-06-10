@@ -14,13 +14,17 @@ import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonWrit
 import std.collection.HashMap
 
 /**
-* wrapped JsonSerializable & JsonDeserializable object
-*/
-public class JsonBox <: JsonSerializable & JsonDeserializable<JsonBox> {
+ * wrapped JsonSerializable & JsonDeserializable object
+ */
+public class JsonBox <: JsonSerializable & JsonDeserializable<JsonBox> & ToString & ToJsonSchema {
     public var value: Any
-    
+
     public init(v: Any) {
         this.value = v
+    }
+
+    public init() {
+        this.value = Option<Any>.None
     }
 
     public func toJson(writer: JsonWriter): Unit {
@@ -32,5 +36,13 @@ public class JsonBox <: JsonSerializable & JsonDeserializable<JsonBox> {
 
     public static func fromJson(reader: JsonReader): JsonBox {
         JsonBox(JsonTool.fromJsonToAny(reader))
+    }
+
+    public func toString(): String {
+        JsonTool.toJson(this)
+    }
+
+    public static func toSchema(): JsonSchemaType {
+        throw Exception("the box value has no schema")
     }
 }

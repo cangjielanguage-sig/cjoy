@@ -112,17 +112,17 @@ class FuncInfo {
             }
             if (produce == "json") {
                 ret += quote(
-                    ctx.json(UInt16(statusCode), bodyRsp) 
+                    ctx.status(UInt16(statusCode)).json(bodyRsp) 
                 )
             } else {
                 ret += quote(
-                    ctx.string(UInt16(statusCode), bodyRsp.toString()) 
+                    ctx.status(UInt16(statusCode)).string(bodyRsp.toString()) 
                 )
             }
         } else if (retType == "UInt16") {
             ret += quote(
                 let statusCode = $(funcName)($(params))
-                ctx.success(UInt16(statusCode))
+                ctx.status(UInt16(statusCode))
             )
         } else if (retType != "Unit") {
             ret += quote(let bodyRsp = $(funcName)($(params)))

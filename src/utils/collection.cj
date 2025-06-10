@@ -11,16 +11,18 @@
 package cjoy.utils
 
 import std.collection.{ArrayList, HashMap}
+import std.collection.concurrent.ConcurrentHashMap
+import std.time.DateTime
 
 protected func converterList<T, R>(list: ArrayList<T>): ArrayList<R> {
     let res = ArrayList<R>()
     for (it in list) {
         match (it) {
             case x: R => res.add(x)
-            case x: HashMap<String, T> => 
+            case x: HashMap<String, T> =>
                 let r: HashMap<String, R> = converterMap(x)
                 res.add((r as R).getOrThrow())
-            case x: ArrayList<T> => 
+            case x: ArrayList<T> =>
                 let r: ArrayList<R> = converterList(x)
                 res.add((r as R).getOrThrow())
             case _ => ()
@@ -34,10 +36,10 @@ protected func converterMap<T, R>(map: HashMap<String, T>): HashMap<String, R> {
     for ((k, v) in map) {
         match (v) {
             case x: R => res.add(k, x)
-            case x: HashMap<String, T> => 
+            case x: HashMap<String, T> =>
                 let r: HashMap<String, R> = converterMap(x)
                 res.add(k, (r as R).getOrThrow())
-            case x: ArrayList<T> => 
+            case x: ArrayList<T> =>
                 let r: ArrayList<R> = converterList(x)
                 res.add(k, (r as R).getOrThrow())
             case _ => ()
@@ -61,11 +63,7 @@ protected interface MapListGetFunc<T> {
 
 extend MapToString <: MapListGetFunc<String> {
     public func getString(name: String): ?String {
-        let x = this.get(name)
-        match (x) {
-            case Some(v) => v.toString()
-            case _ => None
-        }
+        this.get(name).map({it => it.toString()})
     }
 
     public func getInt(name: String): ?Int64 {
@@ -91,11 +89,7 @@ extend MapToString <: MapListGetFunc<String> {
 
 extend ListToString <: MapListGetFunc<Int64> {
     public func getString(idx: Int64): ?String {
-        let x = this.get(idx)
-        match (x) {
-            case Some(v) => v.toString()
-            case _ => None
-        }
+        this.get(idx).map({it => it.toString()})
     }
 
     public func getInt(idx: Int64): ?Int64 {
@@ -116,5 +110,53 @@ extend ListToString <: MapListGetFunc<Int64> {
 
     public func getMap(idx: Int64): ?MapToString {
         (this.get(idx) ?? Option<ToString>.None) as MapToString
+    }
+}
+
+class CacheItem<T> {
+    public CacheItem(public let item: T, public let addTime: DateTime) {}
+}
+
+protected class TimeoutCache<K, V> where K <: Hashable & Equatable<K> {
+    let _expireTime: Duration
+    let _timeoutFn: (k: K, v: V) -> Unit
+    let _map: ConcurrentHashMap<K, CacheItem<V>> = ConcurrentHashMap()
+    let _future: Future<Unit>
+
+    public init(expireTime: Duration, timeoutFn: (k: K, v: V) -> Unit) {
+        _expireTime = expireTime
+        _timeoutFn = timeoutFn
+        let tmap = _map
+        _future = spawn {
+            while (true) {
+                if (Thread.currentThread.hasPendingCancellation) {
+                    return
+                }
+                sleep(2 * Duration.second)
+                let iter = tmap.iterator()
+                let now = DateTime.now()
+                while (let Some((k, v)) <- iter.next()) {
+                    if (v.addTime.addNanoseconds(expireTime.toNanoseconds()) > now) {
+                        tmap.remove(k)
+                    }
+                }
+            }
+        }
+    }
+
+    public func add(k: K, v: V): Unit {
+        _map.add(k, CacheItem(v, DateTime.now()))
+    }
+
+    public func get(k: K): ?V {
+        _map.get(k).map({v => v.item})
+    }
+
+    public func remove(k: K): Unit {
+        _map.remove(k)
+    }
+
+    public func close(): Unit {
+        _future.cancel()
     }
 }

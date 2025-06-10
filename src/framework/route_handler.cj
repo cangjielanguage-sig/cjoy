@@ -108,7 +108,7 @@ class JoyFileSystemServeHandler <: JoyRequestHandler {
     private func serves(ctx: JoyContext, path: String): Unit {
         if (path.contains("..")) {
             confg.logger.warn("[JoyFileSystemServeHandler#handle] url path contain `..`, path=${path}")
-            ctx.error(HttpStatusCode.STATUS_BAD_REQUEST)
+            ctx.status(HttpStatusCode.STATUS_BAD_REQUEST)
             return
         }
 
@@ -125,12 +125,12 @@ class JoyFileSystemServeHandler <: JoyRequestHandler {
                 let fi = FileInfo(filePath)
                 if (fi.isDirectory() || fi.isHidden() || !fi.canRead()) {
                     confg.logger.warn("[JoyFileSystemServeHandler#handle] forbidden to donwnload file ${fp}")
-                    ctx.error(HttpStatusCode.STATUS_FORBIDDEN)
+                    ctx.status(HttpStatusCode.STATUS_FORBIDDEN)
                     return
                 }
                 if (!fp.startsWith(root.toString())) {
                     confg.logger.warn("[JoyFileSystemServeHandler#handle] forbidden to donwnload file ${fp}")
-                    ctx.error(HttpStatusCode.STATUS_FORBIDDEN)
+                    ctx.status(HttpStatusCode.STATUS_FORBIDDEN)
                     return
                 }
 

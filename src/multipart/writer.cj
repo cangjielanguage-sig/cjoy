@@ -12,14 +12,12 @@ package cjoy.multipart
 
 import std.io.{OutputStream, BufferedOutputStream, ByteBuffer}
 import std.collection.{map, collectArray}
-import std.convert.*
-import std.random.Random
 import stdx.net.http.HttpHeaders
-import cjoy.utils.StrFunc
+import cjoy.utils.{StrFunc, randStr}
 
 /**
-* multi part writer
-*/
+ * multi part writer
+ */
 public class JoyMultiPartWriter <: Resource {
     private let _buffer: BufferedOutputStream<OutputStream>
     private let _boundary: String
@@ -32,7 +30,7 @@ public class JoyMultiPartWriter <: Resource {
             checkBoundary(b)
             _boundary = b
         } else {
-            _boundary = randBoundary()
+            _boundary = randStr(30)
         }
     }
 
@@ -100,13 +98,6 @@ public class JoyMultiPartWriter <: Resource {
     public func writeField(fieldname: String, value: String) {
         createFormField(fieldname)
         writePartData(value.toArray())
-    }
-
-    private static func randBoundary(): String {
-        let r = Random()
-        let bs = r.nextBytes(30)
-        let array = bs |> map {b => b.format("x")} |> collectArray
-        String.join(array)
     }
 
     private static func checkBoundary(boundary: String) {

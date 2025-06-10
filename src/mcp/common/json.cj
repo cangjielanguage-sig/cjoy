@@ -15,10 +15,22 @@ import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonRead
 import cjoy.mcp.schema.*
 
 public class RPCJsonTool {
-    public static func deserializJSONRPCMessage(content: Array<Byte>): JSONRPCMessage {
-        var stream = ByteBuffer()
-        stream.write(content)
-        let reader = JsonReader(stream)
+    public static func serialize(obj: JsonSerializable): ByteBuffer {
+        let buffer = ByteBuffer()
+        let writer = JsonWriter(buffer)
+        writer.writeValue(obj)
+        writer.flush()
+        buffer
+    }
+
+    public static func deserializ(content: Array<Byte>): JSONRPCMessage {
+        var buffer = ByteBuffer()
+        buffer.write(content)
+        deserializ(buffer)
+    }
+
+    public static func deserializ(buffer: ByteBuffer): JSONRPCMessage {
+        let reader = JsonReader(buffer)
 
         var id: ?JsonSerializable = None
         var method: String = ""
