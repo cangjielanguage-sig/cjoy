@@ -9,3 +9,5 @@
 - [fileserver](fileserver/main.cj): 文件服务器
 - [websocket](websocket/main.cj): WebSocket
 - [multipart](multipart/main.cj): MultiPart，文件上传
+- [mcpserver](mcpserver/main.cj): MCP Server
+- [mcpclient](mcpclient/main.cj): MCP Client

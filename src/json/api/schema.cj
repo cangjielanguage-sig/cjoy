@@ -27,8 +27,7 @@ public class JsonSchemaInfo {
 
     public func toJson(): JsonSerializable {
         if (schema != "") {
-            let obj = JsonTool.fromJsonToAny(schema)
-            return JsonTool.toSerializable(obj)
+            return JsonTool.fromJsonToAny(schema)
         }
         schemaType.toJson(description: description)
     }
@@ -88,7 +87,11 @@ public interface ToJsonSchema {
     static func toSchema(): JsonSchemaType
 
     static func toJsonSchema(): JsonSerializable {
-        toSchema().toJson(description: "")
+        toSchema().toJson()
+    }
+
+    static func toJsonSchema(description: String): JsonSerializable {
+        toSchema().toJson(description: description)
     }
 }
 

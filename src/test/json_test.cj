@@ -312,7 +312,7 @@ public class JsonTestCaseSuit {
         let str = ###"{"a": 1, "b": 2, "c": {"c1": "c1v", "c2": 1.1}, "d":[{"d1": true, "d2": null},{"d1": false, "d2": "d2v"}]}"###
         let ts = JsonTool.fromJsonToAny(str)
         match (ts) {
-            case m: HashMap<String, Any> => @Assert(4, m.size )
+            case m: HashMap<String, JsonSerializable> => @Assert(4, m.size )
             case _ => @Fail("deserialize failed")
         }
     }

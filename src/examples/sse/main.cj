@@ -5,6 +5,7 @@
 package cjoy.examples.sse
 
 import cjoy.*
+import std.sync.SyncCounter
 
 main(): Int64 {
     var cfg = JoyConfig()
@@ -15,10 +16,15 @@ main(): Int64 {
     joy.router.get("/sse", {
         ctx: JoyContext =>
         let emitter = ctx.eventEmitter()
-        for (num in 1..10) {
-            emitter.sendEvent(JoyServerEventBuilder().data("{\"num\":\"${num}\"}"))
-            sleep(Duration.millisecond*200)
+        let counter = SyncCounter(1)
+        spawn {
+            for (num in 1..10) {
+                emitter.sendEvent(JoyServerEventBuilder().data("{\"num\":\"${num}\"}"))
+                sleep(Duration.millisecond*200)
+            }
+            counter.dec()
         }
+        counter.waitUntilZero()
         emitter.end()
     })
     // 启动服务

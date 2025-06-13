@@ -33,7 +33,7 @@ public struct McpConsts {
     // methods
     public static const METHOD_INITIALIZE = "initialize"
     public static const METHOD_NOTIFICATION_INITIALIZED = "notifications/initialized"
-    public static const METHOD_PING = "ping";
+    public static const METHOD_PING = "ping"
     public static const METHOD_TOOLS_LIST = "tools/list"
     public static const METHOD_TOOLS_CALL = "tools/call"
     public static const METHOD_NOTIFICATION_TOOLS_LIST_CHANGED = "notifications/tools/list_changed"

@@ -13,6 +13,7 @@ protected package cjoy.mcp.common
 import std.io.ByteBuffer
 import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonReader, JsonWriter, JsonToken}
 import cjoy.mcp.schema.*
+import cjoy.log.LogTool
 
 public class RPCJsonTool {
     public static func serialize(obj: JsonSerializable): ByteBuffer {
@@ -23,14 +24,22 @@ public class RPCJsonTool {
         buffer
     }
 
-    public static func deserializ(content: Array<Byte>): JSONRPCMessage {
-        var buffer = ByteBuffer()
-        buffer.write(content)
-        deserializ(buffer)
+    public static func deserializeParams<T>(params: Any): T where T <: JsonDeserializable<T> {
+        let data = (params as Array<Byte>) ?? Array<Byte>()
+        let buffer = ByteBuffer()
+        buffer.write(data)
+        T.fromJson(JsonReader(buffer))
     }
 
-    public static func deserializ(buffer: ByteBuffer): JSONRPCMessage {
+    public static func deserialize(content: Array<Byte>): JSONRPCMessage {
+        let buffer = ByteBuffer()
+        buffer.write(content)
+        deserialize(buffer)
+    }
+
+    public static func deserialize(buffer: ByteBuffer): JSONRPCMessage {
         let reader = JsonReader(buffer)
+        LogTool.debug("deserializing json: ${String.fromUtf8(buffer.bytes())}")
 
         var id: ?JsonSerializable = None
         var method: String = ""
@@ -65,10 +74,10 @@ public class RPCJsonTool {
                                     throw McpException(
                                         JSONRPCError(code: McpConsts.ERR_PARSE_ERROR, message: "id type is invalid"))
                                 }
-                            case "method" => reader.readValue<String>()
-                            case "params" => reader.readValueBytes()
-                            case "result" => reader.readValueBytes()
-                            case "error" => reader.readValue<JSONRPCError>()
+                            case "method" => method = reader.readValue<String>()
+                            case "params" => params = reader.readValueBytes()
+                            case "result" => result = reader.readValueBytes()
+                            case "error" => error = reader.readValue<Option<JSONRPCError>>()
                             case _ => reader.skip()
                         }
                     }

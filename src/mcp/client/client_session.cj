@@ -23,7 +23,7 @@ class ResponseWaiter {
     ResponseWaiter(var response!: ?JSONRPCResponse = None, let counter!: SyncCounter = SyncCounter(1)) {}
 }
 
-public class McpClientSession <: McpSession & McpResponseHandler & McpNotificationHandler {
+public class DefaultMcpClientSession <: McpClientSession & McpResponseHandler & McpNotificationHandler {
     private let _transport: McpClientTransport
     private let _requestTimeout: Duration
     private let _sessPefix: String = randStr(8)
@@ -32,27 +32,30 @@ public class McpClientSession <: McpSession & McpResponseHandler & McpNotificati
     private let _notificationConsumer: ConcurrentHashMap<String, (Array<Byte>) -> Unit> = ConcurrentHashMap()
     private var _isClosed: Bool = false
 
-    public init(transport: McpClientTransport, requestTimeout: Duration) {
+    init(transport: McpClientTransport, requestTimeout: Duration) {
         _transport = transport
         _requestTimeout = requestTimeout
         _respWaiters = TimeoutCache(requestTimeout) {
             k, v => LogTool.info("MCP request is timout, id: ${k}")
         }
-        _transport.connect(
-            {
-                buffer: ByteBuffer =>
-                let message = RPCJsonTool.deserializ(buffer)
-                match (message) {
-                    case m: JSONRPCResponse => onResponse(m)
-                    case m: JSONRPCNotification => onNotification(m)
-                    case _ => LogTool.info("[MCP]recv unknown message")
-                }
-            }
-        )
     }
 
     private func genReqId(): String {
         "${_sessPefix}-${_reqCount.fetchAnd(1)}"
+    }
+
+    public func connect(): Unit {
+        _transport.connect(
+            {
+                buffer: ByteBuffer =>
+                let message = RPCJsonTool.deserialize(buffer)
+                match (message) {
+                    case m: JSONRPCResponse => onResponse(m)
+                    case m: JSONRPCNotification => onNotification(m)
+                    case _ => LogTool.info("[MCP]client recv unknown message")
+                }
+            }
+        )
     }
 
     public func sendRequest<T>(method: String, requestParams: JsonSerializable): T where T <: JsonDeserializable<T> {

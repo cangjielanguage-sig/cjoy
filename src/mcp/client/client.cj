@@ -18,7 +18,7 @@ import cjoy.log.LogTool
 
 public func createMcpSseClient(url: String, features!: McpClientFeatures = McpClientFeatures()): McpClient {
     let transport = McpSseClientTransport(url)
-    McpSyncClient(features, transport)
+    DefaultMcpClient(features, transport)
 }
 
 public class McpClientFeatures {
@@ -28,19 +28,22 @@ public class McpClientFeatures {
     public var clientCapabilities: ClientCapabilities = ClientCapabilities()
 }
 
-public class McpSyncClient <: McpClient {
+public class DefaultMcpClient <: McpClient {
     private let _features: McpClientFeatures
-    private let _session: McpSession
+    private let _session: McpClientSession
     private let _initialized: AtomicBool = AtomicBool(false)
     private var _serverCapabilities: ?ServerCapabilities = None
     private var _serverInfo: ?Implementation = None
     private var _serverInstructions: ?String = None
     private var _isClosed: Bool = false
 
-    public init(features: McpClientFeatures, transport: McpClientTransport) {
+    init(features: McpClientFeatures, transport: McpClientTransport) {
         _features = features
-        _session = McpClientSession(transport, features.requestTimeout)
+        _session = DefaultMcpClientSession(transport, features.requestTimeout)
         addNotificationConsumers(_session)
+        transport.whenReConnect({
+            => doInitialize()
+        })
     }
 
     public prop serverCapabilities: ?ServerCapabilities {
@@ -80,6 +83,11 @@ public class McpSyncClient <: McpClient {
     }
 
     public func initialize(): InitializeResult {
+        _session.connect()
+        doInitialize()
+    }
+
+    private func doInitialize(): InitializeResult {
         let request = InitializeRequest(capabilities: _features.clientCapabilities, clientInfo: _features.clientInfo)
         let result: InitializeResult = _session.sendRequest(McpConsts.METHOD_INITIALIZE, request)
         _serverCapabilities = result.capabilities
@@ -106,16 +114,16 @@ public class McpSyncClient <: McpClient {
         checkToolCapbilities()
         let result: ListToolsResult = _session.sendRequest(McpConsts.METHOD_TOOLS_LIST, PaginatedRequest(cursor: cursor)
         )
-        LogTool.info("[MCP]list tool result:\n${result}")
+        LogTool.info("[MCP]list tool result:${result}")
         result
     }
 
     public func callTool(request: CallToolRequest): CallToolResult {
         checkInitialized()
         checkToolCapbilities()
-        LogTool.info("[MCP]call tool request:\n${request}")
+        LogTool.info("[MCP]call tool request:${request}")
         let result: CallToolResult = _session.sendRequest(McpConsts.METHOD_TOOLS_CALL, request)
-        LogTool.info("[MCP]call tool result:\n${result}")
+        LogTool.info("[MCP]call tool result:${result}")
         result
     }
 

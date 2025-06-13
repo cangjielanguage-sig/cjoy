@@ -30,7 +30,7 @@ public class ListToolsResult <: McpMessage {
 public class CallToolRequest <: McpMessage {
     public var name: String = ""
 
-    @JsonField[omitempty = true]
+    @JsonField[omitempty = true, raw = true]
     public var arguments: Any = Option<Any>.None
 }
 

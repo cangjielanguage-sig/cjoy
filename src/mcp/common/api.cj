@@ -13,6 +13,7 @@ protected package cjoy.mcp.common
 import std.io.ByteBuffer
 import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable}
 import cjoy.mcp.schema.*
+import cjoy.framework.JoyContext
 
 public interface McpSession <: Resource {
     func sendRequest<T>(method: String, requestParams: JsonSerializable): T where T <: JsonDeserializable<T>
@@ -24,7 +25,11 @@ public interface McpSession <: Resource {
 }
 
 public interface McpServerSession <: McpSession {
-    func handle(message: JSONRPCMessage): Unit
+    func handle(ctx: JoyContext, message: JSONRPCMessage): Unit
+}
+
+public interface McpClientSession <: McpSession {
+    func connect(): Unit
 }
 
 public interface McpNotificationHandler {
@@ -36,11 +41,11 @@ public interface McpResponseHandler {
 }
 
 public interface McpRequestHandler {
-    func onRequest(message: JSONRPCRequest): Unit
+    func onRequest(ctx: JoyContext, message: JSONRPCRequest): Unit
 }
 
-public interface McpToolRequestHandler {
-    func handle(param: Array<Byte>): String
+public interface McpCallToolHandler {
+    func handle(ctx: JoyContext, arguments: Array<Byte>): String
 }
 
 public interface McpTransport <: Resource {
@@ -49,6 +54,7 @@ public interface McpTransport <: Resource {
 
 public interface McpClientTransport <: McpTransport {
     func connect(consumer: (ByteBuffer) -> Unit): Unit
+    func whenReConnect(callback: ()->Unit): Unit
 }
 
 public interface McpServerTransport <: McpTransport {}

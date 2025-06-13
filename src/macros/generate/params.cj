@@ -14,23 +14,8 @@ import std.ast.*
 import std.collection.*
 import cjoy.utils.{parserAttrs, MapToString, MapListGetFunc, TypeNodeInfo}
 
-public enum ParamCatgory {
-    PC_PATH
-    | PC_QUERY
-    | PC_QUERY_BIND
-    | PC_POSTFORM
-    | PC_POSTFORM_BIND
-    | PC_HEADER
-    | PC_HEADER_BIND
-    | PC_CONTEXT
-    | PC_BODY
-    | PC_COOKIE
-    | PC_NONE
-}
-
 open class ParamInfo {
     let marcroName: String
-    let catgory: ParamCatgory
 
     // the name of param in content
     var name: String = ""
@@ -49,15 +34,15 @@ open class ParamInfo {
     // the timeformat of datatime
     var timeformat: String = ""
 
-    init(marcroName: String, catgory: ParamCatgory) {
+    init(marcroName: String) {
         this.marcroName = marcroName
-        this.catgory = catgory
         let supportTypes = "String, PrimitiveType, T <: JsonDeserializable, Opition<T <: JsonDeserializable>, Opition<String>, ArrayList<String>, Array<Strng>"
         this.typeNode = TypeNodeInfo(supportTypes)
     }
 
     func parse(input: Tokens): Unit {
-        parseFuncParam(input)
+        let funcParam = FuncParam(input)
+        parseFuncParam(funcParam)
     }
 
     func getName(): String {
@@ -101,11 +86,10 @@ open class ParamInfo {
         }
     }
 
-    private func parseFuncParam(input: Tokens): Unit {
-        let funcParam = FuncParam(input)
+    func parseFuncParam(funcParam: FuncParam): Unit {
         pname = funcParam.identifier
         this.paramType = funcParam.paramType
-        typeNode.parse(input, this.paramType.getOrThrow())
+        typeNode.parse(funcParam.toTokens(), this.paramType.getOrThrow())
     }
 
     func parseAttr(attr: Tokens): Unit {
@@ -118,7 +102,7 @@ open class ParamInfo {
 
 class PathParamVarGenerator <: ParamInfo {
     init() {
-        super("PathParam", ParamCatgory.PC_PATH)
+        super("PathParam")
     }
 
     public override func genTokens(): Tokens {
@@ -129,7 +113,7 @@ class PathParamVarGenerator <: ParamInfo {
 
 class QueryParamVarGenerator <: ParamInfo {
     init() {
-        super("QueryParam", ParamCatgory.PC_QUERY)
+        super("QueryParam")
     }
 
     public override func genTokens(): Tokens {
@@ -140,7 +124,7 @@ class QueryParamVarGenerator <: ParamInfo {
 
 class PostFormParamVarGenerator <: ParamInfo {
     init() {
-        super("PostFormParam", ParamCatgory.PC_POSTFORM)
+        super("PostFormParam")
     }
 
     public override func genTokens(): Tokens {
@@ -151,7 +135,7 @@ class PostFormParamVarGenerator <: ParamInfo {
 
 class HeaderParamVarGenerator <: ParamInfo {
     init() {
-        super("PostFormParam", ParamCatgory.PC_POSTFORM)
+        super("HeaderParam")
     }
 
     public override func genTokens(): Tokens {
@@ -162,7 +146,7 @@ class HeaderParamVarGenerator <: ParamInfo {
 
 class CookieParamVarGenerator <: ParamInfo {
     init() {
-        super("CookieParam", ParamCatgory.PC_COOKIE)
+        super("CookieParam")
     }
 
     public override func genTokens(): Tokens {
@@ -173,7 +157,7 @@ class CookieParamVarGenerator <: ParamInfo {
 
 class ContextParamVarGenerator <: ParamInfo {
     init() {
-        super("ContextParam", ParamCatgory.PC_CONTEXT)
+        super("ContextParam")
     }
 
     public override func genTokens(): Tokens {
@@ -190,7 +174,7 @@ class ContextParamVarGenerator <: ParamInfo {
 
 class BodyParamVarGenerator <: ParamInfo {
     init() {
-        super("BodyParam", ParamCatgory.PC_BODY)
+        super("BodyParam")
     }
 
     public override func genTokens(): Tokens {
@@ -211,7 +195,7 @@ class BodyParamVarGenerator <: ParamInfo {
 
 class QueryBindParamVarGenerator <: ParamInfo {
     init() {
-        super("QueryBindParam", ParamCatgory.PC_QUERY_BIND)
+        super("QueryBindParam")
     }
 
     public override func genTokens(): Tokens {
@@ -227,7 +211,7 @@ class QueryBindParamVarGenerator <: ParamInfo {
 
 class PostFormBindParamVarGenerator <: ParamInfo {
     init() {
-        super("PostFormBindParam", ParamCatgory.PC_POSTFORM_BIND)
+        super("PostFormBindParam")
     }
 
     public override func genTokens(): Tokens {
@@ -245,7 +229,7 @@ class PostFormBindParamVarGenerator <: ParamInfo {
 
 class HeaderBindParamVarGenerator <: ParamInfo {
     init() {
-        super("HeaderBindParam", ParamCatgory.PC_HEADER_BIND)
+        super("HeaderBindParam")
     }
 
     public override func genTokens(): Tokens {
@@ -259,19 +243,19 @@ class HeaderBindParamVarGenerator <: ParamInfo {
     }
 }
 
-func createParamVarGenerator(catgory: ParamCatgory): ParamInfo {
-    match (catgory) {
-        case PC_PATH => PathParamVarGenerator()
-        case PC_QUERY => QueryParamVarGenerator()
-        case PC_POSTFORM => PostFormParamVarGenerator()
-        case PC_CONTEXT => ContextParamVarGenerator()
-        case PC_HEADER => HeaderParamVarGenerator()
-        case PC_COOKIE => CookieParamVarGenerator()
-        case PC_BODY => BodyParamVarGenerator()
-        case PC_QUERY_BIND => QueryBindParamVarGenerator()
-        case PC_POSTFORM_BIND => PostFormBindParamVarGenerator()
-        case PC_HEADER_BIND => HeaderBindParamVarGenerator()
-        case PC_NONE => ParamInfo("", ParamCatgory.PC_NONE)
+func createParamVarGenerator(name: String): ParamInfo {
+    match (name) {
+        case "PathParam" => PathParamVarGenerator()
+        case "QueryParam" => QueryParamVarGenerator()
+        case "PostFormParam" => PostFormParamVarGenerator()
+        case "ContextParam" => ContextParamVarGenerator()
+        case "HeaderParam" => HeaderParamVarGenerator()
+        case "CookieParam" => CookieParamVarGenerator()
+        case "BodyParam" => BodyParamVarGenerator()
+        case "QueryBindParam" => QueryBindParamVarGenerator()
+        case "PostFormBindParam" => PostFormBindParamVarGenerator()
+        case "HeaderBindParam" => HeaderBindParamVarGenerator()
+        case _ => ParamInfo("")
     }
 }
 
@@ -291,12 +275,12 @@ class ParamInfoCache {
     }
 }
 
-public func parseParam(catgory: ParamCatgory, input: Tokens): Unit {
-    parseParam(catgory, None, input)
+public func parseParam(name: String, input: Tokens): Unit {
+    parseParam(name, None, input)
 }
 
-public func parseParam(catgory: ParamCatgory, attr: ?Tokens, input: Tokens): Unit {
-    let paramInfo: ParamInfo = createParamVarGenerator(catgory)
+public func parseParam(name: String, attr: ?Tokens, input: Tokens): Unit {
+    let paramInfo: ParamInfo = createParamVarGenerator(name)
     paramInfo.parse(input)
     if (let Some(a) <- attr) {
         paramInfo.parseAttr(a)

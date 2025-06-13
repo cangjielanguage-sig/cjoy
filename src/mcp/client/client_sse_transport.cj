@@ -26,6 +26,7 @@ public class McpSseClientTransport <: McpClientTransport {
     private var _lastInitTime: DateTime
     private var _endpoint: String = ""
     private var _consumer: ?(ByteBuffer) -> Unit = None
+    private var _callback: ?()->Unit = None
     private var _sseStream: ?SSEventStream = None
     private var _connected = AtomicBool(false)
 
@@ -37,11 +38,11 @@ public class McpSseClientTransport <: McpClientTransport {
         }
     }
 
-    public init(url: String) {
+    init(url: String) {
         _url = url
         _lastInitTime = DateTime.now()
         var u = URL.parse(url)
-        u = u.replace(path: "", query: "", fragment: "")
+        u = u.replace(path: "")
         _baseUrl = u.toString()
         LogTool.info("[MCP]http sse base url: ${_baseUrl}")
     }
@@ -51,12 +52,19 @@ public class McpSseClientTransport <: McpClientTransport {
         doConnect()
     }
 
+    public func whenReConnect(callback: ()->Unit): Unit {
+        _callback = callback
+    }
+
     private func doConnect() {
+        if (_connected.load()) {
+            return
+        }
         _lastInitTime = DateTime.now()
         _sseStream = HttpClient.sseConnect(_url)
         let seeStream_ = this.seeStream
         if (let Some(evt) <- seeStream_.next()) {
-            if (evt.event != "endpoint") {
+            if (evt.event != McpConsts.EVENT_ENDPOINT) {
                 throw McpException(
                     JSONRPCError(code: McpConsts.ERR_INTERNAL_ERROR, message: "invliad endpoint event ${evt}"))
             }
@@ -69,9 +77,9 @@ public class McpSseClientTransport <: McpClientTransport {
         let connected_ = _connected
         spawn {
             while (let Some(evt) <- seeStream_.next()) {
-                if (evt.event != "message") {
-                    throw McpException(
-                        JSONRPCError(code: McpConsts.ERR_INTERNAL_ERROR, message: "invliad message event ${evt}"))
+                if (evt.event != McpConsts.EVENT_MESSAGE) {
+                    LogTool.error("invliad message event ${evt}")
+                    break
                 }
                 let buffer = ByteBuffer()
                 unsafe { buffer.write(evt.data.rawData()) }
@@ -86,15 +94,18 @@ public class McpSseClientTransport <: McpClientTransport {
         if (!_connected.load()) {
             _sseStream?.close()
             doConnect()
+            _callback?()
         }
     }
 
     public func send(message: ByteBuffer): Unit {
         checkConnected()
         let header = HashMap<String, String>([("Content-Type", "application/json")])
-        let resp = HttpClient.post("${_baseUrl}${_endpoint}", message.bytes(), header: header, verify: false)
-        if (!resp.isNone()) {
-            LogTool.error("[MCP]http request failed")
+        let resp: Option<String> = HttpClient.post("${_baseUrl}${_endpoint}", message.bytes(), header: header, verify: false)
+        if (let Some(v) <- resp) {
+            if (v !="") {
+                LogTool.info("[MCP]http request response ${v}")
+            }
         }
     }
 
