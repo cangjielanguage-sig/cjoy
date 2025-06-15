@@ -11,7 +11,7 @@
 macro package cjoy.macros
 
 import std.ast.Tokens
-import cjoy.macros.generate.{parseParam, ParamCatgory, parseFunc, MethodCatgory, parseMiddlewareFunc}
+import cjoy.macros.generate.{parseParam, parseFunc, parseMiddlewareFunc}
 
 // reimport the dependent
 public import std.convert.Parsable
@@ -25,7 +25,7 @@ public import cjoy.bind.api.{JoyBindable, JoyBindSource}
  * @attribute name: the name of paramter in url path
  */
 public macro PathParam(attr: Tokens, input: Tokens) {
-    parseParam(ParamCatgory.PC_PATH, attr, input)
+    parseParam("PathParam", attr, input)
     input
 }
 
@@ -36,7 +36,7 @@ public macro PathParam(attr: Tokens, input: Tokens) {
  *
  */
 public macro PathParam(input: Tokens) {
-    parseParam(ParamCatgory.PC_PATH, input)
+    parseParam("PathParam", input)
     input
 }
 
@@ -48,7 +48,7 @@ public macro PathParam(input: Tokens) {
  * @attribute default: the default value of parameter
  */
 public macro QueryParam(attr: Tokens, input: Tokens) {
-    parseParam(ParamCatgory.PC_QUERY, attr, input)
+    parseParam("QueryParam", attr, input)
     input
 }
 
@@ -59,7 +59,7 @@ public macro QueryParam(attr: Tokens, input: Tokens) {
  *
  */
 public macro QueryParam(input: Tokens) {
-    parseParam(ParamCatgory.PC_QUERY, input)
+    parseParam("QueryParam", input)
     input
 }
 
@@ -69,7 +69,7 @@ public macro QueryParam(input: Tokens) {
  *
  */
 public macro QueryBindParam(input: Tokens) {
-    parseParam(ParamCatgory.PC_QUERY_BIND, input)
+    parseParam("QueryBindParam", input)
     input
 }
 
@@ -81,7 +81,7 @@ public macro QueryBindParam(input: Tokens) {
  * @attribute default: the default value of parameter
  */
 public macro PostFormParam(attr: Tokens, input: Tokens) {
-    parseParam(ParamCatgory.PC_POSTFORM, attr, input)
+    parseParam("PostFormParam", attr, input)
     input
 }
 
@@ -92,16 +92,16 @@ public macro PostFormParam(attr: Tokens, input: Tokens) {
  *
  */
 public macro PostFormParam(input: Tokens) {
-    parseParam(ParamCatgory.PC_POSTFORM, input)
+    parseParam("PostFormParam", input)
     input
 }
 
 /**
  * PostFormParam macro is used for annotation at the paramter of function
- * which value from paramters in encoded url or post form. 
+ * which value from paramters in encoded url or post form.
  */
 public macro PostFormBindParam(input: Tokens) {
-    parseParam(ParamCatgory.PC_POSTFORM_BIND, input)
+    parseParam("PostFormBindParam", input)
     input
 }
 
@@ -113,7 +113,7 @@ public macro PostFormBindParam(input: Tokens) {
  * @attribute default: the default value of parameter
  */
 public macro HeaderParam(attr: Tokens, input: Tokens) {
-    parseParam(ParamCatgory.PC_HEADER, attr, input)
+    parseParam("HeaderParam", attr, input)
     input
 }
 
@@ -124,7 +124,7 @@ public macro HeaderParam(attr: Tokens, input: Tokens) {
  *
  */
 public macro HeaderParam(input: Tokens) {
-    parseParam(ParamCatgory.PC_HEADER, input)
+    parseParam("HeaderParam", input)
     input
 }
 
@@ -134,7 +134,7 @@ public macro HeaderParam(input: Tokens) {
  *
  */
 public macro HeaderBindParam(input: Tokens) {
-    parseParam(ParamCatgory.PC_HEADER_BIND, input)
+    parseParam("HeaderBindParam", input)
     input
 }
 
@@ -145,7 +145,7 @@ public macro HeaderBindParam(input: Tokens) {
  * @attribute name: the name of paramter in context
  */
 public macro ContextParam(attr: Tokens, input: Tokens) {
-    parseParam(ParamCatgory.PC_CONTEXT, attr, input)
+    parseParam("ContextParam", attr, input)
     input
 }
 
@@ -156,7 +156,7 @@ public macro ContextParam(attr: Tokens, input: Tokens) {
  *
  */
 public macro ContextParam(input: Tokens) {
-    parseParam(ParamCatgory.PC_CONTEXT, input)
+    parseParam("ContextParam", input)
     input
 }
 
@@ -168,7 +168,7 @@ public macro ContextParam(input: Tokens) {
  * @attribute default: the default value of parameter
  */
 public macro CookieParam(attr: Tokens, input: Tokens) {
-    parseParam(ParamCatgory.PC_COOKIE, attr, input)
+    parseParam("CookieParam", attr, input)
     input
 }
 
@@ -179,7 +179,7 @@ public macro CookieParam(attr: Tokens, input: Tokens) {
  *
  */
 public macro CookieParam(input: Tokens) {
-    parseParam(ParamCatgory.PC_COOKIE, input)
+    parseParam("CookieParam", input)
     input
 }
 
@@ -189,7 +189,7 @@ public macro CookieParam(input: Tokens) {
  *
  */
 public macro BodyParam(attr: Tokens, input: Tokens) {
-    parseParam(ParamCatgory.PC_BODY, attr, input)
+    parseParam("BodyParam", attr, input)
     input
 }
 
@@ -199,7 +199,7 @@ public macro BodyParam(attr: Tokens, input: Tokens) {
  *
  */
 public macro BodyParam(input: Tokens) {
-    parseParam(ParamCatgory.PC_BODY, input)
+    parseParam("BodyParam", input)
     input
 }
 
@@ -210,7 +210,7 @@ public macro BodyParam(input: Tokens) {
  * @attribute produce: the format of reponse body, value is json/text, default is text
  */
 public macro Get(attr: Tokens, input: Tokens) {
-    input + parseFunc("Get", MethodCatgory.MC_GET, attr, input)
+    input + parseFunc("Get", attr, input)
 }
 
 /**
@@ -220,7 +220,7 @@ public macro Get(attr: Tokens, input: Tokens) {
  * @attribute produce: the format of reponse body, value is json/text, default is text
  */
 public macro Post(attr: Tokens, input: Tokens) {
-    input + parseFunc("Post", MethodCatgory.MC_POST, attr, input)
+    input + parseFunc("Post", attr, input)
 }
 
 /**
@@ -230,7 +230,7 @@ public macro Post(attr: Tokens, input: Tokens) {
  * @attribute produce: the format of reponse body, value is json/text, default is text
  */
 public macro Delete(attr: Tokens, input: Tokens) {
-    input + parseFunc("Delete", MethodCatgory.MC_DELETE, attr, input)
+    input + parseFunc("Delete", attr, input)
 }
 
 /**
@@ -240,7 +240,7 @@ public macro Delete(attr: Tokens, input: Tokens) {
  * @attribute produce: the format of reponse body, value is json/text, default is text
  */
 public macro Patch(attr: Tokens, input: Tokens) {
-    input + parseFunc("Patch", MethodCatgory.MC_PATCH, attr, input)
+    input + parseFunc("Patch", attr, input)
 }
 
 /**
@@ -250,7 +250,7 @@ public macro Patch(attr: Tokens, input: Tokens) {
  * @attribute produce: the format of reponse body, value is json/text, default is text
  */
 public macro Put(attr: Tokens, input: Tokens) {
-    input + parseFunc("Put", MethodCatgory.MC_PUT, attr, input)
+    input + parseFunc("Put", attr, input)
 }
 
 /**
@@ -260,7 +260,7 @@ public macro Put(attr: Tokens, input: Tokens) {
  * @attribute produce: the format of reponse body, value is json/text, default is text
  */
 public macro Head(attr: Tokens, input: Tokens) {
-    input + parseFunc("Head", MethodCatgory.MC_HEAD, attr, input)
+    input + parseFunc("Head", attr, input)
 }
 
 /**
@@ -271,7 +271,7 @@ public macro Head(attr: Tokens, input: Tokens) {
  * @attribute produce: the format of reponse body, value is json/text, default is text
  */
 public macro Handler(attr: Tokens, input: Tokens) {
-    input + parseFunc("Handler", MethodCatgory.MC_HANDLER, attr, input)
+    input + parseFunc("Handler", attr, input)
 }
 
 /**

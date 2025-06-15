@@ -100,7 +100,7 @@ protected class ClassGenentor {
         let allSuperTypes = if (superTypes.isEmpty()) {
             newSupper
         } else {
-            quote($(newSupper.toTokens()) & $(superTypes.toTokens()))
+            quote($(superTypes.toTokens()) & $(newSupper.toTokens()))
         }
 
         return quote(

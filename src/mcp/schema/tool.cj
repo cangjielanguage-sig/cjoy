@@ -14,39 +14,41 @@ import std.collection.{HashMap, ArrayList}
 import cjoy.json.*
 
 @Json
-public class Tool {
+public class Tool <: McpMessage {
     public var name: String = ""
     public var description: String = ""
     public var inputSchema: Any = Option<Any>.None
 }
 
 @Json
-public class ListToolsResult {
+public class ListToolsResult <: McpMessage {
     public var nextCursor: ?String = None
     public var tools: ArrayList<Tool> = ArrayList()
 }
 
 @Json
-public class CallToolRequest {
+public class CallToolRequest <: McpMessage {
     public var name: String = ""
 
-    @JsonField[omitempty = true]
+    @JsonField[omitempty = true, raw = true]
     public var arguments: Any = Option<Any>.None
 }
 
 @Json
-public open class Content {
+public open class Content <: McpMessage {
     @JsonField[name = "type"]
     public var type_: String = ""
 }
 
 @Json
-public class TextContent {
+public class TextContent <: McpMessage {
+    @JsonField[name = "type"]
+    public var type_: String = ""
     public var text: String = ""
 }
 
 @Json
-public class CallToolResult {
+public class CallToolResult <: McpMessage {
     public var isError: Bool = false
     public var content: ArrayList<TextContent> = ArrayList()
 }

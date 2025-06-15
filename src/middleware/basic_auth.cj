@@ -65,6 +65,6 @@ public class BasicAuth <: JoyMiddlewareHandler {
     }
 
     private func basicAuthFailed(ctx: JoyContext) {
-        ctx.header("WWW-Authenticate", "Basic realm=${realm}").error(HttpStatusCode.STATUS_UNAUTHORIZED)
+        ctx.header("WWW-Authenticate", "Basic realm=${realm}").status(HttpStatusCode.STATUS_UNAUTHORIZED)
     }
 }

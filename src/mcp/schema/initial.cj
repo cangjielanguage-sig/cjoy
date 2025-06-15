@@ -14,35 +14,35 @@ import std.collection.{HashMap, ArrayList}
 import cjoy.json.*
 
 @Json
-public class Implementation {
+public class Implementation <: McpMessage {
     public var name: String = ""
     public var version: String = ""
 }
 
 @Json
-public class ClientCapabilities {
-    public var experimental: Any = Option<Any>.None
+public class ClientCapabilities <: McpMessage {
+    public var experimental: HashMap<String, String> = HashMap()
 }
 
 @Json
-public class ToolCapability {
+public class ToolCapability <: McpMessage {
     public var listChanged: Bool = false
 }
 
 @Json
-public class ServerCapabilities {
+public class ServerCapabilities <: McpMessage {
     public var tools: ?ToolCapability = None
 }
 
 @Json
-public class InitializeRequest {
+public class InitializeRequest <: McpMessage {
     public var protocolVersion: String = McpConsts.LASTEST_PROTOCOL_VERSION
     public var capabilities: ?ClientCapabilities = None
     public var clientInfo: ?Implementation = None
 }
 
 @Json
-public class InitializeResult {
+public class InitializeResult <: McpMessage {
     public var protocolVersion: String = McpConsts.LASTEST_PROTOCOL_VERSION
     public var capabilities: ?ServerCapabilities = None
     public var serverInfo: ?Implementation = None

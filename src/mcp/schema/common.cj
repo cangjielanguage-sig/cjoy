@@ -11,6 +11,7 @@
 package cjoy.mcp.schema
 
 import std.collection.{HashMap, ArrayList}
+import stdx.encoding.json.stream.JsonSerializable
 import cjoy.json.*
 
 public struct McpConsts {
@@ -30,36 +31,46 @@ public struct McpConsts {
     public static const ERR_INTERNAL_ERROR = -32603
 
     // methods
-    public static const METHOD_INITIALIZE = "initialize";
-    public static const METHOD_NOTIFICATION_INITIALIZED = "notifications/initialized";
-    public static const METHOD_PING = "ping";
-    public static const METHOD_TOOLS_LIST = "tools/list";
-    public static const METHOD_TOOLS_CALL = "tools/call";
-    public static const METHOD_NOTIFICATION_TOOLS_LIST_CHANGED = "notifications/tools/list_changed";
+    public static const METHOD_INITIALIZE = "initialize"
+    public static const METHOD_NOTIFICATION_INITIALIZED = "notifications/initialized"
+    public static const METHOD_PING = "ping"
+    public static const METHOD_TOOLS_LIST = "tools/list"
+    public static const METHOD_TOOLS_CALL = "tools/call"
+    public static const METHOD_NOTIFICATION_TOOLS_LIST_CHANGED = "notifications/tools/list_changed"
+
+    // event
+    public static const EVENT_MESSAGE = "message"
+    public static const EVENT_ENDPOINT = "endpoint"
 }
 
-public interface JSONRPCMessage {}
+public abstract class McpMessage <: ToString & JsonSerializable {
+    public func toString(): String {
+        JsonTool.toJson(this)
+    }
+}
+
+public abstract class JSONRPCMessage <: McpMessage {}
 
 @Json
 public class JSONRPCRequest <: JSONRPCMessage {
     public var jsonrpc: String = McpConsts.JSON_RPC_VERSION
-    public var id: String = ""
+    public var id: Any = Option<Any>.None
     public var method: String = ""
     @JsonField[raw = true]
     public var params: Any = Option<Any>.None
 }
 
 @Json
-public class JSONRPCError {
+public class JSONRPCError <: McpMessage {
     public var code: Int = 0
     public var message: ?String = None
-    public var Data: Any = Option<Any>.None
+    public var data: Any = Option<Any>.None
 }
 
 @Json
 public class JSONRPCResponse <: JSONRPCMessage {
     public var jsonrpc: String = McpConsts.JSON_RPC_VERSION
-    public var id: String = ""
+    public var id: Any = Option<Any>.None
     @JsonField[raw = true]
     public var result: Any = Option<Any>.None
     public var error: ?JSONRPCError = None
@@ -76,24 +87,21 @@ public class JSONRPCNotification <: JSONRPCMessage {
 public type Role = String
 
 @Json
-public class PaginatedRequest {
+public class PaginatedRequest <: McpMessage {
     @JsonField[omitempty = true]
     public var cursor: ?String = None
 }
 
 @Json
-public class PaginatedResult {
+public class PaginatedResult <: McpMessage {
     public var nextCursor: String = ""
 }
 
-@Json
-public class JsonSchema {
-    @JsonField[name = "type"]
-    public var type_: String = ""
-    public var properties: Any = HashMap<String, Any>()
-    public var required: ArrayList<String> = ArrayList()
-    public var additionalProperties: Bool = false
-    @JsonField[name = "$defs"]
-    public var defs: Any = HashMap<String, Any>()
-    public var definitions: Any = HashMap<String, Any>()
+public class McpException <: Exception {
+    let error: JSONRPCError
+
+    public init(error: JSONRPCError) {
+        super(error.message ?? "")
+        this.error = error
+    }
 }

@@ -27,13 +27,13 @@ public class ExceptionHandler <: JoyMiddlewareHandler {
             match (ex) {
                 case e: NoneValueException =>
                     // for Option.getOrThrow, Parable.parse
-                    ctx.error(HttpStatusCode.STATUS_BAD_REQUEST)
+                    ctx.status(HttpStatusCode.STATUS_BAD_REQUEST)
                 case e: IllegalArgumentException =>
-                    ctx.error(HttpStatusCode.STATUS_BAD_REQUEST)
+                    ctx.status(HttpStatusCode.STATUS_BAD_REQUEST)
                 case e: JoyValidationException =>
-                    ctx.json(HttpStatusCode.STATUS_BAD_REQUEST, e.toMap())
+                    ctx.status(HttpStatusCode.STATUS_BAD_REQUEST).json(e.toMap())
                 case _ => 
-                    ctx.error(HttpStatusCode.STATUS_INTERNAL_SERVER_ERROR)
+                    ctx.status(HttpStatusCode.STATUS_INTERNAL_SERVER_ERROR)
             }
         }
     }

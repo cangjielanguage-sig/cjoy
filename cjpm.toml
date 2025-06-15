@@ -1,7 +1,7 @@
 [dependencies]
 
 [package]
-  cjc-version = "0.59.6"
+  cjc-version = "0.60.5"
   compile-option = "-Woff unused --diagnostic-format=noColor"
   description = "a fast, lightweight and joy web framework"
   link-option = ""
@@ -29,6 +29,10 @@
     [package.package-configuration."cjoy.examples.tls"]
       output-type = "executable"
     [package.package-configuration."cjoy.examples.websocket"]
+      output-type = "executable"
+    [package.package-configuration."cjoy.examples.mcpserver"]
+      output-type = "executable"
+    [package.package-configuration."cjoy.examples.mcpclient"]
       output-type = "executable"
 
 [target]

@@ -24,9 +24,9 @@ class UserHandler {
         if (let Some(u) <- user) {
             users.add(u.name, u)
             ctx.logger.info("save user info, name=${u.name}")
-            ctx.success(HttpStatusCode.STATUS_CREATED)
+            ctx.status(HttpStatusCode.STATUS_CREATED)
         } else {
-            ctx.error(HttpStatusCode.STATUS_BAD_REQUEST)
+            ctx.status(HttpStatusCode.STATUS_BAD_REQUEST)
         }
     }
 
@@ -35,14 +35,14 @@ class UserHandler {
         let user = users.get(name)
         match (user) {
             case Some(u) => ctx.json(u)
-            case _ => ctx.error(HttpStatusCode.STATUS_NOT_FOUND)
+            case _ => ctx.status(HttpStatusCode.STATUS_NOT_FOUND)
         }
     }
 
     public func delete(ctx: JoyContext): Unit {
         let name = ctx.getParam("name").getOrThrow()
         users.remove(name)
-        ctx.success(HttpStatusCode.STATUS_NO_CONTENT)
+        ctx.status(HttpStatusCode.STATUS_NO_CONTENT)
     }
 
     public func update(ctx: JoyContext): Unit {
@@ -53,10 +53,10 @@ class UserHandler {
                 case Some(u) =>
                     users.add(name, user)
                     ctx.ok()
-                case _ => ctx.error(HttpStatusCode.STATUS_NOT_FOUND)
+                case _ => ctx.status(HttpStatusCode.STATUS_NOT_FOUND)
             }
         } else {
-            ctx.error(HttpStatusCode.STATUS_BAD_REQUEST)
+            ctx.status(HttpStatusCode.STATUS_BAD_REQUEST)
         }
     }
 }

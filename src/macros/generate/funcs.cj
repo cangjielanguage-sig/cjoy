@@ -13,15 +13,11 @@ package cjoy.macros.generate
 import std.ast.*
 import std.collection.*
 import cjoy.*
-import cjoy.utils.{parserAttrs, MapToString, MapListGetFunc}
+import cjoy.utils.{parserAttrs, MapToString, MapListGetFunc, randStr}
 
-public enum MethodCatgory {
-    MC_POST | MC_GET | MC_DELETE | MC_PUT | MC_PATCH | MC_HEAD | MC_HANDLER
-}
 
 class FuncInfo {
     let macroName: String
-    let catgory: MethodCatgory
 
     let decl: FuncDecl
 
@@ -29,9 +25,8 @@ class FuncInfo {
     var produce: String = ""
     var methods: String = ""
 
-    init(macroName: String, catgory: MethodCatgory, decl: FuncDecl) {
+    init(macroName: String,  decl: FuncDecl) {
         this.macroName = macroName
-        this.catgory = catgory
         this.decl = decl
     }
 
@@ -61,8 +56,8 @@ class FuncInfo {
             let paramInfo = match (piOpt) {
                 case Some(val) => val
                 case _ =>
-                    let val = createParamVarGenerator(PC_NONE)
-                    val.parse(fp.toTokens())
+                    let val = createParamVarGenerator("")
+                    val.parseFuncParam(fp)
                     val
             }
 
@@ -112,17 +107,17 @@ class FuncInfo {
             }
             if (produce == "json") {
                 ret += quote(
-                    ctx.json(UInt16(statusCode), bodyRsp) 
+                    ctx.status(UInt16(statusCode)).json(bodyRsp) 
                 )
             } else {
                 ret += quote(
-                    ctx.string(UInt16(statusCode), bodyRsp.toString()) 
+                    ctx.status(UInt16(statusCode)).string(bodyRsp.toString()) 
                 )
             }
         } else if (retType == "UInt16") {
             ret += quote(
                 let statusCode = $(funcName)($(params))
-                ctx.success(UInt16(statusCode))
+                ctx.status(UInt16(statusCode))
             )
         } else if (retType != "Unit") {
             ret += quote(let bodyRsp = $(funcName)($(params)))
@@ -145,7 +140,7 @@ class FuncInfo {
     }
 
     func genTokens(): Tokens {
-        let handlerName = Token(TokenKind.IDENTIFIER, decl.identifier.value.toAsciiTitle() + "Handler")
+        let handlerName = Token(TokenKind.IDENTIFIER, decl.identifier.value.toAsciiTitle() + "Handler" + randStr(3))
 
         let (vars, params) = declVars()
         let callfunc = callFunc(params)
@@ -166,13 +161,13 @@ class FuncInfo {
     }
 }
 
-public func parseFunc(macroName: String, catgory: MethodCatgory, attr: Tokens, input: Tokens): Tokens {
+public func parseFunc(macroName: String, attr: Tokens, input: Tokens): Tokens {
     let decl = parseDecl(input)
     if (!(decl is FuncDecl)) {
         throw Exception("${macroName} macro only using for func")
     }
 
-    let funcInfo = FuncInfo(macroName, catgory, (decl as FuncDecl).getOrThrow())
+    let funcInfo = FuncInfo(macroName, (decl as FuncDecl).getOrThrow())
     funcInfo.parseAttr(attr)
     let tokens = funcInfo.genTokens()
     ParamInfoCache.clear()
