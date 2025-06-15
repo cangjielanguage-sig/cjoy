@@ -96,7 +96,7 @@ public class DefaultMcpServerSession <: McpServerSession & McpRequestHandler & M
                 JSONRPCResponse(id: message.id, result: result)
             case "tools/call" =>
                 let req: CallToolRequest = RPCJsonTool.deserializeParams(message.params)
-                LogTool.info("[MCP]recv `tools/call` request: ${req}, sessionId: ${_state.sessionId}")
+                LogTool.debug("[MCP]recv `tools/call` request: ${req}, sessionId: ${_state.sessionId}")
                 let result = McpServer.callTool(ctx, req)
                 JSONRPCResponse(id: message.id, result: result)
             case _ =>
@@ -105,7 +105,7 @@ public class DefaultMcpServerSession <: McpServerSession & McpRequestHandler & M
                 JSONRPCResponse(id: message.id, error: error)
         }
         let data = RPCJsonTool.serialize(resp)
-        LogTool.info("[MCP]send reponse: ${String.fromUtf8(data.bytes())}, sessionId: ${_state.sessionId}")
+        LogTool.debug("[MCP]send reponse: ${String.fromUtf8(data.bytes())}, sessionId: ${_state.sessionId}")
         _transport.send(data)
     }
 

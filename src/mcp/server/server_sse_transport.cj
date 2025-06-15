@@ -12,6 +12,7 @@ package cjoy.mcp.server
 
 import std.collection.concurrent.ConcurrentHashMap
 import std.io.ByteBuffer
+import std.time.DateTime
 import std.sync.SyncCounter
 import stdx.net.http.HttpStatusCode
 import cjoy.framework.{JoyContext, JoySseEmitter, JoyServerEventBuilder}
@@ -108,12 +109,22 @@ class McpSseServerSessionTransport <: McpTransport {
     let _emitter: JoySseEmitter
     let _sessionState: McpServerSessionState
     let _sessions: ConcurrentHashMap<String, McpServerSession>
+    private var _lastMsgTime: DateTime = DateTime.now()
+    private var _running: Bool = true
 
     init(emitter: JoySseEmitter, sessionState: McpServerSessionState,
         sessions: ConcurrentHashMap<String, McpServerSession>) {
         _emitter = emitter
         _sessionState = sessionState
         _sessions = sessions
+        spawn {
+            while (_running) {
+                sleep(Duration.second)
+                if (_lastMsgTime.addSeconds(1) < DateTime.now()) {
+                    send(": ping")
+                }
+            }
+        }
     }
 
     public func close() {
@@ -124,12 +135,18 @@ class McpSseServerSessionTransport <: McpTransport {
     }
 
     public func send(message: ByteBuffer): Unit {
+        let data = String.fromUtf8(message.bytes())
+        send(data)
+    }
+
+    public func send(data: String): Unit {
         try {
-            let data = String.fromUtf8(message.bytes())
             sendEvent(_emitter, McpConsts.EVENT_MESSAGE, data)
             LogTool.debug("send sse message ${data} to session: ${_sessionState.sessionId}")
+            _lastMsgTime = DateTime.now()
         } catch (ex: Exception) {
             LogTool.error("failed to sse message to session: ${_sessionState.sessionId}, error: ${ex.message}")
+            _running = false
             _sessions.remove(_sessionState.sessionId)
             _sessionState.compete()
         }
