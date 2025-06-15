@@ -18,6 +18,12 @@ public func multiply(a: Int, b: Int): Int {
     a * b
 }
 
+@Tool[description = "nultiply two number"]
+public func search(query: String, ctx: JoyContext): String {
+    "search result"
+}
+
+
 main(): Int64 {
     var cfg = JoyConfig()
     cfg.enableDebugLog = true

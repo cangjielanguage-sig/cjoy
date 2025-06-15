@@ -26,7 +26,7 @@ public func query(ctx: JoyContext): String {
     ""
 }
 
-@Tool[description = "add two number"]
+@Tool[name = "add", description = "add two number"]
 public func add(@ToolParam[description = "number a"] a: Int, @ToolParam[description = "number b"] b: Int): Int {
     a + b
 }
