@@ -14,19 +14,20 @@ import std.collection.concurrent.ConcurrentHashMap
 import std.sync.SyncCounter
 import std.io.ByteBuffer
 import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonReader}
-import cjoy.mcp.schema.*
 import cjoy.mcp.common.*
 import cjoy.log.LogTool
-import cjoy.framework.JoyContext
+import cjoy.json.JsonTool
+import cjoy.framework.{JoyContext, JoySseEmitter}
 
 class McpServerSessionState {
     private let _counter: SyncCounter = SyncCounter(1)
 
-    public McpServerSessionState(let sessionId: String) {}
+    public McpServerSessionState(let sessionId: String, let sseEmitter: JoySseEmitter) {}
 
     public func waitEnd() {
         _counter.waitUntilZero()
-        LogTool.info("[MCP]server sesion is end, sessionId:${sessionId}")
+        LogTool.info("[MCP]server sesion is end, sessionId: ${sessionId}")
+        sseEmitter.end()
     }
 
     public func compete(): Unit {
@@ -34,22 +35,31 @@ class McpServerSessionState {
     }
 }
 
-public class DefaultMcpServerSession <: McpServerSession & McpRequestHandler & McpNotificationHandler {
-    private let _state: McpServerSessionState
-    private let _transport: McpTransport
+class DefaultMcpServerSession <: McpServerSession & McpRequestHandler & McpResponseHandler & McpNotificationHandler {
+    let _sessionId: String
+    var _transport: McpTransport
     private var _isClosed: Bool = false
+    private var _isJsonResp: Bool = false
+    private let _streamable: Bool
     private let _notificationConsumer: ConcurrentHashMap<String, (Array<Byte>) -> Unit> = ConcurrentHashMap()
 
-    init(state: McpServerSessionState, transport: McpTransport) {
-        this._state = state
-        this._transport = transport
+    init(sessionId: String, transport: McpTransport, isJsonResp: Bool, streamable: Bool) {
+        _sessionId = sessionId
+        _transport = transport
+        _isJsonResp = isJsonResp
+        _streamable = streamable
+    }
+
+    public func update(transport: McpTransport): Unit {
+        _transport = transport
     }
 
     public func handle(ctx: JoyContext, message: JSONRPCMessage): Unit {
         match (message) {
             case m: JSONRPCRequest => onRequest(ctx, m)
             case m: JSONRPCNotification => onNotification(m)
-            case _ => LogTool.info("[MCP]server recv unknown message, sessionId:${_state.sessionId}")
+            case m: JSONRPCResponse => onResponse(m)
+            case _ => LogTool.info("[MCP]server recv unknown message, sessionId: ${_sessionId}")
         }
     }
 
@@ -64,7 +74,7 @@ public class DefaultMcpServerSession <: McpServerSession & McpRequestHandler & M
             JSONRPCNotification(method: method)
         }
         _transport.send(RPCJsonTool.serialize(message))
-        LogTool.info("[MCP]send notification, method:${method}, sessionId:${_state.sessionId}")
+        LogTool.info("[MCP]send notification, method: ${method}, sessionId: ${_sessionId}")
     }
 
     public func addNotificationConsumer(method: String, consumer: (Array<Byte>) -> Unit): Unit {
@@ -79,46 +89,62 @@ public class DefaultMcpServerSession <: McpServerSession & McpRequestHandler & M
             })
     }
 
+    public func onResponse(message: JSONRPCResponse): Unit {
+    }
+
     public func onRequest(ctx: JoyContext, message: JSONRPCRequest): Unit {
+        var jsonResp: Bool = false
         let resp = match (message.method) {
             case "ping" =>
                 LogTool.info("[MCP]recv `ping` request")
                 JSONRPCResponse(id: message.id, result: message.params)
             case "initialize" =>
                 let request: InitializeRequest = RPCJsonTool.deserializeParams(message.params)
-                LogTool.info("[MCP]recv `initialize` request: ${request}, sessionId: ${_state.sessionId}")
+                LogTool.info("[MCP]recv `initialize` request: ${request}, sessionId: ${_sessionId}")
+                jsonResp = _streamable
                 let result = onRecvInitRequest(request)
                 JSONRPCResponse(id: message.id, result: result)
             case "tools/list" =>
                 let page: PaginatedRequest = RPCJsonTool.deserializeParams(message.params)
-                LogTool.info("[MCP]recv `tools/list` request: ${page}, sessionId: ${_state.sessionId}")
+                LogTool.info("[MCP]recv `tools/list` request: ${page}, sessionId: ${_sessionId}")
                 let result = McpServer.listTools(page)
                 JSONRPCResponse(id: message.id, result: result)
             case "tools/call" =>
                 let req: CallToolRequest = RPCJsonTool.deserializeParams(message.params)
-                LogTool.debug("[MCP]recv `tools/call` request: ${req}, sessionId: ${_state.sessionId}")
+                LogTool.debug("[MCP]recv `tools/call` request: ${req}, sessionId: ${_sessionId}")
                 let result = McpServer.callTool(ctx, req)
                 JSONRPCResponse(id: message.id, result: result)
             case _ =>
-                LogTool.error("[MCP]recv unknown `${message.method}` request, sessionId: ${_state.sessionId}")
+                LogTool.error("[MCP]recv unknown `${message.method}` request, sessionId: ${_sessionId}")
                 let error = JSONRPCError(code: McpConsts.ERR_METHOD_NOT_FOUND, message: "not found method")
                 JSONRPCResponse(id: message.id, error: error)
         }
-        let data = RPCJsonTool.serialize(resp)
-        LogTool.debug("[MCP]send reponse: ${String.fromUtf8(data.bytes())}, sessionId: ${_state.sessionId}")
-        _transport.send(data)
+        sendResp(ctx, resp, jsonResp)
+    }
+
+    private func sendResp(ctx: JoyContext, resp: JSONRPCResponse, jsonResp: Bool): Unit {
+        if (_isJsonResp || jsonResp) {
+            ctx
+                .header(McpConsts.HEADER_MCP_SESSION_ID, _sessionId)
+                .header("Content-Type", McpConsts.CONTENT_TYPE_JSON)
+                .json(resp)
+            LogTool.debug("[MCP]send json reponse: ${JsonTool.toJson(resp)}, sessionId: ${_sessionId}")
+        } else {
+            let data = RPCJsonTool.serialize(resp)
+            _transport.send(data)
+        }
     }
 
     private func onRecvInitRequest(request: InitializeRequest): InitializeResult {
         // TODO check the request params
-        McpServer.exchangeInit()      
+        McpServer.exchangeInit()
     }
 
     public func close() {
         if (_isClosed) {
             return
         }
-        _state.compete()
+        _transport.close()
         _isClosed = true
     }
 

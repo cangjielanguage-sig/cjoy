@@ -11,7 +11,6 @@
 protected package cjoy.mcp.client
 
 import std.sync.AtomicBool
-import cjoy.mcp.schema.*
 import cjoy.mcp.common.*
 import cjoy.utils.TimeoutCache
 import cjoy.log.LogTool
@@ -28,7 +27,7 @@ public class McpClientFeatures {
     public var clientCapabilities: ClientCapabilities = ClientCapabilities()
 }
 
-public class DefaultMcpClient <: McpClient {
+class DefaultMcpClient <: McpClient {
     private let _features: McpClientFeatures
     private let _session: McpClientSession
     private let _initialized: AtomicBool = AtomicBool(false)

@@ -11,7 +11,7 @@
 package cjoy.json.api
 
 import std.io.ByteBuffer
-import stdx.encoding.json.stream.{JsonSerializable}
+import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonReader, JsonWriter, JsonToken}
 import std.collection.{HashMap, ArrayList}
 import std.time.DateTime
 import std.math.numeric.{BigInt, Decimal}
@@ -83,7 +83,7 @@ public enum JsonSchemaType {
     }
 }
 
-public interface ToJsonSchema {
+public interface Jsonable {
     static func toSchema(): JsonSchemaType
 
     static func toJsonSchema(): JsonSerializable {
@@ -95,127 +95,127 @@ public interface ToJsonSchema {
     }
 }
 
-extend String <: ToJsonSchema {
+extend String <: Jsonable {
     public static func toSchema(): JsonSchemaType {
         JsonSchemaType.Str
     }
 }
 
-extend Rune <: ToJsonSchema {
+extend Rune <: Jsonable {
     public static func toSchema(): JsonSchemaType {
         JsonSchemaType.Str
     }
 }
 
-extend Int8 <: ToJsonSchema {
+extend Int8 <: Jsonable {
     public static func toSchema(): JsonSchemaType {
         JsonSchemaType.Int
     }
 }
 
-extend Int16 <: ToJsonSchema {
+extend Int16 <: Jsonable {
     public static func toSchema(): JsonSchemaType {
         JsonSchemaType.Int
     }
 }
 
-extend Int32 <: ToJsonSchema {
+extend Int32 <: Jsonable {
     public static func toSchema(): JsonSchemaType {
         JsonSchemaType.Int
     }
 }
 
-extend Int64 <: ToJsonSchema {
+extend Int64 <: Jsonable {
     public static func toSchema(): JsonSchemaType {
         JsonSchemaType.Int
     }
 }
 
-extend UInt8 <: ToJsonSchema {
+extend UInt8 <: Jsonable {
     public static func toSchema(): JsonSchemaType {
         JsonSchemaType.Int
     }
 }
 
-extend UInt16 <: ToJsonSchema {
+extend UInt16 <: Jsonable {
     public static func toSchema(): JsonSchemaType {
         JsonSchemaType.Int
     }
 }
 
-extend UInt32 <: ToJsonSchema {
+extend UInt32 <: Jsonable {
     public static func toSchema(): JsonSchemaType {
         JsonSchemaType.Int
     }
 }
 
-extend UInt64 <: ToJsonSchema {
+extend UInt64 <: Jsonable {
     public static func toSchema(): JsonSchemaType {
         JsonSchemaType.Int
     }
 }
 
-extend Float16 <: ToJsonSchema {
+extend Float16 <: Jsonable {
     public static func toSchema(): JsonSchemaType {
         JsonSchemaType.Number
     }
 }
 
-extend Float32 <: ToJsonSchema {
+extend Float32 <: Jsonable {
     public static func toSchema(): JsonSchemaType {
         JsonSchemaType.Number
     }
 }
 
-extend Float64 <: ToJsonSchema {
+extend Float64 <: Jsonable {
     public static func toSchema(): JsonSchemaType {
         JsonSchemaType.Number
     }
 }
 
-extend Bool <: ToJsonSchema {
+extend Bool <: Jsonable {
     public static func toSchema(): JsonSchemaType {
         JsonSchemaType.Boolean
     }
 }
 
-extend<T> Option<T> <: ToJsonSchema where T <: ToJsonSchema {
+extend<T> Option<T> <: Jsonable where T <: Jsonable {
     public static func toSchema(): JsonSchemaType {
         T.toSchema()
     }
 }
 
-extend<T> Array<T> <: ToJsonSchema where T <: ToJsonSchema {
+extend<T> Array<T> <: Jsonable where T <: Jsonable {
     public static func toSchema(): JsonSchemaType {
         JsonSchemaType.Arr(T.toSchema())
     }
 }
 
-extend<T> ArrayList<T> <: ToJsonSchema where T <: ToJsonSchema {
+extend<T> ArrayList<T> <: Jsonable where T <: Jsonable {
     public static func toSchema(): JsonSchemaType {
         JsonSchemaType.Arr(T.toSchema())
     }
 }
 
-extend<T> HashMap<String, T> <: ToJsonSchema where T <: ToJsonSchema {
+extend<T> HashMap<String, T> <: Jsonable where T <: Jsonable {
     public static func toSchema(): JsonSchemaType {
         throw Exception("HashMap has no schema")
     }
 }
 
-extend DateTime <: ToJsonSchema {
+extend DateTime <: Jsonable {
     public static func toSchema(): JsonSchemaType {
         JsonSchemaType.Str
     }
 }
 
-extend BigInt <: ToJsonSchema {
+extend BigInt <: Jsonable {
     public static func toSchema(): JsonSchemaType {
         JsonSchemaType.Str
     }
 }
 
-extend Decimal <: ToJsonSchema {
+extend Decimal <: Jsonable {
     public static func toSchema(): JsonSchemaType {
         JsonSchemaType.Str
     }

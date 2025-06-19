@@ -344,7 +344,7 @@ public class JsonTestCaseSuit {
 
     @TestCase
     public func testToJsonSimpleObj(): Unit {
-        let d = @Jsonable(
+        let d = @ToJson(
             {
                 "a": 1,
                 "b": "xyz",
@@ -361,7 +361,7 @@ public class JsonTestCaseSuit {
     @TestCase
     public func testToJsonSimpleObjWithVar1(): Unit {
         let b = "xyz"
-        let d = @Jsonable(
+        let d = @ToJson(
             {
                 "a": 1,
                 "b": "${b}",
@@ -378,7 +378,7 @@ public class JsonTestCaseSuit {
     @TestCase
     public func testToJsonSimpleObjWithVar2(): Unit {
         let b = "xyz"
-        let d = @Jsonable(
+        let d = @ToJson(
             {
                 "a": 1,
                 "b": b,
@@ -394,7 +394,7 @@ public class JsonTestCaseSuit {
 
     @TestCase
     public func testToJsonSimpleArr(): Unit {
-        let d = @Jsonable(
+        let d = @ToJson(
             [
                 1,
                 "xyz",
@@ -411,7 +411,7 @@ public class JsonTestCaseSuit {
     @TestCase
     public func testToJsonComplex1(): Unit {
         let x = "xyz"
-        let d = @Jsonable(
+        let d = @ToJson(
             {
                 "a":{
                     "a1":1,

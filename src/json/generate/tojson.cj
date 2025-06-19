@@ -53,7 +53,7 @@ class JsonTokenVisitor <: TokenVisitor<Tokens> {
     }
 }
 
-public func parseJsonable(input: Tokens): Tokens {
+public func parseTojson(input: Tokens): Tokens {
     let visitor = JsonTokenVisitor()
     let parser = TokenParser(visitor, input)
     let res = parser.parse()

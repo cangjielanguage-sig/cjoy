@@ -23,9 +23,9 @@ class UserInfo {
 
 |宏|属性参数|说明|
 |---|---|---|
-|`@Json`|description:".."|作用于类与结构体上，标注其自动生成Json序列化与反序列化函数，类与结构体需要无参数的构建函数。|
+|`@Json`|description:"..",superClass:""|作用于类与结构体上，标注其自动生成Json序列化与反序列化函数，类与结构体需要无参数的构建函数。|
 |`@JsonField`|name:xx,omitempty:true,ignore:false,timeformat:"...",description:"..",required:false:schema={...}|作用类与结构体的成员变量上，变量需要采用var声明并要指定类型。|
-|`@Jsonable`||原生Json DSL，作用于满足JSON格式的一串符号上，把它转成JsonSerializable对象，可以调用JsonTool.toJson方法序列化为json字符串。|
+|`@ToJson`||原生Json DSL，作用于满足JSON格式的一串符号上，把它转成JsonSerializable对象，可以调用JsonTool.toJson方法序列化为json字符串。|
 
 以上宏的属性参数说明，属性可以采用`=`与`:`赋值，如`@JsonField[name=xx]`与`@JsonField[name:xx]`等价：
 
@@ -55,6 +55,30 @@ JoyContext提供两个函数支持对HTTP Body的绑定与映射：
 ## 高级用法
 
 更多的使用方式请参考 [test/json_test](../../src/test/json_test.cj) 。
+
+### 继承
+
+@`Json`默认情况下只会对自身的成员变量进行序列化和反序列化，并不包含其父类里的成员变量。提供属性`superClass`来指定父类类型，可以同时对父类的成员变量进行序列化和反序列化。
+
+注：继承是支持class类型，不支持struct类型
+
+```
+@Json
+public open class ResourceContents {
+    public var uri: String = ""
+    public var mimeType: ?String = None
+}
+
+@Json[superClass = ResourceContents]
+public class TextResourceContents <: ResourceContents {
+    public var text: String = ""
+}
+
+@Json[superClass = ResourceContents]
+public class BlobResourceContents <: ResourceContents {
+    public var blob: String = ""
+}
+```
 
 ### Any类型绑定
 
@@ -138,11 +162,11 @@ public class DataAny {
 
 ### DSL
 
-宏`@Jsonable`用于构建原生Json对象，如下所示：
+宏`@ToJson`用于构建原生Json对象，如下所示：
 
 ```
 let x = "xyz"
-let d = @Jsonable(
+let d = @ToJson(
     {
         "a":{
             "a1":1,
@@ -162,10 +186,10 @@ let str = JsonTool.toJson(d)
 println(str) // 输出 {"a":{"a1":1,"a2":"xyz","a3":{"a3a":1,"a3b":"xyz","a3c":true},"a4":[1,2]},"b":[1,2],"c":true}
 ```
 
-`@Jsonable`支持：
+`@ToJson`支持：
 
- - 变量替换，如上述的`x`变量
- - 字符串插值，如@Jsonable(["${x}", "abc"])
+ - Json字段值中变量替换，如上述的`x`变量
+ - Json字段值中字符串插值，如@Jsonable(["${x}", "abc"])
 
 搭配在请求处理Handler中使用示例：
 
@@ -173,7 +197,7 @@ println(str) // 输出 {"a":{"a1":1,"a2":"xyz","a3":{"a3a":1,"a3b":"xyz","a3c":t
 @Get[path = "/json"]
 func pathGet(): JsonSerializable {
   let x = "xyz"
-  @Jsonable({
+  @ToJson({
       "a": x, 
       "b": "123"
   })
@@ -182,7 +206,7 @@ func pathGet(): JsonSerializable {
 
 ### Schema
 
-宏`@Json`展开生成代码会实现`ToJsonSchema`接口，调用`toJsonSchema`方法获取此类型的JSON Schema。
+宏`@Json`展开生成代码会实现`Jsonable`接口，调用`toJsonSchema`方法获取此类型的JSON Schema。
 
 两种方式指定：
 

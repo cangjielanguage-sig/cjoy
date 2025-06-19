@@ -64,7 +64,6 @@ public open class ChunkedWriter {
     protected let _httpContext: HttpContext
     protected let _httpResponseWriter: HttpResponseWriter
     protected var _end = false
-    protected var _chunkedNum = 0
 
     init(httpContext: HttpContext) {
         _httpContext = httpContext
@@ -72,8 +71,11 @@ public open class ChunkedWriter {
         responseBuilder.status(HttpStatusCode.STATUS_OK)
         responseBuilder.header("Transfer-Encoding", "chunked")
         responseBuilder.header("Connection", "keep-alive")
-        responseBuilder.header("Trailer", "chunked-num")
         _httpResponseWriter = HttpResponseWriter(httpContext)
+    }
+
+    public func header(name: String, value: String): Unit {
+        _httpContext.responseBuilder.header(name, value)
     }
 
     protected func checkEnd() {
@@ -84,7 +86,6 @@ public open class ChunkedWriter {
 
     public func end(): Unit {
         _end = true
-        _httpContext.responseBuilder.trailer("chunked-num", "${_chunkedNum}")
     }
 }
 
@@ -99,7 +100,6 @@ public class JoyChunkedWriter <: ChunkedWriter {
     public func write(data: String): JoyChunkedWriter {
         checkEnd()
         _httpResponseWriter.write(data.toArray())
-        _chunkedNum += 1
         this
     }
 
@@ -109,7 +109,6 @@ public class JoyChunkedWriter <: ChunkedWriter {
     public func write(data: Array<Byte>): JoyChunkedWriter {
         checkEnd()
         _httpResponseWriter.write(data)
-        _chunkedNum += 1
         this
     }
 
@@ -139,7 +138,6 @@ public class JoySseEmitter <: ChunkedWriter {
     public func sendEvent(data: JoyServerEventBuilder): JoySseEmitter {
         checkEnd()
         _httpResponseWriter.write(data.build().toArray())
-        _chunkedNum += 1
         this
     }
 }

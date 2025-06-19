@@ -8,14 +8,13 @@
  * See the Mulan PSL v2 for more details.
  */
 
-protected package cjoy.mcp.common
+package cjoy.mcp.common
 
 import std.io.ByteBuffer
 import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonReader, JsonWriter, JsonToken}
-import cjoy.mcp.schema.*
 import cjoy.log.LogTool
 
-public class RPCJsonTool {
+protected class RPCJsonTool {
     public static func serialize(obj: JsonSerializable): ByteBuffer {
         let buffer = ByteBuffer()
         let writer = JsonWriter(buffer)
