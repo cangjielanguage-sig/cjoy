@@ -93,7 +93,7 @@ public class ReadResourceResult {
 - 属性`subTypeField`与`subTypes`同时存在
 - 当反序列化`ResourceContents`时，如果json字符串中存在mimeType=text时，即反序化为TextResourceContents对象；存在mimeType=blob时，即反序化为BlobResourceContents对象
 
-**注：**继承是支持class类型，不支持struct类型
+**注：** 继承只支持class类型，不支持struct类型
 
 ### Any类型绑定
 
