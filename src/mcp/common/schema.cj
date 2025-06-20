@@ -203,7 +203,7 @@ public class ReadResourceRequest <: McpMessage {
 @Json
 public open class ResourceContents <: McpMessage {
     public var uri: String = ""
-    public var mimeType: String = None
+    public var mimeType: String = ""
 }
 
 @Json[superClass = ResourceContents]
