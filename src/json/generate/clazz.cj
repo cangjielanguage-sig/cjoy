@@ -19,24 +19,48 @@ public class JsonClassInfo {
     let fields: ArrayList<JsonFieldGenerator>
     let description: String
     let superClass: String
-    let isClass: Bool
+    let subTypeField: String
+    let subTypes: ?MapToString
 
-    init(attr: ?Tokens, classId: Token, vars: ArrayList<VarDecl>, isClass: Bool) {
+    let isClass: Bool
+    let isOpen: Bool
+
+    init(attr: ?Tokens, classId: Token, vars: ArrayList<VarDecl>, isClass: Bool, isOpen: Bool) {
         this.classId = classId
         this.fields = ArrayList<JsonFieldGenerator>()
         for (vd in vars) {
             this.fields.add(JsonInfoCache.create(vd))
         }
         this.isClass = isClass
+        this.isOpen = isOpen
 
         if (attr.isSome()) {
-            let map: MapToString = parserAttrs(attr.getOrThrow(), validKeys: ["description", "superClass"],
+            let map: MapToString = parserAttrs(attr.getOrThrow(), validKeys: ["description", "superClass", "subTypeField", "subTypes"],
                 macroName: "Json")
             this.description = map.getString("description") ?? ""
             this.superClass = map.getString("superClass") ?? ""
+            this.subTypeField = map.getString("subTypeField") ?? ""
+            this.subTypes = map.getMap("subTypes") 
         } else {
             this.description = ""
             this.superClass = ""
+            this.subTypeField = ""
+            this.subTypes = None
+        }
+
+        if (this.subTypeField != "" ){
+            if (this.subTypes.isNone()) {
+                diagReport(DiagReportLevel.ERROR, Tokens(),
+                    "miss subTypes attribute", "attribute subTypes and subTypeField must exist simultaneously")
+                throw Exception("miss subTypes attribute in Json macro ")
+            }
+        }
+         if (this.subTypes.isSome() ){
+            if (this.subTypeField == "") {
+                diagReport(DiagReportLevel.ERROR, Tokens(),
+                    "miss subTypeField attribute", "attribute subTypes and subTypeField must exist simultaneously")
+                throw Exception("miss subTypeField attribute in Json macro ")
+            }
         }
     }
 
@@ -52,7 +76,7 @@ public class JsonClassInfo {
         if (superClass != "") {
             callSuperTokens = quote(super.write(writer))
         }
-        var openToken = if (isClass) {
+        var openToken = if (isOpen) {
             quote(open)
         } else {
             Tokens()
@@ -85,7 +109,7 @@ public class JsonClassInfo {
                 let superId = Token(TokenKind.IDENTIFIER, superClass)
                 callSuperTokens = quote(&& $(superId).read(obj, name, reader))
             }
-            quote(
+            var res = quote(
                 protected static func read(obj: $(classId), name: String, reader: JsonReader): Bool {
                     match (name) {
                         $(deserTokens)
@@ -93,26 +117,80 @@ public class JsonClassInfo {
                     }
                     return false
                 }
-
-                public static func fromJson(reader: JsonReader): $(classId) {
-                    var obj = $(classId)()
-                    while (let Some(v) <- reader.peek()) {
-                        match (v) {
-                            case BeginObject =>
-                                reader.startObject()
-                                while (reader.peek() != EndObject) {
-                                    let name = reader.readName()
-                                    let skip = read(obj, name, reader)$(callSuperTokens)
-                                    if (skip) { reader.skip() }
-                                }
-                                reader.endObject()
-                                break
-                            case _ => throw Exception("the token is not start object")
+            )
+            if (subTypeField != "") {
+                var subTypeTokens = Tokens()
+                for((k, v) in subTypes.getOrThrow()) {
+                    let x = Token(TokenKind.IDENTIFIER, v.toString())
+                    subTypeTokens += quote(case $k => $x.fromJson(nr)
+                    )
+                }
+                res += quote(
+                    public static func fromJson(reader: JsonReader): $(classId) {
+                        var buffer = ByteBuffer()
+                        buffer.writeByte(b'{')
+                        var subType  = ""
+                        var num = 0
+                        while (let Some(v) <- reader.peek()) {
+                            match (v) {
+                                case BeginObject =>
+                                    reader.startObject()
+                                    while (reader.peek() != EndObject) {
+                                        let name = reader.readName()
+                                        num++
+                                        if (num > 1) {
+                                            buffer.writeByte(b',')
+                                        }
+                                        buffer.writeByte(b'"')
+                                        buffer.write(name.toArray())
+                                        buffer.writeByte(b'"')
+                                        buffer.writeByte(b':')
+                                        match (name) {
+                                            case $subTypeField => 
+                                                subType = reader.readValue<String>()
+                                                buffer.writeByte(b'"')
+                                                buffer.write(subType.toArray())
+                                                buffer.writeByte(b'"')
+                                            case _ => 
+                                                buffer.write(reader.readValueBytes())
+                                        }
+                                    }
+                                    reader.endObject()
+                                    break
+                                case _ => throw Exception("the token is not start object")
+                            }
+                        }
+                        buffer.writeByte(b'}')
+                        let nr = JsonReader(buffer)
+                        match (subType) {
+                            $subTypeTokens
+                            case _ => throw Exception("unknown filed value $subTypeField:${subType}")
                         }
                     }
-                    obj
-                }
-            )
+                )
+            } else {
+                res += quote(
+                    public static func fromJson(reader: JsonReader): $(classId) {
+                        var obj = $(classId)()
+                        while (let Some(v) <- reader.peek()) {
+                            match (v) {
+                                case BeginObject =>
+                                    reader.startObject()
+                                    while (reader.peek() != EndObject) {
+                                        let name = reader.readName()
+                                        let skip = read(obj, name, reader)$(callSuperTokens)
+                                        if (skip) { reader.skip() }
+                                    }
+                                    reader.endObject()
+                                    break
+                                case _ => throw Exception("the token is not start object")
+                            }
+                        }
+                        obj
+                    }
+                )
+            }
+            res
         } else {
             // struct is inmutable
             quote(
@@ -187,7 +265,7 @@ public class JsonClassInfo {
         let classGen = ClassGenentor("Json", decl)
 
         let ident = decl.identifier
-        let classInfo = JsonClassInfo(attr, ident, classGen.variables, classGen.isClass)
+        let classInfo = JsonClassInfo(attr, ident, classGen.variables, classGen.isClass, classGen.isOpen)
         let supperTokens = quote(JsonSerializable & JsonDeserializable<$(classInfo.classId)> & Jsonable)
 
         let serTokens = classInfo.genSerializeFunc()

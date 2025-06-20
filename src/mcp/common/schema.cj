@@ -140,7 +140,7 @@ public class CallToolRequest <: McpMessage {
     public var arguments: Any = Option<Any>.None
 }
 
-@Json
+@Json[subTypeField = "type", subTypes = { "text": "TextContent", "image": "ImageContent" }]
 public open class Content <: McpMessage {
     @JsonField[name = "type"]
     public var type_: String = ""
@@ -203,7 +203,7 @@ public class ReadResourceRequest <: McpMessage {
 @Json
 public open class ResourceContents <: McpMessage {
     public var uri: String = ""
-    public var mimeType: ?String = None
+    public var mimeType: String = None
 }
 
 @Json[superClass = ResourceContents]

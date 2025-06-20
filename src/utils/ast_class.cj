@@ -11,17 +11,19 @@
 package cjoy.utils
 
 import std.ast.*
-import std.collection.{ArrayList, map, collectArrayList}
+import std.collection.{ArrayList, map, any, collectArrayList}
 
 protected class ClassGenentor {
     public let typeDecl: Decl
     public let superTypes: ArrayList<TypeNode>
     public let body: Body
     public let isClass: Bool
+    public let isOpen: Bool
     public let variables: ArrayList<VarDecl>
 
     public init(macroName: String, typeDecl: Decl) {
         this.typeDecl = typeDecl
+        this.isOpen = typeDecl.modifiers |> any {t => t.keyword.value == "open"}
         match (typeDecl) {
             case vd: ClassDecl =>
                 isClass = true

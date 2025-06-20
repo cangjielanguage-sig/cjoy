@@ -149,23 +149,46 @@ class UserSchema {
     @JsonField[description: "the user gender"]
     var gender: Int = 0
 
-    @JsonField[schema: {
-      "type": "object",
-      "description": "the user addon info",
-      "properties": {
-        "info1": {
-           "type": "string",
-           "description": "xxxx",
-        }
-      },
-      "required": [info1]
-    }]
+    @JsonField[schema: { 
+ "type": "object", 
+ "description": "the user addon info", 
+ "properties": { 
+ "info1": { 
+ "type": "string", 
+ "description": "xxxx", 
+ } 
+ }, 
+ "required": [ info1 ] 
+ }]
     var addOnInfo: HashMap<String, String> = HashMap()
 
     @JsonField[description: "option desc"]
     var f1: Option<String> = None
     @JsonField[description: "arr desc"]
     var arr: Array<String> = Array()
+}
+
+@Json[subTypeField = "mimeType", subTypes = { "text": "TextResourceContents", "blob": "BlobResourceContents" }]
+public open class ResourceContents {
+    public var mimeType: String = ""
+}
+
+@Json[superClass = ResourceContents]
+public class TextResourceContents <: ResourceContents {
+    public var text: String = ""
+    public var text2: String = ""
+}
+
+@Json[superClass = ResourceContents]
+public class BlobResourceContents <: ResourceContents {
+    public var blob: String = ""
+    public var blob2: String = ""
+}
+
+@Json
+public class ReadResourceResult {
+    // 类型为基类，实际根据mimeType的值反序列化为TextResourceContents或BlobResourceContents
+    public var contents: ArrayList<ResourceContents> = ArrayList()
 }
 
 @Test
@@ -432,7 +455,7 @@ public class JsonTestCaseSuit {
         let expect = ###"{"a":{"a1":1,"a2":"xyz","a3":{"a3a":1,"a3b":"xyz","a3c":true},"a4":[1,2]},"b":[1,2],"c":true}"###
         @Assert(str, expect)
     }
-    
+
     @TestCase
     public func testToJsonSchema(): Unit {
         let schema = UserSchema.toJsonSchema()
@@ -440,5 +463,59 @@ public class JsonTestCaseSuit {
         println(json)
         let expect = ###"{"type":"object","description":"user info","properties":{"name":{"type":"string","description":"the user name"},"address":{"type":"string","description":"the address of user"},"gender":{"type":"integer","description":"the user gender"},"addOnInfo":{"type":"object","description":"the user addon info","properties":{"info1":{"type":"string","description":"xxxx"}},"required":["info1"]},"f1":{"type":"string","description":"option desc"},"arr":{"type":"array","description":"arr desc","items":{"type":"string"}}},"required":["name","gender","addOnInfo","arr"]}"###
         @Assert(json, expect)
+    }
+
+    @TestCase
+    public func testSuperClass(): Unit {
+        let t = TextResourceContents(text: "1", text2: "2")
+        t.mimeType = "text"
+        
+        let json = JsonTool.toJson(t)
+        println(json)
+        
+        let r = JsonTool.fromJson<TextResourceContents>(json)
+        @Assert(r.mimeType, t.mimeType)
+        @Assert(r.text, t.text)
+        @Assert(r.text2, t.text2)
+    }
+
+    @TestCase
+    public func testSubTypes(): Unit {
+        let t = TextResourceContents(text: "1", text2: "2")
+        t.mimeType = "text"
+        
+        let json = JsonTool.toJson(t)
+        println(json)
+        
+        let r = JsonTool.fromJson<ResourceContents>(json)
+        @Assert(r.mimeType, t.mimeType)
+        let r2 = (r as TextResourceContents).getOrThrow()
+        @Assert(r2.text, t.text)
+        @Assert(r2.text2, t.text2)
+    }
+
+    @TestCase
+    public func testSubTypes2(): Unit {
+        let t1 = TextResourceContents(text: "t1", text2: "t2")
+        t1.mimeType = "text"
+        let t2 = BlobResourceContents(blob: "b1", blob2: "b2")
+        t2.mimeType = "blob"
+        
+        let s = ReadResourceResult(contents: ArrayList<ResourceContents>([t1, t2]))
+        let json = JsonTool.toJson(s)
+        println(json)
+        
+        let r = JsonTool.fromJson<ReadResourceResult>(json)
+        @Assert(r.contents.size, 2)
+
+        let r1 = (r.contents[0] as TextResourceContents).getOrThrow()
+        @Assert(r1.mimeType, t1.mimeType)
+        @Assert(r1.text, t1.text)
+        @Assert(r1.text2, t1.text2)
+
+        let r2 = (r.contents[1] as BlobResourceContents).getOrThrow()
+        @Assert(r2.mimeType, t2.mimeType)
+        @Assert(r2.blob, t2.blob)
+        @Assert(r2.blob2, t2.blob2)
     }
 }
