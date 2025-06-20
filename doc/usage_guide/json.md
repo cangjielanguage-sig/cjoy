@@ -56,17 +56,14 @@ JoyContext提供两个函数支持对HTTP Body的绑定与映射：
 
 更多的使用方式请参考 [test/json_test](../../src/test/json_test.cj) 。
 
-### 继承
+### 多态
 
-@`Json`默认情况下只会对自身的成员变量进行序列化和反序列化，并不包含其父类里的成员变量。提供属性`superClass`来指定父类类型，可以同时对父类的成员变量进行序列化和反序列化。
-
-注：继承是支持class类型，不支持struct类型
+@`Json`默认情况下只会对自身的成员变量进行序列化和反序列化，并不包含其父类里的成员变量，提供一些属性支持序列化和反序列化时多态。
 
 ```
-@Json
+@Json[subTypeField = "mimeType", subTypes = {"text": "TextResourceContents", "blob": "BlobResourceContents"}]
 public open class ResourceContents {
-    public var uri: String = ""
-    public var mimeType: ?String = None
+    public var mimeType: String = ""
 }
 
 @Json[superClass = ResourceContents]
@@ -78,7 +75,25 @@ public class TextResourceContents <: ResourceContents {
 public class BlobResourceContents <: ResourceContents {
     public var blob: String = ""
 }
+
+@Json
+public class ReadResourceResult {
+    // 类型为基类，实际根据mimeType的值反序列化为TextResourceContents或BlobResourceContents
+    public var contents: ArrayList<ResourceContents> = ArrayList()
+}
 ```
+
+下面属性用于帮助子类识别父类
+- 属性`superClass=父类类型名`来指定父类类型
+- 当序列化或反序列化为`TextResourceContents`时，可以同时对父类的成员变量进行序列化和反序列化
+
+下面属性用于帮助父类识别与子类之间的关系
+- 属性`subTypeField=字段名`来指定子类的区分字段
+- 属性`subTypes={"字段值1":"子类类型名"}`来指定区分字段不同值时的子类类型
+- 属性`subTypeField`与`subTypes`同时存在
+- 当反序列化`ResourceContents`时，如果json字符串中存在mimeType=text时，即反序化为TextResourceContents对象；存在mimeType=blob时，即反序化为BlobResourceContents对象
+
+**注：**继承是支持class类型，不支持struct类型
 
 ### Any类型绑定
 
