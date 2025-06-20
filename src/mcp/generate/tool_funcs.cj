@@ -89,8 +89,8 @@ class ToolFuncInfo <: FuncInfo {
         ret += quote(
             let res = $(funcName)($(params))
             match(res) {
-                case x: ToString => x.toString()
                 case x: JsonSerializable => JsonTool.toJson(x)
+                case x: ToString => x.toString()
                 case _ => ""
             }
         )

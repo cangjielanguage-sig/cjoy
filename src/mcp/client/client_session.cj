@@ -14,7 +14,6 @@ import std.collection.concurrent.ConcurrentHashMap
 import std.sync.{AtomicUInt64, SyncCounter}
 import std.io.ByteBuffer
 import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonReader}
-import cjoy.mcp.schema.*
 import cjoy.mcp.common.*
 import cjoy.utils.{TimeoutCache, randStr}
 import cjoy.log.LogTool
@@ -23,7 +22,7 @@ class ResponseWaiter {
     ResponseWaiter(var response!: ?JSONRPCResponse = None, let counter!: SyncCounter = SyncCounter(1)) {}
 }
 
-public class DefaultMcpClientSession <: McpClientSession & McpResponseHandler & McpNotificationHandler {
+class DefaultMcpClientSession <: McpClientSession & McpResponseHandler & McpNotificationHandler {
     private let _transport: McpClientTransport
     private let _requestTimeout: Duration
     private let _sessPefix: String = randStr(8)

@@ -124,7 +124,7 @@ public class JsonTool {
         Rune(str[0])
     }
 
-    public static func getSchema<T>() where T <: ToJsonSchema {
+    public static func getSchema<T>() where T <: Jsonable {
         T.toSchema()
     }
 }

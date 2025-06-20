@@ -11,12 +11,13 @@
 macro package cjoy.json
 
 import std.ast.Tokens
-import cjoy.json.generate.{JsonClassInfo, JsonFieldInfo, parseJsonable}
+import cjoy.json.generate.{JsonClassInfo, JsonFieldInfo, parseTojson}
 
 // reimport the dependent
-public import cjoy.json.api.{JsonTool, JsonBox, JsonSchemaInfo, JsonSchemaType, ToJsonSchema}
+public import cjoy.json.api.{JsonTool, JsonSchemaInfo, JsonSchemaType, Jsonable}
 public import std.time.DateTime
 public import std.io.ByteBuffer
+public import std.collection.ArrayList
 public import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonWriter, JsonReader, JsonToken}
 
 /**
@@ -55,6 +56,6 @@ public macro JsonField(attr: Tokens, input: Tokens): Tokens {
 /**
  * Convert it to JsonSerializable obj, then you can JsonTool.toJson(obj) serialize it to json string
  */
-public macro Jsonable(input: Tokens): Tokens {
-    parseJsonable(input)
+public macro ToJson(input: Tokens): Tokens {
+    parseTojson(input)
 }

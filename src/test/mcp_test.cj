@@ -12,7 +12,7 @@ package cjoy.test
 
 import cjoy.*
 import cjoy.mcp.*
-import cjoy.mcp.schema.*
+import cjoy.mcp.common.*
 import cjoy.mcp.common.McpClient
 import cjoy.mcp.client.createMcpSseClient
 

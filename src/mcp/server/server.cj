@@ -12,7 +12,6 @@ package cjoy.mcp.server
 
 import std.collection.ArrayList
 import std.collection.concurrent.ConcurrentHashMap
-import cjoy.mcp.schema.*
 import cjoy.mcp.common.*
 import cjoy.framework.{Joy, JoyContext}
 
@@ -26,7 +25,7 @@ public class McpServerFeatures {
 public class McpServer {
     static let callToolHandlers: ConcurrentHashMap<String, McpCallToolHandler> = ConcurrentHashMap()
 
-    static let tools: ConcurrentHashMap<String, Tool> = ConcurrentHashMap()
+    static let tools: ConcurrentHashMap<String, McpTool> = ConcurrentHashMap()
 
     static var serverFeatures: ?McpServerFeatures = None
 
@@ -34,12 +33,12 @@ public class McpServer {
         callToolHandlers.add(method, handler)
     }
 
-    public static func addTool(tool: Tool): Unit {
+    public static func addTool(tool: McpTool): Unit {
         tools.add(tool.name, tool)
     }
 
     public static func listTools(page: PaginatedRequest): ListToolsResult {
-        let res: ArrayList<Tool> = ArrayList()
+        let res: ArrayList<McpTool> = ArrayList()
         for ((_, value) in tools) {
             res.add(value)
         }
@@ -56,11 +55,13 @@ public class McpServer {
                 isError = true
                 ex.message
             }
-            let content = TextContent(type_: "text", text: res)
-            CallToolResult(isError: isError, content: ArrayList([content]))
+            let content = TextContent(text: res)
+            content.type_ = "text"
+            CallToolResult(isError: isError, content: ArrayList<Content>([content]))
         } else {
-            let content = TextContent(type_: "text", text: "not found tool handler")
-            CallToolResult(isError: true, content: ArrayList([content]))
+            let content = TextContent(text: "not found tool handler")
+            content.type_ = "text"
+            CallToolResult(isError: true, content: ArrayList<Content>([content]))
         }
     }
 
@@ -71,11 +72,8 @@ public class McpServer {
     }
 
     public static func registerSseTo(joy: Joy, ssePath!: String = "/sse", messagePath!: String = "/messages",
-        serverFeatures!: McpServerFeatures = McpServerFeatures()) {
-        McpServer.serverFeatures = serverFeatures
-        if (!tools.isEmpty()) {
-            serverFeatures.capabilities.tools = ToolCapability()
-        }
+        serverFeatures!: McpServerFeatures = McpServerFeatures()): Unit {
+        updateFeatures(serverFeatures)
 
         let transport = McpSseServerTransport(messagePath)
         // sse 
@@ -87,5 +85,23 @@ public class McpServer {
         let rg2 = joy.router.findGroup(messagePath)
         let rpath2 = messagePath[rg2.basePath().size..]
         rg2.post(rpath2, transport.handlePostRequest)
+    }
+
+    public static func registerStreamableTo(joy: Joy, path!: String = "/mcp", isJsonResp!: Bool = false,
+        serverFeatures!: McpServerFeatures = McpServerFeatures()): Unit {
+        updateFeatures(serverFeatures)
+        let transport = McpStreamableServerTransport(isJsonResp)
+
+        let rg = joy.router.findGroup(path)
+        let rpath = path[rg.basePath().size..]
+        rg.get(rpath, transport.handleGetRequest)
+        rg.post(rpath, transport.handlePostRequest)
+    }
+
+    private static func updateFeatures(serverFeatures: McpServerFeatures) {
+        McpServer.serverFeatures = serverFeatures
+        if (!tools.isEmpty()) {
+            serverFeatures.capabilities.tools = ToolCapability()
+        }
     }
 }

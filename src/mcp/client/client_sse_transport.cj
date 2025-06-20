@@ -15,12 +15,11 @@ import std.io.ByteBuffer
 import std.collection.HashMap
 import std.sync.AtomicBool
 import stdx.encoding.url.URL
-import cjoy.mcp.schema.*
 import cjoy.mcp.common.*
 import cjoy.log.LogTool
 import cjoy.utils.{SSEventStream, HttpClient}
 
-public class McpSseClientTransport <: McpClientTransport {
+class McpSseClientTransport <: McpClientTransport {
     private let _url: String
     private let _baseUrl: String
     private var _lastInitTime: DateTime

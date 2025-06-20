@@ -171,6 +171,7 @@ main(): Int64 {
 - [Json](doc/usage_guide/json.md)
   - [基础用法](doc/usage_guide/json.md#基础用法)
   - [高级用法](doc/usage_guide/json.md#高级用法)
+    - [继承](doc/usage_guide/json.md#继承)
     - [Any类型绑定](doc/usage_guide/json.md#Any类型绑定)
     - [获取原始Json内容](doc/usage_guide/json.md#获取原始Json内容)
     - [Schema](doc/usage_guide/json.md#Schema)

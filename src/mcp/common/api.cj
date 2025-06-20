@@ -8,11 +8,10 @@
  * See the Mulan PSL v2 for more details.
  */
 
-protected package cjoy.mcp.common
+package cjoy.mcp.common
 
 import std.io.ByteBuffer
 import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable}
-import cjoy.mcp.schema.*
 import cjoy.framework.JoyContext
 
 public interface McpSession <: Resource {

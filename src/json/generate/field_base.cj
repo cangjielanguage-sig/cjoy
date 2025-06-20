@@ -104,7 +104,7 @@ open class JsonFieldGenerator {
         let vtypeTokens = varType.toTokens()
         let vtypeName = vtypeTokens[0].value
         this.isOption = vtypeName == "Option" || vtypeName == "?"
-        this.notSchema = vtypeName == "Any" || vtypeName == "HashMap" || vtypeName == "JsonBox"
+        this.notSchema = vtypeName == "Any" || vtypeName == "HashMap"
     }
 
     public open func genSerializeTokens(): Tokens {

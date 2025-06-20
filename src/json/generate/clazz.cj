@@ -18,19 +18,25 @@ public class JsonClassInfo {
     let classId: Token
     let fields: ArrayList<JsonFieldGenerator>
     let description: String
+    let superClass: String
+    let isClass: Bool
 
-    init(attr: ?Tokens, classId: Token, vars: ArrayList<VarDecl>) {
+    init(attr: ?Tokens, classId: Token, vars: ArrayList<VarDecl>, isClass: Bool) {
         this.classId = classId
         this.fields = ArrayList<JsonFieldGenerator>()
         for (vd in vars) {
             this.fields.add(JsonInfoCache.create(vd))
         }
-        
+        this.isClass = isClass
+
         if (attr.isSome()) {
-            let map: MapToString = parserAttrs(attr.getOrThrow(), validKeys: ["description"], macroName: "Json")
+            let map: MapToString = parserAttrs(attr.getOrThrow(), validKeys: ["description", "superClass"],
+                macroName: "Json")
             this.description = map.getString("description") ?? ""
+            this.superClass = map.getString("superClass") ?? ""
         } else {
             this.description = ""
+            this.superClass = ""
         }
     }
 
@@ -42,11 +48,25 @@ public class JsonClassInfo {
             }
             serTokens += f.genSerializeTokens()
         }
+        var callSuperTokens = Tokens()
+        if (superClass != "") {
+            callSuperTokens = quote(super.write(writer))
+        }
+        var openToken = if (isClass) {
+            quote(open)
+        } else {
+            Tokens()
+        }
         quote(
-            public func toJson(writer: JsonWriter): Unit {
+            public $(openToken) func toJson(writer: JsonWriter): Unit {
                 writer.startObject()
-                $(serTokens)
+                $(callSuperTokens)
+                write(writer)
                 writer.endObject()
+            }
+
+            protected $(openToken) func write(writer: JsonWriter): Unit {
+                 $(serTokens)
             }
         )
     }
@@ -59,29 +79,65 @@ public class JsonClassInfo {
             }
             deserTokens += f.genDeserializeTokens()
         }
-
-        quote(
-            public static func fromJson(reader: JsonReader): $(classId) {
-                var obj = $(classId)()
-                while (let Some(v) <- reader.peek()) {
-                    match (v) {
-                        case BeginObject =>
-                            reader.startObject()
-                            while (reader.peek() != EndObject) {
-                                let name = reader.readName()
-                                match (name) {
-                                    $(deserTokens)
-                                    case _ => reader.skip()
-                                }
-                            }
-                            reader.endObject()
-                            break
-                        case _ => throw Exception("the token is not start object")
-                    }
-                }
-                obj
+        if (isClass) {
+            var callSuperTokens = Tokens()
+            if (superClass != "") {
+                let superId = Token(TokenKind.IDENTIFIER, superClass)
+                callSuperTokens = quote(&& $(superId).read(obj, name, reader))
             }
-        )
+            quote(
+                protected static func read(obj: $(classId), name: String, reader: JsonReader): Bool {
+                    match (name) {
+                        $(deserTokens)
+                        case _ => return true
+                    }
+                    return false
+                }
+
+                public static func fromJson(reader: JsonReader): $(classId) {
+                    var obj = $(classId)()
+                    while (let Some(v) <- reader.peek()) {
+                        match (v) {
+                            case BeginObject =>
+                                reader.startObject()
+                                while (reader.peek() != EndObject) {
+                                    let name = reader.readName()
+                                    let skip = read(obj, name, reader)$(callSuperTokens)
+                                    if (skip) { reader.skip() }
+                                }
+                                reader.endObject()
+                                break
+                            case _ => throw Exception("the token is not start object")
+                        }
+                    }
+                    obj
+                }
+            )
+        } else {
+            // struct is inmutable
+            quote(
+                public static func fromJson(reader: JsonReader): $(classId) {
+                    var obj = $(classId)()
+                    while (let Some(v) <- reader.peek()) {
+                        match (v) {
+                            case BeginObject =>
+                                reader.startObject()
+                                while (reader.peek() != EndObject) {
+                                    let name = reader.readName()
+                                    match (name) {
+                                        $(deserTokens)
+                                        case _ => reader.skip()
+                                    }
+                                }
+                                reader.endObject()
+                                break
+                            case _ => throw Exception("the token is not start object")
+                        }
+                    }
+                    obj
+                }
+            )
+        }
     }
 
     func genToSchemaFunc(): Tokens {
@@ -100,11 +156,24 @@ public class JsonClassInfo {
             }
             tokens += ts
         }
+        var arrTokens = Tokens()
+        if (tokens.size != 0) {
+            arrTokens = quote([$tokens])
+        }
+        var callSuperTokens = Tokens()
+        if (superClass != "") {
+            let superId = Token(TokenKind.IDENTIFIER, superClass)
+            callSuperTokens = quote(arr.add(all:$(superId).schemaInfos()))
+        }
         quote(
+            protected static func schemaInfos(): Array<JsonSchemaInfo> {
+                let arr = ArrayList<JsonSchemaInfo>($arrTokens)
+                $callSuperTokens
+                arr.toArray()
+            }
+
             public static func toSchema(): JsonSchemaType {
-                JsonSchemaType.Obj([
-                    $tokens
-                ])
+                JsonSchemaType.Obj($(classId).schemaInfos())
             }
 
             public static func toJsonSchema(): JsonSerializable {
@@ -118,8 +187,8 @@ public class JsonClassInfo {
         let classGen = ClassGenentor("Json", decl)
 
         let ident = decl.identifier
-        let classInfo = JsonClassInfo(attr, ident, classGen.variables)
-        let supperTokens = quote(JsonSerializable & JsonDeserializable<$(classInfo.classId)> & ToJsonSchema)
+        let classInfo = JsonClassInfo(attr, ident, classGen.variables, classGen.isClass)
+        let supperTokens = quote(JsonSerializable & JsonDeserializable<$(classInfo.classId)> & Jsonable)
 
         let serTokens = classInfo.genSerializeFunc()
         let deserTokens = classInfo.genDeserializeFunc()
@@ -129,7 +198,7 @@ public class JsonClassInfo {
             $(deserTokens)
             $(schemaTokens)
         )
-        let tokens =  classGen.genTokens(supperTokens, bindTokens)
+        let tokens = classGen.genTokens(supperTokens, bindTokens)
         JsonInfoCache.clear()
 
         tokens + Token(TokenKind.NL) + input[pos..]
