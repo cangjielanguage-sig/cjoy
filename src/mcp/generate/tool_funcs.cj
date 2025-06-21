@@ -15,13 +15,13 @@ import std.collection.*
 import cjoy.utils.{parserAttrs, MapToString, MapListGetFunc, randStr}
 
 open class FuncInfo {
-    let macroName: String 
+    let macroName: String
     let decl: FuncDecl
 
     var name: String = ""
     var description: String = ""
 
-    init(macroName: String ,decl: FuncDecl) {
+    init(macroName: String, decl: FuncDecl) {
         this.macroName = macroName
         this.decl = decl
     }
@@ -36,6 +36,27 @@ open class FuncInfo {
 class ToolFuncInfo <: FuncInfo {
     init(macroName: String, decl: FuncDecl) {
         super(macroName, decl)
+    }
+
+    private func isOnlyOneComplex(): Bool {
+        var paramInfos = ArrayList<ParamInfo>()
+        for (fp in decl.funcParams) {
+            let pname = fp.identifier.value
+            let paramInfo = match (ParamInfoCache.findByParamName(pname)) {
+                case Some(val) => val
+                case _ =>
+                    let val = ParamInfo("ToolParam")
+                    val.parseFuncParam(fp)
+                    val
+            }
+            if (!paramInfo.isComplexType()) {
+                return false
+            }
+            if (!paramInfo.isJoyContext()) {
+                paramInfos.add(paramInfo)
+            }
+        }
+        return paramInfos.size == 1
     }
 
     private func declVars(): (Tokens, Tokens, Tokens, Tokens) {
@@ -58,8 +79,8 @@ class ToolFuncInfo <: FuncInfo {
             rjson += paramInfo.genReadJsonTokens()
             schame += paramInfo.genSchemTokens()
             if (params.size > 0) {
-                 params += Token(TokenKind.COMMA)
-            } 
+                params += Token(TokenKind.COMMA)
+            }
             if (paramInfo.isJoyContext()) {
                 params += quote($(pid))
             } else {
@@ -68,6 +89,32 @@ class ToolFuncInfo <: FuncInfo {
         }
 
         (vars, rjson, params, schame)
+    }
+
+    private func declVarsForOneComplex(): (Tokens, Tokens, Tokens) {
+        var vars = Tokens()
+        var params = Tokens()
+        var schame = Tokens()
+        for (fp in decl.funcParams) {
+            let pid = fp.identifier
+            let pname = pid.value
+            let paramInfo = match (ParamInfoCache.findByParamName(pname)) {
+                case Some(val) => val
+                case _ =>
+                    let val = ParamInfo("ToolParam")
+                    val.parseFuncParam(fp)
+                    val
+            }
+
+            vars += paramInfo.genVarComplexTypeTokens()
+            schame += paramInfo.genSchemComplexTypeTokens()
+            if (params.size > 0) {
+                params += Token(TokenKind.COMMA)
+            }
+            params += quote($(pid))
+        }
+
+        (vars, params, schame)
     }
 
     private func callFunc(params: Tokens): Tokens {
@@ -97,15 +144,31 @@ class ToolFuncInfo <: FuncInfo {
         ret
     }
 
-    func genTokens(): Tokens {
-        let handlerName = Token(TokenKind.IDENTIFIER, decl.identifier.value.toAsciiTitle() + "Handler" + randStr(3))
+    private func genFuncsBody(): Tokens {
+        if (isOnlyOneComplex()) {
+            let (vars, params, schame) = declVarsForOneComplex()
+            let callfunc = callFunc(params)
+            let initFunc = quote(
+                private init() {
+                    McpServer.addMcpCallToolHandler($(name), this)
+           
+                    $schame
 
-        let (vars, rjson, params, schame) = declVars()
-        let callfunc = callFunc(params)
-        quote(
-            public class $(handlerName) <: McpCallToolHandler {
-                public static let INSTANCE = $(handlerName)()
-                
+                    let tool = McpTool(name: $name, description: $description, inputSchema: inputSchema)
+                    McpServer.addTool(tool)
+                }
+            )
+            let handleFunc = quote(
+                public func handle(ctx: JoyContext, arguments_: Array<Byte>): String {
+                    $(vars)
+                    $(callfunc)
+                }
+            )
+            initFunc + handleFunc
+        } else {
+            let (vars, rjson, params, schame) = declVars()
+            let callfunc = callFunc(params)
+            let initFunc = quote(
                 private init() {
                     McpServer.addMcpCallToolHandler($(name), this)
                     let inputSchema = HashMap<String, JsonSerializable>()
@@ -121,7 +184,8 @@ class ToolFuncInfo <: FuncInfo {
                     let tool = McpTool(name: $name, description: $description, inputSchema: inputSchema)
                     McpServer.addTool(tool)
                 }
-
+            )
+            let handleFunc = quote(
                 public func handle(ctx: JoyContext, arguments_: Array<Byte>): String {
                     let buffer_ = ByteBuffer()
                     buffer_.write(arguments_)
@@ -149,11 +213,22 @@ class ToolFuncInfo <: FuncInfo {
 
                     $(callfunc)
                 }
+            )
+            initFunc + handleFunc
+        }
+    }
+
+    func genTokens(): Tokens {
+        let handlerName = Token(TokenKind.IDENTIFIER, decl.identifier.value.toAsciiTitle() + "Handler" + randStr(3))
+        let funcsBody = genFuncsBody()
+        quote(
+            public class $(handlerName) <: McpCallToolHandler {
+                public static let INSTANCE = $(handlerName)()
+                $funcsBody
             }   
        )
     }
 }
-
 
 public func parseFunc(macroName: String, attr: Tokens, input: Tokens): Tokens {
     let decl = parseDecl(input)

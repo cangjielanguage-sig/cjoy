@@ -11,13 +11,20 @@ client = Client(transport)
 
 async def main():
     async with client:
-        #tools = await client.list_tools()
-        #print(f"Available tools: {tools}")
-        for i in range(10):
+        tools = await client.list_tools()
+        print(f"Available tools: {tools}")
+        for i in range(3):
             result = await client.call_tool("add", {"a": 5, "b": i})
-            # result -> list[mcp.types.TextContent | mcp.types.ImageContent | ...]
-            print(result[0].text) # Assuming TextContent, e.g., '8'
-            await asyncio.sleep(2)
+            print(result[0].text) 
+            await asyncio.sleep(1)
+        for i in range(3):
+            result = await client.call_tool("add2", {"a": 5, "b": i})
+            print(result[0].text) 
+            await asyncio.sleep(1)
+        for i in range(3):
+            result = await client.call_tool("add3", {"a": 5, "b": i})
+            print(result[0].text) 
+            await asyncio.sleep(1)
 
 if __name__ == '__main__':
     asyncio.run(main())
