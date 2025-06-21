@@ -1,7 +1,7 @@
 <div align="center">
 <h1>CJoy</h1>
-a fast，lightweight and joy web framework.<br/>
-一个高性能、轻量、省心的Web框架。
+a fast，extendibility，lightweight and joy web framework.<br/>
+一个高性能、可扩展、轻量、省心的Web框架。
 <br/>
 <img alt="" src="doc/imgs/logo.png" height="118" width="200" style="display: inline-block;" />
 </div>
@@ -14,23 +14,55 @@ a fast，lightweight and joy web framework.<br/>
 <img alt="" src="https://img.shields.io/badge/domain-HOS/Cloud-brightgreen" style="display: inline-block;" />
 </p>
 
+## 概览
+
+本项目参考多种语言Web开源框架的设计优点，基于仓颉语言打造的具有高性能、高扩展性，高易用性等特点的Web框架。
+
+### 特性
+
+在仓颉SDK提供的HTTP框架基础上进一步封装以简化Web应用开发：
+
+- 基于压缩前辍树的路由管理，支持静态Path，参数匹配Path，正则匹配Path，全路径通配符Path的高效注册与查找，支持路由组；
+- 基于拦截器的中间件扩展能力，支持Basic认证等多种能力扩展；
+- 基于Context的上下文管理，支持快速获取请求参数与构建Json/Text响应；
+- 基于编译宏的Json序列化与反序列，支持对请求与响应消息的Json直接绑定映射;
+- 基于编译宏支持自动注册与参数注入请求处理函数与中间件函数;
+- 基于编译宏支持对请求参数校验；
+- 基于编译宏支持MCP服务暴露工具等能力给LLM；
+- 支持文件下载与上传，WebSocket，SSE等内置能力;
+
+### 应用场景
+
+- API服务：可以帮助您快速开发Restful服务并配置路由规则与管理各种资源；
+- Web服务：压缩前辍树高性能路由查找与文件服务，让您的Web服务更具有性能优势；
+- 微服务：路由组与内置Json编译宏，可以实现微服务各类接口分组管理与接口实现；
+- MCP服务：提供AI MCP服务组件编译宏，可以让您快速暴露MCP的工具等能力给LLM；
+
+### 技术特点
+
+- 高性能：零反射，基于编译宏生成代码，前辍树高性能路由，运行时高性能；
+- 轻量化：内置Web应用开发常见能力，模块化按需使用，能灵活组装；
+- 可扩展：提供中间件机制，支持对Web请求拦截进行处理，丰富您的Web应用；
+- 易上手：内置多种能力，提供编译宏，简化Web，MCP应用开发，让您聚焦你的应用逻辑；
+- 多协议: 支持HTTP1.1，HTTP2，WebSocket, SSE, MCP协议；
+
 ## 快速开始
 
 **⚠️注意**
 
 请选择对应的仓颉版本：<img alt="" src="https://img.shields.io/badge/cangjie-v0.60.5-brightgreen" style="display: inline-block;" />
 
-本项目依赖Cangjie stdx包，请先下载对应版本的stdx包，使用说明参见 [仓颉编程语言 stdx](https://gitcode.com/Cangjie/Cangjie-STDX) 。
+本项目依赖仓颉stdx包，请先下载对应版本的stdx包，使用说明参见 [仓颉编程语言 stdx](https://gitcode.com/Cangjie/Cangjie-STDX) 。
 
 本项目配置要求，请把对应的stdx包解压到与Cangjie SDK并列目录cangjiestdx下：
 
- - cangjie ： Cangjie SDK目录
+ - cangjie ： 仓颉SDK目录
  - cangjiestdx ： 新建此目录
    - linux_x86_64_llvm ： 解压对应的stdx包，不同OS目录名称不同
 
 如果stdx包不是按上述目录配置，请修改cjoy中cjpm.toml对应`[target.xx.bin-dependencies]`的`path-option`。
 
-推荐在Linux(或WSL)，MacOS中运行仓颉。
+推荐在Linux(或WSL)，MacOS中运行仓颉，让您获得更好更快的体验。
 
 ### 运行本项目的示例
 
@@ -52,7 +84,6 @@ cjpm run --name cjoy.examples.tls
 [dependencies]
   cjoy = { git = "https://gitcode.com/Cangjie-SIG/cjoy.git", branch = "main" }
 ```
-
 
 ## 快速了解
 
@@ -129,25 +160,9 @@ main(): Int64 {
 }
 ```
 
-更多的样例请参见 [examples](src/examples/README.md) 。
+## 更多示例
 
-## 特性
-
-本项目参考了一些其它语言的开源设计与实现，在Cangjie提供的HTTP框架基础上进一步封装以简化Web应用开发，增加如下能力：
-
-- 基于压缩前辍树的路由管理，支持静态Path，参数匹配Path，正则匹配Path，全路径通配符Path的高效注册与查找，支持路由组；
-- 基于拦截器的中间件扩展能力，支持Basic认证等多种能力扩展；
-- 基于Context的上下文管理，支持快速获取请求参数与构建Json/Text响应；
-- 基于编译宏的Json序列化与反序列，支持对请求与响应消息的Json直接绑定映射;
-- 基于编译宏支持自动注册与参数注入请求处理函数与中间件函数;
-- 基于编译宏支持对请求参数校验；
-- 支持文件下载与上传，WebSocket，SSE等内置能力;
-
-应用场景 ：
-
-- API服务：CJoy 可以帮助你快速开发Restful服务并配置路由规则与管理各种资源；
-- Web服务：CJoy 的压缩前辍树高性能路由查找，让你的Web服务更具有性能优势；
-- 微服务框架：CJoy 的路由组与内置Json编译宏，可以实现微服务各类接口分组管理与接口实现。
+请参见 [examples](src/examples/README.md) 。
 
 ## 使用指导
 
@@ -183,6 +198,8 @@ main(): Int64 {
 - [MCP](doc/usage_guide/mcp.md)
   - [服务端](doc/usage_guide/mcp.md#服务端) 
     - [Tool](doc/usage_guide/mcp.md#Tool) 
+      - [入参](doc/usage_guide/mcp.md#Tool入参)
+      - [出参](doc/usage_guide/mcp.md#Tool出参)  
     - [注册](doc/usage_guide/mcp.md#注册) 
   - [客户端](doc/usage_guide/mcp.md#客户端)  
 - [分块传输](doc/usage_guide/mcp.md)

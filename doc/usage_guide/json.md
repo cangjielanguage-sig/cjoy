@@ -204,7 +204,7 @@ println(str) // 输出 {"a":{"a1":1,"a2":"xyz","a3":{"a3a":1,"a3b":"xyz","a3c":t
 `@ToJson`支持：
 
  - Json字段值中变量替换，如上述的`x`变量
- - Json字段值中字符串插值，如@Jsonable(["${x}", "abc"])
+ - Json字段值中字符串插值，如@ToJson(["${x}", "abc"])
 
 搭配在请求处理Handler中使用示例：
 

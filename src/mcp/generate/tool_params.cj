@@ -63,6 +63,22 @@ open class ParamInfo {
         typeNode.vtype.value == "JoyContext"
     }
 
+    public func isComplexType(): Bool {
+        if (typeNode.isPrimitive) {
+            return false
+        }
+        if (typeNode.genericIsPrimitive) {
+            return false
+        }
+        let builtTypes = ["String"]
+        for (bt in builtTypes) {
+            if (typeNode.vtype.value == bt || typeNode.genericType.value == bt) {
+                return false
+            }
+        }
+        return true
+    }
+
     public func genVarTokens(): Tokens {
         if (isJoyContext()) {
             if (pid.value == "ctx") {
@@ -73,6 +89,20 @@ open class ParamInfo {
             }
         } else {
             quote(var $(pid): Option<$(getType())> = None
+            )
+        }
+    }
+
+    public func genVarComplexTypeTokens(): Tokens {
+        if (isJoyContext()) {
+            if (pid.value == "ctx") {
+                Tokens()
+            } else {
+                quote(let $(pid) = ctx
+                )
+            }
+        } else {
+            quote(let $(pid): $(getType()) = JsonTool.fromJson(arguments_)
             )
         }
     }
@@ -88,6 +118,14 @@ open class ParamInfo {
                     required.add($(getName()))
                     )
             }
+        }
+    }
+
+    public func genSchemComplexTypeTokens(): Tokens {
+        if (isJoyContext()) {
+            Tokens()
+        } else {
+            quote(let inputSchema = $(getType()).toJsonSchema($description))
         }
     }
 

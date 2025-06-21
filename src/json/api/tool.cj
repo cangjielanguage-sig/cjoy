@@ -33,6 +33,13 @@ public class JsonTool {
         T.fromJson(reader)
     }
 
+    public static func fromJson<T>(bs: Array<Byte>): T where T <: JsonDeserializable<T> {
+        var stream = ByteBuffer()
+        stream.write(bs)
+        let reader = JsonReader(stream)
+        T.fromJson(reader)
+    }
+
     /**
      * serialize the object of T to json string
      *

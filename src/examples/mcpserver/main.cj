@@ -23,6 +23,25 @@ public func search(query: String, ctx: JoyContext): String {
     "search result"
 }
 
+// ----in param is complex----
+@Json
+public class Params {
+    @JsonField[description = "number a"]
+    public var a: Int
+    @JsonField[description = "number b"]
+    public var b: Int
+}
+
+@Tool[description = "add two number"]
+public func add2(param: Params): Int {
+    param.a + param.b
+}
+
+@Tool[description = "add two number"]
+public func add3(param: Params, ctx: JoyContext): Int {
+    param.a + param.b
+}
+
 main(): Int64 {
     var cfg = JoyConfig()
     cfg.enableDebugLog = true

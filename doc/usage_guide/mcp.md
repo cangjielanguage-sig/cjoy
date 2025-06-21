@@ -11,7 +11,17 @@ CJoy提供宏来简化MCP的Tool，Resource, Prompt服务端函数的开发。
 
 ### Tool
 
-CJoy提供宏@Tool标注函数，发布其为MCP的Tool。
+Tool是核心MCP协议中重要组成，允许您的LLM与外部系统交互、执行代码和访问不在其训练数据中的数据。在CJoyP中，Tool是通过MCP协议向LLM暴露仓颉函数。
+
+当LLM决定使用工具时，流程如下：
+
+- 客户端根据Tool式发送带有参数的请求
+- CJoy根据函数的签名验证这些参数
+- CJoy路由请求到对应的函数
+- CJoy把结果返回给LLM，LLM可以在其响应中使用它
+- Tool可以执行查询数据库、调用API、进行计算或访问文件等任务，从而将其功能扩展到训练数据之外
+
+CJoy提供宏`@Tool`标注函数，`@ToolParam`标准函数参数，发布其为MCP的Tool。
 
 ```
 @Tool[name = "add", description = "add two number"]
@@ -25,6 +35,15 @@ public func multiply(a: Int, b: Int): Int {
 }
 ```
 
+注册此工具后，CJoyh会自动：
+
+- 使用`@Tool`属性中`name`与`description`生成作为Tool名与描述
+- 使用`@ToolParam`属性中`name`与`description`作为Tool参数与描述。
+- 基于函数的参数和类型生成MCP协议的要求的InputSchema
+- 注册HTTP的请求路由，以便后续MCP请求能路由到些函数
+
+宏与宏属性说明：
+
 |宏|属性参数|说明|
 |---|---|---|
 |`@Tool`|name="..", description:".."|作用于函数上。`name`默认函数名|
@@ -37,12 +56,51 @@ public func multiply(a: Int, b: Int): Int {
 |`name`||是|指定工具或参数的名称|
 |`description`||是|用于描述工具或参数，会生成JSON schema，为了大模型更好的效果，描述应简洁清楚无歧义|
 
-工具函数约束：
- - 入参是实现stdx.encoding.json.stream包下JsonDeserializable接口的类型，如基本类型，String等
- - 入参还可以是JoyContext类型，用于获取HTTP上下文信息，不用`@ToolParam`标注
- - 出参是实现ToString或JsonSerializable接口的类型
-
 使用示例：[examples/mcpserver](../../src/examples/mcpserver/main.cj) 。
+
+#### Tool入参
+
+参数的类型注释对于正确的工具功能至关重要：
+
+- 为MCP协议生成准确的JSON模式
+- 告知LLM每个参数的预期数据类型
+
+支持的类型：
+
+ - 入参是实现stdx.encoding.json.stream包下JsonDeserializable接口的类型，如基本类型，String等。
+ - 入参宏`@ToolParam`可选，属性`name`默认取参数名，建议通过`@ToolParam(description:...)`来增加参数描述
+ - 入参可以是可选参数，如`Option<类型>`，则Tool的Schema对应的参数也是可选
+ - 入参还可以是JoyContext类型，用于获取HTTP上下文信息，不用`@ToolParam`标注
+
+当工具的输入参数较多时，可以把多个参数聚合一个Class上，如下所示：
+
+```
+@Json
+public class Params {
+    @JsonField[description = "number a"]
+    public var a: Int
+    @JsonField[description = "number b"]
+    public var b: Int
+}
+
+@Tool[description = "add two number"]
+public func add2(param: Params): Int {
+    param.a + param.b
+}
+
+@Tool[description = "add two number"]
+public func add3(param: Params, ctx: JoyContext): Int {
+    param.a + param.b
+}
+```
+
+示例中`add2`和`add3`与前面的`add`是等价的，有相同的MCP工具的inputSchema。
+
+#### Tool出参
+
+框架自动将函数返回的值转换为客户端的适当MCP内容格式：
+
+ - 出参是实现ToString或JsonSerializable接口的类型，返回TextContent
 
 ### 注册
 
@@ -83,6 +141,8 @@ main(): Int64 {
 ```
 
 使用示例：[examples/mcpclient](../../src/examples/mcpclient/main.cj) 。
+
+可以使用Python的fastmcp客户端来对接CJoy开发的MCP服务端 [examples/mcpclient/client.py](../../src/examples/mcpclient/client.py) 。
 
 ----
 << [返回](../../README.md#使用指导)
