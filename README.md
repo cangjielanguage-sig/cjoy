@@ -1,7 +1,7 @@
 <div align="center">
 <h1>CJoy</h1>
-a fast，extendibility，lightweight and joy web framework.<br/>
-一个高性能、可扩展、轻量、省心的Web框架。
+a fast，extendibility，lightweight and joy cangjie web framework.<br/>
+一个高性能、可扩展、轻量、省心的仓颉Web框架。
 <br/>
 <img alt="" src="doc/imgs/logo.png" height="118" width="200" style="display: inline-block;" />
 </div>
@@ -40,11 +40,11 @@ a fast，extendibility，lightweight and joy web framework.<br/>
 
 ### 技术特点
 
-- 高性能：零反射，基于编译宏生成代码，前辍树高性能路由，运行时高性能；
+- 高性能：零反射，基于编译宏生成代码，前辍树高效路由，运行时高性能；
 - 轻量化：内置Web应用开发常见能力，模块化按需使用，能灵活组装；
 - 可扩展：提供中间件机制，支持对Web请求拦截进行处理，丰富您的Web应用；
 - 易上手：内置多种能力，提供编译宏，简化Web，MCP应用开发，让您聚焦你的应用逻辑；
-- 多协议: 支持HTTP1.1，HTTP2，WebSocket, SSE, MCP协议；
+- 多协议：支持HTTP1，HTTP2，WebSocket, SSE, MCP等协议；
 
 ## 快速开始
 
@@ -93,20 +93,17 @@ cjpm run --name cjoy.examples.tls
 import cjoy.*
 
 main(): Int64 {
-    var cfg = JoyConfig()
-    cfg.enableDebugLog = true
     // 创建joy实例
-    let joy = Joy.create(cfg)
-
-    // 注册路由
+    let joy = Joy.default()
+    // 带参路由：GET /{name}
     joy.router.get("/{name}", {ctx: JoyContext => 
         let name = ctx.getParam("name") ?? "no name"
         ctx.string("name in parameter path, name=${name}")
     })
+    // 静态路由：GET /abc
     joy.router.get("/abc", {ctx: JoyContext => 
         ctx.string("static path abc")
     })
-
     // 启动服务
     joy.run("127.0.0.1", 18881)
     return 0
@@ -149,9 +146,9 @@ func listUsers(@QueryParam[name = id, default = 00009527] id: String): Array<Use
 }
 
 main(): Int64 {
+    // 创建joy实例
     var cfg = JoyConfig()
     cfg.enableDebugLog = true
-    // 创建joy实例
     let joy = Joy.create(cfg)
     // 注册生成的handlers
     JoyHandlers.registerTo(joy)
