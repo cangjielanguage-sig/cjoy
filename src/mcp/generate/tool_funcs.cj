@@ -81,7 +81,7 @@ class ToolFuncInfo <: FuncInfo {
             if (params.size > 0) {
                 params += Token(TokenKind.COMMA)
             }
-            if (paramInfo.isJoyContext()) {
+            if (paramInfo.isJoyContext() || paramInfo.isOption()) {
                 params += quote($(pid))
             } else {
                 params += quote($(pid).getOrThrow())
@@ -134,12 +134,7 @@ class ToolFuncInfo <: FuncInfo {
 
         // check the return type
         ret += quote(
-            let res = $(funcName)($(params))
-            match(res) {
-                case x: JsonSerializable => JsonTool.toJson(x)
-                case x: ToString => x.toString()
-                case _ => ""
-            }
+            $(funcName)($(params))
         )
         ret
     }
@@ -151,15 +146,13 @@ class ToolFuncInfo <: FuncInfo {
             let initFunc = quote(
                 private init() {
                     McpServer.addMcpCallToolHandler($(name), this)
-           
                     $schame
-
                     let tool = McpTool(name: $name, description: $description, inputSchema: inputSchema)
                     McpServer.addTool(tool)
                 }
             )
             let handleFunc = quote(
-                public func handle(ctx: JoyContext, arguments_: Array<Byte>): String {
+                public func handle(ctx: JoyContext, arguments_: Array<Byte>): Any {
                     $(vars)
                     $(callfunc)
                 }
@@ -174,9 +167,7 @@ class ToolFuncInfo <: FuncInfo {
                     let inputSchema = HashMap<String, JsonSerializable>()
                     let properties = HashMap<String, JsonSerializable>()
                     let required = ArrayList<String>()
-
                     $schame
-
                     inputSchema.add("type", "object")
                     inputSchema.add("properties", properties)
                     inputSchema.add("required", required)
@@ -186,13 +177,11 @@ class ToolFuncInfo <: FuncInfo {
                 }
             )
             let handleFunc = quote(
-                public func handle(ctx: JoyContext, arguments_: Array<Byte>): String {
+                public func handle(ctx: JoyContext, arguments_: Array<Byte>): Any {
                     let buffer_ = ByteBuffer()
                     buffer_.write(arguments_)
                     let reader_ = JsonReader(buffer_)
-
                     $(vars)
-
                     while (let Some(v) <- reader_.peek()) {
                         match (v) {
                             case BeginObject =>

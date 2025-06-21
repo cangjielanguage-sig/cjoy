@@ -15,7 +15,7 @@ import std.fs.{canonicalize, FSException, exists, FileInfo}
 //import std.objectpool.ObjectPool 
 import stdx.encoding.url.URL
 import stdx.net.http.{HttpRequestDistributor, HttpRequestHandler, HttpRequest, HttpContext}
-import stdx.log.Logger
+import cjoy.log.LogTool
 
 /**
 * the inferface of router
@@ -179,10 +179,10 @@ class TreeRouteDistributor <: HttpRequestDistributor & HttpRequestHandler {
         }
 
         let ri: RouteInfo = RouteInfo()
-        _config.logger.debug("[TreeRouteDistributor#lookup] finding handler, method=${req.method}, path=${path}")
+        LogTool.debug("[TreeRouteDistributor#lookup] finding handler, method=${req.method}, path=${path}")
         var (node, handler) = _root.findRouteHandler(ri, req.method, path)
         if (node.isNone()) {
-            _config.logger.debug("[TreeRouteDistributor#lookup] not found handler, method=${req.method}, path=${path}")
+            LogTool.debug("[TreeRouteDistributor#lookup] not found handler, method=${req.method}, path=${path}")
             obj.handler = _config.notFoundHandler
             return
         }
@@ -199,7 +199,7 @@ class TreeRouteDistributor <: HttpRequestDistributor & HttpRequestHandler {
                 return
             }
 
-            _config.logger.debug("[TreeRouteDistributor#lookup] not found handler, method=${req.method}, path=${path}")
+            LogTool.debug("[TreeRouteDistributor#lookup] not found handler, method=${req.method}, path=${path}")
             obj.handler = _config.notFoundHandler
             return
         }
@@ -226,13 +226,11 @@ class JoyRouteGroup <: JoyRouters {
     let _distributor: TreeRouteDistributor
     let _middlewares: ArrayList<JoyMiddlewareHandler>
     let _applyMWs: ArrayList<JoyMiddlewareHandler> = ArrayList()
-    let _logger: Logger
 
     init(path: String, distributor: TreeRouteDistributor, middlewares: ArrayList<JoyMiddlewareHandler>) {
         _path = path
         _distributor = distributor
         _middlewares = middlewares
-        _logger = distributor._config.logger
     }
 
     init(config: JoyConfig) {
@@ -427,14 +425,14 @@ class JoyRouteGroup <: JoyRouters {
         _applyMWs.clear()
         let wrapperHandler = JoyRequestHandlerWrapper(handler, mws)
         methods |> forEach {method => addHandler(method, pattern, wrapperHandler)}
-        _logger.debug("[Routers#handle] add route handler, pattern=${pattern}, methods=${methods}")
+        LogTool.debug("[Routers#handle] add route handler, pattern=${pattern}, methods=${methods}")
         this
     }
 
     private func groupHandle(methods: Array<String>, pattern: String, handler: JoyRequestHandler): JoyRouters {
         let wrapperHandler = JoyRequestHandlerWrapper(handler, _middlewares)
         methods |> forEach {method => addHandler(method, pattern, wrapperHandler)}
-        _logger.debug("[Routers#groupHandle] add groute route handler, pattern=${pattern}, methods=${methods}")
+        LogTool.debug("[Routers#groupHandle] add groute route handler, pattern=${pattern}, methods=${methods}")
         this
     }
 

@@ -65,15 +65,6 @@ public class JoyContext {
     }
 
     /**
-     * return the logger which is set by ServerBuilder
-     */
-    public prop logger: Logger {
-        get() {
-            _config.logger
-        }
-    }
-
-    /**
      * return the engine config
      */
     public prop config: JoyConfig {

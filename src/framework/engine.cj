@@ -28,7 +28,7 @@ public class JoyConfig {
     public var remoteIPHeaders: Array<String> = []
 
     // enable debug log
-    public var enableDebugLog: Bool = false
+    public var enableDebugLog: Bool = true
 
     // whether case insensitive when add route handler
     public var caseInsensitive: Bool = false
@@ -41,15 +41,6 @@ public class JoyConfig {
 
     // set method not allowed handler 
     public var methodNotAllowedHandler: JoyRequestHandler = JoyMethodNotAllowedHandler()
-
-    mut prop logger: Logger {
-        get() {
-            LogTool.logger
-        }
-        set(value) {
-            LogTool.logger = value
-        }
-    }
 }
 
 /**
@@ -88,9 +79,7 @@ public class Joy {
         if (_INSTANCES.contains("default")) {
             return _INSTANCES.get("default").getOrThrow()
         }
-        let joy = create()
-        _INSTANCES.add("default", joy)
-        return joy
+        return create()
     }
 
     /**
@@ -148,13 +137,12 @@ public class Joy {
      * @param serverBuidler: the server buidler
      */
     public func run(serverBuidler: ServerBuilder): Unit {
-        let server = serverBuidler.distributor(router.distributor).build()
+        let server = serverBuidler.distributor(router.distributor).logger(LogTool.logger).build()
         if (config.enableDebugLog) {
-            server.logger.level = LogLevel.DEBUG
+            LogTool.enableDebugLog()
         }
-        config.logger = server.logger
         _server = Some(server)
-        config.logger.debug("[Joy#run] route tree:\n${router.dump()}")
+        LogTool.debug("[Joy#run] route tree:\n${router.dump()}")
         server.serve()
     }
 

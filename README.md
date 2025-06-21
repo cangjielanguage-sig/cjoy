@@ -147,9 +147,7 @@ func listUsers(@QueryParam[name = id, default = 00009527] id: String): Array<Use
 
 main(): Int64 {
     // 创建joy实例
-    var cfg = JoyConfig()
-    cfg.enableDebugLog = true
-    let joy = Joy.create(cfg)
+    let joy = Joy.default()
     // 注册生成的handlers
     JoyHandlers.registerTo(joy)
     joy.run("127.0.0.1", 18881)
