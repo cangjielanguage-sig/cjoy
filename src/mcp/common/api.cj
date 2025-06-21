@@ -11,8 +11,13 @@
 package cjoy.mcp.common
 
 import std.io.ByteBuffer
+import std.collection.HashMap
+import std.fs.{File, OpenMode, Path}
+import std.io.{readToEnd}
 import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable}
+import stdx.encoding.base64.toBase64String
 import cjoy.framework.JoyContext
+import cjoy.multipart.getMineTypeByExt
 
 public interface McpSession <: Resource {
     func sendRequest<T>(method: String, requestParams: JsonSerializable): T where T <: JsonDeserializable<T>
@@ -44,7 +49,7 @@ public interface McpRequestHandler {
 }
 
 public interface McpCallToolHandler {
-    func handle(ctx: JoyContext, arguments: Array<Byte>): String
+    func handle(ctx: JoyContext, arguments: Array<Byte>): Any
 }
 
 public interface McpTransport <: Resource {
@@ -53,7 +58,7 @@ public interface McpTransport <: Resource {
 
 public interface McpClientTransport <: McpTransport {
     func connect(consumer: (ByteBuffer) -> Unit): Unit
-    func whenReConnect(callback: ()->Unit): Unit
+    func whenReConnect(callback: () -> Unit): Unit
 }
 
 public interface McpServerTransport <: McpTransport {}
@@ -70,4 +75,51 @@ public interface McpClient <: Resource {
         listTools(None)
     }
     func callTool(request: CallToolRequest): CallToolResult
+}
+
+// -----
+public class Image {
+    public Image(public let path!: String = "", public var data!: Array<Byte> = [], public let format!: String = "") {
+    }
+
+    public func toImageContext(): ImageContent {
+        var mimeType = if (format != "") {
+            "image/${format.toAsciiLower()}"
+        } else {
+            "application/octet-stream"
+        }
+        if (path != "") {
+            try (file = File(path, OpenMode.Read)) {
+                data = readToEnd(file)
+                let p = Path(path)
+                mimeType = getMineTypeByExt(".${p.extensionName}").getOrDefault({=> "application/octet-stream"})
+            }
+        }
+        var res = ImageContent(mimeType: mimeType, data: toBase64String(data))
+        res.type_ = "image"
+        res
+    }
+}
+
+public class Audio {
+    public Audio(public let path!: String = "", public var data!: Array<Byte> = [], public let format!: String = "") {
+    }
+
+    public func toAudioContent(): AudioContent {
+        var mimeType = if (format != "") {
+            "audio/${format.toAsciiLower()}"
+        } else {
+            "application/octet-stream"
+        }
+        if (path != "") {
+            try (file = File(path, OpenMode.Read)) {
+                data = readToEnd(file)
+                let p = Path(path)
+                mimeType = getMineTypeByExt(".${p.extensionName}").getOrDefault({=> "application/octet-stream"})
+            }
+        }
+        var res = AudioContent(mimeType: mimeType, data: toBase64String(data))
+        res.type_ = "audio"
+        res
+    }
 }

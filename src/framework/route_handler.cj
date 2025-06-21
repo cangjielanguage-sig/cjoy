@@ -14,7 +14,7 @@ import std.collection.{ArrayList, HashMap, forEach}
 import std.collection.concurrent.ConcurrentHashMap
 import std.fs.{Path, FileInfo, exists}
 import stdx.net.http.{HttpRequestHandler, HttpStatusCode, FileHandler, HttpContext}
-
+import cjoy.log.LogTool
 
 /**
 * the instance of class will add to object pool
@@ -107,7 +107,7 @@ class JoyFileSystemServeHandler <: JoyRequestHandler {
 
     private func serves(ctx: JoyContext, path: String): Unit {
         if (path.contains("..")) {
-            confg.logger.warn("[JoyFileSystemServeHandler#handle] url path contain `..`, path=${path}")
+            LogTool.warn("[JoyFileSystemServeHandler#handle] url path contain `..`, path=${path}")
             ctx.status(HttpStatusCode.STATUS_BAD_REQUEST)
             return
         }
@@ -124,12 +124,12 @@ class JoyFileSystemServeHandler <: JoyRequestHandler {
             case _ =>
                 let fi = FileInfo(filePath)
                 if (fi.isDirectory() || fi.isHidden() || !fi.canRead()) {
-                    confg.logger.warn("[JoyFileSystemServeHandler#handle] forbidden to donwnload file ${fp}")
+                    LogTool.warn("[JoyFileSystemServeHandler#handle] forbidden to donwnload file ${fp}")
                     ctx.status(HttpStatusCode.STATUS_FORBIDDEN)
                     return
                 }
                 if (!fp.startsWith(root.toString())) {
-                    confg.logger.warn("[JoyFileSystemServeHandler#handle] forbidden to donwnload file ${fp}")
+                    LogTool.warn("[JoyFileSystemServeHandler#handle] forbidden to donwnload file ${fp}")
                     ctx.status(HttpStatusCode.STATUS_FORBIDDEN)
                     return
                 }

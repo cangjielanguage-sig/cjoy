@@ -51,5 +51,7 @@ Handler的入参JoyContext提供上下文支持对HTTP获取与回响应处理�
 |header|设置Header|
 |cookie|设置Cookie|
 
+给HTTP回响应，支持链式调用，如`ctx.status(HttpStatusCode.STATUS_OK).header(hname, value).json(obj)`，当Hanler函数返回值，构建响应消息回给客户端。
+
 ----
 << [返回](../../README.md#使用指导)

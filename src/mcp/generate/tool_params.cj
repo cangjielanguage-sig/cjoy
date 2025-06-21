@@ -59,11 +59,15 @@ open class ParamInfo {
         }
     }
 
-    public func isJoyContext(): Bool {
+    func isJoyContext(): Bool {
         typeNode.vtype.value == "JoyContext"
     }
 
-    public func isComplexType(): Bool {
+    func isOption(): Bool {
+        typeNode.vtype.value == "Option"
+    }
+
+    func isComplexType(): Bool {
         if (typeNode.isPrimitive) {
             return false
         }
@@ -88,8 +92,13 @@ open class ParamInfo {
                 )
             }
         } else {
-            quote(var $(pid): Option<$(getType())> = None
-            )
+            if (isOption()) {
+                quote(var $(pid): $(getType()) = None
+                )
+            } else {
+                quote(var $(pid): Option<$(getType())> = None
+                )
+            }
         }
     }
 

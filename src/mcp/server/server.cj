@@ -12,8 +12,11 @@ package cjoy.mcp.server
 
 import std.collection.ArrayList
 import std.collection.concurrent.ConcurrentHashMap
+import stdx.encoding.json.stream.JsonSerializable
 import cjoy.mcp.common.*
 import cjoy.framework.{Joy, JoyContext}
+import cjoy.log.LogTool
+import cjoy.json.JsonTool
 
 public class McpServerFeatures {
     public var protocolVesion: String = McpConsts.LASTEST_PROTOCOL_VERSION
@@ -49,20 +52,34 @@ public class McpServer {
         if (let Some(handler) <- callToolHandlers.get(request.name)) {
             let arguments = (request.arguments as Array<Byte>) ?? Array<Byte>()
             var isError = false
-            let res = try {
-                handler.handle(ctx, arguments)
+            let content: Content = try {
+                let result: Any = handler.handle(ctx, arguments)
+                match (result) {
+                    case x: ToString => createTextContent(x.toString())
+                    case x: JsonSerializable => createTextContent(JsonTool.toJson(x))
+                    case x: Image => x.toImageContext()
+                    case x: Audio => x.toAudioContent()
+                    case _ =>
+                        LogTool.error("[MCP]call tool `${request.name}` failed, unknow return type")
+                        isError = true
+                        createTextContent("unknow return type")
+                }
             } catch (ex: Exception) {
                 isError = true
-                ex.message
+                LogTool.error("[MCP]call tool `${request.name}` failed, ${ex.message}")
+                createTextContent(ex.message)
             }
-            let content = TextContent(text: res)
-            content.type_ = "text"
             CallToolResult(isError: isError, content: ArrayList<Content>([content]))
         } else {
-            let content = TextContent(text: "not found tool handler")
-            content.type_ = "text"
+            let content = createTextContent("not found tool handler")
             CallToolResult(isError: true, content: ArrayList<Content>([content]))
         }
+    }
+
+    private static func createTextContent(text: String): TextContent {
+        let content = TextContent(text: text)
+        content.type_ = "text"
+        content
     }
 
     public static func exchangeInit(): InitializeResult {

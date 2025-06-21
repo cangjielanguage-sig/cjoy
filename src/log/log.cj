@@ -15,18 +15,23 @@ import stdx.logger.SimpleLogger
 import std.env.getStdOut
 
 public class LogTool {
-    private static var _logger: ?Logger = None
+    private static var _logger: Logger = SimpleLogger(getStdOut())
 
-    public static mut prop logger: Logger {
+    /**
+     * you can set the logger in program begin
+     */
+    public mut static prop logger: Logger {
         get() {
-            if (_logger.isNone()) {
-                _logger = Some(SimpleLogger(getStdOut()))
-            }
-            return _logger.getOrThrow()
+            _logger
         }
         set(value) {
-            _logger = Some(value)
+            // non thread safe
+            _logger = value
         }
+    }
+
+    public static func enableDebugLog(): Unit {
+        logger.level = LogLevel.DEBUG
     }
 
     public static func debug(msg: String): Unit {
@@ -39,5 +44,9 @@ public class LogTool {
 
     public static func error(msg: String): Unit {
         logger.error(msg)
+    }
+
+    public static func warn(msg: String): Unit {
+        logger.warn(msg)
     }
 }

@@ -56,7 +56,7 @@ public func multiply(a: Int, b: Int): Int {
 |`name`||是|指定工具或参数的名称|
 |`description`||是|用于描述工具或参数，会生成JSON schema，为了大模型更好的效果，描述应简洁清楚无歧义|
 
-使用示例：[examples/mcpserver](../../src/examples/mcpserver/main.cj) 。
+使用示例：[examples/mcpserver](../../src/examples/mcpserver/main.cj) 或者测试代码 [test/mcp_test](../../src/test/mcp_test.cj)。
 
 #### Tool入参
 
@@ -101,6 +101,9 @@ public func add3(param: Params, ctx: JoyContext): Int {
 框架自动将函数返回的值转换为客户端的适当MCP内容格式：
 
  - 出参是实现ToString或JsonSerializable接口的类型，返回TextContent
+ - 出参是cjoy.mcp.Image类型，返回ImageContent
+ - 出参是cjoy.mcp.Audio类型，返回AudioContent
+ - 调用函数出错，返回TextContent(isError=true, text="error message")
 
 ### 注册
 
