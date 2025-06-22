@@ -30,6 +30,36 @@ open class FuncInfo {
         let map: MapToString = parserAttrs(attr, validKeys: ["name", "description"], macroName: macroName)
         this.name = map.getString("name") ?? decl.identifier.value
         this.description = map.getString("description") ?? ""
+        getAttrs(map)
+    }
+
+    protected open func getAttrs(map: MapToString): Unit {
+    }
+
+    protected func callFunc(params: Tokens): Tokens {
+        var ret = Tokens()
+        let funcName = decl.identifier
+
+        // not return type
+        let delType = try {
+            decl.declType
+        } catch (_: Exception) {
+            ret += quote(
+                $(funcName)($(params))
+                ""
+            )
+            return ret
+        }
+
+        // check the return type
+        ret += quote(
+            $(funcName)($(params))
+        )
+        ret
+    }
+
+    protected open func genTokens(): Tokens {
+        Tokens()
     }
 }
 
@@ -117,38 +147,16 @@ class ToolFuncInfo <: FuncInfo {
         (vars, params, schame)
     }
 
-    private func callFunc(params: Tokens): Tokens {
-        var ret = Tokens()
-        let funcName = decl.identifier
-
-        // not return type
-        let delType = try {
-            decl.declType
-        } catch (_: Exception) {
-            ret += quote(
-                $(funcName)($(params))
-                ""
-            )
-            return ret
-        }
-
-        // check the return type
-        ret += quote(
-            $(funcName)($(params))
-        )
-        ret
-    }
-
     private func genFuncsBody(): Tokens {
         if (isOnlyOneComplex()) {
             let (vars, params, schame) = declVarsForOneComplex()
             let callfunc = callFunc(params)
             let initFunc = quote(
                 private init() {
-                    McpServer.addMcpCallToolHandler($(name), this)
                     $schame
                     let tool = McpTool(name: $name, description: $description, inputSchema: inputSchema)
                     McpServer.addTool(tool)
+                    McpServer.addCallToolHandler($name, this)
                 }
             )
             let handleFunc = quote(
@@ -163,7 +171,6 @@ class ToolFuncInfo <: FuncInfo {
             let callfunc = callFunc(params)
             let initFunc = quote(
                 private init() {
-                    McpServer.addMcpCallToolHandler($(name), this)
                     let inputSchema = HashMap<String, JsonSerializable>()
                     let properties = HashMap<String, JsonSerializable>()
                     let required = ArrayList<String>()
@@ -174,6 +181,7 @@ class ToolFuncInfo <: FuncInfo {
 
                     let tool = McpTool(name: $name, description: $description, inputSchema: inputSchema)
                     McpServer.addTool(tool)
+                    McpServer.addCallToolHandler($name, this)
                 }
             )
             let handleFunc = quote(
@@ -207,7 +215,7 @@ class ToolFuncInfo <: FuncInfo {
         }
     }
 
-    func genTokens(): Tokens {
+    protected func genTokens(): Tokens {
         let handlerName = Token(TokenKind.IDENTIFIER, decl.identifier.value.toAsciiTitle() + "Handler" + randStr(3))
         let funcsBody = genFuncsBody()
         quote(
@@ -225,7 +233,12 @@ public func parseFunc(macroName: String, attr: Tokens, input: Tokens): Tokens {
         throw Exception("${macroName} macro only using for func")
     }
 
-    let funcInfo = ToolFuncInfo(macroName, (decl as FuncDecl).getOrThrow())
+    let funcInfo = match (macroName) {
+        case "Tool" => ToolFuncInfo(macroName, (decl as FuncDecl).getOrThrow())
+        case "Resource" => ResoureFuncInfo(macroName, (decl as FuncDecl).getOrThrow())
+        case _ => throw Exception("not support ${macroName} macro")
+    }
+
     funcInfo.parseAttr(attr)
     let tokens = funcInfo.genTokens()
     ParamInfoCache.clear()

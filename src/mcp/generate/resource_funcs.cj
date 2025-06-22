@@ -1,0 +1,93 @@
+/*
+ * Copyright (c) 2025 lanlingx(xiaotengfei) All rights resvered.
+ * CJoy is licensed under Mulan PSL v2.
+ * You can use this software according to the terms and conditions of the Mulan PSL v2.
+ * You may obtain a copy of Mulan PSL v2 at:
+ *          http://license.coscl.org.cn/MulanPSL2
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
+ * See the Mulan PSL v2 for more details.
+ */
+
+package cjoy.mcp.generate
+
+import std.ast.*
+import std.collection.*
+import cjoy.utils.{parserAttrs, MapToString, MapListGetFunc, randStr}
+
+class ResoureFuncInfo <: FuncInfo {
+    var uri: String = ""
+    var mimeType: String = ""
+    var isTemplate: Bool = false
+
+    init(macroName: String, decl: FuncDecl) {
+        super(macroName, decl)
+    }
+
+    protected func getAttrs(map: MapToString): Unit {
+        this.uri = map.getString("uri") ?? ""
+        this.mimeType = map.getString("mimeType") ?? ""
+        this.isTemplate = map.getBool("template") ?? false
+        if (this.uri.indexOf("://").isNone()) {
+            throw Exception("${uri} is invalid, should like resource://path, data://path")
+        }
+    }
+
+    private func declVars(): (Tokens, Tokens) {
+        var vars = Tokens()
+        var params = Tokens()
+        for (fp in decl.funcParams) {
+            let pid = fp.identifier
+            let piOpt = ParamInfoCache.findByParamName(pid.value)
+            let paramInfo = match (piOpt) {
+                case Some(val) => val
+                case _ =>
+                    let val = ParamInfo("ToolParam")
+                    val.parseFuncParam(fp)
+                    val
+            }
+
+            vars += paramInfo.genResoureVarTokens()
+            if (params.size == 0) {
+                params += quote($(pid))
+            } else {
+                params += quote(, $(pid))
+            }
+        }
+
+        (vars, params)
+    }
+
+    private func genFuncsBody(): Tokens {
+        let initFunc = quote(
+            private init() {
+                let resource = McpResource(uri: $uri, name: $name, description: $description, mimeType: $mimeType)
+                McpServer.addResource(tool)
+                McpServer.addReadResourceHandler($uri, this)
+            }
+        )
+        let (vars, params) = declVars()
+        let callfunc = callFunc(params)
+        let handleFunc = quote(
+            public func handle(ctx: JoyContext): Unit {
+            }
+            
+            public func readResource(ctx: JoyContext): Any {
+                ctx.addParam("mimeType", $mimeType)
+                $vars
+                $callfunc
+            }
+        )
+        initFunc + handleFunc
+    }
+
+    protected func genTokens(): Tokens {
+        let handlerName = Token(TokenKind.IDENTIFIER, decl.identifier.value.toAsciiTitle() + "Handler" + randStr(3))
+        let funcsBody = genFuncsBody()
+        quote(
+            public class $(handlerName) <: JoyRequestHandler & McpReadResuorceHandler {
+                public static let INSTANCE = $(handlerName)()
+                $funcsBody
+            }   
+       )
+    }
+}

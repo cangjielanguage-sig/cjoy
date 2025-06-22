@@ -13,7 +13,6 @@ package cjoy.test
 import stdx.encoding.base64.toBase64String
 import cjoy.*
 import cjoy.mcp.*
-import cjoy.mcp.common.*
 import cjoy.mcp.common.McpClient
 import cjoy.mcp.client.createMcpSseClient
 
@@ -66,6 +65,36 @@ public func image(): Image {
 @Tool[description = "audio"]
 public func audio(): Audio {
     Audio(data: [1, 2, 3], format: "avi")
+}
+
+@Resource[uri = "data://secret"]
+public func secretData(): String {
+    "secret data"
+}
+
+@Resource[uri = "data://config"]
+public func config(): HashMap<String, Int> {
+    HashMap<String, Int>([("version", 1)])
+}
+
+@Resource[uri = "resource://system-status"]
+public func systemStatus(ctx: JoyContext): HashMap<String, String> {
+    HashMap<String, String>([("status", "ok")])
+}
+
+@Resource[uri = "resource://{name}/detail"]
+public func systemStatus(ctx: JoyContext, name: String): HashMap<String, String> {
+    HashMap<String, String>([("name", name)])
+}
+
+@Resource[uri = "file:///app/data/important_log", mimeType = "text/plain"]
+public func readLog(): String {
+    "this is an important log"
+}
+
+@Resource[uri = "resource://stream-data"]
+public func readData(): Array<Byte> {
+    "stream".toArray()
 }
 
 @Test

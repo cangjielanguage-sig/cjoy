@@ -16,7 +16,7 @@ import cjoy.mcp.generate.{parseFunc, parseParam}
 // only export mcp server
 public import std.collection.{HashMap, ArrayList}
 public import cjoy.mcp.server.McpServer
-public import cjoy.mcp.common.{McpCallToolHandler, McpException, JSONRPCError, McpConsts, McpTool}
+public import cjoy.mcp.common.{McpCallToolHandler, McpReadResuorceHandler, McpException, JSONRPCError, McpConsts, McpTool, Audio, Image}
 public import cjoy.json.*
 
 public macro Tool(attr: Tokens, input: Tokens): Tokens {
@@ -26,4 +26,8 @@ public macro Tool(attr: Tokens, input: Tokens): Tokens {
 public macro ToolParam(attr: Tokens, input: Tokens): Tokens {
     parseParam("ToolParam", attr, input)
     input
+}
+
+public macro Resource(attr: Tokens, input: Tokens): Tokens {
+    input + parseFunc("Resource", attr, input)
 }

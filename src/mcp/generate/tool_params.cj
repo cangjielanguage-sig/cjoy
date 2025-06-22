@@ -83,6 +83,7 @@ open class ParamInfo {
         return true
     }
 
+    // for tool
     public func genVarTokens(): Tokens {
         if (isJoyContext()) {
             if (pid.value == "ctx") {
@@ -102,6 +103,7 @@ open class ParamInfo {
         }
     }
 
+    // for tool
     public func genVarComplexTypeTokens(): Tokens {
         if (isJoyContext()) {
             if (pid.value == "ctx") {
@@ -115,7 +117,7 @@ open class ParamInfo {
             )
         }
     }
-
+    // for tool
     public func genSchemTokens(): Tokens {
         if (isJoyContext()) {
             Tokens()
@@ -143,6 +145,21 @@ open class ParamInfo {
             Tokens()
         } else {
             quote(case $(getName()) => $(pid) = reader_.readValue<$(getType())>()
+            )
+        }
+    }
+
+    // for resource
+    public func genResoureVarTokens(): Tokens {
+        if (isJoyContext()) {
+            if (pid.value == "ctx") {
+                Tokens()
+            } else {
+                quote(let $(pid) = ctx
+                )
+            }
+        } else {
+            quote(let $(pid) = $(getType()).bind(ctx.params, $(getName()), None, None).getOrThrow()
             )
         }
     }

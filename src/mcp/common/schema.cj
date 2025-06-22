@@ -120,10 +120,20 @@ public class InitializeResult <: McpMessage {
 // Tool
 
 @Json
+public class ToolAnnotations <: McpMessage {
+    public var title: String = ""
+    public var readOnlyHint: Bool = false
+    public var destructiveHint: Bool = false
+    public var idempotentHint: Bool = false
+    public var opneWorldHint: Bool = true
+}
+
+@Json
 public class McpTool <: McpMessage {
     public var name: String = ""
     public var description: String = ""
     public var inputSchema: Any = Option<Any>.None
+    public var annotations: ?ToolAnnotations = None
 }
 
 @Json
@@ -140,7 +150,7 @@ public class CallToolRequest <: McpMessage {
     public var arguments: Any = Option<Any>.None
 }
 
-@Json[subTypeField = "type", subTypes = { "text": "TextContent", "image": "ImageContent", "audio": "AudioContent" }]
+@Json[subTypeField = "type", subTypes = { "text": "TextContent", "image": "ImageContent", "audio": "AudioContent", "resource": "EmbeddedResource" }]
 public open class Content <: McpMessage {
     @JsonField[name = "type"]
     public var type_: String = ""
@@ -198,7 +208,7 @@ public class ListResourcesResult <: McpMessage {
 @Json
 public class ListResourceTemplatesResult <: McpMessage {
     public var nextCursor: ?String = None
-    public var ResourceTemplates: ArrayList<ResourceTemplate> = ArrayList()
+    public var resourceTemplates: ArrayList<ResourceTemplate> = ArrayList()
 }
 
 @Json
@@ -227,6 +237,52 @@ public class ReadResourceResult <: McpMessage {
     public var contents: ArrayList<ResourceContents> = ArrayList()
 }
 
+@Json[superClass = Content]
+public class EmbeddedResource <: Content {
+    public var resource: ?ResourceContents = None
+}
+
+// ---------------------------------------------------------------------------------------
+// Prompt
+@Json
+public class PromptArgument <: McpMessage {
+    public var name: String = ""
+    public var description: String = ""
+    public var required: Bool = false
+}
+
+@Json
+public class Prompt <: McpMessage {
+    public var name: String = ""
+    public var description: String = ""
+    public var arguments: ArrayList<PromptArgument> = ArrayList()
+}
+
+@Json
+public class ListPromptResult <: McpMessage {
+    public var prompts: ArrayList<Prompt> = ArrayList()
+}
+
+@Json
+public class GetPromptRequest <: McpMessage {
+    public var name: String = ""
+    public var arguments: HashMap<String, String> = HashMap()
+}
+
+@Json
+public class PromptMessage <: McpMessage {
+    public var role: Role = ""
+    public var content: ?Content = None
+}
+
+@Json
+public class GetPromptResult <: McpMessage {
+    public var description: String = ""
+    public var messages: ArrayList<PromptMessage> = ArrayList()
+}
+
+
+
 // ---------------------------------------------------------------------------------------
 // Const
 
@@ -253,6 +309,13 @@ public struct McpConsts {
     public static const METHOD_TOOLS_LIST = "tools/list"
     public static const METHOD_TOOLS_CALL = "tools/call"
     public static const METHOD_NOTIFICATION_TOOLS_LIST_CHANGED = "notifications/tools/list_changed"
+    public static const METHOD_RESOURCES_LIST = "resources/list"
+    public static const METHOD_RESOURCES_TEMPLATES_LIST = "resources/templates/list"
+    public static const METHOD_RESOURCES_READ = "resources/read"
+    public static const METHOD_NOTIFICATION_RESOURCES_LIST_CHANGED = "notifications/resources/list_changed"
+    public static const METHOD_PROMPTS_LIST = "prompts/list"
+    public static const METHOD_PROMPTS_GET = "prompts/get"
+    public static const METHOD_NOTIFICATION_PROMPTS_LIST_CHANGED = "notifications/prompts/list_changed"
 
     // event
     public static const EVENT_MESSAGE = "message"

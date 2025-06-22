@@ -52,6 +52,10 @@ public interface McpCallToolHandler {
     func handle(ctx: JoyContext, arguments: Array<Byte>): Any
 }
 
+public interface McpReadResuorceHandler {
+    func readResource(ctx: JoyContext): Any
+}
+
 public interface McpTransport <: Resource {
     func send(message: ByteBuffer): Unit
 }
