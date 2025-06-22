@@ -44,6 +44,18 @@ const NT_REGEXP: NodeType = 1
 const NT_PARAM: NodeType = 2
 const NT_CATCH_ALL: NodeType = 3
 
+extend NodeType {
+    public func str(): String {
+        match (this) {
+            case 0 => "static"
+            case 1 => "regex"
+            case 2 => "param"
+            case 3 => "catchAll"
+            case _ => ""
+        }
+    }
+}
+
 class TreeNode<T> {
     // regex matcher for regexp nodes
     var _regex: ?Regex = None
@@ -421,7 +433,7 @@ class TreeNode<T> {
         }
 
         builder.append("${prefix}${layer}")
-        builder.append(",type:${node._type}")
+        builder.append(",type:${node._type.str()}")
         builder.append(",prefix:${node._prefix}")
         builder.append(",label:${String.fromUtf8([node._label])}")
         builder.append(",tail:${String.fromUtf8([node._tail])}")
@@ -433,7 +445,7 @@ class TreeNode<T> {
         builder.append("\n")
 
         for (nds in node._children) {
-            let prefixStr = prefix + " "
+            let prefixStr = prefix + "  "
             for (node in nds) {
                 dumpTreeInner(builder, layer + 1, prefixStr, node)
             }

@@ -20,27 +20,41 @@ import stdx.log.{LogLevel, Logger}
 import stdx.crypto.x509.{X509Certificate, PrivateKey}
 import cjoy.log.LogTool
 
+const VERSION = "v0.40.0"
+const LOGO = ##"
+ ________        ___  ________      ___    ___ 
+|\   ____\      |\  \|\   __  \    |\  \  /  /|
+\ \  \___|      \ \  \ \  \|\  \   \ \  \/  / /
+ \ \  \       __ \ \  \ \  \\\  \   \ \    / / 
+  \ \  \____ |\  \\_\  \ \  \\\  \   \/  /  /  
+   \ \_______\ \________\ \_______\__/  / /    
+    \|_______|\|________|\|_______|\___/ /     
+                                  \|___|/          VERSION
+"##
+
 /**
  * joy config
  */
 public class JoyConfig {
     // the trust remote ip headers
-    public var remoteIPHeaders: Array<String> = []
+    public JoyConfig(
+        public let remoteIPHeaders!: Array<String> = [],
 
-    // enable debug log
-    public var enableDebugLog: Bool = true
+        // enable debug log
+        public var enableDebugLog!: Bool = true,
 
-    // whether case insensitive when add route handler
-    public var caseInsensitive: Bool = false
+        // whether case insensitive when add route handler
+        public let caseInsensitive!: Bool = false,
 
-    // whether escape the path when add route handler
-    public var escapeAddedRoutes: Bool = false
+        // whether escape the path when add route handler
+        public let escapeAddedRoutes!: Bool = false,
 
-    // set not found handler 
-    public var notFoundHandler: JoyRequestHandler = JoyNotFoundHandler()
+        // set not found handler 
+        public let notFoundHandler!: JoyRequestHandler = JoyNotFoundHandler(),
 
-    // set method not allowed handler 
-    public var methodNotAllowedHandler: JoyRequestHandler = JoyMethodNotAllowedHandler()
+        // set method not allowed handler 
+        public let methodNotAllowedHandler!: JoyRequestHandler = JoyMethodNotAllowedHandler()
+    ) {}
 }
 
 /**
@@ -48,7 +62,6 @@ public class JoyConfig {
  */
 public class Joy {
     private static let _INSTANCES: ConcurrentHashMap<String, Joy> = ConcurrentHashMap()
-
     private var _server: ?Server = None
 
     public let config: JoyConfig
@@ -59,6 +72,7 @@ public class Joy {
         this.config = config
         this.name = name
         router = JoyRouteGroup(config)
+        LogTool.info(LOGO.replace("VERSION", VERSION))
     }
 
     /**
@@ -142,7 +156,8 @@ public class Joy {
             LogTool.enableDebugLog()
         }
         _server = Some(server)
-        LogTool.debug("[Joy#run] route tree:\n${router.dump()}")
+        LogTool.info("Joy#run] run cjoy app ${name}, bind at ${server.addr}:${server.port}")
+        LogTool.info("[Joy#run] route tree:\n${router.dump()}")
         server.serve()
     }
 
