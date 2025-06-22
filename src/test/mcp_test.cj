@@ -10,6 +10,7 @@
 
 package cjoy.test
 
+import stdx.encoding.base64.toBase64String
 import cjoy.*
 import cjoy.mcp.*
 import cjoy.mcp.common.*
@@ -57,6 +58,16 @@ public func add(param: ?McpAddParam): Int {
     (param?.a ?? 0) + (param?.b ?? 0)
 }
 
+@Tool[description = "image"]
+public func image(): Image {
+    Image(data: [1, 2, 3], format: "png")
+}
+
+@Tool[description = "audio"]
+public func audio(): Audio {
+    Audio(data: [1, 2, 3], format: "avi")
+}
+
 @Test
 public class McpServerTestCaseSuit {
     var _instance: ?Joy = None
@@ -83,7 +94,7 @@ public class McpServerTestCaseSuit {
             let _ = client.initialize()
 
             let listResult = client.listTools()
-            @Assert(listResult.tools.size, 7)
+            @Assert(listResult.tools.size, 9)
 
             let check = {
                 result: CallToolResult, value: String =>
@@ -124,6 +135,18 @@ public class McpServerTestCaseSuit {
             // tool add4
             callResult = client.callTool(CallToolRequest(name: "add4", arguments: HashMap<String, Int64>()))
             check(callResult, "0")
+            // tool image
+            callResult = client.callTool(CallToolRequest(name: "image", arguments: HashMap<String, String>()))
+            @Assert(callResult.content.size, 1)
+            let image = (callResult.content[0] as ImageContent).getOrThrow();
+            @Assert(image.mimeType, "image/png")
+            @Assert(image.data, toBase64String([1, 2, 3]))
+            // tool audio
+            callResult = client.callTool(CallToolRequest(name: "audio", arguments: HashMap<String, String>()))
+            @Assert(callResult.content.size, 1)
+            let audio = (callResult.content[0] as AudioContent).getOrThrow();
+            @Assert(audio.mimeType, "audio/avi")
+            @Assert(audio.data, toBase64String([1, 2, 3]))
         }
     }
 }

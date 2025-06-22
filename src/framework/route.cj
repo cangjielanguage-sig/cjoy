@@ -425,14 +425,14 @@ class JoyRouteGroup <: JoyRouters {
         _applyMWs.clear()
         let wrapperHandler = JoyRequestHandlerWrapper(handler, mws)
         methods |> forEach {method => addHandler(method, pattern, wrapperHandler)}
-        LogTool.debug("[Routers#handle] add route handler, pattern=${pattern}, methods=${methods}")
+        LogTool.info("[Routers#handle] add route handler, pattern=${pattern}, methods=${methods}")
         this
     }
 
     private func groupHandle(methods: Array<String>, pattern: String, handler: JoyRequestHandler): JoyRouters {
         let wrapperHandler = JoyRequestHandlerWrapper(handler, _middlewares)
         methods |> forEach {method => addHandler(method, pattern, wrapperHandler)}
-        LogTool.debug("[Routers#groupHandle] add groute route handler, pattern=${pattern}, methods=${methods}")
+        LogTool.info("[Routers#groupHandle] add groute route handler, pattern=${pattern}, methods=${methods}")
         this
     }
 
