@@ -13,6 +13,7 @@ package cjoy.test
 import stdx.encoding.base64.toBase64String
 import cjoy.*
 import cjoy.mcp.*
+import cjoy.mcp.common.*
 import cjoy.mcp.common.McpClient
 import cjoy.mcp.client.createMcpSseClient
 

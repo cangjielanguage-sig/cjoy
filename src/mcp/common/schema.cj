@@ -96,9 +96,15 @@ public class ResourceCapability <: McpMessage {
 }
 
 @Json
+public class PromptsCapability <: McpMessage {
+    public var listChanged: Bool = false
+}
+
+@Json
 public class ServerCapabilities <: McpMessage {
     public var tools: ?ToolCapability = None
     public var resources: ?ResourceCapability = None
+    public var prompts: ?PromptsCapability = None
 }
 
 @Json
@@ -252,7 +258,7 @@ public class PromptArgument <: McpMessage {
 }
 
 @Json
-public class Prompt <: McpMessage {
+public class McpPrompt <: McpMessage {
     public var name: String = ""
     public var description: String = ""
     public var arguments: ArrayList<PromptArgument> = ArrayList()
@@ -260,7 +266,7 @@ public class Prompt <: McpMessage {
 
 @Json
 public class ListPromptResult <: McpMessage {
-    public var prompts: ArrayList<Prompt> = ArrayList()
+    public var prompts: ArrayList<McpPrompt> = ArrayList()
 }
 
 @Json
@@ -280,8 +286,6 @@ public class GetPromptResult <: McpMessage {
     public var description: String = ""
     public var messages: ArrayList<PromptMessage> = ArrayList()
 }
-
-
 
 // ---------------------------------------------------------------------------------------
 // Const

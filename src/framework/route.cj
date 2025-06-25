@@ -233,6 +233,7 @@ class TreeRouteDistributor <: HttpRequestDistributor & HttpRequestHandler & Rout
             let paramMap = HashMap<String, String>()
             if (!ri.routeParamKeys.isEmpty()) {
                 if (ri.routeParamKeys.size != ri.routeParamValues.size) {
+                    LogTool.error("parameter list length mismatch when find route target")
                     throw Exception("parameter list length mismatch")
                 }
                 for (idx in 0..ri.routeParamKeys.size) {

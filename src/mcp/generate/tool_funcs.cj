@@ -26,14 +26,10 @@ open class FuncInfo {
         this.decl = decl
     }
 
-    func parseAttr(attr: Tokens): Unit {
+    protected open func parseAttr(attr: Tokens): Unit {
         let map: MapToString = parserAttrs(attr, validKeys: ["name", "description"], macroName: macroName)
         this.name = map.getString("name") ?? decl.identifier.value
         this.description = map.getString("description") ?? ""
-        getAttrs(map)
-    }
-
-    protected open func getAttrs(map: MapToString): Unit {
     }
 
     protected func callFunc(params: Tokens): Tokens {
@@ -155,8 +151,8 @@ class ToolFuncInfo <: FuncInfo {
                 private init() {
                     $schame
                     let tool = McpTool(name: $name, description: $description, inputSchema: inputSchema)
-                    McpServer.addTool(tool)
-                    McpServer.addCallToolHandler($name, this)
+                    McpServer.tools.addTool(tool)
+                    McpServer.tools.addCallToolHandler($name, this)
                 }
             )
             let handleFunc = quote(
@@ -180,8 +176,8 @@ class ToolFuncInfo <: FuncInfo {
                     inputSchema.add("required", required)
 
                     let tool = McpTool(name: $name, description: $description, inputSchema: inputSchema)
-                    McpServer.addTool(tool)
-                    McpServer.addCallToolHandler($name, this)
+                    McpServer.tools.addTool(tool)
+                    McpServer.tools.addCallToolHandler($name, this)
                 }
             )
             let handleFunc = quote(

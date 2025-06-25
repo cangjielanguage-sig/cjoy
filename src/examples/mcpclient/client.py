@@ -11,20 +11,28 @@ client = Client(transport)
 
 async def main():
     async with client:
-        tools = await client.list_tools()
-        print(f"Available tools: {tools}")
-        for i in range(3):
-            result = await client.call_tool("add", {"a": 5, "b": i})
-            print(result[0].text) 
-            await asyncio.sleep(1)
-        for i in range(3):
-            result = await client.call_tool("add2", {"a": 5, "b": i})
-            print(result[0].text) 
-            await asyncio.sleep(1)
-        for i in range(3):
-            result = await client.call_tool("add3", {"a": 5, "b": i})
-            print(result[0].text) 
-            await asyncio.sleep(1)
+        # tools = await client.list_tools()
+        # print(f"Available tools: {tools}")
+        # for i in range(2):
+        #     result = await client.call_tool("add", {"a": 5, "b": i})
+        #     print(result[0].text) 
+        #     await asyncio.sleep(1)
+        # for i in range(2):
+        #     result = await client.call_tool("add2", {"a": 5, "b": i})
+        #     print(result[0].text) 
+        #     await asyncio.sleep(1)
+        # for i in range(2):
+        #     result = await client.call_tool("add3", {"a": 5, "b": i})
+        #     print(result[0].text) 
+        #     await asyncio.sleep(1)
+        resources = await client.list_resources()
+        print(f"Available resources: {resources}")
+        resources_templs = await client.list_resource_templates()
+        print(f"Available resources template: {resources_templs}")
+        result = await client.read_resource("resource://stream-data")
+        print(result) 
+        result = await client.read_resource("resource://xiao/detail")
+        print(result) 
 
 if __name__ == '__main__':
     asyncio.run(main())
