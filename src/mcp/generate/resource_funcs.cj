@@ -23,7 +23,11 @@ class ResoureFuncInfo <: FuncInfo {
         super(macroName, decl)
     }
 
-    protected func getAttrs(map: MapToString): Unit {
+    protected func parseAttr(attr: Tokens): Unit {
+        let map: MapToString = parserAttrs(attr, validKeys: ["name", "description", "uri", "mimeType", "template"],
+            macroName: macroName)
+        this.name = map.getString("name") ?? decl.identifier.value
+        this.description = map.getString("description") ?? ""
         this.uri = map.getString("uri") ?? ""
         this.mimeType = map.getString("mimeType") ?? ""
         this.isTemplate = map.getBool("template") ?? false
@@ -61,18 +65,24 @@ class ResoureFuncInfo <: FuncInfo {
         let initFunc = quote(
             private init() {
                 let resource = McpResource(uri: $uri, name: $name, description: $description, mimeType: $mimeType)
-                McpServer.addResource(tool)
-                McpServer.addReadResourceHandler($uri, this)
+                McpServer.resources.addResource(resource)
+                McpServer.resources.addReadResourceHandler($uri, this)
             }
         )
         let (vars, params) = declVars()
         let callfunc = callFunc(params)
+        let ctxParams = if (mimeType != " ") {
+            quote(ctx.addParam("mimeType", $mimeType)
+            )
+        } else {
+            Tokens()
+        }
         let handleFunc = quote(
             public func handle(ctx: JoyContext): Unit {
             }
             
             public func readResource(ctx: JoyContext): Any {
-                ctx.addParam("mimeType", $mimeType)
+                $ctxParams
                 $vars
                 $callfunc
             }

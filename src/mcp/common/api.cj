@@ -56,6 +56,10 @@ public interface McpReadResuorceHandler {
     func readResource(ctx: JoyContext): Any
 }
 
+public interface McpGetPromptHandler {
+    func getPrompt(ctx: JoyContext, arguments: HashMap<String, String>): Any
+}
+
 public interface McpTransport <: Resource {
     func send(message: ByteBuffer): Unit
 }
@@ -86,7 +90,7 @@ public class Image {
     public Image(public let path!: String = "", public var data!: Array<Byte> = [], public let format!: String = "") {
     }
 
-    public func toImageContext(): ImageContent {
+    public func toImageContext(): Content {
         var mimeType = if (format != "") {
             "image/${format.toAsciiLower()}"
         } else {
@@ -109,7 +113,7 @@ public class Audio {
     public Audio(public let path!: String = "", public var data!: Array<Byte> = [], public let format!: String = "") {
     }
 
-    public func toAudioContent(): AudioContent {
+    public func toAudioContent(): Content {
         var mimeType = if (format != "") {
             "audio/${format.toAsciiLower()}"
         } else {

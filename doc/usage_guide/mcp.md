@@ -21,7 +21,7 @@ Tool是核心MCP协议中重要组成，允许您的LLM与外部系统交互、�
 - CJoy把结果返回给LLM，LLM可以在其响应中使用它
 - Tool可以执行查询数据库、调用API、进行计算或访问文件等任务，从而将其功能扩展到训练数据之外
 
-CJoy提供宏`@Tool`标注函数，`@ToolParam`标准函数参数，发布其为MCP的Tool。
+CJoy提供宏`@Tool`标注函数，`@ToolParam`标注函数参数，发布其为MCP的Tool。
 
 ```
 @Tool[name = "add", description = "add two number"]
@@ -101,9 +101,77 @@ public func add3(param: Params, ctx: JoyContext): Int {
 框架自动将函数返回的值转换为客户端的适当MCP内容格式：
 
  - 出参是实现ToString或JsonSerializable接口的类型，返回TextContent
- - 出参是cjoy.mcp.Image类型，返回ImageContent
- - 出参是cjoy.mcp.Audio类型，返回AudioContent
+ - 出参是`Array<ToString|JsonSerializable>`或`ArrayList<ToString|JsonSerializable>`类型，返回多个TextContent
+ - 出参是cjoy.mcp.Image类型或`Array<Image>`或`ArrayList<Image>`，返回ImageContent
+ - 出参是cjoy.mcp.Audio类型或`Array<Audio>`或`ArrayList<Audio>`，返回AudioContent
  - 调用函数出错，返回TextContent(isError=true, text="error message")
+
+### Resource
+
+静态Resource表示MCP客户端可以读取的数据或文件，动态ResourceTemplate通过允许客户端根据URI中传递的参数请求**动态**生成的资源来扩展这一概念。
+
+Resource为LLM或客户端应用程序提供对数据的只读访问。当客户端请求资源URI时：
+- CJoy找到相应的资源定义
+- CJoy路由到对应的函数
+- 如果它是动态的（由函数定义），该提取URI中参数
+- 返回对应的内容（文本、JSON、二进制数据）给调用者
+- Resource允许LLM访问与对话相关的文件、数据库内容、配置或动态生成的信息
+
+Cjoy提供@Resource宏标注函数，发布为MCP中静态与动态Resource。
+
+```
+@Resource[uri = "data://secret"]
+public func secretData(): String {
+    "secret data"
+}
+
+@Resource[uri = "resource://{name}/detail"]
+public func systemStatus(ctx: JoyContext, name: String): HashMap<String, String> {
+    HashMap<String, String>([("name", name)])
+}
+```
+
+宏与宏属性说明：
+
+|宏|属性参数|说明|
+|---|---|---|
+|`@Resource`|uri:"..", name="..", description:"..",mimeType:""|作用于函数上。`name`默认函数名|
+
+|宏属性参数|默认值|是否可选|说明|
+|---|---|---|---|
+|`uri`||否|指定资源的URI，格式如resource://{name}/detail，其中{name}动态参数变量|
+|`name`||是|指定资源的名称|
+|`description`||是|用于描述资源，为了大模型更好的效果，描述应简洁清楚无歧义|
+|`mimeType`||是|资源的类型|
+
+使用示例：[examples/mcpserver](../../src/examples/mcpserver/main.cj) 或者测试代码 [test/mcp_test](../../src/test/mcp_test.cj)。
+
+#### Resource入参
+
+函数支持特定的入参
+
+ - 入参可以是JoyContext类型，用于获取HTTP上下文信息
+ - 当是动态Resource，入参为基础类型，String，绑定URI中参数，参数名为URL中变量
+  
+```
+@Resource[uri = "resource://{name}/detail"]
+public func systemStatus(ctx: JoyContext, name: String): HashMap<String, String> {
+    // name参数是URI中的{name}
+    HashMap<String, String>([("name", name)])
+}
+```
+
+#### Resource出参
+
+框架自动将函数返回的值转换为客户端的适当MCP内容格式：
+
+ - 出参是实现ToString接口的类型，返回TextResourceContents(mimeType="text/plain")
+ - 出参是实现JsonSerializable接口的类型，返回TextResourceContents(mimeType="application/json")
+ - 出参是`Array<ToString|JsonSerializable>`或`ArrayList<ToString|JsonSerializable>`类型，返回多个TextResourceContents
+ - 出参是HashMap类型，返回TextResourceContents(mimeType="application/json")
+ - 出参是`Array<Byte>`类型，返回BlobResourceContents(mimeType="application/octet-stream")，对响应进行Base64编码
+ - 当参非上述类型，返回TextResourceContents(mimeType="ext/plain"), 内容为空
+ - 返回XXXResourceContents优先取@Resource指定的mimeType值，不存在则取上述默认值
 
 ### 注册
 

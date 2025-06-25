@@ -94,31 +94,42 @@ class DefaultMcpServerSession <: McpServerSession & McpRequestHandler & McpRespo
 
     public func onRequest(ctx: JoyContext, message: JSONRPCRequest): Unit {
         var jsonResp: Bool = false
-        let resp = match (message.method) {
+        let result = match (message.method) {
             case "ping" =>
                 LogTool.info("[MCP]recv `ping` request")
-                JSONRPCResponse(id: message.id, result: message.params)
+                message.params
             case "initialize" =>
                 let request: InitializeRequest = RPCJsonTool.deserializeParams(message.params)
                 LogTool.info("[MCP]recv `initialize` request: ${request}, sessionId: ${_sessionId}")
                 jsonResp = _streamable
-                let result = onRecvInitRequest(request)
-                JSONRPCResponse(id: message.id, result: result)
+                onRecvInitRequest(request)
             case "tools/list" =>
                 let page: PaginatedRequest = RPCJsonTool.deserializeParams(message.params)
                 LogTool.info("[MCP]recv `tools/list` request: ${page}, sessionId: ${_sessionId}")
-                let result = McpServer.listTools(page)
-                JSONRPCResponse(id: message.id, result: result)
+                McpServer.tools.listTools(page)
             case "tools/call" =>
                 let req: CallToolRequest = RPCJsonTool.deserializeParams(message.params)
                 LogTool.debug("[MCP]recv `tools/call` request: ${req}, sessionId: ${_sessionId}")
-                let result = McpServer.callTool(ctx, req)
-                JSONRPCResponse(id: message.id, result: result)
+                McpServer.tools.callTool(ctx, req)
+            case "resources/list" =>
+                let page: PaginatedRequest = RPCJsonTool.deserializeParams(message.params)
+                LogTool.info("[MCP]recv `resources/list` request: ${page}, sessionId: ${_sessionId}")
+                McpServer.resources.listResources(page)
+            case "resources/templates/list" =>
+                let page: PaginatedRequest = RPCJsonTool.deserializeParams(message.params)
+                LogTool.info("[MCP]recv `resources/templates/list` request: ${page}, sessionId: ${_sessionId}")
+                McpServer.resources.listResourceTemplates(page)
+            case "resources/read" =>
+                let req: ReadResourceRequest = RPCJsonTool.deserializeParams(message.params)
+                LogTool.debug("[MCP]recv `tools/call` request: ${req}, sessionId: ${_sessionId}")
+                McpServer.resources.readResource(ctx, req)
             case _ =>
                 LogTool.error("[MCP]recv unknown `${message.method}` request, sessionId: ${_sessionId}")
                 let error = JSONRPCError(code: McpConsts.ERR_METHOD_NOT_FOUND, message: "not found method")
-                JSONRPCResponse(id: message.id, error: error)
+                let resp = JSONRPCResponse(id: message.id, error: error)
+                return sendResp(ctx, resp, false)
         }
+        let resp = JSONRPCResponse(id: message.id, result: result)
         sendResp(ctx, resp, jsonResp)
     }
 

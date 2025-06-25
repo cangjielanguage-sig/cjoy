@@ -188,6 +188,7 @@ public func parseParam(marcroName: String, input: Tokens): Unit {
 public func parseParam(marcroName: String, attr: ?Tokens, input: Tokens): Unit {
     match (marcroName) {
         case "ToolParam" => assertParentContext("Tool")
+        case "PromptParam" => assertParentContext("Prompt")
         case _ => ()
     }
     let paramInfo: ParamInfo = ParamInfo(marcroName)
