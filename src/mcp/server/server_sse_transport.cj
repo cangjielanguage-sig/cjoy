@@ -74,7 +74,7 @@ class McpSseServerTransport <: McpServerTransport {
                 sess.handle(ctx, message)
                 ctx.ok()
             } catch (ex: Exception) {
-                LogTool.error("[MCP]hand message faild, session: ${sessionId}, error: ${ex.message}")
+                LogTool.error("[MCP]handle message faild, session: ${sessionId}, error: ${ex.message}")
                 let err = JSONRPCError(code: McpConsts.ERR_INTERNAL_ERROR, message: ex.message)
                 ctx.status(HttpStatusCode.STATUS_INTERNAL_SERVER_ERROR).json(err)
             }

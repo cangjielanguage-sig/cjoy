@@ -38,7 +38,7 @@ protected class RPCJsonTool {
 
     public static func deserialize(buffer: ByteBuffer): JSONRPCMessage {
         let reader = JsonReader(buffer)
-        LogTool.debug("deserializing json: ${String.fromUtf8(buffer.bytes())}")
+        LogTool.debug("[MCP] deserializing json: ${String.fromUtf8(buffer.bytes())}")
 
         var id: ?JsonSerializable = None
         var method: String = ""

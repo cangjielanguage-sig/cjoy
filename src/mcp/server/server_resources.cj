@@ -35,10 +35,10 @@ public class McpResources {
 
     public func addResource(resource: McpResource): Unit {
         if (resources.contains(resource.uri)) {
-            LogTool.warn("[MCP]resource `${resource.uri}` is existed, will be overwrite")
+            LogTool.warn("[MCP] resource `${resource.uri}` is existed, will be overwrite")
         }
         if (resource.uri.indexOf("://").isNone()) {
-            LogTool.error("[MCP]resource `${resource.uri}` is invalid")
+            LogTool.error("[MCP] resource `${resource.uri}` is invalid")
             return
         }
         if (resource.uri.indexOf("{").isSome()) {
@@ -69,7 +69,7 @@ public class McpResources {
     private func addCtxParam(ctx: JoyContext, ri: RouteInfo) {
         if (!ri.routeParamKeys.isEmpty()) {
             if (ri.routeParamKeys.size != ri.routeParamValues.size) {
-                LogTool.error("parameter list length mismatch when find route target")
+                LogTool.error("[MCP] resource handler parameter list length mismatch when find route target")
                 throw Exception("parameter list length mismatch")
             }
             for (idx in 0..ri.routeParamKeys.size) {
@@ -117,7 +117,7 @@ public class McpResources {
                 }
                 ReadResourceResult(contents: ArrayList<ResourceContents>(contents))
             case _ =>
-                LogTool.error("not found resource handler uri=${request.uri}")
+                LogTool.error("[MCP] not found resource handler, uri=${request.uri}")
                 throw Exception("not found resource handler")
         }
     }
