@@ -11,15 +11,12 @@ CJoy提供宏来简化MCP的Tool，Resource, Prompt服务端函数的开发。
 
 ### Tool
 
-Tool是核心MCP协议中重要组成，允许您的LLM与外部系统交互、执行代码和访问不在其训练数据中的数据。在CJoyP中，Tool是通过MCP协议向LLM暴露仓颉函数。
+Tool是核心MCP协议中重要组成，允许您的LLM与外部系统交互、执行代码和访问不在其训练数据中的数据。
 
-当LLM决定使用工具时，流程如下：
-
-- 客户端根据Tool式发送带有参数的请求
-- CJoy根据函数的签名验证这些参数
+Tool可以执行查询数据库、调用API、进行计算或访问文件等任务，从而将其功能扩展到训练数据之外。当LLM决定使用工具时，流程如下：
+- 客户端根据Too的Schema发送带有参数的请求
 - CJoy路由请求到对应的函数
 - CJoy把结果返回给LLM，LLM可以在其响应中使用它
-- Tool可以执行查询数据库、调用API、进行计算或访问文件等任务，从而将其功能扩展到训练数据之外
 
 CJoy提供宏`@Tool`标注函数，`@ToolParam`标注函数参数，发布其为MCP的Tool。
 
@@ -35,7 +32,7 @@ public func multiply(a: Int, b: Int): Int {
 }
 ```
 
-注册此工具后，CJoyh会自动：
+注册Tool后，CJoy会自动：
 
 - 使用`@Tool`属性中`name`与`description`生成作为Tool名与描述
 - 使用`@ToolParam`属性中`name`与`description`作为Tool参数与描述。
@@ -62,17 +59,17 @@ public func multiply(a: Int, b: Int): Int {
 
 参数的类型注释对于正确的工具功能至关重要：
 
-- 为MCP协议生成准确的JSON模式
+- 为MCP协议生成准确的JSON Schema
 - 告知LLM每个参数的预期数据类型
 
 支持的类型：
 
- - 入参是实现stdx.encoding.json.stream包下JsonDeserializable接口的类型，如基本类型，String等。
- - 入参宏`@ToolParam`可选，属性`name`默认取参数名，建议通过`@ToolParam(description:...)`来增加参数描述
+ - 入参是实现stdx.encoding.json.stream包下JsonDeserializable接口的类型，以及基本类型，String等。
+ - 入参宏`@ToolParam`可选，属性`name`默认取参数名，建议通过`@ToolParam(description:...)`来增强参数描述
  - 入参可以是可选参数，如`Option<类型>`，则Tool的Schema对应的参数也是可选
  - 入参还可以是JoyContext类型，用于获取HTTP上下文信息，不用`@ToolParam`标注
 
-当工具的输入参数较多时，可以把多个参数聚合一个Class上，如下所示：
+当工具的输入参数较多时，可以把多个参数聚合在一个类型和，如下所示：
 
 ```
 @Json
@@ -98,7 +95,7 @@ public func add3(param: Params, ctx: JoyContext): Int {
 
 #### Tool出参
 
-框架自动将函数返回的值转换为客户端的适当MCP内容格式：
+框架自动将函数返回的值转换为客户端的适当的MCP协议定义人Content格式：
 
  - 出参是实现ToString或JsonSerializable接口的类型，返回TextContent
  - 出参是`Array<ToString|JsonSerializable>`或`ArrayList<ToString|JsonSerializable>`类型，返回多个TextContent
@@ -108,16 +105,14 @@ public func add3(param: Params, ctx: JoyContext): Int {
 
 ### Resource
 
-静态Resource表示MCP客户端可以读取的数据或文件，动态ResourceTemplate通过允许客户端根据URI中传递的参数请求**动态**生成的资源来扩展这一概念。
+静态Resource表示MCP客户端可以读取的数据或文件，动态ResourceTemplate通过允许客户端根据URI中传递的参数请求**动态**生成资源来扩展这一概念。
 
-Resource为LLM或客户端应用程序提供对数据的只读访问。当客户端请求资源URI时：
-- CJoy找到相应的资源定义
-- CJoy路由到对应的函数
-- 如果它是动态的（由函数定义），该提取URI中参数
+Resource为LLM或客户端应用程序提供对数据的只读访问，Resource允许LLM访问与对话相关的文件、数据库内容、配置或动态生成的信息。当客户端请求资源URI时：
+- CJoy找到相应的资源定义，路由到对应的函数
+- 如果它是动态Resource（由函数定义），该提取URI中参数
 - 返回对应的内容（文本、JSON、二进制数据）给调用者
-- Resource允许LLM访问与对话相关的文件、数据库内容、配置或动态生成的信息
 
-Cjoy提供@Resource宏标注函数，发布为MCP中静态与动态Resource。
+Cjoy提供`@Resource`宏标注函数，发布为MCP中静态与动态Resource。
 
 ```
 @Resource[uri = "data://secret"]
@@ -150,9 +145,9 @@ public func systemStatus(ctx: JoyContext, name: String): HashMap<String, String>
 
 #### Resource入参
 
-函数支持特定的入参
+函数支持的入参
 
- - 入参可以是JoyContext类型，用于获取HTTP上下文信息
+ - 可以是JoyContext类型，用于获取HTTP上下文信息
  - 当是动态Resource，绑定URI中参数，参数名为URL中变量，入参为基础类型，String
   
 ```
@@ -165,7 +160,7 @@ public func systemStatus(ctx: JoyContext, name: String): HashMap<String, String>
 
 #### Resource出参
 
-框架自动将函数返回的值转换为客户端的适当MCP内容格式：
+框架自动将函数返回的值转换为客户端的适当的MCP协议定义的ResourceContents格式：
 
  - 出参是实现ToString接口的类型，返回TextResourceContents(mimeType="text/plain")
  - 出参是实现JsonSerializable接口的类型，返回TextResourceContents(mimeType="application/json")
@@ -177,15 +172,15 @@ public func systemStatus(ctx: JoyContext, name: String): HashMap<String, String>
 
 ### Prompt
 
-Prompt是可重用的消息模板，可帮助LLM生成结构化、有目的的响应。
+Prompt是可重用的消息模板，可帮助LLM生成结构化、有目的的响应。当客户端请求Prompt时：
 
-当客户端请求Prompt时：
- - CJoy找到相应的Prompt定义。
- - 如果它有参数，提取参数。
- - 生成的消息将返回给LLM以指导其响应。
- - 允许您定义一致的、可重用的模板，LLM可以在不同的客户端和上下文中使用这些模板。
- - 
-Cjoy提供@Prompt宏标注函数，发布为MCP中Prompt。
+ - CJoy找到相应的Prompt定义
+ - 如果它有参数，提取参数
+ - 生成的消息将返回给LLM以指导其响应
+ - 允许您定义一致的、可重用的模板，LLM可以在不同的客户端和上下文中使用这些模板
+
+
+CJoy提供`@Prompt`宏标注函数，发布为MCP中Prompt。
 
 ```
 @Prompt[name = askUserTopic]
@@ -217,16 +212,17 @@ public func dataAnalysisPrompt(
 
 使用示例：[examples/mcpserver](../../src/examples/mcpserver/main.cj) 或者测试代码 [test/mcp_test](../../src/test/mcp_test.cj)。
 
-#### Resource入参
+#### Prompt入参
 
-函数支持特定的入参
+函数支持的入参
 
- - 入参可以是JoyContext类型，用于获取HTTP上下文信息
- - 当是Prompt，入参为基础类型，String
+ - 可以是JoyContext类型，用于获取HTTP上下文信息
+ - 可以为基础类型，String
+ - 可以为Option<类型>
   
-#### Resource出参
+#### Prompt出参
 
-框架自动将函数返回的值转换为客户端的适当MCP内容格式：
+框架自动将函数返回的值转换为客户端的适当MCP定义格式：
 
  - 出参是实现ToString接口的类型，返回PromptMessage.TextContent
  - 出参是实现JsonSerializable接口的类型，返回PromptMessage.TextContent
