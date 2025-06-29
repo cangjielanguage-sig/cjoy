@@ -13,7 +13,7 @@ package cjoy.multipart
 
 import std.collection.HashMap
 
-let mines: HashMap<String, String> = HashMap(
+let mimes: HashMap<String, String> = HashMap(
     [
         (".aac", "audio/aac"),
         (".abw", "application/x-abiword"),
@@ -93,10 +93,10 @@ let mines: HashMap<String, String> = HashMap(
 )
 
 /**
-* return the mine type by extention type
+* return the mime type by extention type
 *
 * @param ext: the extention type
 */
-public func getMineTypeByExt(ext: String): ?String {
-    mines.get(ext)
+public func getMimeTypeByExt(ext: String): ?String {
+    mimes.get(ext)
 }

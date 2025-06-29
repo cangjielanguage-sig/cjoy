@@ -60,13 +60,13 @@ JoyContext提供两个函数支持对HTTP Body的绑定与映射：
 
 `@Json`默认情况下只会对自身的成员变量进行序列化和反序列化，并不包含其父类里的成员变量。
 
-CJoy提供下面支持序列化和反序列化时多态。
+CJoy提供下面方式支持序列化和反序列化时的多态：
 
 在基类指定如下属性，用于帮助基类反序列化时确定子类
  - subTypeField&subTypes：按字段值来确定子类
  - subTypeAs&subTypes：按是否存在字段来确定子类
 
-在子类指定属性，用于帮助子类识别父类
+在子类指定如下属性，用于帮助子类识别父类
 - 属性`superClass=父类类型名`来指定父类类型
 - 当序列化或反序列化为子类时，可以同时对父类的成员变量进行序列化和反序列化
 
@@ -125,7 +125,6 @@ public class BlobResourceContents <: ResourceContents {
 - 属性`subTypes={"字段名1":"子类类型名"}`来指定区分字段时的子类类型
 - 属性`subTypeAs`与`subTypes`同时存在
 - 当反序列化`ResourceContents`时，如果json字符串中存在text字段时，即反序化为TextResourceContents对象；存在blob字段时，即反序化为BlobResourceContents对象
-
 
 **注：** 继承只支持class类型，不支持struct类型
 
@@ -261,8 +260,8 @@ func pathGet(): JsonSerializable {
 
 两种方式指定：
 
- - 通过指定属性`description`与`required`
- - 通过指定属性`schema`设置完整的Json Schema，当属性`schema`存在时，忽略属性`description`与`required`
+ - 指定属性`description`与`required`
+ - 指定属性`schema`设置完整的Json Schema，当属性`schema`存在时，忽略属性`description`与`required`
 
 ```
 @Json[description: "user info"]

@@ -17,7 +17,7 @@ import std.io.{readToEnd}
 import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable}
 import stdx.encoding.base64.toBase64String
 import cjoy.framework.{JoyContext, JoyRequestHandler}
-import cjoy.multipart.getMineTypeByExt
+import cjoy.multipart.getMimeTypeByExt
 
 public interface McpSession <: Resource {
     func sendRequest<T>(method: String, requestParams: JsonSerializable): T where T <: JsonDeserializable<T>
@@ -116,7 +116,7 @@ public class Image {
             try (file = File(path, OpenMode.Read)) {
                 data = readToEnd(file)
                 let p = Path(path)
-                mimeType = getMineTypeByExt(".${p.extensionName}").getOrDefault({=> "application/octet-stream"})
+                mimeType = getMimeTypeByExt(".${p.extensionName}").getOrDefault({=> "application/octet-stream"})
             }
         }
         var res = ImageContent(mimeType: mimeType, data: toBase64String(data))
@@ -139,7 +139,7 @@ public class Audio {
             try (file = File(path, OpenMode.Read)) {
                 data = readToEnd(file)
                 let p = Path(path)
-                mimeType = getMineTypeByExt(".${p.extensionName}").getOrDefault({=> "application/octet-stream"})
+                mimeType = getMimeTypeByExt(".${p.extensionName}").getOrDefault({=> "application/octet-stream"})
             }
         }
         var res = AudioContent(mimeType: mimeType, data: toBase64String(data))
