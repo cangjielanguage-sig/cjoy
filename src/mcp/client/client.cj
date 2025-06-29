@@ -126,6 +126,46 @@ class DefaultMcpClient <: McpClient {
         result
     }
 
+    public func listResources(cursor: ?String): ListResourcesResult {
+        checkInitialized()
+        let result: ListResourcesResult = _session.sendRequest(McpConsts.METHOD_RESOURCES_LIST,
+            PaginatedRequest(cursor: cursor))
+        LogTool.info("[MCP]list resource result:${result}")
+        result
+    }
+
+    public func listResourceTemplates(cursor: ?String): ListResourceTemplatesResult {
+        checkInitialized()
+        let result: ListResourceTemplatesResult = _session.sendRequest(McpConsts.METHOD_RESOURCES_TEMPLATES_LIST,
+            PaginatedRequest(cursor: cursor))
+        LogTool.info("[MCP]list resource template result:${result}")
+        result
+    }
+
+    public func readResource(request: ReadResourceRequest): ReadResourceResult {
+        checkInitialized()
+        LogTool.info("[MCP]read resource request:${request}")
+        let result: ReadResourceResult = _session.sendRequest(McpConsts.METHOD_RESOURCES_READ, request)
+        LogTool.info("[MCP]read resource result:${result}")
+        result
+    }
+
+    public func listPrompts(cursor: ?String): ListPromptResult {
+        checkInitialized()
+        let result: ListPromptResult = _session.sendRequest(McpConsts.METHOD_PROMPTS_LIST,
+            PaginatedRequest(cursor: cursor))
+        LogTool.info("[MCP]list prompt result:${result}")
+        result
+    }
+
+    public func getPrompt(request: GetPromptRequest): GetPromptResult {
+        checkInitialized()
+        LogTool.info("[MCP]get prompt request:${request}")
+        let result: GetPromptResult = _session.sendRequest(McpConsts.METHOD_PROMPTS_GET, request)
+        LogTool.info("[MCP]get prompt result:${result}")
+        result
+    }
+
     public func close() {
         if (_isClosed) {
             return

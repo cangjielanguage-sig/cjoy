@@ -42,6 +42,46 @@ public func add3(param: Params, ctx: JoyContext): Int {
     param.a + param.b
 }
 
+//--- resources -----
+@Resource[uri = "data://secret"]
+public func secretData(): String {
+    "secret data"
+}
+
+@Resource[uri = "data://config"]
+public func config(): HashMap<String, Int> {
+    HashMap<String, Int>([("version", 1)])
+}
+
+@Resource[uri = "resource://{name}/detail"]
+public func systemStatus(ctx: JoyContext, name: String): HashMap<String, String> {
+    HashMap<String, String>([("name", name)])
+}
+
+@Resource[uri = "file:///app/data/important_log", mimeType = "text/plain"]
+public func readLog(): String {
+    "this is an important log"
+}
+
+@Resource[uri = "resource://stream-data"]
+public func readData(): Array<Byte> {
+    "stream".toArray()
+}
+
+// --- prompts -----
+@Prompt[name = askUserTopic]
+public func askUserTopic(topic: String): String {
+    "Can you please explain the concept of ${topic}"
+}
+
+@Prompt[name = analyze_data_request, description = "Creates a request to analyze data with specific parameters"]
+public func dataAnalysisPrompt(
+    @PromptParam[description = "The URI of the resource containing the data."] dataUri: String,
+    @PromptParam[default = "summary", description = "Type of analysis."] analysisType: String
+): String {
+    "Please perform a '${analysisType}' analysis on the data found at ${dataUri}."
+}
+
 main(): Int64 {
     var cfg = JoyConfig()
     cfg.enableDebugLog = true

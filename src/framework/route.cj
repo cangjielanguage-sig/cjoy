@@ -18,8 +18,8 @@ import stdx.net.http.{HttpRequestDistributor, HttpRequestHandler, HttpRequest, H
 import cjoy.log.LogTool
 
 /**
-* the inferface of router
-*/
+ * the inferface of router
+ */
 public interface JoyRouters {
     /**
      * return the distributor instance
@@ -131,8 +131,8 @@ public interface JoyRouters {
     func staticFile(relativePath: String, filepath: String): JoyRouters
 
     /**
-    * adds the route `pattern` that matches `GET` http method to process websocket reqeuest.
-    */
+     * adds the route `pattern` that matches `GET` http method to process websocket reqeuest.
+     */
     func websocket(pattern: String, handler: JoyWebSocketHandler): JoyRouters
 
     /**
@@ -141,15 +141,32 @@ public interface JoyRouters {
     func dump(): String
 }
 
-class TreeRouteDistributor <: HttpRequestDistributor & HttpRequestHandler {
+/**
+ * the route target info
+ */
+public class RouteTagetInfo {
+    public RouteTagetInfo(
+        public let handler: JoyRequestHandler,
+        public let paramMap!: HashMap<String, String> = HashMap(),
+        public let ctxMap!: HashMap<String, Any> = HashMap()
+    ) {
+    }
+}
+
+public interface RouteDistributor {
+    /**
+     * find the request handler
+     */
+    func findRouteTarget(method: String, path: String): ?RouteTagetInfo
+}
+
+class TreeRouteDistributor <: HttpRequestDistributor & HttpRequestHandler & RouteDistributor {
     var _root: TreeNode<JoyRequestHandler> = TreeNode(NT_STATIC, b'\0', "")
     let _config: JoyConfig
     let _groups: HashMap<String, JoyRouters> = HashMap()
-    //let _handlerPool: ObjectPool<JoyRouteHandler>
 
     init(config: JoyConfig) {
         this._config = config
-        //this._handlerPool = ObjectPool({ => JoyRouteHandler(config) }, resetFunc: JoyRouteHandler.reset)
     }
 
     public func register(_: String, _: HttpRequestHandler): Unit {
@@ -162,16 +179,13 @@ class TreeRouteDistributor <: HttpRequestDistributor & HttpRequestHandler {
     }
 
     public func handle(ctx: HttpContext) {
-        let handler = JoyRouteHandler(_config)
-        //try {
-            lookup(ctx.request, handler)
-            handler.handle(ctx)
-        //} finally {
-        //    _handlerPool.put(handler)
-        //}
+        let target = lookup(ctx.request)
+        target.ctxMap.add("__RouteDistributor__", this)
+        let joyCtx = JoyContext(ctx, target.paramMap, _config, target.ctxMap)
+        target.handler.handle(joyCtx)
     }
 
-    private func lookup(req: HttpRequest, obj: JoyRouteHandler): Unit {
+    private func lookup(req: HttpRequest): RouteTagetInfo {
         var path = if (_config.caseInsensitive) {
             req.url.path.toAsciiLower()
         } else {
@@ -183,37 +197,52 @@ class TreeRouteDistributor <: HttpRequestDistributor & HttpRequestHandler {
         var (node, handler) = _root.findRouteHandler(ri, req.method, path)
         if (node.isNone()) {
             LogTool.debug("[TreeRouteDistributor#lookup] not found handler, method=${req.method}, path=${path}")
-            obj.handler = _config.notFoundHandler
-            return
+            return RouteTagetInfo(_config.notFoundHandler)
         }
 
         if (handler.isNone()) {
             if (req.method == "OPTIONS") {
-                obj.handler = JoyOptionsHandler.INSTANCE
-                return
+                return RouteTagetInfo(JoyOptionsHandler.INSTANCE)
             }
-            
+
             if (ri.methodNotAllowed) {
-                obj.ctxParamMap.add("methods", ri.methodsAllowed)
-                obj.handler = _config.methodNotAllowedHandler
-                return
+                return RouteTagetInfo(_config.methodNotAllowedHandler,
+                    ctxMap: HashMap<String, Any>([("methods", ri.methodsAllowed)]))
             }
 
             LogTool.debug("[TreeRouteDistributor#lookup] not found handler, method=${req.method}, path=${path}")
-            obj.handler = _config.notFoundHandler
-            return
+            return RouteTagetInfo(_config.notFoundHandler)
         }
 
+        let paramMap: HashMap<String, String> = HashMap()
         if (!ri.routeParamKeys.isEmpty()) {
             if (ri.routeParamKeys.size != ri.routeParamValues.size) {
                 throw Exception("parameter list length mismatch")
             }
             for (idx in 0..ri.routeParamKeys.size) {
-                obj.paramMap[ri.routeParamKeys[idx]] = ri.routeParamValues[idx]
+                paramMap[ri.routeParamKeys[idx]] = ri.routeParamValues[idx]
             }
         }
+        RouteTagetInfo(handler.getOrThrow(), paramMap: paramMap)
+    }
 
-        obj.handler = handler.getOrThrow()
+    public func findRouteTarget(method: String, path: String): ?RouteTagetInfo {
+        let ri: RouteInfo = RouteInfo()
+        var (_, handler) = _root.findRouteHandler(ri, method, path)
+        if (let Some(h) <- handler) {
+            let paramMap = HashMap<String, String>()
+            if (!ri.routeParamKeys.isEmpty()) {
+                if (ri.routeParamKeys.size != ri.routeParamValues.size) {
+                    LogTool.error("parameter list length mismatch when find route target")
+                    throw Exception("parameter list length mismatch")
+                }
+                for (idx in 0..ri.routeParamKeys.size) {
+                    paramMap[ri.routeParamKeys[idx]] = ri.routeParamValues[idx]
+                }
+            }
+            return RouteTagetInfo(h, paramMap: paramMap)
+        }
+        None
     }
 
     public func dump(): String {

@@ -25,14 +25,14 @@ class Endpoint<T> <: ToString {
 
 type Endpoints<T> = HashMap<String, Endpoint<T>>
 
-class RouteInfo {
-    RouteInfo(
-        var pattern!: String = "",
-        let patterns!: ArrayList<String> = ArrayList(),
-        let routeParamKeys!: ArrayList<String> = ArrayList(),
-        var routeParamValues!: ArrayList<String> = ArrayList(),
-        let methodsAllowed!: ArrayList<String> = ArrayList(),
-        var methodNotAllowed!: Bool = false
+public class RouteInfo {
+    public RouteInfo(
+        public var pattern!: String = "",
+        public let patterns!: ArrayList<String> = ArrayList(),
+        public let routeParamKeys!: ArrayList<String> = ArrayList(),
+        public var routeParamValues!: ArrayList<String> = ArrayList(),
+        public let methodsAllowed!: ArrayList<String> = ArrayList(),
+        public var methodNotAllowed!: Bool = false
     ) {
     }
 }
@@ -56,7 +56,7 @@ extend NodeType {
     }
 }
 
-class TreeNode<T> {
+public class TreeNode<T> {
     // regex matcher for regexp nodes
     var _regex: ?Regex = None
 
@@ -82,6 +82,10 @@ class TreeNode<T> {
         _label = label
         _prefix = prefix
         _tail = tail
+    }
+
+    public init() {
+       this(NT_STATIC, b'\0', "")
     }
 
     private func setEndpoint(method: String, pattern: String, handler: T) {
@@ -149,7 +153,7 @@ class TreeNode<T> {
         hn
     }
 
-    func addRoute(method: String, pattern: String, handler: T): TreeNode<T> {
+    public func addRoute(method: String, pattern: String, handler: T): TreeNode<T> {
         var parent = this
         var node = this
         var search = pattern
@@ -353,7 +357,7 @@ class TreeNode<T> {
         None
     }
 
-    func findRouteHandler(ri: RouteInfo, method: String, path: String): (?TreeNode<T>, ?T) {
+    public func findRouteHandler(ri: RouteInfo, method: String, path: String): (?TreeNode<T>, ?T) {
         let rn = findRoute(ri, method, path)
         if (let Some(node) <- rn) {
             let ep = node._endpoints[method]
@@ -452,7 +456,7 @@ class TreeNode<T> {
         }
     }
 
-    func dumpTree(): String {
+    public func dumpTree(): String {
         let builder = StringBuilder()
         dumpTreeInner(builder, 0, "", this)
         builder.toString()

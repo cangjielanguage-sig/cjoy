@@ -29,6 +29,12 @@ public interface JoyBindable<T> {
      * @return the object
      */
     static func bind(source: JoyBindSource, name: String, defaultValue: ?String, timeformat: ?String): ?T
+    static func bind(source: JoyBindSource, name: String, defaultValue: ?String): ?T {
+        bind(source, name, defaultValue, None)
+    }
+    static func bind(source: JoyBindSource, name: String): ?T {
+        bind(source, name, None, None)
+    }
 }
 
 public interface JoyBindSource {

@@ -19,6 +19,7 @@ open class ParamInfo {
 
     var name: String = ""
     var description: String = ""
+    var default: ?String = None
 
     var pid: Token = Token()
     var paramType: ?TypeNode = None
@@ -29,9 +30,10 @@ open class ParamInfo {
     }
 
     func parseAttr(attr: Tokens): Unit {
-        let map: MapToString = parserAttrs(attr, validKeys: ["name", "description"], macroName: "ToolParam")
+        let map: MapToString = parserAttrs(attr, validKeys: ["name", "description", "default"], macroName: "ToolParam")
         this.name = map.getString("name") ?? ""
         this.description = map.getString("description") ?? ""
+        this.default = map.getString("default")
     }
 
     func parse(input: Tokens): Unit {
@@ -45,17 +47,24 @@ open class ParamInfo {
         this.typeNode.parse(funcParam.toTokens(), funcParam.paramType)
     }
 
-    private func getName(): String {
+    func getName(): String {
         if (name != "") {
             return name
         }
         return pid.value
     }
 
-    private func getType(): Tokens {
+    func getType(): Tokens {
         match (paramType.getOrThrow()) {
             case x: PrefixType => quote(Option<$(x.baseType)>)
             case _ => paramType.getOrThrow().toTokens()
+        }
+    }
+
+    func getDefault(): Tokens {
+        match (default) {
+            case Some(x) => quote($x)
+            case _ => quote(None)
         }
     }
 
@@ -82,8 +91,15 @@ open class ParamInfo {
         }
         return true
     }
+}
 
-    public func genVarTokens(): Tokens {
+class ToolParamInfo <: ParamInfo {
+    init(marcroName: String) {
+        super(marcroName)
+    }
+
+    // for tool
+    func genVarTokens(): Tokens {
         if (isJoyContext()) {
             if (pid.value == "ctx") {
                 Tokens()
@@ -102,7 +118,7 @@ open class ParamInfo {
         }
     }
 
-    public func genVarComplexTypeTokens(): Tokens {
+    func genVarComplexTypeTokens(): Tokens {
         if (isJoyContext()) {
             if (pid.value == "ctx") {
                 Tokens()
@@ -116,7 +132,7 @@ open class ParamInfo {
         }
     }
 
-    public func genSchemTokens(): Tokens {
+    func genSchemaTokens(): Tokens {
         if (isJoyContext()) {
             Tokens()
         } else {
@@ -130,7 +146,7 @@ open class ParamInfo {
         }
     }
 
-    public func genSchemComplexTypeTokens(): Tokens {
+    func genSchemComplexTypeTokens(): Tokens {
         if (isJoyContext()) {
             Tokens()
         } else {
@@ -138,7 +154,7 @@ open class ParamInfo {
         }
     }
 
-    public func genReadJsonTokens(): Tokens {
+    func genReadJsonTokens(): Tokens {
         if (typeNode.vtype.value == "JoyContext") {
             Tokens()
         } else {
@@ -155,12 +171,13 @@ class ParamInfoCache {
         PARAMS.clear()
     }
 
-    static func addCache(info: ParamInfo): Unit {
+    static func addCache<T>(info: T): Unit where T <: ParamInfo {
         PARAMS.add(info)
     }
 
-    static func findByParamName(name: String): ?ParamInfo {
-        PARAMS |> filter {it: ParamInfo => it.pid.value == name} |> first
+    static func findByParamName<T>(name: String): ?T where T <: ParamInfo {
+        PARAMS |> filter {it: ParamInfo => it.pid.value == name} |> map {it: ParamInfo => (it as T).getOrThrow()} |>
+            first
     }
 }
 
@@ -169,11 +186,19 @@ public func parseParam(marcroName: String, input: Tokens): Unit {
 }
 
 public func parseParam(marcroName: String, attr: ?Tokens, input: Tokens): Unit {
-    match (marcroName) {
-        case "ToolParam" => assertParentContext("Tool")
-        case _ => ()
+    let paramInfo: ParamInfo = match (marcroName) {
+        case "ToolParam" =>
+            assertParentContext("Tool")
+            ToolParamInfo(marcroName)
+        case "PromptParam" =>
+            assertParentContext("Prompt")
+            PromptParamInfo(marcroName)
+        case "ResourceParam" =>
+            assertParentContext("Resource")
+            ResourceParamInfo(marcroName)
+        case _ => ParamInfo(marcroName)
     }
-    let paramInfo: ParamInfo = ParamInfo(marcroName)
+
     paramInfo.parse(input)
     if (let Some(a) <- attr) {
         paramInfo.parseAttr(a)

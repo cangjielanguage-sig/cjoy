@@ -16,7 +16,7 @@ import std.fs.{File, OpenMode, Path}
 import std.io.{readToEnd}
 import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable}
 import stdx.encoding.base64.toBase64String
-import cjoy.framework.JoyContext
+import cjoy.framework.{JoyContext, JoyRequestHandler}
 import cjoy.multipart.getMineTypeByExt
 
 public interface McpSession <: Resource {
@@ -52,6 +52,14 @@ public interface McpCallToolHandler {
     func handle(ctx: JoyContext, arguments: Array<Byte>): Any
 }
 
+public interface McpReadResourceHandler {
+    func readResource(ctx: JoyContext): Any
+}
+
+public interface McpGetPromptHandler {
+    func getPrompt(ctx: JoyContext, arguments: HashMap<String, String>): Any
+}
+
 public interface McpTransport <: Resource {
     func send(message: ByteBuffer): Unit
 }
@@ -75,6 +83,22 @@ public interface McpClient <: Resource {
         listTools(None)
     }
     func callTool(request: CallToolRequest): CallToolResult
+
+    func listResources(cursor: ?String): ListResourcesResult 
+    func listResources(): ListResourcesResult {
+        listResources(None)
+    }
+    func listResourceTemplates(cursor: ?String): ListResourceTemplatesResult
+    func listResourceTemplates(): ListResourceTemplatesResult {
+        listResourceTemplates(None)
+    }
+    func readResource(request: ReadResourceRequest): ReadResourceResult
+
+    func listPrompts(cursor: ?String): ListPromptResult
+    func listPrompts(): ListPromptResult {
+        listPrompts(None)
+    }
+    func getPrompt(request: GetPromptRequest): GetPromptResult
 }
 
 // -----
@@ -82,7 +106,7 @@ public class Image {
     public Image(public let path!: String = "", public var data!: Array<Byte> = [], public let format!: String = "") {
     }
 
-    public func toImageContext(): ImageContent {
+    public func toImageContext(): Content {
         var mimeType = if (format != "") {
             "image/${format.toAsciiLower()}"
         } else {
@@ -105,7 +129,7 @@ public class Audio {
     public Audio(public let path!: String = "", public var data!: Array<Byte> = [], public let format!: String = "") {
     }
 
-    public func toAudioContent(): AudioContent {
+    public func toAudioContent(): Content {
         var mimeType = if (format != "") {
             "audio/${format.toAsciiLower()}"
         } else {
@@ -121,5 +145,16 @@ public class Audio {
         var res = AudioContent(mimeType: mimeType, data: toBase64String(data))
         res.type_ = "audio"
         res
+    }
+}
+
+public class Message {
+    public Message(public let content!: String = "", public let role!: String = "assistant") {
+    }
+
+    public func toPromptMessage(): PromptMessage {
+        var res = TextContent(text: content)
+        res.type_ = "text"
+        PromptMessage(role: role, content: res)
     }
 }

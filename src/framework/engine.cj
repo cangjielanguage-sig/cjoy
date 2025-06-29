@@ -20,7 +20,7 @@ import stdx.log.{LogLevel, Logger}
 import stdx.crypto.x509.{X509Certificate, PrivateKey}
 import cjoy.log.LogTool
 
-const VERSION = "v0.40.0"
+public const VERSION = "v0.40.0"
 const LOGO = ##"
  ________        ___  ________      ___    ___ 
 |\   ____\      |\  \|\   __  \    |\  \  /  /|
@@ -156,7 +156,7 @@ public class Joy {
             LogTool.enableDebugLog()
         }
         _server = Some(server)
-        LogTool.info("Joy#run] run cjoy app ${name}, bind at ${server.addr}:${server.port}")
+        LogTool.info("[Joy#run] run cjoy app ${name}, bind at ${server.addr}:${server.port}")
         LogTool.info("[Joy#run] route tree:\n${router.dump()}")
         server.serve()
     }

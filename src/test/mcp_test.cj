@@ -17,6 +17,8 @@ import cjoy.mcp.common.*
 import cjoy.mcp.common.McpClient
 import cjoy.mcp.client.createMcpSseClient
 
+// Tool-----------
+
 @Tool[description = "query"]
 public func query(): String {
     "query1"
@@ -66,6 +68,51 @@ public func image(): Image {
 @Tool[description = "audio"]
 public func audio(): Audio {
     Audio(data: [1, 2, 3], format: "avi")
+}
+
+// Resource-----------
+@Resource[uri = "data://secret"]
+public func secretData(): String {
+    "secret data"
+}
+
+@Resource[uri = "data://config"]
+public func config(): HashMap<String, Int> {
+    HashMap<String, Int>([("version", 1)])
+}
+
+@Resource[uri = "resource://system-status"]
+public func systemStatus(ctx: JoyContext): HashMap<String, String> {
+    HashMap<String, String>([("status", "ok")])
+}
+
+@Resource[uri = "resource://{name}/detail"]
+public func systemStatus(ctx: JoyContext, name: String): HashMap<String, String> {
+    HashMap<String, String>([("name", name)])
+}
+
+@Resource[uri = "file:///app/data/important_log", mimeType = "text/plain"]
+public func readLog(): String {
+    "this is an important log"
+}
+
+@Resource[uri = "resource://stream-data"]
+public func readData(): Array<Byte> {
+    "stream".toArray()
+}
+
+// Prompt-----------
+@Prompt[name = askUserTopic]
+public func askUserTopic(topic: String): String {
+    "Can you please explain the concept of ${topic}"
+}
+
+@Prompt[name = analyze_data_request, description = "Creates a request to analyze data with specific parameters"]
+public func dataAnalysisPrompt(
+    @PromptParam[description = "The URI of the resource containing the data."] dataUri: String,
+    @PromptParam[default = "summary", description = "Type of analysis."] analysisType: String
+): String {
+    "Please perform a '${analysisType}' analysis on the data found at ${dataUri}."
 }
 
 @Test
@@ -147,6 +194,31 @@ public class McpServerTestCaseSuit {
             let audio = (callResult.content[0] as AudioContent).getOrThrow();
             @Assert(audio.mimeType, "audio/avi")
             @Assert(audio.data, toBase64String([1, 2, 3]))
+        }
+    }
+
+    @TestCase
+    public func testResources(): Unit {
+        try (client = createMcpSseClient("http://127.0.0.1:18881/sse")) {
+            let _ = client.initialize()
+
+            let listResult = client.listResources()
+            @Assert(listResult.resources.size, 5)
+
+            let listTemplateResult = client.listResourceTemplates()
+            @Assert(listTemplateResult.resourceTemplates.size, 1)
+            // TODO
+        }
+    }
+
+    @TestCase
+    public func testPrompts(): Unit {
+        try (client = createMcpSseClient("http://127.0.0.1:18881/sse")) {
+            let _ = client.initialize()
+
+            let listResult = client.listPrompts()
+            @Assert(listResult.prompts.size, 2)
+            // TODO
         }
     }
 }
