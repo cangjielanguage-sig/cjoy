@@ -58,7 +58,19 @@ JoyContext提供两个函数支持对HTTP Body的绑定与映射：
 
 ### 多态
 
-`@Json`默认情况下只会对自身的成员变量进行序列化和反序列化，并不包含其父类里的成员变量，提供一些属性支持序列化和反序列化时多态。
+`@Json`默认情况下只会对自身的成员变量进行序列化和反序列化，并不包含其父类里的成员变量。
+
+CJoy提供下面支持序列化和反序列化时多态。
+
+在基类指定如下属性，用于帮助基类反序列化时确定子类
+ - subTypeField&subTypes：按字段值来确定子类
+ - subTypeAs&subTypes：按是否存在字段来确定子类
+
+在子类指定属性，用于帮助子类识别父类
+- 属性`superClass=父类类型名`来指定父类类型
+- 当序列化或反序列化为子类时，可以同时对父类的成员变量进行序列化和反序列化
+
+#### 按字段值来确定子类
 
 ```
 @Json[subTypeField = "mimeType", subTypes = {"text": "TextResourceContents", "blob": "BlobResourceContents"}]
@@ -83,15 +95,37 @@ public class ReadResourceResult {
 }
 ```
 
-下面属性用于帮助子类识别父类
-- 属性`superClass=父类类型名`来指定父类类型
-- 当序列化或反序列化为`TextResourceContents`时，可以同时对父类的成员变量进行序列化和反序列化
-
-下面属性用于帮助父类识别与子类之间的关系
+用于帮助父类识别与子类之间的关系：
 - 属性`subTypeField=字段名`来指定子类的区分字段
 - 属性`subTypes={"字段值1":"子类类型名"}`来指定区分字段不同值时的子类类型
 - 属性`subTypeField`与`subTypes`同时存在
-- 当反序列化`ResourceContents`时，如果json字符串中存在mimeType=text时，即反序化为TextResourceContents对象；存在mimeType=blob时，即反序化为BlobResourceContents对象
+- 当反序列化`ResourceContents`时，如果json字符串中存在mimeType="text"时，即反序化为TextResourceContents对象；存在mimeType="blob"时，即反序化为BlobResourceContents对象
+
+#### 按是否存在字段来确定子类
+
+```
+@Json[subTypeAs = true, subTypes = {"text": "TextResourceContents", "blob": "BlobResourceContents"}]
+public open class ResourceContents {
+   
+}
+
+@Json[superClass = ResourceContents]
+public class TextResourceContents <: ResourceContents {
+    public var text: String = ""
+}
+
+@Json[superClass = ResourceContents]
+public class BlobResourceContents <: ResourceContents {
+    public var blob: String = ""
+}
+```
+
+用于帮助父类识别与子类之间的关系：
+- 属性`subTypeAs=true`来指定子类
+- 属性`subTypes={"字段名1":"子类类型名"}`来指定区分字段时的子类类型
+- 属性`subTypeAs`与`subTypes`同时存在
+- 当反序列化`ResourceContents`时，如果json字符串中存在text字段时，即反序化为TextResourceContents对象；存在blob字段时，即反序化为BlobResourceContents对象
+
 
 **注：** 继承只支持class类型，不支持struct类型
 
@@ -129,8 +163,8 @@ public class ReadResourceResult {
 public class DataAny {
     var a: Any = 1 // 实际反序列化之后类型为Int64
     var b: Any = 2 // 实际反序列化之后类型为Float64
-    var c: Any = Option<Any>.None // 实际反序列化之后类型为HashMap<String, Any>
-    var d: Any = Option<Any>.None // 实际反序列化之后类型为List<HashMap<String, Any>>
+    var c: Any = Option<Any>.None // 实际反序列化之后类型为HashMap<String, JsonSerializable>
+    var d: Any = Option<Any>.None // 实际反序列化之后类型为ArrayList<HashMap<String, JsonSerializable>>
 }
 ```
 
@@ -138,16 +172,16 @@ public class DataAny {
 
 |Json类型|仓颉类型|
 |---|---|
-|JsonObject|`HashMap<String, Any>`|
-|JsonAray|`ArrayList<Any>`|
+|JsonObject|`HashMap<String, JsonSerializable>`|
+|JsonAray|`ArrayList<JsonSerializable>`|
 |JsonBool|Bool|
 |JsonNumber|Int64或Float64|
 |JsonString|String|
-|JsonNull|`Option<Any>.None`|
+|JsonNull|`Option<String>.None`|
 
 ### 获取原始Json内容
 
-当一个字段反序列化时，不展开解释只获取原始字节，可以通过`@JsonField`指定`raw=true`：
+当一个字段反序列化时，不展开解释只获取原始字节，可以指定`@JsonField[raw=true]`：
 
 ```
 @Json
@@ -177,7 +211,7 @@ public class DataAny {
 
 ### DSL
 
-宏`@ToJson`用于构建原生Json对象，如下所示：
+宏`@ToJson`用于快速原生Json格式风格的对象，如下所示：
 
 ```
 let x = "xyz"
@@ -200,6 +234,8 @@ let d = @ToJson(
 let str = JsonTool.toJson(d)
 println(str) // 输出 {"a":{"a1":1,"a2":"xyz","a3":{"a3a":1,"a3b":"xyz","a3c":true},"a4":[1,2]},"b":[1,2],"c":true}
 ```
+
+上述变量`d`实际类型为`HashMap<String, JsonSerializable>`或`ArrayList<JsonSerializable>`，调用`JsonTool.toJson(d)`转成Json字符串。
 
 `@ToJson`支持：
 
@@ -225,8 +261,8 @@ func pathGet(): JsonSerializable {
 
 两种方式指定：
 
- - 通过`description`与`required`指定
- - 通过`schema` 指定完整的Json Schema，当schema属性存在时，忽略指定的`description`与`required`
+ - 通过指定属性`description`与`required`
+ - 通过指定属性`schema`设置完整的Json Schema，当属性`schema`存在时，忽略属性`description`与`required`
 
 ```
 @Json[description: "user info"]

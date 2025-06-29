@@ -222,7 +222,7 @@ public class ReadResourceRequest <: McpMessage {
     public var uri: String = ""
 }
 
-@Json
+@Json[subTypeAs = true, subTypes = { "text": "TextResourceContents", "blob": "BlobResourceContents" }]
 public open class ResourceContents <: McpMessage {
     public var uri: String = ""
     public var mimeType: String = ""

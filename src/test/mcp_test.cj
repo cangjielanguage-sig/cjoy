@@ -196,4 +196,29 @@ public class McpServerTestCaseSuit {
             @Assert(audio.data, toBase64String([1, 2, 3]))
         }
     }
+
+    @TestCase
+    public func testResources(): Unit {
+        try (client = createMcpSseClient("http://127.0.0.1:18881/sse")) {
+            let _ = client.initialize()
+
+            let listResult = client.listResources()
+            @Assert(listResult.resources.size, 5)
+
+            let listTemplateResult = client.listResourceTemplates()
+            @Assert(listTemplateResult.resourceTemplates.size, 1)
+            // TODO
+        }
+    }
+
+    @TestCase
+    public func testPrompts(): Unit {
+        try (client = createMcpSseClient("http://127.0.0.1:18881/sse")) {
+            let _ = client.initialize()
+
+            let listResult = client.listPrompts()
+            @Assert(listResult.prompts.size, 2)
+            // TODO
+        }
+    }
 }

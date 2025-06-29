@@ -20,6 +20,7 @@ public class JsonClassInfo {
     let description: String
     let superClass: String
     let subTypeField: String
+    let subTypeAs: ?Bool
     let subTypes: ?MapToString
 
     let isClass: Bool
@@ -35,17 +36,19 @@ public class JsonClassInfo {
         this.isOpen = isOpen
 
         if (attr.isSome()) {
-            let map: MapToString = parserAttrs(attr.getOrThrow(), validKeys: ["description", "superClass", "subTypeField", "subTypes"],
+            let map: MapToString = parserAttrs(attr.getOrThrow(), validKeys: ["description", "superClass", "subTypeField", "subTypeAs", "subTypes"],
                 macroName: "Json")
             this.description = map.getString("description") ?? ""
             this.superClass = map.getString("superClass") ?? ""
             this.subTypeField = map.getString("subTypeField") ?? ""
             this.subTypes = map.getMap("subTypes") 
+            this.subTypeAs = map.getBool("subTypeAs")
         } else {
             this.description = ""
             this.superClass = ""
             this.subTypeField = ""
             this.subTypes = None
+            this.subTypeAs  = None
         }
 
         if (this.subTypeField != "" ){
@@ -56,10 +59,10 @@ public class JsonClassInfo {
             }
         }
          if (this.subTypes.isSome() ){
-            if (this.subTypeField == "") {
+            if (this.subTypeField == "" && this.subTypeAs.isNone()) {
                 diagReport(DiagReportLevel.ERROR, Tokens(),
-                    "miss subTypeField attribute", "attribute subTypes and subTypeField must exist simultaneously")
-                throw Exception("miss subTypeField attribute in Json macro ")
+                    "miss subTypeField attribute", "attribute subTypes and subTypeField/subTypeAs must exist simultaneously")
+                throw Exception("miss subTypeField or subTypeAs attribute in Json macro ")
             }
         }
     }
@@ -104,11 +107,6 @@ public class JsonClassInfo {
             deserTokens += f.genDeserializeTokens()
         }
         if (isClass) {
-            var callSuperTokens = Tokens()
-            if (superClass != "") {
-                let superId = Token(TokenKind.IDENTIFIER, superClass)
-                callSuperTokens = quote(&& $(superId).read(obj, name, reader))
-            }
             var res = quote(
                 protected static func read(obj: $(classId), name: String, reader: JsonReader): Bool {
                     match (name) {
@@ -164,11 +162,65 @@ public class JsonClassInfo {
                         let nr = JsonReader(buffer)
                         match (subType) {
                             $subTypeTokens
-                            case _ => throw Exception("unknown filed value $subTypeField:${subType}")
+                            case _ => throw Exception("unknown field value $subTypeField:${subType}")
                         }
                     }
                 )
+            } else if (subTypeAs.isSome()) {
+                var subTypeTokens = Tokens()
+                var subTypeMatchTokens = Tokens()
+                for((k, v) in subTypes.getOrThrow()) {
+                    let x = Token(TokenKind.IDENTIFIER, v.toString())
+                    subTypeTokens += quote(if (exists.get($k).isSome()) {return $x.fromJson(nr)}
+                    )
+                    subTypeMatchTokens += quote(case $k => 
+                        exists.add($k, true)
+                        buffer.write(reader.readValueBytes())
+                    )
+                }
+                res += quote(
+                    public static func fromJson(reader: JsonReader): $(classId) {
+                        var buffer = ByteBuffer()
+                        buffer.writeByte(b'{')
+                        var exists: HashMap<String, Bool> = HashMap()
+                        var num = 0
+                        while (let Some(v) <- reader.peek()) {
+                            match (v) {
+                                case BeginObject =>
+                                    reader.startObject()
+                                    while (reader.peek() != EndObject) {
+                                        let name = reader.readName()
+                                        num++
+                                        if (num > 1) {
+                                            buffer.writeByte(b',')
+                                        }
+                                        buffer.writeByte(b'"')
+                                        buffer.write(name.toArray())
+                                        buffer.writeByte(b'"')
+                                        buffer.writeByte(b':')
+                                        match (name) {
+                                            $subTypeMatchTokens
+                                            case _ => 
+                                                buffer.write(reader.readValueBytes())
+                                        }
+                                    }
+                                    reader.endObject()
+                                    break
+                                case _ => throw Exception("the token is not start object")
+                            }
+                        }
+                        buffer.writeByte(b'}')
+                        let nr = JsonReader(buffer)
+                        $subTypeTokens
+                        throw Exception("unknown subtype")
+                    }
+                )
             } else {
+                var callSuperTokens = Tokens()
+                if (superClass != "") {
+                    let superId = Token(TokenKind.IDENTIFIER, superClass)
+                    callSuperTokens = quote(&& $(superId).read(obj, name, reader))
+                }
                 res += quote(
                     public static func fromJson(reader: JsonReader): $(classId) {
                         var obj = $(classId)()

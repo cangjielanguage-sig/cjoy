@@ -83,6 +83,22 @@ public interface McpClient <: Resource {
         listTools(None)
     }
     func callTool(request: CallToolRequest): CallToolResult
+
+    func listResources(cursor: ?String): ListResourcesResult 
+    func listResources(): ListResourcesResult {
+        listResources(None)
+    }
+    func listResourceTemplates(cursor: ?String): ListResourceTemplatesResult
+    func listResourceTemplates(): ListResourceTemplatesResult {
+        listResourceTemplates(None)
+    }
+    func readResource(request: ReadResourceRequest): ReadResourceResult
+
+    func listPrompts(cursor: ?String): ListPromptResult
+    func listPrompts(): ListPromptResult {
+        listPrompts(None)
+    }
+    func getPrompt(request: GetPromptRequest): GetPromptResult
 }
 
 // -----
