@@ -24,7 +24,7 @@ class UserInfo {
 |宏|属性参数|说明|
 |---|---|---|
 |`@Json`|description:"..",superClass:""|作用于类与结构体上，标注其自动生成Json序列化与反序列化函数，类与结构体需要无参数的构建函数。|
-|`@JsonField`|name:xx,omitempty:true,ignore:false,timeformat:"...",description:"..",required:false:schema={...}|作用类与结构体的成员变量上，变量需要采用var声明并要指定类型。|
+|`@JsonField`|name:xx,<br/>omitempty:true,<br/>ignore:false,<br/>timeformat:"...",<br/>description:"..",<br/>required:false:<br/>schema={...}|作用类与结构体的成员变量上，变量需要采用var声明并要指定类型。|
 |`@ToJson`||原生Json DSL，作用于满足JSON格式的一串符号上，把它转成JsonSerializable对象，可以调用JsonTool.toJson方法序列化为json字符串。|
 
 以上宏的属性参数说明，属性可以采用`=`与`:`赋值，如`@JsonField[name=xx]`与`@JsonField[name:xx]`等价：
@@ -36,9 +36,9 @@ class UserInfo {
 |`ignore`|false|是|值true/false，指定是否忽略此字段|
 |`timeformat`|DateTime.toString/parse方法默认格式|是|指定DateTime字段序列化的格式|
 |`raw`|false|是|当类型为Any，不反序列化此字段赋值原始字符串字节Array<Byte>|
-|`description`|false|是|用于构建字段的Json Schema中description|
-|`required`|true|是|用于构建字段的Json Schema中required，当类型为Option时默认为false|
-|`schema`|true|是|描述字段的完整Json Schema|
+|`description`||是|用于构建字段的Json Schema中description|
+|`required`|true/false|是|用于构建字段的Json Schema中required，当类型为Option时默认为false|
+|`schema`||是|描述字段的完整Json Schema|
 
 宏展开编译之后，此类或结构体:
 
@@ -58,7 +58,7 @@ JoyContext提供两个函数支持对HTTP Body的绑定与映射：
 
 ### 多态
 
-@`Json`默认情况下只会对自身的成员变量进行序列化和反序列化，并不包含其父类里的成员变量，提供一些属性支持序列化和反序列化时多态。
+`@Json`默认情况下只会对自身的成员变量进行序列化和反序列化，并不包含其父类里的成员变量，提供一些属性支持序列化和反序列化时多态。
 
 ```
 @Json[subTypeField = "mimeType", subTypes = {"text": "TextResourceContents", "blob": "BlobResourceContents"}]

@@ -17,6 +17,8 @@ import cjoy.mcp.common.*
 import cjoy.mcp.common.McpClient
 import cjoy.mcp.client.createMcpSseClient
 
+// Tool-----------
+
 @Tool[description = "query"]
 public func query(): String {
     "query1"
@@ -68,6 +70,7 @@ public func audio(): Audio {
     Audio(data: [1, 2, 3], format: "avi")
 }
 
+// Resource-----------
 @Resource[uri = "data://secret"]
 public func secretData(): String {
     "secret data"
@@ -96,6 +99,20 @@ public func readLog(): String {
 @Resource[uri = "resource://stream-data"]
 public func readData(): Array<Byte> {
     "stream".toArray()
+}
+
+// Prompt-----------
+@Prompt[name = askUserTopic]
+public func askUserTopic(topic: String): String {
+    "Can you please explain the concept of ${topic}"
+}
+
+@Prompt[name = analyze_data_request, description = "Creates a request to analyze data with specific parameters"]
+public func dataAnalysisPrompt(
+    @PromptParam[description = "The URI of the resource containing the data."] dataUri: String,
+    @PromptParam[default = "summary", description = "Type of analysis."] analysisType: String
+): String {
+    "Please perform a '${analysisType}' analysis on the data found at ${dataUri}."
 }
 
 @Test

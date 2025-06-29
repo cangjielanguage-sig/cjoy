@@ -17,8 +17,8 @@ import cjoy.mcp.generate.{parseFunc, parseParam}
 public import std.collection.{HashMap, ArrayList}
 public import cjoy.mcp.server.McpServer
 public import cjoy.bind.api.{JoyBindable, JoyBindSource}
-public import cjoy.mcp.common.{McpCallToolHandler, McpReadResourceHandler, McpException, JSONRPCError, McpConsts, 
-    McpTool, Audio, Image, McpResource}
+public import cjoy.mcp.common.{McpCallToolHandler, McpReadResourceHandler, McpGetPromptHandler, McpException, 
+    JSONRPCError, McpConsts, McpTool, Audio, Image, McpResource, McpPrompt, PromptArgument, PromptMessage, Message}
 public import cjoy.json.*
 
 public macro Tool(attr: Tokens, input: Tokens): Tokens {
@@ -32,6 +32,11 @@ public macro ToolParam(attr: Tokens, input: Tokens): Tokens {
 
 public macro Resource(attr: Tokens, input: Tokens): Tokens {
     input + parseFunc("Resource", attr, input)
+}
+
+public macro ResourceParam(attr: Tokens, input: Tokens): Tokens {
+    parseParam("ResourceParam", attr, input)
+    input
 }
 
 public macro Prompt(attr: Tokens, input: Tokens): Tokens {

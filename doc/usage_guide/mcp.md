@@ -136,6 +136,7 @@ public func systemStatus(ctx: JoyContext, name: String): HashMap<String, String>
 |宏|属性参数|说明|
 |---|---|---|
 |`@Resource`|uri:"..", name="..", description:"..",mimeType:""|作用于函数上。`name`默认函数名|
+|`@ResourceParam`|name="..", description:"..", default:""|作用函数参数上。`@ResourceParam`可选，`name`默认取参数名|
 
 |宏属性参数|默认值|是否可选|说明|
 |---|---|---|---|
@@ -143,6 +144,7 @@ public func systemStatus(ctx: JoyContext, name: String): HashMap<String, String>
 |`name`||是|指定资源的名称|
 |`description`||是|用于描述资源，为了大模型更好的效果，描述应简洁清楚无歧义|
 |`mimeType`||是|资源的类型|
+|`default`||是|参数默认值|
 
 使用示例：[examples/mcpserver](../../src/examples/mcpserver/main.cj) 或者测试代码 [test/mcp_test](../../src/test/mcp_test.cj)。
 
@@ -151,7 +153,7 @@ public func systemStatus(ctx: JoyContext, name: String): HashMap<String, String>
 函数支持特定的入参
 
  - 入参可以是JoyContext类型，用于获取HTTP上下文信息
- - 当是动态Resource，入参为基础类型，String，绑定URI中参数，参数名为URL中变量
+ - 当是动态Resource，绑定URI中参数，参数名为URL中变量，入参为基础类型，String
   
 ```
 @Resource[uri = "resource://{name}/detail"]
@@ -170,8 +172,71 @@ public func systemStatus(ctx: JoyContext, name: String): HashMap<String, String>
  - 出参是`Array<ToString|JsonSerializable>`或`ArrayList<ToString|JsonSerializable>`类型，返回多个TextResourceContents
  - 出参是HashMap类型，返回TextResourceContents(mimeType="application/json")
  - 出参是`Array<Byte>`类型，返回BlobResourceContents(mimeType="application/octet-stream")，对响应进行Base64编码
- - 当参非上述类型，返回TextResourceContents(mimeType="ext/plain"), 内容为空
+ - 当出参非上述类型，返回TextResourceContents(mimeType="ext/plain"), 内容为空
  - 返回XXXResourceContents优先取@Resource指定的mimeType值，不存在则取上述默认值
+
+### Prompt
+
+Prompt是可重用的消息模板，可帮助LLM生成结构化、有目的的响应。
+
+当客户端请求Prompt时：
+ - CJoy找到相应的Prompt定义。
+ - 如果它有参数，提取参数。
+ - 生成的消息将返回给LLM以指导其响应。
+ - 允许您定义一致的、可重用的模板，LLM可以在不同的客户端和上下文中使用这些模板。
+ - 
+Cjoy提供@Prompt宏标注函数，发布为MCP中Prompt。
+
+```
+@Prompt[name = askUserTopic]
+public func askUserTopic(topic: String): String {
+    "Can you please explain the concept of ${topic}"
+}
+
+@Prompt[name = analyze_data_request, description = "Creates a request to analyze data with specific parameters"]
+public func dataAnalysisPrompt(
+    @PromptParam[description = "The URI of the resource containing the data."] dataUri: String,
+    @PromptParam[default = "summary", description = "Type of analysis."] analysisType: String
+): String {
+    "Please perform a '${analysisType}' analysis on the data found at ${dataUri}."
+}
+```
+
+宏与宏属性说明：
+
+|宏|属性参数|说明|
+|---|---|---|
+|`@Prompt`|name="..", description:".."|作用于函数上。`name`默认函数名|
+|`@PromptParam`|name="..", description:"..", default:""|作用函数参数上。`@PromptParam`可选，`name`默认取参数名|
+
+|宏属性参数|默认值|是否可选|说明|
+|---|---|---|---|
+|`name`||是|指定Prompt或参数的名称|
+|`description`||是|用于描述Prompt或参数，描述应简洁清楚无歧义|
+|`default`||是|参数默认值|
+
+使用示例：[examples/mcpserver](../../src/examples/mcpserver/main.cj) 或者测试代码 [test/mcp_test](../../src/test/mcp_test.cj)。
+
+#### Resource入参
+
+函数支持特定的入参
+
+ - 入参可以是JoyContext类型，用于获取HTTP上下文信息
+ - 当是Prompt，入参为基础类型，String
+  
+#### Resource出参
+
+框架自动将函数返回的值转换为客户端的适当MCP内容格式：
+
+ - 出参是实现ToString接口的类型，返回PromptMessage.TextContent
+ - 出参是实现JsonSerializable接口的类型，返回PromptMessage.TextContent
+ - 出参是`Array<ToString|JsonSerializable>`或`ArrayList<ToString|JsonSerializable>`类型，返回多个PromptMessage.TextContent
+ - 出参是HashMap类型，返回TextContent
+ - 出参是`cjoy.mcp.Message`类型，返回PromptMessage.TextContent
+ - 出参是`Array<Message>`或`ArrayList<Message>`类型，返回多个PromptMessage.TextContent
+ - 出参是`cjoy.mcp.PromptMessage`类型，返回PromptMessage
+ - 出参是`Array<PromptMessage>`或`ArrayList<PromptMessage>`类型，返回多个PromptMessage
+ - 当出参没有指定role时，默认是role=assistant
 
 ### 注册
 

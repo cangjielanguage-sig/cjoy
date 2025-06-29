@@ -92,18 +92,17 @@ class ToolFuncInfo <: FuncInfo {
         var schame = Tokens()
         for (fp in decl.funcParams) {
             let pid = fp.identifier
-            let pname = pid.value
-            let paramInfo = match (ParamInfoCache.findByParamName(pname)) {
+            let paramInfo = match (ParamInfoCache.findByParamName<ToolParamInfo>(pid.value)) {
                 case Some(val) => val
                 case _ =>
-                    let val = ParamInfo("ToolParam")
+                    let val = ToolParamInfo("ToolParam")
                     val.parseFuncParam(fp)
                     val
             }
 
             vars += paramInfo.genVarTokens()
             rjson += paramInfo.genReadJsonTokens()
-            schame += paramInfo.genSchemTokens()
+            schame += paramInfo.genSchemaTokens()
             if (params.size > 0) {
                 params += Token(TokenKind.COMMA)
             }
@@ -123,11 +122,10 @@ class ToolFuncInfo <: FuncInfo {
         var schame = Tokens()
         for (fp in decl.funcParams) {
             let pid = fp.identifier
-            let pname = pid.value
-            let paramInfo = match (ParamInfoCache.findByParamName(pname)) {
+            let paramInfo = match (ParamInfoCache.findByParamName<ToolParamInfo>(pid.value)) {
                 case Some(val) => val
                 case _ =>
-                    let val = ParamInfo("ToolParam")
+                    let val = ToolParamInfo("ToolParam")
                     val.parseFuncParam(fp)
                     val
             }
@@ -232,6 +230,7 @@ public func parseFunc(macroName: String, attr: Tokens, input: Tokens): Tokens {
     let funcInfo = match (macroName) {
         case "Tool" => ToolFuncInfo(macroName, (decl as FuncDecl).getOrThrow())
         case "Resource" => ResoureFuncInfo(macroName, (decl as FuncDecl).getOrThrow())
+        case "Prompt" => PromptFuncInfo(macroName, (decl as FuncDecl).getOrThrow())
         case _ => throw Exception("not support ${macroName} macro")
     }
 

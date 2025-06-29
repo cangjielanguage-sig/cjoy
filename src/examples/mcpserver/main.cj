@@ -68,6 +68,20 @@ public func readData(): Array<Byte> {
     "stream".toArray()
 }
 
+// --- prompts -----
+@Prompt[name = askUserTopic]
+public func askUserTopic(topic: String): String {
+    "Can you please explain the concept of ${topic}"
+}
+
+@Prompt[name = analyze_data_request, description = "Creates a request to analyze data with specific parameters"]
+public func dataAnalysisPrompt(
+    @PromptParam[description = "The URI of the resource containing the data."] dataUri: String,
+    @PromptParam[default = "summary", description = "Type of analysis."] analysisType: String
+): String {
+    "Please perform a '${analysisType}' analysis on the data found at ${dataUri}."
+}
+
 main(): Int64 {
     var cfg = JoyConfig()
     cfg.enableDebugLog = true

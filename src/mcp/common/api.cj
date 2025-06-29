@@ -131,3 +131,14 @@ public class Audio {
         res
     }
 }
+
+public class Message {
+    public Message(public let content!: String = "", public let role!: String = "assistant") {
+    }
+
+    public func toPromptMessage(): PromptMessage {
+        var res = TextContent(text: content)
+        res.type_ = "text"
+        PromptMessage(role: role, content: res)
+    }
+}

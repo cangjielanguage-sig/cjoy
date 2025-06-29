@@ -15,7 +15,7 @@ import std.collection.concurrent.ConcurrentHashMap
 import stdx.encoding.json.stream.JsonSerializable
 import stdx.encoding.base64.toBase64String
 import cjoy.mcp.common.*
-import cjoy.framework.{Joy, JoyContext, JoyRequestHandler, RouteDistributor, VERSION}
+import cjoy.framework.JoyContext
 import cjoy.log.LogTool
 import cjoy.json.JsonTool
 
@@ -26,7 +26,7 @@ public class McpPrompts {
     //-----Prompt -----
     public func addPrompt(prompt: McpPrompt): Unit {
         if (prompts.contains(prompt.name)) {
-            LogTool.warn("[MCP]prompt `${prompt.name}` is existed, will be overwrite")
+            LogTool.warn("[MCP] prompt `${prompt.name}` is existed, will be overwrite")
         }
         prompts.add(prompt.name, prompt)
     }
@@ -41,5 +41,37 @@ public class McpPrompts {
             res.add(value)
         }
         ListPromptResult(prompts: res)
+    }
+
+    public func getPrompt(ctx: JoyContext, req: GetPromptRequest): GetPromptResult {
+        let messages: Array<PromptMessage> = match (getPromptHandlers.get(req.name)) {
+            case Some(handler) =>
+                let result = handler.getPrompt(ctx, req.arguments)
+                match (result) {
+                    case x: PromptMessage => [x]
+                    case x: Collection<PromptMessage> => x |> collectArray
+                    case x: Message => [x.toPromptMessage()]
+                    case x: Collection<Message> => x |> map {it => it.toPromptMessage()} |> collectArray
+                    case x: ToString => [toPromptMessage(x.toString())]
+                    case x: Collection<ToString> => x |> map {it => toPromptMessage(it.toString())} |> collectArray
+                    case x: JsonSerializable => [toPromptMessage(JsonTool.toJson(x))]
+                    case x: Collection<JsonSerializable> => x |> map {it => toPromptMessage(JsonTool.toJson(it))} |>
+                        collectArray
+                    case x: HashMap<String, JsonSerializable> => [toPromptMessage(JsonTool.toJson(x))]
+                    case _ =>
+                        LogTool.error("[MCP] unknow prompt return type, name=${req.name}")
+                        throw Exception("unknow prompt return type")
+                }
+            case _ =>
+                LogTool.error("[MCP] not found prompt handler, name=${req.name}")
+                throw Exception("not found prompt handler")
+        }
+        GetPromptResult(messages: ArrayList(messages))
+    }
+
+    private func toPromptMessage(content: String, role!: String = "assistant"): PromptMessage {
+        var res = TextContent(text: content)
+        res.type_ = "text"
+        PromptMessage(role: role, content: res)
     }
 }

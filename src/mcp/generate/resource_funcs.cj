@@ -41,16 +41,16 @@ class ResoureFuncInfo <: FuncInfo {
         var params = Tokens()
         for (fp in decl.funcParams) {
             let pid = fp.identifier
-            let piOpt = ParamInfoCache.findByParamName(pid.value)
+            let piOpt = ParamInfoCache.findByParamName<ResourceParamInfo>(pid.value)
             let paramInfo = match (piOpt) {
                 case Some(val) => val
                 case _ =>
-                    let val = ParamInfo("ToolParam")
+                    let val = ResourceParamInfo("ResourceParam")
                     val.parseFuncParam(fp)
                     val
             }
 
-            vars += paramInfo.genResoureVarTokens()
+            vars += paramInfo.genBindVarTokens()
             if (params.size == 0) {
                 params += quote($(pid))
             } else {
