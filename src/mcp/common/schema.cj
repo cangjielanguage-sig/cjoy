@@ -70,6 +70,12 @@ public class PaginatedResult <: McpMessage {
     public var nextCursor: String = ""
 }
 
+@Json
+public class Annotations <: McpMessage {
+    public var audience: ArrayList<Role> = ArrayList()
+    public var priority: Float32 = 0.0
+}
+
 // ---------------------------------------------------------------------------------------
 // Initialize
 
@@ -195,6 +201,7 @@ public class McpResource <: McpMessage {
     public var description: ?String = None
     public var mimeType: ?String = None
     public var size: ?Int = None
+    public var annotations: ?Annotations = None
 }
 
 @Json
@@ -203,6 +210,7 @@ public class ResourceTemplate <: McpMessage {
     public var name: String = ""
     public var description: ?String = None
     public var mimeType: ?String = None
+    public var annotations: ?Annotations = None
 }
 
 @Json
@@ -293,7 +301,7 @@ public class GetPromptResult <: McpMessage {
 public struct McpConsts {
     // protocol
     public static const JSON_RPC_VERSION = "2.0"
-    public static const LASTEST_PROTOCOL_VERSION = "2024-11-05"
+    public static const LASTEST_PROTOCOL_VERSION = "2025-03-26"
 
     // role 
     public static const ROLE_USER = "user"
@@ -326,7 +334,7 @@ public struct McpConsts {
     public static const EVENT_ENDPOINT = "endpoint"
 
     // content-type
-    public static const CONTENT_TYPE_JSON = "appliction/json"
+    public static const CONTENT_TYPE_JSON = "application/json"
     public static const CONTENT_TYPE_SSE = "text/event-stream"
 
     // header

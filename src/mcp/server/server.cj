@@ -32,6 +32,8 @@ public class McpServer {
     public static let prompts = McpPrompts()
     private static var serverFeatures: ?McpServerFeatures = None
 
+    private static var dump = false
+
     //-----Initilize -----
     public static func exchangeInit(): InitializeResult {
         let features = McpServer.serverFeatures.getOrThrow()
@@ -55,7 +57,7 @@ public class McpServer {
         let rpath2 = messagePath[rg2.basePath().size..]
         rg2.post(rpath2, transport.handlePostRequest)
 
-        resources.dump()
+        dumpResources()
     }
 
     public static func registerStreamableTo(joy: Joy, path!: String = "/mcp", isJsonResp!: Bool = false,
@@ -67,6 +69,9 @@ public class McpServer {
         let rpath = path[rg.basePath().size..]
         rg.get(rpath, transport.handleGetRequest)
         rg.post(rpath, transport.handlePostRequest)
+        rg.delete(rpath, transport.handleDelRequest)
+
+        dumpResources()
     }
 
     private static func updateFeatures(serverFeatures: McpServerFeatures) {
@@ -79,6 +84,13 @@ public class McpServer {
         }
         if (!prompts.prompts.isEmpty()) {
             serverFeatures.capabilities.prompts = PromptsCapability()
+        }
+    }
+
+    private static func dumpResources(): Unit {
+        if (!dump) {
+            resources.dump()
+            dump = true
         }
     }
 }

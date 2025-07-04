@@ -25,8 +25,9 @@ class McpServerSessionState {
     public McpServerSessionState(let sessionId: String, let sseEmitter: JoySseEmitter) {}
 
     public func waitEnd() {
+        LogTool.info("[MCP] waiting sse transport end, sessionId=${sessionId}")
         _counter.waitUntilZero()
-        LogTool.info("[MCP] server sesion is end, sessionId: ${sessionId}")
+        LogTool.info("[MCP] server SSE transport is end, sessionId: ${sessionId}")
         sseEmitter.end()
     }
 
@@ -50,8 +51,15 @@ class DefaultMcpServerSession <: McpServerSession & McpRequestHandler & McpRespo
         _streamable = streamable
     }
 
-    public func update(transport: McpTransport): Unit {
+    func updateTransport(transport: McpTransport): Unit {
+        _transport.close()
         _transport = transport
+        LogTool.info("[MCP] update SSE transport, sessionId=${_sessionId}")
+    }
+
+    func closeTransport(): Unit {
+        LogTool.info("[MCP] close SSE transport, sessionId=${_sessionId}")
+        _transport.close()
     }
 
     public func handle(ctx: JoyContext, message: JSONRPCMessage): Unit {
@@ -143,10 +151,7 @@ class DefaultMcpServerSession <: McpServerSession & McpRequestHandler & McpRespo
 
     private func sendResp(ctx: JoyContext, resp: JSONRPCResponse, jsonResp: Bool): Unit {
         if (_isJsonResp || jsonResp) {
-            ctx
-                .header(McpConsts.HEADER_MCP_SESSION_ID, _sessionId)
-                .header("Content-Type", McpConsts.CONTENT_TYPE_JSON)
-                .json(resp)
+            ctx.header(McpConsts.HEADER_MCP_SESSION_ID, _sessionId).json(resp)
             LogTool.debug("[MCP] send json reponse: ${JsonTool.toJson(resp)}, sessionId: ${_sessionId}")
         } else {
             let data = RPCJsonTool.serialize(resp)

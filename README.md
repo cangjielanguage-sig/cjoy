@@ -7,8 +7,8 @@ a fast，extendibility，lightweight and joy cangjie web framework.<br/>
 </div>
 
 <p align="center">
-<img alt="" src="https://img.shields.io/badge/release-v0.30.0-brightgreen" style="display: inline-block;" />
-<img alt="" src="https://img.shields.io/badge/cjc-v0.60.5-brightgreen" style="display: inline-block;" />
+<img alt="" src="https://img.shields.io/badge/release-v0.40.0-brightgreen" style="display: inline-block;" />
+<img alt="" src="https://img.shields.io/badge/cjc-v1.0.0-brightgreen" style="display: inline-block;" />
 <img alt="" src="https://img.shields.io/badge/cjcov-70%25+-brightgreen" style="display: inline-block;" />
 <img alt="" src="https://img.shields.io/badge/state-孵化-brightgreen" style="display: inline-block;" />
 <img alt="" src="https://img.shields.io/badge/domain-HOS/Cloud-brightgreen" style="display: inline-block;" />
@@ -50,7 +50,7 @@ a fast，extendibility，lightweight and joy cangjie web framework.<br/>
 
 **⚠️注意**
 
-请选择对应的仓颉版本：<img alt="" src="https://img.shields.io/badge/cangjie-v0.60.5-brightgreen" style="display: inline-block;" />
+请选择对应的仓颉版本：<img alt="" src="https://img.shields.io/badge/cangjie-v1.0.0-brightgreen" style="display: inline-block;" />
 
 本项目依赖仓颉stdx包，请先下载对应版本的stdx包，使用说明参见 [仓颉编程语言 stdx](https://gitcode.com/Cangjie/Cangjie-STDX) 。
 
