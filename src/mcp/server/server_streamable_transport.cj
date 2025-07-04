@@ -27,19 +27,22 @@ class McpStreamableServerTransport <: McpServerTransport {
 
     public init(isJsonResp: Bool) {
         _isJsonResp = isJsonResp
+        if (isJsonResp) {
+            LogTool.info("[MCP] started streamable transport, return JSON response for requests instead of SSE streams")
+        }
     }
 
     public func handleGetRequest(ctx: JoyContext): Unit {
         let (_, hasSse) = checkAcceptHeader(ctx)
         if (!hasSse) {
-            LogTool.error("[MCP]hand get request faild, Not Acceptable")
+            LogTool.error("[MCP] handle get request faild, Not Acceptable")
             let err = createErrorMsg("Not Acceptable: client must accept ${McpConsts.CONTENT_TYPE_SSE}")
             ctx.status(HttpStatusCode.STATUS_NOT_ACCEPTABLE).json(err)
             return
         }
 
-        let sessoin = validateSession(ctx)
-        if (sessoin.isNone()) {
+        let session = validateSession(ctx)
+        if (session.isNone()) {
             return
         }
 
@@ -48,12 +51,15 @@ class McpStreamableServerTransport <: McpServerTransport {
             relayEvents(ctx, id)
             return
         }
+
+        updateTransport(ctx, session)
+        waitEnd(session)
     }
 
     public func handlePostRequest(ctx: JoyContext): Unit {
         let (hasJson, hasSse) = checkAcceptHeader(ctx)
         if (!(hasJson && hasSse)) {
-            LogTool.error("[MCP]hand post request faild, Not Acceptable")
+            LogTool.error("[MCP] handle post request faild, Not Acceptable")
             let err = createErrorMsg(
                 "Not Acceptable: Client both ${McpConsts.CONTENT_TYPE_JSON} and ${McpConsts.CONTENT_TYPE_SSE}")
             ctx
@@ -64,7 +70,7 @@ class McpStreamableServerTransport <: McpServerTransport {
         }
 
         if (!checkContentType(ctx)) {
-            LogTool.error("[MCP]hand post request faild, Unsupported Media Type")
+            LogTool.error("[MCP] handle post request faild, Unsupported Media Type")
             let err = createErrorMsg("Unsupported Media Type: Content-Type must be ${McpConsts.CONTENT_TYPE_JSON}")
             ctx.status(HttpStatusCode.STATUS_UNSUPPORTED_MEDIA_TYPE).json(err)
             return
@@ -76,7 +82,7 @@ class McpStreamableServerTransport <: McpServerTransport {
             let message = RPCJsonTool.deserialize(data)
             handleMessage(ctx, message)
         } catch (ex: McpException) {
-            LogTool.error("[MCP]hand post request faild, error: ${ex.message}")
+            LogTool.error("[MCP] handle post request faild, error: ${ex.message}")
             let resp = JSONRPCResponse(id: "server-error", error: ex.error)
             ctx.status(HttpStatusCode.STATUS_BAD_REQUEST).json(resp)
             return
@@ -102,13 +108,13 @@ class McpStreamableServerTransport <: McpServerTransport {
             if (let Some(s) <- session) {
                 return s
             } else {
-                LogTool.error("[MCP]not found streamable session, sessionId: ${id}")
+                LogTool.error("[MCP] not found streamable session, sessionId: ${id}")
                 let err = createErrorMsg("Not Found: Invalid or expired session id")
                 ctx.status(HttpStatusCode.STATUS_NOT_FOUND).json(err)
             }
         } else {
             if (mustExist) {
-                LogTool.error("[MCP]not found `${McpConsts.HEADER_MCP_SESSION_ID}` in header")
+                LogTool.error("[MCP] not found `${McpConsts.HEADER_MCP_SESSION_ID}` in header")
                 let err = createErrorMsg("Bad Request: Missing session id")
                 ctx.status(HttpStatusCode.STATUS_BAD_REQUEST).json(err)
             }
@@ -145,10 +151,7 @@ class McpStreamableServerTransport <: McpServerTransport {
             case m: JSONRPCRequest => handleRequest(ctx, m)
             case _ =>
                 let session = validateSession(ctx)
-                // notification and response return 202
-                if (session.isSome()) {
-                    ctx.status(HttpStatusCode.STATUS_ACCEPTED).header("Content-Type", McpConsts.CONTENT_TYPE_JSON)
-                }
+                ctx.status(HttpStatusCode.STATUS_ACCEPTED)
                 session?.handle(ctx, message)
         }
     }
@@ -168,28 +171,59 @@ class McpStreamableServerTransport <: McpServerTransport {
         }
     }
 
-    private func handleRequest(ctx: JoyContext, m: JSONRPCRequest): Unit {
-        var session: ?McpServerSession = None
-        if (m.method == McpConsts.METHOD_INITIALIZE) {
-            validateSession(ctx, mustExist: false)
-            let sessionId = randStr(16)
-            let sess = createSession(ctx, sessionId)
-            LogTool.info("[MCP]create streamable session, sessionId: ${sessionId}")
-            session = sess
-            _sessions.add(sessionId, sess)
-        } else {
-            session = validateSession(ctx)
-            if (let Some(s) <- session) {
-                if (let Some(sess) <- (s as DefaultMcpServerSession)) {
-                    // update emitter for transport
-                    sess.update(createTransport(ctx, sess._sessionId))
+    private func closeTransport(session: ?McpServerSession): Unit {
+        if (let Some(s) <- session) {
+            if (let Some(sess) <- (s as DefaultMcpServerSession)) {
+                sess.closeTransport()
+            }
+        }
+    }
+
+    private func updateTransport(ctx: JoyContext, session: ?McpServerSession): Unit {
+        if (let Some(s) <- session) {
+            if (let Some(sess) <- (s as DefaultMcpServerSession)) {
+                // update emitter for transport
+                sess.updateTransport(createTransport(ctx, sess._sessionId))
+            }
+        }
+    }
+
+    private func waitEnd(session: ?McpServerSession): Unit {
+        if (let Some(s) <- session) {
+            if (let Some(sess) <- (s as DefaultMcpServerSession)) {
+                if (let Some(t) <- (sess._transport as McpSseServerSessionTransport)) {
+                    t._state.waitEnd()
                 }
             }
         }
-        session?.handle(ctx, m)
+    }
+
+    private func handleRequest(ctx: JoyContext, m: JSONRPCRequest): Unit {
+        var session: ?McpServerSession = None
+        if (m.method == McpConsts.METHOD_INITIALIZE) {
+            session = validateSession(ctx, mustExist: false)
+            if (session.isNone()) {
+                let sessionId = randStr(16)
+                let sess = createSession(ctx, sessionId)
+                LogTool.info("[MCP] create streamable session, sessionId: ${sessionId}")
+                session = sess
+                _sessions.add(sessionId, sess)
+            }
+            session?.handle(ctx, m)
+            if (!_isJsonResp) {
+                closeTransport(session)
+            }
+        } else {
+            session = validateSession(ctx)
+            if (!_isJsonResp) {
+                updateTransport(ctx, session)
+            }
+            session?.handle(ctx, m)
+        }
     }
 
     private func relayEvents(ctx: JoyContext, lastEventId: String): Unit {
+        // TODO 
     }
 
     public func close() {

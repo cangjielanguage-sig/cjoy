@@ -90,6 +90,7 @@ main(): Int64 {
     joy.router.use(ExceptionHandler())
     // 注册生成的handlers
     McpServer.registerSseTo(joy)
+    McpServer.registerStreamableTo(joy, isJsonResp: true)
     joy.run("127.0.0.1", 18881)
     return 0
 }

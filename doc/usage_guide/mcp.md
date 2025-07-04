@@ -1,9 +1,16 @@
 # MCP
 
-CJoy内建支持MCP(Model Context Protocol)Server与Client。
+CJoy内建支持MCP(Model Context Protocol)Server端开发。
 
-- 协议版本：2024-11-05
-- 传输层协议：SSE
+- 协议版本：2025-03-26
+- 传输层协议：SSE, StreamableHttp
+
+MCP支持的情况：
+
+ - 支持Tool，Resource, Prompt查询与调用，不支持listChanged与subscribe，不支持Batch请求
+ - 支持SSE，StreamableHttp传输层（支持Json Response方式，不支持SSE Stream方式）
+ - 接口认证需要使用者自已基于中间件机制扩展
+ - StreamableHttp模式下Session存储在内存，多节点部署时需要前端LB配置基于会话级路由
 
 ## 服务端
 
@@ -236,21 +243,30 @@ public func dataAnalysisPrompt(
 
 ### 注册
 
-目前传输层支持SSE协议，如下示例为把MCP注册到HTTP服务实例SSE接口上：
+目前传输层支持SSE与StreamableHttp协议，如下示例为把MCP注册到HTTP服务实例接口上：
 
 ```
 ...
 let joy = Joy.create(cfg)
 // 注册到Http实例上
 McpServer.registerSseTo(joy)
+McpServer.registerStreamableTo(joy, isJsonResp: true)
 joy.run("127.0.0.1", 18881)
 ```
 
-`McpServer.registerSseTo`支持把MCP的函数自动注册到服务实例上，有如下参数：
+SSE方式，`McpServer.registerSseTo`支持把MCP的函数自动注册到服务实例上，有如下参数：
 
  - joy: 服务实列
  - ssePath：接收sse的PATH，默认为`/sse`
  - messagePath: 接收MCP消息的Path，默认为`/messages`
+
+StreamableHttp方式，`McpServer.registerStreamableTo`支持把MCP的函数自动注册到服务实例上，有如下参数：
+
+ - joy: 服务实列
+ - path：接收MCP消息的Path，默认为`/mcp`
+ - isJsonResp: 回响应采用Json方式代替SEE方式
+  
+注：目前只支持isJsonResp=true
 
 ## 客户端
 
