@@ -333,10 +333,6 @@ public struct McpConsts {
     public static const EVENT_MESSAGE = "message"
     public static const EVENT_ENDPOINT = "endpoint"
 
-    // content-type
-    public static const CONTENT_TYPE_JSON = "application/json"
-    public static const CONTENT_TYPE_SSE = "text/event-stream"
-
     // header
     public static const HEADER_MCP_SESSION_ID = "mcp-session-id"
     public static const HEADER_LAST_EVENT_ID = "last-event-id"

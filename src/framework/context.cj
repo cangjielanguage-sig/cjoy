@@ -232,7 +232,7 @@ public class JoyContext {
         if (_httpContext.request.bodySize.isSome() && _httpContext.request.bodySize.getOrThrow() == 0) {
             return None
         }
-        if (!getContentType().startsWith("application/json")) {
+        if (!getContentType().startsWith(JoyHttpConsts.MIME_APP_JSON)) {
             return None
         }
 
@@ -319,7 +319,10 @@ public class JoyContext {
         let writer = JsonWriter(buffer)
         writer.writeValue(body)
         writer.flush()
-        _httpContext.responseBuilder.header("content-type", "application/json; charset=UTF-8").body(buffer)
+        _httpContext
+            .responseBuilder
+            .header(JoyHttpConsts.HEADER_CONTENT_TYPE, JoyHttpConsts.MIME_APP_JSON_UTF8)
+            .body(buffer)
         this
     }
 
@@ -342,7 +345,7 @@ public class JoyContext {
      * @param body: the string body
      */
     public func string(contentType: String, body: String): JoyContext {
-        _httpContext.responseBuilder.header("content-type", contentType).body(body)
+        _httpContext.responseBuilder.header(JoyHttpConsts.HEADER_CONTENT_TYPE, contentType).body(body)
         this
     }
 
@@ -352,7 +355,7 @@ public class JoyContext {
      * @param body: the string body
      */
     public func string(body: String): JoyContext {
-        string("text/plain", body)
+        string(JoyHttpConsts.MIME_TEXT_PLAIN_UTF8, body)
         this
     }
 
@@ -384,7 +387,7 @@ public class JoyContext {
      * @param contentType: the content type
      */
     public func contentType(contentType: String): JoyContext {
-        _httpContext.responseBuilder.header("content-type", contentType)
+        _httpContext.responseBuilder.header(JoyHttpConsts.HEADER_CONTENT_TYPE, contentType)
         this
     }
 
@@ -423,7 +426,7 @@ public class JoyContext {
      * @return the content type
      */
     public func getContentType(): String {
-        _httpContext.request.headers.getFirst("content-type") ?? ""
+        _httpContext.request.headers.getFirst(JoyHttpConsts.HEADER_CONTENT_TYPE) ?? ""
     }
 
     /**
@@ -495,7 +498,7 @@ public class JoyContext {
      *
      */
     public func cookie(cookie: Cookie): JoyContext {
-        _httpContext.responseBuilder.header("Set-Cookie", cookie.toSetCookieString())
+        _httpContext.responseBuilder.header(JoyHttpConsts.HEADER_SET_COOKIE, cookie.toSetCookieString())
         this
     }
 

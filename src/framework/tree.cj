@@ -13,6 +13,7 @@ package cjoy.framework
 import std.regex.Regex
 import std.sort.sort
 import std.collection.{ArrayList, HashMap, forEach}
+import cjoy.log.LogTool
 
 class Endpoint<T> <: ToString {
     Endpoint(let handler: T, let pattern: String, let paramKeys: Array<String>) {
@@ -25,15 +26,30 @@ class Endpoint<T> <: ToString {
 
 type Endpoints<T> = HashMap<String, Endpoint<T>>
 
-public class RouteInfo {
+public class RouteInfo<T> {
     public RouteInfo(
         public var pattern!: String = "",
         public let patterns!: ArrayList<String> = ArrayList(),
         public let routeParamKeys!: ArrayList<String> = ArrayList(),
         public var routeParamValues!: ArrayList<String> = ArrayList(),
         public let methodsAllowed!: ArrayList<String> = ArrayList(),
-        public var methodNotAllowed!: Bool = false
+        public var methodNotAllowed!: Bool = false,
+        public var handler!: ?T = None
     ) {
+    }
+
+    public func getParams(): HashMap<String, String> {
+        let paramMap: HashMap<String, String> = HashMap()
+        if (!routeParamKeys.isEmpty()) {
+            if (routeParamKeys.size != routeParamValues.size) {
+                LogTool.error("parameter list length mismatch when find route target")
+                throw Exception("parameter list length mismatch")
+            }
+            for (idx in 0..routeParamKeys.size) {
+                paramMap[routeParamKeys[idx]] = routeParamValues[idx]
+            }
+        }
+        paramMap
     }
 }
 
@@ -85,7 +101,7 @@ public class TreeNode<T> {
     }
 
     public init() {
-       this(NT_STATIC, b'\0', "")
+        this(NT_STATIC, b'\0', "")
     }
 
     private func setEndpoint(method: String, pattern: String, handler: T) {
@@ -235,7 +251,7 @@ public class TreeNode<T> {
         return (None, "")
     }
 
-    private func findParamOrRegexRoute(ri: RouteInfo, nds: ArrayList<TreeNode<T>>, nt: NodeType, search: String,
+    private func findParamOrRegexRoute(ri: RouteInfo<T>, nds: ArrayList<TreeNode<T>>, nt: NodeType, search: String,
         method: String): (?TreeNode<T>, String, Bool) {
         var xsearch = search
         var ret: ?TreeNode<T> = None
@@ -283,7 +299,7 @@ public class TreeNode<T> {
         return (ret, xsearch, false)
     }
 
-    private func findRouteByMethod(ri: RouteInfo, xn: TreeNode<T>, method: String, search: String): ?TreeNode<T> {
+    private func findRouteByMethod(ri: RouteInfo<T>, xn: TreeNode<T>, method: String, search: String): ?TreeNode<T> {
         if (search.isEmpty() && xn.isLeaf()) {
             let epOpt = xn._endpoints.get(method)
             if (let Some(ep) <- epOpt) {
@@ -300,7 +316,7 @@ public class TreeNode<T> {
         xn.findRoute(ri, method, search)
     }
 
-    func findRoute(ri: RouteInfo, method: String, path: String): ?TreeNode<T> {
+    func findRoute(ri: RouteInfo<T>, method: String, path: String): ?TreeNode<T> {
         var search = path
         var label = if (search != "") {
             search[0]
@@ -357,7 +373,7 @@ public class TreeNode<T> {
         None
     }
 
-    public func findRouteHandler(ri: RouteInfo, method: String, path: String): (?TreeNode<T>, ?T) {
+    public func findRouteHandler(ri: RouteInfo<T>, method: String, path: String): ?TreeNode<T> {
         let rn = findRoute(ri, method, path)
         if (let Some(node) <- rn) {
             let ep = node._endpoints[method]
@@ -365,9 +381,9 @@ public class TreeNode<T> {
                 ri.pattern = ep.pattern
                 ri.patterns.add(ri.pattern)
             }
-            return (rn, ep.handler)
+            ri.handler = ep.handler
         }
-        (rn, None)
+        rn
     }
 
     func findPattern(pattern: String): Bool {
@@ -481,7 +497,6 @@ type TreeNodes<T> = ArrayList<TreeNode<T>>
 extend<T> TreeNodes<T> {
     func sortByLableTail() {
         // sort the list of nodes by label
-        //this.sortBy(comparator: {a, b => a._label.compare(b._label)})
         sort(this, by: {a, b => a._label.compare(b._label)})
         // pushes nodes with '/' as the tail to the end of the list for param nodes.
         let last = this.size - 1

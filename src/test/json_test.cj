@@ -169,24 +169,24 @@ class UserSchema {
 }
 
 @Json[subTypeField = "mimeType", subTypes = { "text": "TextResourceContents", "blob": "BlobResourceContents" }]
-public open class ResourceContents {
+private open class ResourceContents {
     public var mimeType: String = ""
 }
 
 @Json[superClass = ResourceContents]
-public class TextResourceContents <: ResourceContents {
+private class TextResourceContents <: ResourceContents {
     public var text: String = ""
     public var text2: String = ""
 }
 
 @Json[superClass = ResourceContents]
-public class BlobResourceContents <: ResourceContents {
+private class BlobResourceContents <: ResourceContents {
     public var blob: String = ""
     public var blob2: String = ""
 }
 
 @Json
-public class ReadResourceResult {
+private class ReadResourceResult {
     // 类型为基类，实际根据mimeType的值反序列化为TextResourceContents或BlobResourceContents
     public var contents: ArrayList<ResourceContents> = ArrayList()
 }

@@ -50,18 +50,19 @@ public class McpTools {
             let contents: Array<Content> = try {
                 let result: Any = handler.handle(ctx, arguments)
                 match (result) {
-                    case x: Collection<ToString> => x |> map {it => createTextContent(it.toString())} |> collectArray
+                    case x: Collection<String> => x |> map {it => createTextContent(it)} |> collectArray
                     case x: Collection<JsonSerializable> => x |> map {it => createTextContent(JsonTool.toJson(it))} |>
                         collectArray
-                    case x: HashMap<String, JsonSerializable> => [createTextContent(JsonTool.toJson(x))]
-                    case x: ToString => [createTextContent(x.toString())]
+                    case x: Collection<ToString> => x |> map {it => createTextContent(it.toString())} |> collectArray
+                    case x: String => [createTextContent(x.toString())]
                     case x: JsonSerializable => [createTextContent(JsonTool.toJson(x))]
+                    case x: ToString => [createTextContent(x.toString())]
                     case x: Image => [x.toImageContext()]
                     case x: Audio => [x.toAudioContent()]
                     case x: Collection<Image> => x |> map {it => it.toImageContext()} |> collectArray
                     case x: Collection<Audio> => x |> map {it => it.toAudioContent()} |> collectArray
                     case _ =>
-                        LogTool.error("[MCP]call tool `${request.name}` failed, unknow return type")
+                        LogTool.error("[MCP] call tool `${request.name}` failed, unknow return type")
                         isError = true
                         [createTextContent("unknow return type")]
                 }

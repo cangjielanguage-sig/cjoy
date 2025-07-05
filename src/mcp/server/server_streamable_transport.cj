@@ -16,7 +16,7 @@ import std.io.ByteBuffer
 import std.time.DateTime
 import std.sync.SyncCounter
 import stdx.net.http.HttpStatusCode
-import cjoy.framework.{JoyContext, JoySseEmitter, JoyServerEventBuilder}
+import cjoy.framework.{JoyContext, JoySseEmitter, JoyServerEventBuilder, JoyHttpConsts}
 import cjoy.utils.randStr
 import cjoy.mcp.common.*
 import cjoy.log.LogTool
@@ -36,7 +36,7 @@ class McpStreamableServerTransport <: McpServerTransport {
         let (_, hasSse) = checkAcceptHeader(ctx)
         if (!hasSse) {
             LogTool.error("[MCP] handle get request faild, Not Acceptable")
-            let err = createErrorMsg("Not Acceptable: client must accept ${McpConsts.CONTENT_TYPE_SSE}")
+            let err = createErrorMsg("Not Acceptable: client must accept ${JoyHttpConsts.MIME_TEXT_EVENT_STREAM}")
             ctx.status(HttpStatusCode.STATUS_NOT_ACCEPTABLE).json(err)
             return
         }
@@ -61,17 +61,17 @@ class McpStreamableServerTransport <: McpServerTransport {
         if (!(hasJson && hasSse)) {
             LogTool.error("[MCP] handle post request faild, Not Acceptable")
             let err = createErrorMsg(
-                "Not Acceptable: Client both ${McpConsts.CONTENT_TYPE_JSON} and ${McpConsts.CONTENT_TYPE_SSE}")
+                "Not Acceptable: Client both ${JoyHttpConsts.MIME_APP_JSON} and ${JoyHttpConsts.MIME_TEXT_EVENT_STREAM}")
             ctx
                 .status(HttpStatusCode.STATUS_NOT_ACCEPTABLE)
-                .header("content-type", McpConsts.CONTENT_TYPE_SSE)
+                .header("content-type", JoyHttpConsts.MIME_TEXT_EVENT_STREAM)
                 .json(err)
             return
         }
 
         if (!checkContentType(ctx)) {
             LogTool.error("[MCP] handle post request faild, Unsupported Media Type")
-            let err = createErrorMsg("Unsupported Media Type: Content-Type must be ${McpConsts.CONTENT_TYPE_JSON}")
+            let err = createErrorMsg("Unsupported Media Type: Content-Type must be ${JoyHttpConsts.MIME_APP_JSON}")
             ctx.status(HttpStatusCode.STATUS_UNSUPPORTED_MEDIA_TYPE).json(err)
             return
         }
@@ -135,15 +135,15 @@ class McpStreamableServerTransport <: McpServerTransport {
     private func checkAcceptHeader(ctx: JoyContext): (Bool, Bool) {
         let accept = ctx.getHeader("accept") ?? ""
         let types = accept.split(",") |> map {s => s.trimAscii()} |> collectArrayList
-        let hasJson = types |> any {s => s.startsWith(McpConsts.CONTENT_TYPE_JSON)}
-        let hasSse = types |> any {s => s.startsWith(McpConsts.CONTENT_TYPE_SSE)}
+        let hasJson = types |> any {s => s.startsWith(JoyHttpConsts.MIME_APP_JSON)}
+        let hasSse = types |> any {s => s.startsWith(JoyHttpConsts.MIME_TEXT_EVENT_STREAM)}
         (hasJson, hasSse)
     }
 
     private func checkContentType(ctx: JoyContext): Bool {
         let contentType = ctx.getHeader("Content-Type") ?? ""
         let parts = contentType.split(";")[0].split(",") |> map {s => s.trimAscii()} |> collectArrayList
-        parts |> any {s => s == McpConsts.CONTENT_TYPE_JSON}
+        parts |> any {s => s == JoyHttpConsts.MIME_APP_JSON}
     }
 
     private func handleMessage(ctx: JoyContext, message: JSONRPCMessage): Unit {

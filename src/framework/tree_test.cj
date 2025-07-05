@@ -26,8 +26,8 @@ public class TreeNodeTestCaseSuit {
 
     private func testPath(tree: TreeNode<Int64>, path: String, expectPath: String,
         expectedParams: HashMap<String, String>, handler!: Int64 = 1) {
-        let ri: RouteInfo = RouteInfo()
-        let (node, h) = tree.findRouteHandler(ri, "GET", path)
+        let ri: RouteInfo<Int64> = RouteInfo()
+        let node = tree.findRouteHandler(ri, "GET", path)
         if ((expectPath != "" && node.isNone()) || (expectPath != "" && ri.pattern != expectPath)) {
             @Fail("not match for ${path}, expected ${expectPath}, acutual=${ri.pattern}")
             return
@@ -40,12 +40,12 @@ public class TreeNodeTestCaseSuit {
             return
         }
 
-        if (h.isNone()) {
+        if (ri.handler.isNone()) {
             @Fail("path ${path} returned node without handler")
             return
         } else {
-            if (handler != h.getOrThrow()) {
-                @Fail("not math handler for path ${path}, expected ${handler}, actual=${h.getOrThrow()}")
+            if (handler != ri.handler.getOrThrow()) {
+                @Fail("not math handler for path ${path}, expected ${handler}, actual=${ri.handler.getOrThrow()}")
             }
         }
 

@@ -15,7 +15,7 @@ import std.collection.concurrent.ConcurrentHashMap
 import stdx.encoding.json.stream.JsonSerializable
 import stdx.encoding.base64.toBase64String
 import cjoy.mcp.common.*
-import cjoy.framework.{JoyContext, RouteInfo, TreeNode}
+import cjoy.framework.{JoyContext, RouteInfo, TreeNode, JoyHttpConsts}
 import cjoy.log.LogTool
 import cjoy.json.JsonTool
 
@@ -66,7 +66,7 @@ public class McpResources {
         ListResourceTemplatesResult(resourceTemplates: res)
     }
 
-    private func addCtxParam(ctx: JoyContext, ri: RouteInfo) {
+    private func addCtxParam(ctx: JoyContext, ri: RouteInfo<McpReadResourceHandler>) {
         if (!ri.routeParamKeys.isEmpty()) {
             if (ri.routeParamKeys.size != ri.routeParamValues.size) {
                 LogTool.error("[MCP] resource handler parameter list length mismatch when find route target")
@@ -80,45 +80,64 @@ public class McpResources {
 
     public func readResource(ctx: JoyContext, request: ReadResourceRequest): ReadResourceResult {
         let uri = normUrl(request.uri)
-        let ri = RouteInfo()
-        let (_, handler) = _root.findRouteHandler(ri, "GET", uri)
-        match (handler) {
+        let ri: RouteInfo<McpReadResourceHandler> = RouteInfo()
+        let _ = _root.findRouteHandler(ri, "GET", uri)
+        match (ri.handler) {
             case Some(x) =>
                 LogTool.debug("[MCP] found resource handler, uri=${request.uri}")
                 addCtxParam(ctx, ri)
                 let result: Any = x.readResource(ctx)
                 let contents: Array<ResourceContents> = match (result) {
                     case x: Array<Byte> => [createBlobResourceContents(request.uri, toBase64String(x),
-                        ctx.getParam("mimeType") ?? "application/octet-stream")]
+                        getMimeType(ctx, JoyHttpConsts.MIME_APP_OCTET_STREAM))]
                     case x: Collection<Array<Byte>> => x |>
                         map {
                         it => createBlobResourceContents(request.uri, toBase64String(it),
-                            ctx.getParam("mimeType") ?? "application/octet-stream")
+                            getMimeType(ctx, JoyHttpConsts.MIME_APP_OCTET_STREAM))
+                    } |> collectArray
+                    case x: Collection<String> => x |>
+                        map {
+                        it => createTextResourceContents(request.uri, it,
+                            getMimeType(ctx, JoyHttpConsts.MIME_TEXT_PLAIN))
                     } |> collectArray
                     case x: Collection<JsonSerializable> => x |>
                         map {
-                        it => createTextResourceContents(request.uri, JsonTool.toJson(it),
-                            ctx.getParam("mimeType") ?? "application/json")
+                        it =>
+                        let value = JsonTool.toJson(it)
+                        createTextResourceContents(request.uri, value, getMimeType(ctx, getMimeType(value)))
                     } |> collectArray
                     case x: Collection<ToString> => x |>
                         map {
                         it => createTextResourceContents(request.uri, it.toString(),
-                            ctx.getParam("mimeType") ?? "text/plain")
+                            getMimeType(ctx, JoyHttpConsts.MIME_TEXT_PLAIN))
                     } |> collectArray
-                    case x: HashMap<String, JsonSerializable> => [createTextResourceContents(request.uri,
-                        JsonTool.toJson(x), ctx.getParam("mimeType") ?? "application/json")]
+                    case x: String => [createTextResourceContents(request.uri, x,
+                        getMimeType(ctx, JoyHttpConsts.MIME_TEXT_PLAIN))]
+                    case x: JsonSerializable =>
+                        let value = JsonTool.toJson(x)
+                        [createTextResourceContents(request.uri, value, getMimeType(ctx, getMimeType(value)))]
                     case x: ToString => [createTextResourceContents(request.uri, x.toString(),
-                        ctx.getParam("mimeType") ?? "text/plain")]
-                    case x: JsonSerializable => [createTextResourceContents(request.uri, JsonTool.toJson(x),
-                        ctx.getParam("mimeType") ?? "application/json")]
+                        getMimeType(ctx, JoyHttpConsts.MIME_TEXT_PLAIN))]
                     case _ =>
-                        LogTool.warn("[MCP]read resource `${request.uri}`unknow return type")
-                        [createTextResourceContents(request.uri, "", ctx.getParam("mimeType") ?? "text/plain")]
+                        LogTool.warn("[MCP] read resource `${request.uri}`unknow return type")
+                        [createTextResourceContents(request.uri, "", getMimeType(ctx, JoyHttpConsts.MIME_TEXT_PLAIN))]
                 }
                 ReadResourceResult(contents: ArrayList<ResourceContents>(contents))
             case _ =>
                 LogTool.error("[MCP] not found resource handler, uri=${request.uri}")
                 throw Exception("not found resource handler")
+        }
+    }
+
+    private static func getMimeType(ctx: JoyContext, defaultValue: String): String {
+        ctx.getParam("mimeType") ?? defaultValue
+    }
+
+    private static func getMimeType(str: String): String {
+        if (str.startsWith("{") || str.startsWith("[")) {
+            JoyHttpConsts.MIME_APP_JSON
+        } else {
+            JoyHttpConsts.MIME_TEXT_PLAIN
         }
     }
 

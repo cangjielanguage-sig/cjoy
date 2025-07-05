@@ -72,8 +72,8 @@ public func audio(): Audio {
 
 // Resource-----------
 @Resource[uri = "data://secret"]
-public func secretData(): String {
-    "secret data"
+public func secretId(): Int {
+    1
 }
 
 @Resource[uri = "data://config"]
@@ -207,7 +207,29 @@ public class McpServerTestCaseSuit {
 
             let listTemplateResult = client.listResourceTemplates()
             @Assert(listTemplateResult.resourceTemplates.size, 1)
-            // TODO
+
+            let check = {
+                result: ReadResourceResult, value: String =>
+                @Assert(result.contents.size, 1)
+                @Assert((result.contents[0] as TextResourceContents).getOrThrow().text, value)
+            }
+
+            let checkBlob = {
+                result: ReadResourceResult, value: Array<Byte> =>
+                @Assert(result.contents.size, 1)
+                @Assert((result.contents[0] as BlobResourceContents).getOrThrow().blob, toBase64String(value))
+            }
+            
+            var readResult = client.readResource(ReadResourceRequest(uri: "data://secret"))
+            check(readResult, "1")
+            readResult = client.readResource(ReadResourceRequest(uri: "resource://system-status"))
+            check(readResult, JsonTool.toJson(HashMap<String, String>([("status", "ok")])))
+            readResult = client.readResource(ReadResourceRequest(uri: "resource://xiao/detail"))
+            check(readResult, JsonTool.toJson(HashMap<String, String>([("name", "xiao")])))
+            readResult = client.readResource(ReadResourceRequest(uri: "file:///app/data/important_log"))
+            check(readResult, "this is an important log")
+            readResult = client.readResource(ReadResourceRequest(uri: "resource://stream-data"))
+            checkBlob(readResult, "stream".toArray())
         }
     }
 
