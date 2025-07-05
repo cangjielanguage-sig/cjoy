@@ -139,9 +139,13 @@ public class Joy {
      * @param port: the listen port
      * @param certFilePath: the certificate server file path
      * @param keyFilePath: the certificate server key file path
+     * @param h2: run as http2
      */
-    public func run(addr: String, port: UInt16, certFilePath: String, keyFilePath: String): Unit {
-        let tlsConfig = loadTlsConfig(certFilePath, keyFilePath)
+    public func run(addr: String, port: UInt16, certFilePath: String, keyFilePath: String, h2!: Bool = false): Unit {
+        var tlsConfig = loadTlsConfig(certFilePath, keyFilePath)
+        if (h2) {
+            tlsConfig.supportedAlpnProtocols = ["h2"]
+        }
         run(ServerBuilder().addr(addr).port(port).tlsConfig(tlsConfig))
     }
 
