@@ -16,7 +16,7 @@ import std.fs.{File, OpenMode, Path}
 import std.io.{readToEnd}
 import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable}
 import stdx.encoding.base64.toBase64String
-import cjoy.framework.{JoyContext, JoyRequestHandler}
+import cjoy.framework.{JoyContext, JoyRequestHandler, JoyHttpConsts}
 import cjoy.multipart.getMimeTypeByExt
 
 public interface McpSession <: Resource {
@@ -84,7 +84,7 @@ public interface McpClient <: Resource {
     }
     func callTool(request: CallToolRequest): CallToolResult
 
-    func listResources(cursor: ?String): ListResourcesResult 
+    func listResources(cursor: ?String): ListResourcesResult
     func listResources(): ListResourcesResult {
         listResources(None)
     }
@@ -110,13 +110,13 @@ public class Image {
         var mimeType = if (format != "") {
             "image/${format.toAsciiLower()}"
         } else {
-            "application/octet-stream"
+            JoyHttpConsts.MIME_APP_OCTET_STREAM
         }
         if (path != "") {
             try (file = File(path, OpenMode.Read)) {
                 data = readToEnd(file)
                 let p = Path(path)
-                mimeType = getMimeTypeByExt(".${p.extensionName}").getOrDefault({=> "application/octet-stream"})
+                mimeType = getMimeTypeByExt(".${p.extensionName}") ?? JoyHttpConsts.MIME_APP_OCTET_STREAM
             }
         }
         var res = ImageContent(mimeType: mimeType, data: toBase64String(data))
@@ -133,13 +133,13 @@ public class Audio {
         var mimeType = if (format != "") {
             "audio/${format.toAsciiLower()}"
         } else {
-            "application/octet-stream"
+            JoyHttpConsts.MIME_APP_OCTET_STREAM
         }
         if (path != "") {
             try (file = File(path, OpenMode.Read)) {
                 data = readToEnd(file)
                 let p = Path(path)
-                mimeType = getMimeTypeByExt(".${p.extensionName}").getOrDefault({=> "application/octet-stream"})
+                mimeType = getMimeTypeByExt(".${p.extensionName}") ?? JoyHttpConsts.MIME_APP_OCTET_STREAM
             }
         }
         var res = AudioContent(mimeType: mimeType, data: toBase64String(data))

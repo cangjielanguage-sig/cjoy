@@ -52,12 +52,13 @@ public class McpPrompts {
                     case x: Collection<PromptMessage> => x |> collectArray
                     case x: Message => [x.toPromptMessage()]
                     case x: Collection<Message> => x |> map {it => it.toPromptMessage()} |> collectArray
-                    case x: ToString => [toPromptMessage(x.toString())]
-                    case x: Collection<ToString> => x |> map {it => toPromptMessage(it.toString())} |> collectArray
+                    case x: String => [toPromptMessage(x)]
                     case x: JsonSerializable => [toPromptMessage(JsonTool.toJson(x))]
+                    case x: ToString => [toPromptMessage(x.toString())]
+                    case x: Collection<String> => x |> map {it => toPromptMessage(it)} |> collectArray
                     case x: Collection<JsonSerializable> => x |> map {it => toPromptMessage(JsonTool.toJson(it))} |>
                         collectArray
-                    case x: HashMap<String, JsonSerializable> => [toPromptMessage(JsonTool.toJson(x))]
+                    case x: Collection<ToString> => x |> map {it => toPromptMessage(it.toString())} |> collectArray
                     case _ =>
                         LogTool.error("[MCP] unknow prompt return type, name=${req.name}")
                         throw Exception("unknow prompt return type")
