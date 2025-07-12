@@ -23,7 +23,7 @@ protected interface TokenVisitor<T> {
     func onObjItem(map: T, key: String, value: T): Unit
     func onObjEnd(map: T): Unit
 
-    func onVaule(value: Token): T
+    func onValue(value: Token): T
 }
 
 protected class TokenStrValueVisitor <: TokenVisitor<ToString> {
@@ -54,7 +54,7 @@ protected class TokenStrValueVisitor <: TokenVisitor<ToString> {
     public func onObjEnd(map: ToString): Unit {
     }
 
-    public func onVaule(value: Token): ToString {
+    public func onValue(value: Token): ToString {
         match (value.kind) {
             case IDENTIFIER | STRING_LITERAL | MULTILINE_STRING | MULTILINE_RAW_STRING => value.value
             case INTEGER_LITERAL => Int64.parse(value.value)
@@ -130,7 +130,7 @@ protected open class TokenParser<T> {
         } else if (_currToken.kind == TokenKind.LCURL) {
             return parseMap()
         } else if (parseValue && isValueToken()) {
-            return _visitor.onVaule(_currToken)
+            return _visitor.onValue(_currToken)
         }
         _currToken.dump()
         throw Exception("unknown token ${_currToken.value} in parsing")

@@ -48,7 +48,7 @@ class JsonTokenVisitor <: TokenVisitor<Tokens> {
         map.append(Token(TokenKind.RSQUARE)).append(Token(TokenKind.RPAREN))
     }
 
-    public func onVaule(value: Token): Tokens {
+    public func onValue(value: Token): Tokens {
         Tokens().append(value)
     }
 }
