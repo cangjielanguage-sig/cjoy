@@ -11,6 +11,15 @@
 package cjoy.framework
 
 public struct JoyHttpConsts {
+    // method
+    public static const METHOD_POST = "POST"
+    public static const METHOD_GET = "GET"
+    public static const METHOD_PUT = "PUT"
+    public static const METHOD_PATCH = "PATCH"
+    public static const METHOD_DELETE = "DELETE"
+    public static const METHOD_HEAD = "HEAD"
+    public static const METHOD_OPTIONS = "OPTIONS"
+
     // content-type
     public static const MIME_APP_JSON = "application/json"
     public static const MIME_APP_JSON_UTF8 = "application/json; charset=utf-8"
