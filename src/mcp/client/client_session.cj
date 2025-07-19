@@ -14,7 +14,7 @@ import std.collection.concurrent.ConcurrentHashMap
 import std.sync.{AtomicUInt64, SyncCounter}
 import std.io.ByteBuffer
 import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonReader}
-import cjoy.mcp.common.*
+import cjoy.mcp.api.*
 import cjoy.utils.{TimeoutCache, randStr}
 import cjoy.log.LogTool
 

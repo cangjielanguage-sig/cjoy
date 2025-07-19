@@ -8,14 +8,14 @@
  * See the Mulan PSL v2 for more details.
  */
 
-package cjoy.bind.generate
+macro package cjoy.bind.macros
 
 import std.ast.*
-import std.collection.Map
+import std.collection.{HashMap, Map}
 import stdx.net.http.HttpRequest
 import cjoy.utils.{parserAttrs, MapToString, MapListGetFunc, TypeNodeInfo, getDefValueOfType}
 
-public class BindFieldInfo {
+class BindFieldInfo {
     let filedName: String
     let declType: TypeNode
     var bindName: String = ""
@@ -68,6 +68,23 @@ public class BindFieldInfo {
             return quote($(timeformat))
         }
         return quote(None)
+    }
+}
+
+class BindInfoCache {
+    static let FIELD_INFOS: HashMap<String, BindFieldInfo> = HashMap()
+
+    public static func clear(): Unit {
+        FIELD_INFOS.clear()
+    }
+
+    public static func addCache(vid: String, info: BindFieldInfo): Unit {
+        FIELD_INFOS.add(vid, info)
+    }
+
+    public static func create(vd: VarDecl): BindFieldGenerator {
+        let fieldInfo = FIELD_INFOS.get(vd.identifier.value) ?? BindFieldInfo(vd)
+        BindFieldGenerator(vd.identifier, fieldInfo)
     }
 }
 

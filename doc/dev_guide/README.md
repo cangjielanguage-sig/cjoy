@@ -21,15 +21,14 @@
     |   ├── route.cj
     |   ├── *_test.cj
     ├── json
-    │   ├── generate
+    │   ├── macros
     │   │   ├── *.cj
     │   ├── jsonm.cj
     │   └── api
     │       └── *.cj
     ├── macros
-    │   ├── generate
-    │   │   ├── *.cj
     │   └── macros.cj
+    │   └── *.cj
     ├── middleware
     │   ├── *.cj
     └── test

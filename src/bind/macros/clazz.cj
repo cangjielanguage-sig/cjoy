@@ -8,13 +8,13 @@
  * See the Mulan PSL v2 for more details.
  */
 
-package cjoy.bind.generate
+macro package cjoy.bind.macros
 
 import std.ast.*
 import std.collection.{ArrayList, map, collectArrayList}
 import cjoy.utils.{ClassGenentor, joinTokens}
 
-public class BindClassInfo {
+class BindClassInfo {
     let classId: Token
     let fields: ArrayList<BindFieldGenerator>
     let macroName: String

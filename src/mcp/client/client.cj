@@ -11,7 +11,7 @@
 protected package cjoy.mcp.client
 
 import std.sync.AtomicBool
-import cjoy.mcp.common.*
+import cjoy.mcp.api.*
 import cjoy.utils.TimeoutCache
 import cjoy.log.LogTool
 

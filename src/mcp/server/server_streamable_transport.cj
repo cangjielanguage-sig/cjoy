@@ -18,7 +18,7 @@ import std.sync.SyncCounter
 import stdx.net.http.HttpStatusCode
 import cjoy.framework.{JoyContext, JoySseEmitter, JoyServerEventBuilder, JoyHttpConsts}
 import cjoy.utils.randStr
-import cjoy.mcp.common.*
+import cjoy.mcp.api.*
 import cjoy.log.LogTool
 
 class McpStreamableServerTransport <: McpServerTransport {

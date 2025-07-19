@@ -73,7 +73,7 @@ protected func getDefValueOfType(typeNode: TypeNode): Option<Tokens> {
             case "String" => quote("")
             case _ => Option.None
         }
-        case varType: PrefixType => return quote(None)
+        case _: PrefixType => return quote(None)
         case varType: PrimitiveType =>
             if (varType.keyword.value.startsWith("Int")) {
                 return quote(0)

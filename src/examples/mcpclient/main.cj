@@ -5,7 +5,7 @@ package cjoy.examples.mcpclient
 
 import std.collection.HashMap
 import cjoy.json.*
-import cjoy.mcp.common.*
+import cjoy.mcp.api.*
 import cjoy.mcp.client.*
 
 main(): Int64 {

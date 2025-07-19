@@ -36,7 +36,7 @@ protected class TokenStrValueVisitor <: TokenVisitor<ToString> {
         l.add(value)
     }
 
-    public func onArrayEnd(list: ToString): Unit {
+    public func onArrayEnd(_: ToString): Unit {
     }
 
     public func onObjBegin(): ToString {
@@ -51,7 +51,7 @@ protected class TokenStrValueVisitor <: TokenVisitor<ToString> {
         m.add(key, value)
     }
 
-    public func onObjEnd(map: ToString): Unit {
+    public func onObjEnd(_: ToString): Unit {
     }
 
     public func onValue(value: Token): ToString {
