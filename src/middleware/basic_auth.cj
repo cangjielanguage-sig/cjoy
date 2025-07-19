@@ -13,7 +13,7 @@ package cjoy.middleware
 import std.collection.HashMap
 import stdx.net.http.HttpStatusCode
 import stdx.encoding.base64.fromBase64String
-import cjoy.{JoyMiddlewareHandler, JoyRequestHandlerChain, JoyContext}
+import cjoy.{JoyMiddlewareHandler, JoyRequestHandlerChain, JoyContext, JoyHttpConsts}
 
 public class BasicAuth <: JoyMiddlewareHandler {
     public BasicAuth(let realm: String, let creads: HashMap<String, String>) {}
@@ -40,7 +40,7 @@ public class BasicAuth <: JoyMiddlewareHandler {
     }
 
     private func basicAuth(ctx: JoyContext): (String, String, Bool) {
-        let auth = ctx.getHeader("Authorization")
+        let auth = ctx.getHeader(JoyHttpConsts.HEADER_AUTHORIZATION)
         if (auth.isNone()) {
             return ("", "", false)
         }
@@ -65,6 +65,7 @@ public class BasicAuth <: JoyMiddlewareHandler {
     }
 
     private func basicAuthFailed(ctx: JoyContext) {
-        ctx.header("WWW-Authenticate", "Basic realm=${realm}").status(HttpStatusCode.STATUS_UNAUTHORIZED)
+        ctx.header(JoyHttpConsts.HEADER_WWW_AUTHENTICATE, "Basic realm=${realm}")
+            .status(HttpStatusCode.STATUS_UNAUTHORIZED)
     }
 }

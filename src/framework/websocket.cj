@@ -324,9 +324,10 @@ class JoyWebSocketUpgradeHandler <: JoyRequestHandler {
 
         LogTool.debug("[JoyWebSocketUpdateHandler#handle] upgrade websocket success from ${ctx.getClientIP()}")
 
+        let ctxHttp = (ctx as JoyHttpContext).getOrThrow()
         let req = ctx.httpContext.request
         let session = JoyWebSocketSession(websocket, ctx.config, req.headers, req.url.queryForm.clone(),
-            ctx.copyParams(), ctx.copyCtxParams())
+            ctxHttp.copyParams(), ctxHttp.copyCtxParams())
 
         // release the context and http framework thread
         spawn {

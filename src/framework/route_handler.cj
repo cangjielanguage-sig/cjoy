@@ -16,7 +16,6 @@ import std.fs.{Path, FileInfo, exists}
 import stdx.net.http.{HttpRequestHandler, HttpStatusCode, FileHandler, HttpContext}
 import cjoy.log.LogTool
 
-
 class JoyGroupRouteHandler <: JoyRequestHandler {
     static let INSTANCE = JoyGroupRouteHandler()
 
@@ -30,18 +29,20 @@ class JoyRequestHandlerWrapper <: JoyRequestHandlerChain & JoyRequestHandler {
     public JoyRequestHandlerWrapper(let handler: JoyRequestHandler, let mws: ArrayList<JoyMiddlewareHandler>) {}
 
     public func handle(ctx: JoyContext): Unit {
-        ctx._handlerIndex = 0
+        let ctxHttp = (ctx as JoyHttpContext).getOrThrow()
+        ctxHttp.resetHandleIndex()
         if (mws.isEmpty()) {
             handler.handle(ctx)
         } else {
-            mws[ctx._handlerIndex].handle(ctx, this)
+            mws[ctxHttp.handleIndex].handle(ctx, this)
         }
     }
 
     public func next(ctx: JoyContext): Unit {
-        ctx._handlerIndex += 1
-        if (ctx._handlerIndex < mws.size) {
-            mws[ctx._handlerIndex].handle(ctx, this)
+        let ctxHttp = (ctx as JoyHttpContext).getOrThrow()
+        let idx = ctxHttp.addHandleIndex()
+        if (idx < mws.size) {
+            mws[idx].handle(ctx, this)
             return
         }
         handler.handle(ctx)

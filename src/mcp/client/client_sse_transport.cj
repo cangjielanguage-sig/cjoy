@@ -15,7 +15,7 @@ import std.io.ByteBuffer
 import std.collection.HashMap
 import std.sync.AtomicBool
 import stdx.encoding.url.URL
-import cjoy.mcp.common.*
+import cjoy.mcp.api.*
 import cjoy.log.LogTool
 import cjoy.utils.{SSEventStream, HttpClient}
 

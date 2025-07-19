@@ -11,7 +11,6 @@
 macro package cjoy.macros
 
 import std.ast.Tokens
-import cjoy.macros.generate.{parseParam, parseFunc, parseMiddlewareFunc}
 
 // reimport the dependent
 public import std.convert.Parsable

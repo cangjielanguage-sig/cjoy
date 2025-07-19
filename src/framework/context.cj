@@ -21,7 +21,345 @@ import cjoy.bind.api.JoyBindable
 /**
  * the context which holds the engine config, params, context params and any you need.
  */
-public class JoyContext {
+public interface JoyContext {
+    /**
+     * return the http context
+     */
+    prop httpContext: HttpContext
+
+    /**
+     * return the engine config
+     */
+    prop config: JoyConfig
+
+    /**
+     * return the path params
+     */
+    prop params: HashMap<String, String>
+
+    /**
+     * return the cookies
+     */
+    prop cookies: HashMap<String, String>
+
+    /**
+     * return the http request method
+     */
+    prop method: String
+
+    /**
+     * set param in context
+     *
+     * @param key: the param key name
+     * @param value: the param value
+     *
+     */
+    func setCtxParam(key: String, value: Any): Unit
+
+    /**
+     * get param from context
+     *
+     * @param key: the param key name
+     * @return the param value
+     *
+     */
+    func getCtxParm<T>(key: String): ?T
+
+    /**
+     * get url path param from context
+     *
+     * @param name: the param name
+     * @return the param value
+     *
+     */
+    func getParam(name: String): ?String
+
+    /**
+     * add url path param in context
+     *
+     * @param name: the param name
+     * @param value: the param value
+     *
+     */
+    func addParam(name: String, value: String): Unit
+
+    /**
+     * get url query param from context
+     *
+     * @param name: the param name
+     * @return the param value
+     *
+     */
+    func getQuery(name: String): ?String
+
+    /**
+     * get url query param from context
+     *
+     * @param name: the param name
+     * @param defaultValue: the default value when it not existed
+     * @return the param value
+     *
+     */
+    func getQuery(name: String, defaultValue: String): String
+
+    /**
+     * get url query param from context
+     *
+     * @param name: the param name
+     * @return the param value list
+     *
+     */
+    func getQueryList(name: String): ArrayList<String>
+
+    /**
+     * get post form param from context
+     *
+     * @param name: the param name
+     * @return the param value
+     *
+     */
+    func getPostForm(name: String): ?String
+
+    /**
+     * get post form param from context
+     *
+     * @param name: the param name
+     * @param defaultValue: the default value when it not existed
+     * @return the param value
+     *
+     */
+    func getPostForm(name: String, defaultValue: String): String
+
+    /**
+     * get post form param from context
+     *
+     * @param name: the param name
+     * @return the param value list
+     *
+     */
+    func getPostFormList(name: String): ArrayList<String>
+
+    /**
+     * read the request json body content then deserialize to T
+     *
+     * @return the object of T
+     */
+    func readJson<T>(): ?T where T <: JsonDeserializable<T>
+
+    /**
+     * read the request body content into byte array
+     *
+     * @return the object of byte array
+     */
+    func readRawData(): Array<Byte>
+
+    /**
+     * read the request body content into string
+     *
+     * @return the object of string
+     */
+    func readString(): String
+
+    /**
+     *
+     * read the query form and bind to object
+     *
+     * @return the object of JoyBindable
+     */
+    func bindQuery<T>(): ?T where T <: JoyBindable<T>
+
+    /**
+     *
+     * bind the post form to a object of T
+     *
+     * @return the object of JoyBindable
+     */
+    func bindPostForm<T>(): ?T where T <: JoyBindable<T>
+
+    /**
+     *
+     * bind the header params to a object of T
+     *
+     * @return the object of JoyBindable
+     */
+    func bindHeader<T>(): ?T where T <: JoyBindable<T>
+
+    /**
+     * bind the request json body content to a object of T
+     *
+     * @return the object of JsonDeserializable
+     */
+    func bindJsonBody<T>(): ?T where T <: JsonDeserializable<T>
+
+    /**
+     * reply response with serialized json body and status code
+     *
+     * @param body: the object of T
+     */
+    func json<T>(body: T): JoyContext where T <: JsonSerializable
+
+    /**
+     * reply response with json body and status code
+     *
+     * @param status: the http status code
+     * @param body: the string body
+     */
+    func json(body: String): JoyContext
+
+    /**
+     * reply response with the body of content type and status code
+     *
+     * @param contentType: the content type
+     * @param status: the http status code
+     * @param body: the string body
+     */
+    func string(contentType: String, body: String): JoyContext
+
+    /**
+     * reply response with text plain body and status code OK(200)
+     *
+     * @param body: the string body
+     */
+    func string(body: String): JoyContext
+
+    /**
+     * reply response with the body of content type and status code
+     *
+     * @param contentType: the content type
+     * @param body: the bytes body
+     */
+    func data(body: Array<Byte>): JoyContext
+
+    /**
+     * reply response with the body of content type and status code
+     *
+     * @param contentType: the content type
+     * @param body: the stream body
+     */
+    func data(body: InputStream): JoyContext
+
+    /**
+     * set the content type
+     *
+     * @param contentType: the content type
+     */
+    func contentType(contentType: String): JoyContext
+
+    /**
+     * get the real client ip
+     *
+     * @return the client ip
+     */
+    func getClientIP(): String
+
+    /**
+     * get the connection remote ip
+     *
+     * @return the remote ip
+     */
+    func getRemoteIP(): String
+
+    /**
+     * get the content type of body
+     *
+     * @return the content type
+     */
+    func getContentType(): String
+    /**
+     * get the header first value
+     *
+     * @param name: the header name
+     * @return the header value
+     */
+    func getHeader(name: String): ?String
+
+    /**
+     * get the header values
+     *
+     * @param name: the header name
+     * @return the header values
+     */
+    func getHeaderList(name: String): Collection<String>
+
+    /**
+     * set the http code
+     *
+     * @param status: the the http code
+     * @return the object of JoyContext
+     */
+    func status(status: UInt16): JoyContext
+
+    /**
+     * reply OK(200) response
+     */
+    func ok(): JoyContext
+
+    /**
+     * add a header to response
+     *
+     * @param name: the header name
+     * @param value: the header value
+     *
+     */
+    func header(name: String, value: String): JoyContext
+
+    /**
+     * read a cookie value from request
+     *
+     * @param name: the header name
+     * @return the cookie value
+     *
+     */
+    func getCookie(name: String): ?String
+
+    /**
+     * write a cookie value from request
+     *
+     * @param name: the header name
+     * @return the cookie value
+     *
+     */
+    func cookie(cookie: Cookie): JoyContext
+
+    /**
+     * render the reponse body
+     *
+     * @param r: the render
+     */
+    func render(r: JoyRender): Unit
+
+    /**
+     * render the reponse body
+     *
+     * @param r: the render
+     */
+    func render(r: (HttpResponseBuilder) -> Unit): Unit
+
+    /**
+     * redirect to the new url with status code
+     *
+     * @param status: the http status code
+     */
+    func redirect(status: UInt16, location: String): Unit
+
+    /**
+     * reply response with status code 404
+     *
+     */
+    func notFound(): Unit
+
+    /**
+     * create a chunked writer
+     */
+    func chunkedWriter(): JoyChunkedWriter
+
+    /**
+     * create a SseEmitter
+     */
+    func eventEmitter(): JoySseEmitter
+}
+
+class JoyHttpContext <: JoyContext {
     var _httpContext: HttpContext
     private let _config: JoyConfig
     private let _paramMap: HashMap<String, String>
@@ -30,7 +368,7 @@ public class JoyContext {
     private var _parsedCookie: Bool = false
 
     // the index of executing handler chain
-    var _handlerIndex: Int = 0
+    var _handleIndex: Int = 0
 
     init(httpContext: HttpContext, paramMap: HashMap<String, String>, config: JoyConfig,
         ctxParamMap: HashMap<String, Any>) {
@@ -40,11 +378,26 @@ public class JoyContext {
         _ctxParamMap = ctxParamMap
     }
 
-    func reset() {
+    func reset(): Unit {
         _paramMap.clear()
         _ctxParamMap.clear()
         _cookieCache.clear()
-        _handlerIndex = 0
+        _handleIndex = 0
+    }
+
+    func resetHandleIndex(): Unit {
+        _handleIndex = 0
+    }
+
+    func addHandleIndex(): Int {
+        _handleIndex += 1
+        _handleIndex
+    }
+
+    prop handleIndex: Int {
+        get() {
+            _handleIndex
+        }
     }
 
     func copyParams(): HashMap<String, String> {
@@ -55,36 +408,24 @@ public class JoyContext {
         _ctxParamMap.clone()
     }
 
-    /**
-     * return the http context
-     */
     public prop httpContext: HttpContext {
         get() {
             _httpContext
         }
     }
 
-    /**
-     * return the engine config
-     */
     public prop config: JoyConfig {
         get() {
             _config
         }
     }
 
-    /**
-     * return the path params
-     */
     public prop params: HashMap<String, String> {
         get() {
             _paramMap
         }
     }
 
-    /**
-     * return the cookies
-     */
     public prop cookies: HashMap<String, String> {
         get() {
             if (_parsedCookie) {
@@ -105,24 +446,16 @@ public class JoyContext {
         }
     }
 
-    /**
-     * set param in context
-     *
-     * @param key: the param key name
-     * @param value: the param value
-     *
-     */
+    public prop method: String {
+        get() {
+            _httpContext.request.method
+        }
+    }
+
     public func setCtxParam(key: String, value: Any): Unit {
         _ctxParamMap.add(key, value)
     }
 
-    /**
-     * get param from context
-     *
-     * @param key: the param key name
-     * @return the param value
-     *
-     */
     public func getCtxParm<T>(key: String): ?T {
         let val = _ctxParamMap.get(key)
         match (val) {
@@ -131,103 +464,40 @@ public class JoyContext {
         }
     }
 
-    /**
-     * get url path param from context
-     *
-     * @param name: the param name
-     * @return the param value
-     *
-     */
     public func getParam(name: String): ?String {
         _paramMap.get(name)
     }
 
-    /**
-     * add url path param in context
-     *
-     * @param name: the param name
-     * @param value: the param value
-     *
-     */
     public func addParam(name: String, value: String): Unit {
         _paramMap.add(name, value)
     }
 
-    /**
-     * get url query param from context
-     *
-     * @param name: the param name
-     * @return the param value
-     *
-     */
     public func getQuery(name: String): ?String {
         _httpContext.request.url.queryForm.get(name)
     }
 
-    /**
-     * get url query param from context
-     *
-     * @param name: the param name
-     * @param defaultValue: the default value when it not existed
-     * @return the param value
-     *
-     */
     public func getQuery(name: String, defaultValue: String): String {
         let val = _httpContext.request.url.queryForm.get(name)
         val ?? defaultValue
     }
 
-    /**
-     * get url query param from context
-     *
-     * @param name: the param name
-     * @return the param value list
-     *
-     */
     public func getQueryList(name: String): ArrayList<String> {
         _httpContext.request.url.queryForm.getAll(name)
     }
 
-    /**
-     * get post form param from context
-     *
-     * @param name: the param name
-     * @return the param value
-     *
-     */
     public func getPostForm(name: String): ?String {
         _httpContext.request.form.get(name)
     }
 
-    /**
-     * get post form param from context
-     *
-     * @param name: the param name
-     * @param defaultValue: the default value when it not existed
-     * @return the param value
-     *
-     */
     public func getPostForm(name: String, defaultValue: String): String {
         let val = _httpContext.request.form.get(name)
         val ?? defaultValue
     }
 
-    /**
-     * get post form param from context
-     *
-     * @param name: the param name
-     * @return the param value list
-     *
-     */
     public func getPostFormList(name: String): ArrayList<String> {
         _httpContext.request.form.getAll(name)
     }
 
-    /**
-     * read the request json body content then deserialize to T
-     *
-     * @return the object of T
-     */
     public func readJson<T>(): ?T where T <: JsonDeserializable<T> {
         if (_httpContext.request.bodySize.isSome() && _httpContext.request.bodySize.getOrThrow() == 0) {
             return None
@@ -240,33 +510,17 @@ public class JoyContext {
         T.fromJson(reader)
     }
 
-    /**
-     * read the request body content into byte array
-     *
-     * @return the object of byte array
-     */
     public func readRawData(): Array<Byte> {
         let buffer = ByteBuffer()
         copy(_httpContext.request.body, to: buffer)
         buffer.bytes()
     }
 
-    /**
-     * read the request body content into string
-     *
-     * @return the object of string
-     */
     public func readString(): String {
         let reader = StringReader(_httpContext.request.body)
         reader.readToEnd()
     }
 
-    /**
-     *
-     * read the query form and bind to object
-     *
-     * @return the object of JoyBindable
-     */
     public func bindQuery<T>(): ?T where T <: JoyBindable<T> {
         if (_httpContext.request.url.queryForm.isEmpty()) {
             return None
@@ -274,12 +528,6 @@ public class JoyContext {
         T.bind(_httpContext.request.url.queryForm, "", None, None)
     }
 
-    /**
-     *
-     * bind the post form to a object of T
-     *
-     * @return the object of JoyBindable
-     */
     public func bindPostForm<T>(): ?T where T <: JoyBindable<T> {
         if (_httpContext.request.form.isEmpty()) {
             return None
@@ -287,12 +535,6 @@ public class JoyContext {
         T.bind(_httpContext.request.form, "", None, None)
     }
 
-    /**
-     *
-     * bind the header params to a object of T
-     *
-     * @return the object of JoyBindable
-     */
     public func bindHeader<T>(): ?T where T <: JoyBindable<T> {
         if (_httpContext.request.headers.isEmpty()) {
             return None
@@ -300,20 +542,10 @@ public class JoyContext {
         T.bind(_httpContext.request.headers, "", None, None)
     }
 
-    /**
-     * bind the request json body content to a object of T
-     *
-     * @return the object of JsonDeserializable
-     */
     public func bindJsonBody<T>(): ?T where T <: JsonDeserializable<T> {
         readJson<T>()
     }
 
-    /**
-     * reply response with serialized json body and status code
-     *
-     * @param body: the object of T
-     */
     public func json<T>(body: T): JoyContext where T <: JsonSerializable {
         let buffer = ByteBuffer()
         let writer = JsonWriter(buffer)
@@ -326,76 +558,36 @@ public class JoyContext {
         this
     }
 
-    /**
-     * reply response with json body and status code
-     *
-     * @param status: the http status code
-     * @param body: the string body
-     */
     public func json(body: String): JoyContext {
-        string("application/json; charset=UTF-8", body)
+        string(JoyHttpConsts.MIME_APP_JSON_UTF8, body)
         this
     }
 
-    /**
-     * reply response with the body of content type and status code
-     *
-     * @param contentType: the content type
-     * @param status: the http status code
-     * @param body: the string body
-     */
     public func string(contentType: String, body: String): JoyContext {
         _httpContext.responseBuilder.header(JoyHttpConsts.HEADER_CONTENT_TYPE, contentType).body(body)
         this
     }
 
-    /**
-     * reply response with text plain body and status code OK(200)
-     *
-     * @param body: the string body
-     */
     public func string(body: String): JoyContext {
         string(JoyHttpConsts.MIME_TEXT_PLAIN_UTF8, body)
         this
     }
 
-    /**
-     * reply response with the body of content type and status code
-     *
-     * @param contentType: the content type
-     * @param body: the bytes body
-     */
     public func data(body: Array<Byte>): JoyContext {
         _httpContext.responseBuilder.body(body)
         this
     }
 
-    /**
-     * reply response with the body of content type and status code
-     *
-     * @param contentType: the content type
-     * @param body: the stream body
-     */
     public func data(body: InputStream): JoyContext {
         _httpContext.responseBuilder.body(body)
         this
     }
 
-    /**
-     * set the content type
-     *
-     * @param contentType: the content type
-     */
     public func contentType(contentType: String): JoyContext {
         _httpContext.responseBuilder.header(JoyHttpConsts.HEADER_CONTENT_TYPE, contentType)
         this
     }
 
-    /**
-     * get the real client ip
-     *
-     * @return the client ip
-     */
     public func getClientIP(): String {
         for (x in _config.remoteIPHeaders) {
             let ip = getHeader(x).map({it => IPAddress.tryParse(it)}).map({it => it.toString()})
@@ -406,11 +598,6 @@ public class JoyContext {
         getRemoteIP()
     }
 
-    /**
-     * get the connection remote ip
-     *
-     * @return the remote ip
-     */
     public func getRemoteIP(): String {
         let remoteAddr = _httpContext.request.remoteAddr
         let ipPort = remoteAddr.split(":")
@@ -420,133 +607,61 @@ public class JoyContext {
         ""
     }
 
-    /**
-     * get the content type of body
-     *
-     * @return the content type
-     */
     public func getContentType(): String {
         _httpContext.request.headers.getFirst(JoyHttpConsts.HEADER_CONTENT_TYPE) ?? ""
     }
 
-    /**
-     * get the header first value
-     *
-     * @param name: the header name
-     * @return the header value
-     */
     public func getHeader(name: String): ?String {
         _httpContext.request.headers.getFirst(name)
     }
 
-    /**
-     * get the header values
-     *
-     * @param name: the header name
-     * @return the header values
-     */
     public func getHeaderList(name: String): Collection<String> {
         _httpContext.request.headers.get(name)
     }
 
-    /**
-     * set the http code
-     *
-     * @param status: the the http code
-     * @return the object of JoyContext
-     */
     public func status(status: UInt16): JoyContext {
         _httpContext.responseBuilder.status(status)
         this
     }
 
-    /**
-     * reply OK(200) response
-     */
     public func ok(): JoyContext {
         status(HttpStatusCode.STATUS_OK)
     }
 
-    /**
-     * add a header to response
-     *
-     * @param name: the header name
-     * @param value: the header value
-     *
-     */
     public func header(name: String, value: String): JoyContext {
         _httpContext.responseBuilder.header(name, value)
         this
     }
 
-    /**
-     * read a cookie value from request
-     *
-     * @param name: the header name
-     * @return the cookie value
-     *
-     */
     public func getCookie(name: String): ?String {
         this.cookies.get(name)
     }
 
-    /**
-     * write a cookie value from request
-     *
-     * @param name: the header name
-     * @return the cookie value
-     *
-     */
     public func cookie(cookie: Cookie): JoyContext {
         _httpContext.responseBuilder.header(JoyHttpConsts.HEADER_SET_COOKIE, cookie.toSetCookieString())
         this
     }
 
-    /**
-     * render the reponse body
-     *
-     * @param r: the render
-     */
     public func render(r: JoyRender): Unit {
         r.render(_httpContext.responseBuilder)
     }
 
-    /**
-     * render the reponse body
-     *
-     * @param r: the render
-     */
     public func render(r: (HttpResponseBuilder) -> Unit): Unit {
         this.render(JoyFuncRender(r))
     }
 
-    /**
-     * redirect to the new url with status code
-     *
-     * @param status: the http status code
-     */
     public func redirect(status: UInt16, location: String): Unit {
         RedirectHandler(location, status).handle(_httpContext)
     }
 
-    /**
-     * reply response with status code 404
-     *
-     */
     public func notFound(): Unit {
         _config.notFoundHandler.handle(this)
     }
 
-    /**
-     * create a chunked writer
-     */
     public func chunkedWriter(): JoyChunkedWriter {
         JoyChunkedWriter(_httpContext)
     }
 
-    /**
-     * create a SseEmitter
-     */
     public func eventEmitter(): JoySseEmitter {
         JoySseEmitter(_httpContext)
     }

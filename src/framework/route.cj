@@ -166,7 +166,7 @@ class TreeRouteDistributor <: HttpRequestDistributor & HttpRequestHandler {
         } else {
             HashMap<String, Any>()
         }
-        let joyCtx = JoyContext(ctx, target.getParams(), _config, ctxParamMap)
+        let joyCtx = JoyHttpContext(ctx, target.getParams(), _config, ctxParamMap)
         target.handler?.handle(joyCtx)
     }
 
