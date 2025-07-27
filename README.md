@@ -172,7 +172,7 @@ main(): Int64 {
     - [实现接口](doc/usage_guide/handler.md#实现接口)
     - [Lambda表达式函数](doc/usage_guide/handler.md#Lambda表达式函数)
   - [处理上下文](doc/usage_guide/handler.md#处理上下文)
-- [Middleware](doc/usage_guide/middleware.md.md)
+- [Middleware](doc/usage_guide/middleware.md)
   - [使用方式](doc/usage_guide/middleware.md#使用方式)
   - [内置Middleware](doc/usage_guide/middleware.md#内置Middleware)
 - [路由宏](doc/usage_guide/macro.md)

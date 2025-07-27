@@ -26,10 +26,10 @@ public class ExceptionHandler <: JoyMiddlewareHandler {
             }
             LogTool.error("handle request occurs an error, message=${ex.message}")
             match (ex) {
-                case e: NoneValueException =>
+                case _: NoneValueException =>
                     // for Option.getOrThrow, Parable.parse
                     ctx.status(HttpStatusCode.STATUS_BAD_REQUEST)
-                case e: IllegalArgumentException =>
+                case _: IllegalArgumentException =>
                     ctx.status(HttpStatusCode.STATUS_BAD_REQUEST)
                 case e: JoyValidationException =>
                     ctx.status(HttpStatusCode.STATUS_BAD_REQUEST).json(e.toMap())
