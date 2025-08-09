@@ -1,5 +1,21 @@
 Changelog
 ------
+
+
+# v0.50.0
+
+- 特性：增加CORS中间件
+- 变更：oyContent从类为变成接口，方便测试Mock
+- 优化：宏实现逻辑统一都移到对应模块的macros目录下
+
+# v0.40.0
+
+- 特性：支持MCP Tool, Resource, Prompt服务端开发
+- 特性：Json序列化与反序列支持范型，支持Any类型，支持DSL
+- 特性：增加参数校验框架
+- 变更：把样例代码移到src/examples目录下
+- 变更：使用文档拆到多个文件中
+
 # v0.30.0
 
 - 特性：支持Query, PostForm， Header参数绑定到对象
