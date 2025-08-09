@@ -20,7 +20,7 @@ import stdx.log.{LogLevel, Logger}
 import stdx.crypto.x509.{X509Certificate, PrivateKey}
 import cjoy.log.LogTool
 
-public const VERSION = "v0.40.0"
+public const VERSION = "v0.50.0"
 const LOGO = ##"
  ________        ___  ________      ___    ___ 
 |\   ____\      |\  \|\   __  \    |\  \  /  /|
