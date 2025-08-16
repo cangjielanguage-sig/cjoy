@@ -20,7 +20,7 @@ CJoy 提供文件服务器的封装，提供两个API：`staticFile` 与 `static
 - URL Path映射只能是本地文件，且不能是隐藏文件，不能是子目录;
 - URL Path中禁止使用`..` 遍历上层路径;
 
-使用示例：[examples/fileserver](../../src/examples/fileserver/main.cj) 。
+使用示例：[examples/fileserver](../../examples/src/fileserver/main.cj) 。
 
 ----
 << [返回](../../README.md#使用指导)

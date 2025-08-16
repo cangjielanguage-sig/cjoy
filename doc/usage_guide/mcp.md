@@ -60,7 +60,7 @@ public func multiply(a: Int, b: Int): Int {
 |`name`||是|指定工具或参数的名称|
 |`description`||是|用于描述工具或参数，会生成JSON schema，为了大模型更好的效果，描述应简洁清楚无歧义|
 
-使用示例：[examples/mcpserver](../../src/examples/mcpserver/main.cj) 或者测试代码 [test/mcp_test](../../src/test/mcp_test.cj)。
+使用示例：[examples/mcpserver](../../examples/src/mcpserver/main.cj) 或者测试代码 [test/mcp_test](../../src/test/mcp_test.cj)。
 
 #### Tool入参
 
@@ -148,7 +148,7 @@ public func systemStatus(ctx: JoyContext, name: String): HashMap<String, String>
 |`mimeType`||是|资源的类型|
 |`default`||是|参数默认值|
 
-使用示例：[examples/mcpserver](../../src/examples/mcpserver/main.cj) 或者测试代码 [test/mcp_test](../../src/test/mcp_test.cj)。
+使用示例：[examples/mcpserver](../../examples/src/mcpserver/main.cj) 或者测试代码 [test/mcp_test](../../src/test/mcp_test.cj)。
 
 #### Resource入参
 
@@ -217,7 +217,7 @@ public func dataAnalysisPrompt(
 |`description`||是|用于描述Prompt或参数，描述应简洁清楚无歧义|
 |`default`||是|参数默认值|
 
-使用示例：[examples/mcpserver](../../src/examples/mcpserver/main.cj) 或者测试代码 [test/mcp_test](../../src/test/mcp_test.cj)。
+使用示例：[examples/mcpserver](../../examples/src/mcpserver/main.cj) 或者测试代码 [test/mcp_test](../../src/test/mcp_test.cj)。
 
 #### Prompt入参
 
@@ -288,9 +288,9 @@ main(): Int64 {
 }
 ```
 
-使用示例：[examples/mcpclient](../../src/examples/mcpclient/main.cj) 。
+使用示例：[examples/mcpclient](../../examples/src/mcpclient/main.cj) 。
 
-可以使用Python的fastmcp客户端来对接CJoy开发的MCP服务端 [examples/mcpclient/client.py](../../src/examples/mcpclient/client.py) 。
+可以使用Python的fastmcp客户端来对接CJoy开发的MCP服务端 [examples/mcpclient/client.py](../../examples/src/mcpclient/client.py) 。
 
 ----
 << [返回](../../README.md#使用指导)

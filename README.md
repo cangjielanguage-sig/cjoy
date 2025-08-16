@@ -7,7 +7,7 @@ a fast，extensible，lightweight and joy cangjie web framework.<br/>
 </div>
 
 <p align="center">
-<img alt="" src="https://img.shields.io/badge/release-v0.50.0-brightgreen" style="display: inline-block;" />
+<img alt="" src="https://img.shields.io/badge/release-v0.60.0-brightgreen" style="display: inline-block;" />
 <img alt="" src="https://img.shields.io/badge/cjc-v1.0.0-brightgreen" style="display: inline-block;" />
 <img alt="" src="https://img.shields.io/badge/cjcov-70%25+-brightgreen" style="display: inline-block;" />
 <img alt="" src="https://img.shields.io/badge/state-孵化-brightgreen" style="display: inline-block;" />
@@ -73,7 +73,8 @@ a fast，extensible，lightweight and joy cangjie web framework.<br/>
 ```
 cjpm test 
 cjpm build 
-cjpm run --name cjoy.examples.tls
+cd examples
+cjpm run --name examples.tls
 ```
 
 ### 添加对本项目的依赖
@@ -137,7 +138,7 @@ func getUser(@PathParam name: String): (UInt16, UserInfo) {
 
 // 处理 GET /users
 @Get[path = "/users", produce="json"]
-func listUsers(@QueryParam[name = id, default = 00009527] id: String): Array<UserInfo> {
+func listUsers(@QueryParam[name = id, default = "00009527"] id: String): Array<UserInfo> {
     let usr = UserInfo()
     usr.id = id
     usr.name = "xiao"
@@ -156,7 +157,7 @@ main(): Int64 {
 
 ## 📎 更多示例
 
-请参见 [examples](src/examples/README.md) 。
+请参见 [examples](examples/README.md) 。
 
 ## 📖 使用指导
 
@@ -217,6 +218,17 @@ main(): Int64 {
 - [MultiPart](doc/usage_guide/multipart.md)
   - [内置缓存](doc/usage_guide/multipart.md#内置缓存) 
   - [自定义Handler](doc/usage_guide/multipart.md#自定义Handler)
+
+## 🏁 版本说明
+
+CJoy目前还在开发阶段，框架主要能力已完成开发，后续重点是提升测试覆盖率，以及增加各类中间件实现。
+
+版本发布采用打Tag的方式。您引用Cjoy可以在你的项目cjpm.toml
+
+```
+[dependencies]
+  cjoy = { git = "https://gitcode.com/Cangjie-SIG/cjoy.git", tag = "lastest tag" }
+```
 
 ## 🤝 参与贡献
 

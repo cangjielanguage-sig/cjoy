@@ -52,8 +52,8 @@ let joy2 = Joy.create(cfg, "inst2")
 joy.run("127.0.0.1", 18881)
 
 // https 1.x，绑定在127.0.0.1:18881
-let certificatePath = "src/examples/tls/server_cert.pem"
-let certificateKeyPath = "src/examples/tls/server_key.pem"
+let certificatePath = "src/tls/server_cert.pem"
+let certificateKeyPath = "src/tls/server_key.pem"
 joy.run("127.0.0.1", 18881, certificatePath, certificateKeyPath)
 
 // http2，绑定在127.0.0.1:18881

@@ -8,7 +8,7 @@
  * See the Mulan PSL v2 for more details.
  */
 
-protected package cjoy.mcp.client
+public package cjoy.mcp.client
 
 import std.time.DateTime
 import std.io.ByteBuffer

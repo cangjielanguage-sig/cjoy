@@ -2,7 +2,7 @@
 
 CJoy 提供对 `multipart` 的解释、数据缓存，提供API简化使用。
 
-使用示例：[examples/multipart](../../src/examples/multipart/main.cj) 。
+使用示例：[examples/multipart](../../examples/src/multipart/main.cj) 。
 
 ## 内置缓存
 

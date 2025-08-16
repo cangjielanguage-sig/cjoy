@@ -50,7 +50,7 @@ JoyContext提供两个函数支持对HTTP Body的绑定与映射：
  - `readJson` 或者 `bindJsonBody`：对Body内容反序列化为类与结构体
  - `json`: 序列化类与结构体对象序列化并设置Body内容
 
-使用示例：[examples/rest](../../src/examples/rest/main.cj) 。
+使用示例：[examples/rest](../../examples/src/rest/main.cj) 。
 
 ## 高级用法
 
