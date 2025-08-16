@@ -29,7 +29,7 @@ CJoy 提供WebSocket的封装，简化WebSocket消息接收与响应。
 
  - 受限于Cangjie SDK，`JoyWebSocketHandler`处理与发送消息要在同一线程中。
 
-使用示例：[examples/websocket](../../src/examples/websocket/main.cj) 。
+使用示例：[examples/websocket](../../examples/src/websocket/main.cj) 。
 
 ----
 << [返回](../../README.md#使用指导)

@@ -73,7 +73,8 @@ a fast，extensible，lightweight and joy cangjie web framework.<br/>
 ```
 cjpm test 
 cjpm build 
-cjpm run --name cjoy.examples.tls
+cd examples
+cjpm run --name examples.tls
 ```
 
 ### 添加对本项目的依赖
@@ -137,7 +138,7 @@ func getUser(@PathParam name: String): (UInt16, UserInfo) {
 
 // 处理 GET /users
 @Get[path = "/users", produce="json"]
-func listUsers(@QueryParam[name = id, default = 00009527] id: String): Array<UserInfo> {
+func listUsers(@QueryParam[name = id, default = "00009527"] id: String): Array<UserInfo> {
     let usr = UserInfo()
     usr.id = id
     usr.name = "xiao"
@@ -156,7 +157,7 @@ main(): Int64 {
 
 ## 📎 更多示例
 
-请参见 [examples](src/examples/README.md) 。
+请参见 [examples](examples/README.md) 。
 
 ## 📖 使用指导
 

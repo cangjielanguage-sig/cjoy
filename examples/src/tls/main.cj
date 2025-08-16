@@ -2,7 +2,7 @@
  * Copyright (c) 2025 lanlingx(xiaotengfei) All rights resvered.
  */
 
-package cjoy.examples.tls
+package examples.tls
 
 import cjoy.*
 import stdx.net.http.*
@@ -31,8 +31,8 @@ main(): Int64 {
     )
 
     // 启动服务
-    let certificatePath = "src/examples/tls/server_cert.pem"
-    let certificateKeyPath = "src/examples/tls/server_key.pem"
+    let certificatePath = "src/tls/server_cert.pem"
+    let certificateKeyPath = "src/tls/server_key.pem"
     joy.run("127.0.0.1", 18881, certificatePath, certificateKeyPath)
     return 0
 }

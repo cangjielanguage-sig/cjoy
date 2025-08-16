@@ -2,7 +2,7 @@
  * Copyright (c) 2025 lanlingx(xiaotengfei) All rights resvered.
  */
 
-package cjoy.examples.fileserver
+package examples.fileserver
 
 import cjoy.*
 

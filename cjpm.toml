@@ -11,29 +11,6 @@
   src-dir = ""
   target-dir = ""
   version = "0.60.0"
-  [package.package-configuration]
-    [package.package-configuration."cjoy.examples.chuncked"]
-      output-type = "executable"
-    [package.package-configuration."cjoy.examples.fileserver"]
-      output-type = "executable"
-    [package.package-configuration."cjoy.examples.macros"]
-      output-type = "executable"
-    [package.package-configuration."cjoy.examples.multipart"]
-      output-type = "executable"
-    [package.package-configuration."cjoy.examples.rest"]
-      output-type = "executable"
-    [package.package-configuration."cjoy.examples.simple"]
-      output-type = "executable"
-    [package.package-configuration."cjoy.examples.sse"]
-      output-type = "executable"
-    [package.package-configuration."cjoy.examples.tls"]
-      output-type = "executable"
-    [package.package-configuration."cjoy.examples.websocket"]
-      output-type = "executable"
-    [package.package-configuration."cjoy.examples.mcpserver"]
-      output-type = "executable"
-    [package.package-configuration."cjoy.examples.mcpclient"]
-      output-type = "executable"
 
 [target]
   [target.aarch64-linux-ohos]

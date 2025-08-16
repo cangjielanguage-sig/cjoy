@@ -2,7 +2,7 @@
  * Copyright (c) 2025 lanlingx(xiaotengfei) All rights resvered.
  */
 
-package cjoy.examples.sse
+package examples.sse
 
 import cjoy.*
 import std.sync.SyncCounter
