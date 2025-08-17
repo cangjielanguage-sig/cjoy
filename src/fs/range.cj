@@ -11,9 +11,10 @@
 package cjoy.fs
 
 import std.collection.ArrayList
+import std.convert.Parsable
 import stdx.net.http.HttpHeaders
 import cjoy.utils.StrFunc
-import std.convert.Parsable
+import cjoy.framework.JoyHttpConsts
 
 class JoyHttpRange {
     private static let PREFIX = "bytes="
@@ -25,8 +26,8 @@ class JoyHttpRange {
     }
 
     public func addToHeaders(headers: HttpHeaders, contentType: String, size: Int) {
-        headers.add("Content-Range", contentRange(size))
-        headers.add("Content-RaTypenge", contentType)
+        headers.add(JoyHttpConsts.HEADER_RANGE, contentRange(size))
+        headers.add(JoyHttpConsts.HEADER_CONTENT_TYPE, contentType)
     }
 
     public static func parse(str: String, size: Int): JoyHttpRangs {

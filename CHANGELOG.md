@@ -1,11 +1,12 @@
 Changelog
 ------
 
+- 变更：样例代码examples移到独立工程
 
 # v0.50.0
 
 - 特性：增加CORS中间件
-- 变更：oyContent从类为变成接口，方便测试Mock
+- 变更：JoyContent从类为变成接口，方便测试Mock
 - 优化：宏实现逻辑统一都移到对应模块的macros目录下
 
 # v0.40.0
@@ -20,7 +21,7 @@ Changelog
 
 - 特性：支持Query, PostForm， Header参数绑定到对象
 - 优化：重构Bind相关的代码减少重复代码
-- 变更：Context.readXXX方法变更为getXXX
+- 变更：JoyContext.readXXX方法变更为getXXX
 - 变更：JoyMultiPart.file, text, fileContent由方法变更为属性
 
 # v0.22.0
@@ -32,7 +33,7 @@ Changelog
 # v0.21.0
 
 - 特性：增加静态文件服务器能力
-- 变更：Context.readJsonBody变更为Context.readJson
+- 变更：JoyContext.readJsonBody变更为readJson
 
 # V0.20.0
 

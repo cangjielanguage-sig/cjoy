@@ -50,19 +50,24 @@ a fast，extensible，lightweight and joy cangjie web framework.<br/>
 
 **⚠️ 注意**
 
+CJoy支持Windows, Linux与MacOS，推荐您在Linux(或WSL)，MacOS中运行仓颉，让您获得更好更快的体验。
+
 请选择对应的仓颉版本：<img alt="" src="https://img.shields.io/badge/cangjie-v1.0.0-brightgreen" style="display: inline-block;" />
 
 本项目依赖仓颉stdx包，请先下载对应版本的stdx包，使用说明参见 [仓颉编程语言 stdx](https://gitcode.com/Cangjie/Cangjie-STDX) 。
 
-本项目配置要求，请把对应的stdx包解压到与Cangjie SDK并列目录cangjiestdx下：
+例如，把对应的stdx包解压到与Cangjie SDK并列目录cangjiestdx下：
 
+- $HOME
  - cangjie ： 仓颉SDK目录
  - cangjiestdx ： 新建此目录
    - linux_x86_64_llvm ： 解压对应的stdx包，不同OS目录名称不同
 
-如果stdx包不是按上述目录配置，请修改cjoy中cjpm.toml对应`[target.xx.bin-dependencies]`的`path-option`。
+设置环境变量CANGJIE_STDX_PATH指向$HOME/cangjiestdx，如在Linux与MacOS环境中，请修改用户家目录的`.bashrc`或`.zshrc`（取决于采用bash还是zsh）：
 
-推荐在Linux(或WSL)，MacOS中运行仓颉，让您获得更好更快的体验。
+```
+export CANGJIE_STDX_PATH=$HOME/cangjiestdx
+```
 
 ### 运行本项目的示例
 
@@ -223,7 +228,7 @@ main(): Int64 {
 
 CJoy目前还在开发阶段，框架主要能力已完成开发，后续重点是提升测试覆盖率，以及增加各类中间件实现。
 
-版本发布采用打Tag的方式。您引用Cjoy可以在你的项目cjpm.toml
+版本发布采用打Tag的方式。您引用Cjoy可以在你的项目cjpm.toml采用如下方式：
 
 ```
 [dependencies]
