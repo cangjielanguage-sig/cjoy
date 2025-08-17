@@ -59,9 +59,9 @@ CJoy支持Windows, Linux与MacOS，推荐您在Linux(或WSL)，MacOS中运行仓
 例如，把对应的stdx包解压到与Cangjie SDK并列目录cangjiestdx下：
 
 - $HOME
- - cangjie ： 仓颉SDK目录
- - cangjiestdx ： 新建此目录
-   - linux_x86_64_llvm ： 解压对应的stdx包，不同OS目录名称不同
+  - cangjie ： 仓颉SDK目录
+  - cangjiestdx ： 新建此目录
+    - linux_x86_64_llvm ： 解压对应的stdx包，不同OS目录名称不同
 
 设置环境变量CANGJIE_STDX_PATH指向$HOME/cangjiestdx，如在Linux与MacOS环境中，请修改用户家目录的`.bashrc`或`.zshrc`（取决于采用bash还是zsh）：
 
