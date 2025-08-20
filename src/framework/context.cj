@@ -47,6 +47,11 @@ public interface JoyContext {
      */
     prop method: String
 
+    /*
+    * return the http response status
+    */
+    prop respStatus: UInt16
+
     /**
      * set param in context
      *
@@ -366,6 +371,7 @@ class JoyHttpContext <: JoyContext {
     private let _ctxParamMap: HashMap<String, Any>
     private var _cookieCache: HashMap<String, String> = HashMap()
     private var _parsedCookie: Bool = false
+    private var _status: ?UInt16 = None
 
     // the index of executing handler chain
     var _handleIndex: Int = 0
@@ -449,6 +455,15 @@ class JoyHttpContext <: JoyContext {
     public prop method: String {
         get() {
             _httpContext.request.method
+        }
+    }
+
+    public prop respStatus: UInt16 {
+        get() {
+            match (_status) {
+                case Some(s) => s
+                case _ => HttpStatusCode.STATUS_OK
+            }
         }
     }
 
@@ -621,10 +636,12 @@ class JoyHttpContext <: JoyContext {
 
     public func status(status: UInt16): JoyContext {
         _httpContext.responseBuilder.status(status)
+        _status = status
         this
     }
 
     public func ok(): JoyContext {
+        _status = HttpStatusCode.STATUS_OK
         status(HttpStatusCode.STATUS_OK)
     }
 
