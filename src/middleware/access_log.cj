@@ -15,19 +15,19 @@ import stdx.log.Logger
 import cjoy.{JoyMiddlewareHandler, JoyRequestHandlerChain, JoyContext}
 import cjoy.log.LogTool
 
-public type LogConditionFunc = (ctx: JoyContext) -> Bool
+public type LogFilterFunc = (ctx: JoyContext) -> Bool
 
 public class AccessLog <: JoyMiddlewareHandler {
     private let _logger: Logger
-    private let _condFn: ?LogConditionFunc
+    private let _filterFn: ?LogFilterFunc
 
-    public init(logger!: ?Logger = None, fn!: ?LogConditionFunc = None) {
+    public init(logger!: ?Logger = None, filterFn!: ?LogFilterFunc = None) {
         if (let Some(l) <- logger) {
             _logger = l
         } else {
             _logger = LogTool.logger
         }
-        _condFn = fn
+        _filterFn = filterFn
     }
 
     public func handle(ctx: JoyContext, chain: JoyRequestHandlerChain): Unit {
@@ -35,13 +35,13 @@ public class AccessLog <: JoyMiddlewareHandler {
         try {
             chain.next(ctx)
         } finally {
-            if (_condFn?(ctx) ?? false) {
+            if (_filterFn?(ctx) ?? false) {
                 return
             }
+
             let clintIp = ctx.getClientIP()
             let cost = (DateTime.now().toUnixTimeStamp() - start.toUnixTimeStamp()).toMicroseconds()
-            _logger.info(
-                "[AccessLog] ${clintIp} ${ctx.method} ${ctx.httpContext.request.url} ${ctx.respStatus} ${cost}ms")
+            _logger.info("[AccessLog] ${clintIp} ${ctx.method} ${ctx.httpContext.request.url} ${ctx.respStatus} ${cost}ms")
         }
     }
 }

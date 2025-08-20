@@ -52,6 +52,11 @@ public interface JoyContext {
     */
     prop respStatus: UInt16
 
+    /*
+    * return the http request path
+    */
+    prop path: String
+
     /**
      * set param in context
      *
@@ -464,6 +469,12 @@ class JoyHttpContext <: JoyContext {
                 case Some(s) => s
                 case _ => HttpStatusCode.STATUS_OK
             }
+        }
+    }
+
+    public prop path: String {
+        get() {
+            _httpContext.request.url.path
         }
     }
 
