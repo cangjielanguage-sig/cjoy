@@ -35,6 +35,8 @@
       output-type = "executable"
     [package.package-configuration."examples.mcpclient"]
       output-type = "executable"
+    [package.package-configuration."examples.logger"]
+      output-type = "executable"
 
 [target]
   [target.aarch64-linux-ohos]

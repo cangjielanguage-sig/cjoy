@@ -14,6 +14,7 @@ import std.collection.HashMap
 import stdx.net.http.HttpStatusCode
 import stdx.encoding.base64.fromBase64String
 import cjoy.{JoyMiddlewareHandler, JoyRequestHandlerChain, JoyContext, JoyHttpConsts}
+import cjoy.log.LogTool
 
 public class BasicAuth <: JoyMiddlewareHandler {
     public BasicAuth(let realm: String, let creads: HashMap<String, String>) {}
@@ -65,6 +66,7 @@ public class BasicAuth <: JoyMiddlewareHandler {
     }
 
     private func basicAuthFailed(ctx: JoyContext) {
+        LogTool.error("[BasicAuth] auth failed, ${ctx.getClientIP()}, ${ctx.method} ${ctx.httpContext.request.url}")
         ctx.header(JoyHttpConsts.HEADER_WWW_AUTHENTICATE, "Basic realm=${realm}")
             .status(HttpStatusCode.STATUS_UNAUTHORIZED)
     }
