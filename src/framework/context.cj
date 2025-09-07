@@ -15,6 +15,7 @@ import std.io.{InputStream, ByteBuffer, copy, StringReader}
 import std.net.IPAddress
 import stdx.log.Logger
 import stdx.net.http.{HttpContext, RedirectHandler, NotFoundHandler, HttpStatusCode, HttpResponseBuilder, Cookie}
+import stdx.encoding.url.URL
 import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonReader, JsonWriter}
 import cjoy.bind.api.JoyBindable
 
@@ -56,6 +57,11 @@ public interface JoyContext {
     * return the http request path
     */
     prop path: String
+
+    /*
+    * return the http request url
+    */
+    prop url: URL
 
     /**
      * set param in context
@@ -475,6 +481,12 @@ class JoyHttpContext <: JoyContext {
     public prop path: String {
         get() {
             _httpContext.request.url.path
+        }
+    }
+
+    public prop url: URL {
+        get() {
+            _httpContext.request.url
         }
     }
 

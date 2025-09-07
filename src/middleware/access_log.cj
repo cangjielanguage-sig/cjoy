@@ -41,7 +41,7 @@ public class AccessLog <: JoyMiddlewareHandler {
 
             let clintIp = ctx.getClientIP()
             let cost = (DateTime.now().toUnixTimeStamp() - start.toUnixTimeStamp()).toMicroseconds()
-            _logger.info("[AccessLog] ${clintIp} ${ctx.method} ${ctx.httpContext.request.url} ${ctx.respStatus} ${cost}ms")
+            _logger.info("[AccessLog] ${clintIp} ${ctx.method} ${ctx.url} ${ctx.respStatus} ${cost}ms")
         }
     }
 }
