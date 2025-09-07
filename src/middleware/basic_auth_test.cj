@@ -13,6 +13,7 @@ package cjoy.middleware
 import std.collection.HashMap
 import std.unittest.mock.*
 import std.unittest.mock.mockmacro.*
+import stdx.encoding.url.URL
 import stdx.encoding.base64.toBase64String
 import stdx.net.http.HttpStatusCode
 import cjoy.framework.{JoyContext, JoyRequestHandlerChain, JoyHttpConsts}
@@ -43,6 +44,9 @@ public class BasicAuthTestCaseSuit {
     public func testAuthFailed() {
         let ctx = mock<JoyContext>()
         @On(ctx.getHeader(eq(JoyHttpConsts.HEADER_AUTHORIZATION))).returns(Some(createAuthHeader()))
+        @On(ctx.getClientIP()).returns("127.0.0.1")
+        @On(ctx.method).returns("GET")
+        @On(ctx.url).returns(URL.parse("http://127.0.0.1/abc"))
         @On(ctx.header(_, _)).returns(ctx)
         @On(ctx.status(_)).returns(ctx)
 
