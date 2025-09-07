@@ -126,7 +126,12 @@ public class JoyMultiPart {
                 throw MultiPartParseException(
                     "parse multi part failed, invalid state(${_nextState}), shoud be body line")
             }
-            r._handler.onPart(this, linebs)
+            
+            if (isEndLine(linebs)) {	
+                r._handler.onPart(this, linebs[..linebs.size - 2])
+            } else {
+                r._handler.onPart(this, linebs)
+            }
         }
 
         if (_nextState != PS_END) {
@@ -136,6 +141,10 @@ public class JoyMultiPart {
 
     private func isEmptyLine(line: Array<Byte>): Bool {
         line.size == 2 && line[0] == b'\r' && line[1] == b'\n'
+    }
+
+    private func isEndLine(line: Array<Byte>): Bool {
+        line.size > 2 && line[line.size - 2] == b'\r' && line[line.size - 1] == b'\n'
     }
 
     private func readHeaderKey(line: Array<Byte>): Array<Byte> {
