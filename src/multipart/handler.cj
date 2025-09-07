@@ -28,7 +28,7 @@ public class JoyMultiPartFuncHandler <: JoyMultiPartHandler {
     public JoyMultiPartFuncHandler(let handler: (JoyMultiPart, Array<Byte>) -> Unit) {}
 
     public func onPart(part: JoyMultiPart, data: Array<Byte>): Unit {
-        this.onPart(part, data)
+        handler(part, data)
     }
 }
 

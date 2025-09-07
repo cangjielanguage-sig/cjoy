@@ -101,19 +101,18 @@ public class JoyMultiPart {
             }
 
             // header line
-            let hKey = readHeaderKey(linebs)
-            if (!hKey.isEmpty()) {
-                if (_nextState != PS_HEADER) {
-                    throw MultiPartParseException(
-                        "parse multi part failed, invalid state(${_nextState}), shoud be header line")
+            if(_nextState == PS_HEADER) {
+                let hKey = readHeaderKey(linebs)
+                if (!hKey.isEmpty()) {
+                    headerNum++
+                    if (headerNum > r._config.maxHeaders) {
+                        throw MultiPartLimitReachedException("header limit reached, ${headerNum} > ${r._config.maxHeaders}")
+                    }
+                    _headers.add(String.fromUtf8(hKey), String.fromUtf8(linebs[(hKey.size + 1)..]))
+                    continue
                 }
-                headerNum++
-                if (headerNum > r._config.maxHeaders) {
-                    throw MultiPartLimitReachedException("header limit reached, ${headerNum} > ${r._config.maxHeaders}")
-                }
-                _headers.add(String.fromUtf8(hKey), String.fromUtf8(linebs[(hKey.size + 1)..]))
-                continue
             }
+            
 
             // end with dash line
             if (r.isDashLine(linebs)) {
@@ -127,12 +126,7 @@ public class JoyMultiPart {
                 throw MultiPartParseException(
                     "parse multi part failed, invalid state(${_nextState}), shoud be body line")
             }
-            if (isEndLine(linebs)) {
-                r._handler.onPart(this, linebs[..linebs.size - 2])
-                _nextState = PS_END
-            } else {
-                r._handler.onPart(this, linebs)
-            }
+            r._handler.onPart(this, linebs)
         }
 
         if (_nextState != PS_END) {
@@ -142,10 +136,6 @@ public class JoyMultiPart {
 
     private func isEmptyLine(line: Array<Byte>): Bool {
         line.size == 2 && line[0] == b'\r' && line[1] == b'\n'
-    }
-
-    private func isEndLine(line: Array<Byte>): Bool {
-        line.size > 2 && line[line.size - 2] == b'\r' && line[line.size - 1] == b'\n'
     }
 
     private func readHeaderKey(line: Array<Byte>): Array<Byte> {
