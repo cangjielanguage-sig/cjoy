@@ -41,7 +41,7 @@ public class JoyNotFoundHandler <: JoyRequestHandler {
 
 public class JoyMethodNotAllowedHandler <: JoyRequestHandler {
     public func handle(ctx: JoyContext): Unit {
-        let methods: Collection<String> = ctx.getCtxParm<Collection<String>>("methods").getOrThrow()
+        let methods: Collection<String> = ctx.getCtxParam<Collection<String>>("methods").getOrThrow()
         methods |> forEach {val => ctx.header("Allow", val)}
         ctx.status(HttpStatusCode.STATUS_METHOD_NOT_ALLOWED)
     }

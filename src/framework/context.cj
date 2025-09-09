@@ -79,7 +79,7 @@ public interface JoyContext {
      * @return the param value
      *
      */
-    func getCtxParm<T>(key: String): ?T
+    func getCtxParam<T>(key: String): ?T
 
     /**
      * get url path param from context
@@ -494,7 +494,7 @@ class JoyHttpContext <: JoyContext {
         _ctxParamMap.add(key, value)
     }
 
-    public func getCtxParm<T>(key: String): ?T {
+    public func getCtxParam<T>(key: String): ?T {
         let val = _ctxParamMap.get(key)
         match (val) {
             case Some(v) => v as T

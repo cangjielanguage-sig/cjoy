@@ -49,8 +49,8 @@ joy.router
 |BasicAuth|Basic认证|
 |ExceptionHandler|异常兜底|
 |AccessLog|[请求日志](../../doc/usage_guide/logger.md)|
-|CORS|跨源资源共享(实验性探索)|
-|SessionManager|会话管理(实验性探索)|
+|SessionManager|[会话管理](../../doc/usage_guide/session.md)|
+|CORS|跨源资源共享(待验证)|
 
 ----
 << [返回](../../README.md#使用指导)
