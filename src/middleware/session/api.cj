@@ -27,6 +27,11 @@ public interface JoySession {
     prop id: String
 
     /**
+     * return the invalidated status
+     */
+    prop isInvalidated: Bool
+
+    /**
      * set value to given key in session.
      */
     func set<T>(key: String, value: T): Unit where T <: JsonSerializable & JsonDeserializable<T>
@@ -45,6 +50,11 @@ public interface JoySession {
      * flush to storage when handling http request finished
      */
     func flush(): Unit
+
+    /**
+     * delete the session
+     */
+    func invalidate(): Unit
 }
 
 /**
@@ -98,7 +108,7 @@ public interface JoySessionStorage {
  * Get session from context
  */
 public func GetSession(ctx: JoyContext): ?JoySession {
-    ctx.getCtxParm("__session__")
+    ctx.getCtxParam("__session__")
 }
 
 /**
@@ -146,11 +156,25 @@ public class SessionManager <: JoyMiddlewareHandler {
         try {
             chain.next(ctx)
         } finally {
-            session.flush()
+            // When there are multiple SessionMangers, the last registered SessionManger overrides the previous one
+            if (ctx.getCtxParam<Bool>("__set_session___").isSome()) {
+                session.invalidate()
+                return
+            }
+
+            ctx.setCtxParam("__set_session___", true)
+
+            // set-cookie
+            var maxAge = _config.cookieMaxAge
+            if (session.isInvalidated) {
+                newCookie = true
+                maxAge = 0 // delete the cookie 
+            } else {
+                session.flush()
+            }
             if (newCookie) {
-                let c = Cookie(_config.cookieName, session.id, maxAge: _config.cookieMaxAge,
-                    domain: _config.cookieDomain, path: _config.cookiePath, secure: _config.cookieSecure,
-                    httpOnly: _config.cookieHttpOnly)
+                let c = Cookie(_config.cookieName, session.id, maxAge: maxAge, domain: _config.cookieDomain,
+                    path: _config.cookiePath, secure: _config.cookieSecure, httpOnly: _config.cookieHttpOnly)
                 ctx.cookie(c)
             }
         }

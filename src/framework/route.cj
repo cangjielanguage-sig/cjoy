@@ -315,7 +315,7 @@ class JoyRouteGroup <: JoyRouters {
 
     private static func checkPath(path: String): Unit {
         if (path.size > 1 && path[0] != b'/') {
-            throw IllegalArgumentException("path [$[path}] must start with slash")
+            throw IllegalArgumentException("path [${path}] must start with slash")
         }
     }
 

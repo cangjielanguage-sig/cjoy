@@ -37,6 +37,8 @@
       output-type = "executable"
     [package.package-configuration."examples.logger"]
       output-type = "executable"
+    [package.package-configuration."examples.session"]
+      output-type = "executable"
 
 [target]
   [target.aarch64-linux-ohos]

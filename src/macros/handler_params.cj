@@ -162,11 +162,11 @@ class ContextParamVarGenerator <: ParamInfo {
 
     public override func genTokens(): Tokens {
         if (typeNode.vtype.value == "Option") {
-            return quote(let $(pname): ?$(typeNode.genericType)= ctx.getCtxParm<$(typeNode.genericType)>($(this.getName()))
+            return quote(let $(pname): ?$(typeNode.genericType)= ctx.getCtxParam<$(typeNode.genericType)>($(this.getName()))
             )
         } else {
             return quote(
-                let $(pname): $(typeNode.vtype)= ctx.getCtxParm<$(typeNode.vtype)>($(this.getName())).getOrThrow()
+                let $(pname): $(typeNode.vtype)= ctx.getCtxParam<$(typeNode.vtype)>($(this.getName())).getOrThrow()
             )
         }
     }

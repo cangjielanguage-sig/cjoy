@@ -14,8 +14,15 @@ package cjoy.middleware.session
 * the memory session
 */
 class MemorySession <: AbstractSession {
-    public init(sid: String) {
+    private let _storage: JoySessionStorage
+    public init(sid: String, storage: JoySessionStorage) {
         super(sid)
+        _storage = storage
+    }
+
+    public func invalidate(): Unit {
+        super.invalidate()
+        _storage.delete(_sid)
     }
 }
 
@@ -31,6 +38,6 @@ public class MemorySessionStorage <: AbstractSessionStorage {
     }
 
     protected func createSession(sid: String): AbstractSession {
-        MemorySession(sid)
+        MemorySession(sid, this)
     }
 }

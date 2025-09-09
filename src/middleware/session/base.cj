@@ -19,6 +19,7 @@ sealed abstract class AbstractSession <: JoySession {
     let _sid: String
     let _data: ConcurrentHashMap<String, Any> = ConcurrentHashMap()
     var _lastAccessTime: DateTime = DateTime.now()
+    var _invalidated: Bool = false
 
     public init(sid: String) {
         _sid = sid
@@ -27,6 +28,12 @@ sealed abstract class AbstractSession <: JoySession {
     public prop id: String {
         get() {
             _sid
+        }
+    }
+
+    public prop isInvalidated: Bool {
+        get() {
+            _invalidated
         }
     }
 
@@ -43,6 +50,10 @@ sealed abstract class AbstractSession <: JoySession {
     }
 
     public open func flush(): Unit {
+    }
+
+    public open func invalidate(): Unit {
+        _invalidated = true
     }
 
     func updateAccessTime() {
