@@ -257,7 +257,7 @@ public class JoyWebSocketSession {
     /*
      * obtain the handleshake context param
      */
-    public func getCtxParm<T>(key: String): ?T {
+    public func getCtxParam<T>(key: String): ?T {
         let val = _ctxParamMap.get(key)
         match (val) {
             case Some(v) => v as T

@@ -36,7 +36,7 @@ Handler的入参JoyContext提供上下文支持对HTTP获取与回响应处理�
 
 |函数|说明|
 |---|---|
-|getCtxParm|获取上下文参数，如在Middleware中设置上下文信息|
+|getCtxParam|获取上下文参数，如在Middleware中设置上下文信息|
 |getParam|获取URL Path上的参数|
 |getQuery|获取URL QueryString上的参数|
 |getPostForm|获取PostForm的参数|

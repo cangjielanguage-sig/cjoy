@@ -26,7 +26,7 @@ class UserInfo {
 
 public class JoyTestMiddleware <: JoyMiddlewareHandler {
     public func handle(ctx: JoyContext, chain: JoyRequestHandlerChain): Unit {
-        let numOpt = ctx.getCtxParm<Int>("num")
+        let numOpt = ctx.getCtxParam<Int>("num")
         match (numOpt) {
             case Some(num) => ctx.setCtxParam("num", num + 1)
             case _ => ctx.setCtxParam("num", 1)
@@ -108,7 +108,7 @@ public class RouteTestCaseSuit {
                     "/mw-num-inline",
                     {
                         ctx: JoyContext =>
-                        let num = ctx.getCtxParm<Int>("num").getOrThrow()
+                        let num = ctx.getCtxParam<Int>("num").getOrThrow()
                         ctx.string("${num}")
                     }
                 )
@@ -116,7 +116,7 @@ public class RouteTestCaseSuit {
                 "/mw-num",
                 {
                     ctx: JoyContext =>
-                    let num = ctx.getCtxParm<Int>("num").getOrThrow()
+                    let num = ctx.getCtxParam<Int>("num").getOrThrow()
                     ctx.string("${num}")
                 }
             )
@@ -128,7 +128,7 @@ public class RouteTestCaseSuit {
                 "/",
                 {
                     ctx: JoyContext =>
-                    let num = ctx.getCtxParm<Int>("num").getOrThrow()
+                    let num = ctx.getCtxParam<Int>("num").getOrThrow()
                     ctx.string("/group/,${num}")
                 }
             )
@@ -139,7 +139,7 @@ public class RouteTestCaseSuit {
                     "/path",
                     {
                         ctx: JoyContext =>
-                        let num = ctx.getCtxParm<Int>("num").getOrThrow()
+                        let num = ctx.getCtxParam<Int>("num").getOrThrow()
                         ctx.string("/group/path,${num}")
                     }
                 )
