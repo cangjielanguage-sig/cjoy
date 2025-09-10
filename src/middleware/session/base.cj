@@ -15,7 +15,7 @@ import std.time.DateTime
 import std.sync.Mutex
 import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable}
 
-sealed abstract class AbstractSession <: JoySession {
+abstract sealed class AbstractSession <: JoySession {
     let _sid: String
     let _data: ConcurrentHashMap<String, Any> = ConcurrentHashMap()
     var _lastAccessTime: DateTime = DateTime.now()
@@ -61,7 +61,6 @@ sealed abstract class AbstractSession <: JoySession {
     }
 }
 
-
 protected abstract class AbstractSessionStorage <: JoySessionStorage {
     let _sessions: ConcurrentHashMap<String, AbstractSession> = ConcurrentHashMap()
     let _lock: Mutex = Mutex()
@@ -85,18 +84,25 @@ protected abstract class AbstractSessionStorage <: JoySessionStorage {
     }
 
     public func getOrCreate(sid: String): JoySession {
-        let s = _sessions.get(sid)
+        var s = _sessions.get(sid)
         if (s.isNone()) {
             synchronized(_lock) {
-                let ns = createSession(sid)
-                _sessions.add(sid, ns)
-                ns
+                s = _sessions.get(sid)
+                if (s.isNone()) {
+                    let ns = createSession(sid)
+                    _sessions.add(sid, ns)
+                    return ns
+                }
             }
-        } else {
-            let session = s.getOrThrow()
-            session.updateAccessTime()
-            session
         }
+        
+        let session = s.getOrThrow()
+        session.updateAccessTime()
+        session
+    }
+
+    public func exists(sid: String): Bool {
+        _sessions.contains(sid)
     }
 
     protected func createSession(sid: String): AbstractSession

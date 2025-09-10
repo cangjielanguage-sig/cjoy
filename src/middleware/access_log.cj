@@ -12,16 +12,14 @@ package cjoy.middleware
 
 import std.time.DateTime
 import stdx.log.Logger
-import cjoy.{JoyMiddlewareHandler, JoyRequestHandlerChain, JoyContext}
+import cjoy.{JoyMiddlewareHandler, JoyRequestHandlerChain, JoyContext, JoyRequestFilterFunc}
 import cjoy.log.LogTool
-
-public type LogFilterFunc = (ctx: JoyContext) -> Bool
 
 public class AccessLog <: JoyMiddlewareHandler {
     private let _logger: Logger
-    private let _filterFn: ?LogFilterFunc
+    private let _filterFn: ?JoyRequestFilterFunc
 
-    public init(logger!: ?Logger = None, filterFn!: ?LogFilterFunc = None) {
+    public init(logger!: ?Logger = None, filterFn!: ?JoyRequestFilterFunc = None) {
         if (let Some(l) <- logger) {
             _logger = l
         } else {

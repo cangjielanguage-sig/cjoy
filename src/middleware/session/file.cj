@@ -12,7 +12,7 @@ package cjoy.middleware.session
 
 import std.collection.HashSet
 import std.fs.{Path, File, FileInfo, Directory, exists, removeIfExists, canonicalize, OpenMode}
-import std.sync.ReadWriteLock
+import std.sync.Mutex
 import std.io.{ByteBuffer, readToEnd}
 import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonReader, JsonWriter, JsonToken}
 
@@ -23,7 +23,7 @@ class FileSession <: AbstractSession {
     let _path: Path // root path
     private let _updates: HashSet<String> = HashSet()
     private let _removes: HashSet<String> = HashSet()
-    private let _lock: ReadWriteLock = ReadWriteLock()
+    private let _lock: Mutex = Mutex()
     private let _storage: JoySessionStorage
 
     public init(sid: String, path: Path, storage: JoySessionStorage) {
@@ -34,14 +34,14 @@ class FileSession <: AbstractSession {
     }
 
     public func set<T>(key: String, value: T): Unit where T <: JsonSerializable & JsonDeserializable<T> {
-        synchronized(_lock.writeLock) {
+        synchronized(_lock) {
             _updates.add(key)
         }
         super.set(key, value)
     }
 
     public func remove<T>(key: String): ?T where T <: JsonSerializable & JsonDeserializable<T> {
-        synchronized(_lock.writeLock) {
+        synchronized(_lock) {
             _removes.add(key)
         }
         super.remove(key)
@@ -67,7 +67,7 @@ class FileSession <: AbstractSession {
 
     public func flush(): Unit {
         // save to disk
-        synchronized(_lock.readLock) {
+        synchronized(_lock) {
             for (it in _updates) {
                 if (let Some(d) <- ((_data.get(it) ?? Option<Any>.None) as JsonSerializable)) {
                     let filePath = _path.join(it)
@@ -85,9 +85,7 @@ class FileSession <: AbstractSession {
                 let p = _path.join(it)
                 removeIfExists(p)
             }
-        }
 
-        synchronized(_lock.writeLock) {
             _updates.clear()
             _removes.clear()
         }

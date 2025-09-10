@@ -13,3 +13,7 @@
 - [mcpserver](src/mcpserver/main.cj): MCP Server
 - [mcpclient](src/mcpclient/main.cj): MCP Client
 - [session](src/session/main.cj): Session
+- [reqeust id](src/requestid/main.cj): 获取或生成请求ID
+- [no cache](src/nocache/main.cj): 禁用缓存
+- [token auth](src/tokenauth/main.cj): 基于Token认证
+- [CRSF](src/crsf/main.cj): 防跨站请求伪造攻击
