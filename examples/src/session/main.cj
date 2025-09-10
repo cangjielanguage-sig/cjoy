@@ -21,7 +21,7 @@ class UserInfo {
 @Get[path = "/session"]
 func getSession1(ctx: JoyContext): String {
     // 获取当前Session
-    let session = GetSession(ctx).getOrThrow()
+    let session = getSession(ctx).getOrThrow()
     let user = UserInfo()
     user.id = "0009527"
     user.name = "xiao"
@@ -38,7 +38,7 @@ func getSession2(ctx: JoyContext): String {
 
 @Get[path = "/user_info", produce = "json"]
 func getUesrInfo1(ctx: JoyContext): JsonSerializable {
-    let session = GetSession(ctx).getOrThrow()
+    let session = getSession(ctx).getOrThrow()
     // 在Session上获取其它请求存储的信息
     let user = session.get<UserInfo>("user")
     if (let Some(u) <- user) {

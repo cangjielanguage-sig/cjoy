@@ -69,8 +69,8 @@ public open class ChunkedWriter {
         _httpContext = httpContext
         let responseBuilder = httpContext.responseBuilder
         responseBuilder.status(HttpStatusCode.STATUS_OK)
-        responseBuilder.header("Transfer-Encoding", "chunked")
-        responseBuilder.header("Connection", "keep-alive")
+        responseBuilder.header(JoyHttpConsts.HEADER_TRANSFER_ENCODING, "chunked")
+        responseBuilder.header(JoyHttpConsts.HEADER_CONNECTION, "keep-alive")
         _httpResponseWriter = HttpResponseWriter(httpContext)
     }
 
@@ -128,8 +128,8 @@ public class JoySseEmitter <: ChunkedWriter {
     init(httpContext: HttpContext) {
         super(httpContext)
         let responseBuilder = httpContext.responseBuilder
-        responseBuilder.header("Content-Type", "text/event-stream")
-        responseBuilder.header("Cache-Control", "no-cache")
+        responseBuilder.header(JoyHttpConsts.HEADER_CONTENT_TYPE, JoyHttpConsts.MIME_TEXT_EVENT_STREAM)
+        responseBuilder.header(JoyHttpConsts.HEADER_CACHE_CONTROL, "no-cache")
     }
 
     /**

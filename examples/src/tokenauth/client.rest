@@ -1,0 +1,25 @@
+@host=http://127.0.0.1:18881
+
+### query token auth
+GET {{host}}/token_auth/query?token=abc HTTP/1.1
+content-type: application/json
+
+### param token auth
+GET {{host}}/token_auth/param/abc HTTP/1.1
+content-type: application/json
+
+### form token auth
+POST {{host}}/token_auth/form HTTP/1.1
+content-Type: application/x-www-form-urlencoded; charset=UTF-8
+
+action=user_login&token=abc
+
+### header token auth
+GET {{host}}/token_auth/header HTTP/1.1
+content-type: application/json
+Authorization: Bearer abc
+
+### cookie token auth
+GET {{host}}/token_auth/cookie HTTP/1.1
+content-type: application/json
+cookie: token=abc

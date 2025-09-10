@@ -74,8 +74,8 @@ public struct JoySessionConfig {
         public let cookieMaxAge!: Int = 3600,
         // Cookie domain name. Default is empty.
         public let cookieDomain!: String = "",
-        // Session ID length. Default is 16.
-        public let idLength!: Int = 16
+        // Session ID length. Default is 32.
+        public let idLength!: Int = 32
     ) {}
 }
 
@@ -84,7 +84,7 @@ public struct JoySessionConfig {
  */
 public interface JoySessionStorage {
     /**
-     * the session size
+     * the size of sessions
      */
     prop size: Int
 
@@ -94,9 +94,14 @@ public interface JoySessionStorage {
     func delete(sid: String): Unit
 
     /**
-     * get or create  new session
+     * get or create new session
      */
     func getOrCreate(sid: String): JoySession
+
+    /**
+     * exist or not
+     */
+    func exists(sid: String): Bool
 
     /**
      * clean expired sessions
@@ -107,7 +112,7 @@ public interface JoySessionStorage {
 /**
  * Get session from context
  */
-public func GetSession(ctx: JoyContext): ?JoySession {
+public func getSession(ctx: JoyContext): ?JoySession {
     ctx.getCtxParam("__session__")
 }
 
@@ -144,26 +149,27 @@ public class SessionManager <: JoyMiddlewareHandler {
             ctx.setCtxParam("__session__", sess)
             sess
         } else {
-            newCookie = true // create session cookie
             synchronized(_lock) {
-                let sid = randStr(Int32(_config.idLength / 2))
-                let sess = _storage.getOrCreate(sid)
-                ctx.setCtxParam("__session__", sess)
-                sess
+                let existed = ctx.getCtxParam<JoySession>("__session__")
+                if (let Some(s) <- existed) {
+                    if (!_storage.exists(s.id)) {
+                        s.invalidate()
+                        // overrides session which created by last SessionManager
+                        newCookie = true
+                        createNewSessoin(ctx)
+                    } else {
+                        s
+                    }
+                } else {
+                    newCookie = true
+                    createNewSessoin(ctx)
+                }
             }
         }
 
         try {
             chain.next(ctx)
         } finally {
-            // When there are multiple SessionMangers, the last registered SessionManger overrides the previous one
-            if (ctx.getCtxParam<Bool>("__set_session___").isSome()) {
-                session.invalidate()
-                return
-            }
-
-            ctx.setCtxParam("__set_session___", true)
-
             // set-cookie
             var maxAge = _config.cookieMaxAge
             if (session.isInvalidated) {
@@ -178,5 +184,12 @@ public class SessionManager <: JoyMiddlewareHandler {
                 ctx.cookie(c)
             }
         }
+    }
+
+    private func createNewSessoin(ctx: JoyContext): JoySession {
+        let sid = randStr(Int32(_config.idLength / 2))
+        let sess = _storage.getOrCreate(sid)
+        ctx.setCtxParam("__session__", sess)
+        sess
     }
 }

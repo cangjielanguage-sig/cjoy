@@ -45,7 +45,7 @@ SessionManager(storage, config: JoySessionConfig(cookieName: "sid" ...))
 
 ```
 // 先获取Session对象
-let session = GetSession(ctx).getOrThrow()
+let session = getSession(ctx).getOrThrow()
 ```
 
 - set: 在Session上存储信息

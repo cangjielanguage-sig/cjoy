@@ -34,7 +34,7 @@ public interface JoyRouters {
      * change the course of the request execution.
      */
     func use(mw: JoyMiddlewareHandler): JoyRouters
-    func use(mw: (ctx: JoyContext, chain: JoyRequestHandlerChain) -> Unit): JoyRouters {
+    func use(mw: JoyMiddlewareFunc): JoyRouters {
         use(JoyMiddlewareFuncHandler(mw))
     }
 
@@ -60,7 +60,7 @@ public interface JoyRouters {
      * adds the route `pattern` that matches `GET` http method to execute the `handler`.
      */
     func get(pattern: String, handler: JoyRequestHandler): JoyRouters
-    func get(pattern: String, handler: (ctx: JoyContext) -> Unit): JoyRouters {
+    func get(pattern: String, handler: JoyRequestHandlerFunc): JoyRouters {
         get(pattern, JoyFuncHandler(handler))
     }
 
@@ -68,7 +68,7 @@ public interface JoyRouters {
      * adds the route `pattern` that matches `POST` http method to execute the `handler`.
      */
     func post(pattern: String, handler: JoyRequestHandler): JoyRouters
-    func post(pattern: String, handler: (ctx: JoyContext) -> Unit): JoyRouters {
+    func post(pattern: String, handler: JoyRequestHandlerFunc): JoyRouters {
         post(pattern, JoyFuncHandler(handler))
     }
 
@@ -76,7 +76,7 @@ public interface JoyRouters {
      * adds the route `pattern` that matches `PUT` http method to execute the `handler`.
      */
     func put(pattern: String, handler: JoyRequestHandler): JoyRouters
-    func put(pattern: String, handler: (ctx: JoyContext) -> Unit): JoyRouters {
+    func put(pattern: String, handler: JoyRequestHandlerFunc): JoyRouters {
         put(pattern, JoyFuncHandler(handler))
     }
 
@@ -84,7 +84,7 @@ public interface JoyRouters {
      * adds the route `pattern` that matches `DELETE` http method to execute the `handler`.
      */
     func delete(pattern: String, handler: JoyRequestHandler): JoyRouters
-    func delete(pattern: String, handler: (ctx: JoyContext) -> Unit): JoyRouters {
+    func delete(pattern: String, handler: JoyRequestHandlerFunc): JoyRouters {
         delete(pattern, JoyFuncHandler(handler))
     }
 
@@ -92,7 +92,7 @@ public interface JoyRouters {
      * adds the route `pattern` that matches `PATCH` http method to execute the `handler`.
      */
     func patch(pattern: String, handler: JoyRequestHandler): JoyRouters
-    func patch(pattern: String, handler: (ctx: JoyContext) -> Unit): JoyRouters {
+    func patch(pattern: String, handler: JoyRequestHandlerFunc): JoyRouters {
         patch(pattern, JoyFuncHandler(handler))
     }
 
@@ -100,7 +100,7 @@ public interface JoyRouters {
      * adds the route `pattern` that matches `OPTIONS` http method to execute the `handler`.
      */
     func options(pattern: String, handler: JoyRequestHandler): JoyRouters
-    func options(pattern: String, handler: (ctx: JoyContext) -> Unit): JoyRouters {
+    func options(pattern: String, handler: JoyRequestHandlerFunc): JoyRouters {
         options(pattern, JoyFuncHandler(handler))
     }
 
@@ -108,7 +108,7 @@ public interface JoyRouters {
      * adds the route `pattern` that matches `HEAD` http method to execute the `handler`.
      */
     func head(pattern: String, handler: JoyRequestHandler): JoyRouters
-    func head(pattern: String, handler: (ctx: JoyContext) -> Unit): JoyRouters {
+    func head(pattern: String, handler: JoyRequestHandlerFunc): JoyRouters {
         head(pattern, JoyFuncHandler(handler))
     }
 
@@ -116,7 +116,7 @@ public interface JoyRouters {
      * adds the route `pattern` that matches `method` http method to execute the `handler`.
      */
     func handle(methods: Array<String>, pattern: String, handler: JoyRequestHandler): JoyRouters
-    func handle(methods: Array<String>, pattern: String, handler: (ctx: JoyContext) -> Unit): JoyRouters {
+    func handle(methods: Array<String>, pattern: String, handler: JoyRequestHandlerFunc): JoyRouters {
         handle(methods, pattern, JoyFuncHandler(handler))
     }
 
@@ -187,7 +187,7 @@ class TreeRouteDistributor <: HttpRequestDistributor & HttpRequestHandler {
         }
 
         if (ri.handler.isNone()) {
-            if (req.method == "OPTIONS") {
+            if (req.method == JoyHttpConsts.METHOD_OPTIONS) {
                 ri.handler = JoyOptionsHandler.INSTANCE
                 return ri
             }
@@ -324,7 +324,9 @@ class JoyRouteGroup <: JoyRouters {
             throw IllegalArgumentException("a handler on an existing path, `${_path}`")
         }
 
-        let allMethods = ["GET", "POST", "DELETE", "PUT", "PATCH", "HEAD", "OPTIONS"]
+        let allMethods = [JoyHttpConsts.METHOD_GET, JoyHttpConsts.METHOD_POST, JoyHttpConsts.METHOD_DELETE,
+            JoyHttpConsts.METHOD_PUT, JoyHttpConsts.METHOD_PATCH, JoyHttpConsts.METHOD_HEAD,
+            JoyHttpConsts.METHOD_OPTIONS]
         groupHandle(allMethods, "", JoyGroupRouteHandler.INSTANCE)
         var xpattern = "/"
         groupHandle(allMethods, xpattern, JoyGroupRouteHandler.INSTANCE)
@@ -373,37 +375,37 @@ class JoyRouteGroup <: JoyRouters {
     }
 
     public func get(pattern: String, handler: JoyRequestHandler): JoyRouters {
-        handle(["GET"], pattern, handler)
+        handle([JoyHttpConsts.METHOD_GET], pattern, handler)
         this
     }
 
     public func post(pattern: String, handler: JoyRequestHandler): JoyRouters {
-        handle(["POST"], pattern, handler)
+        handle([JoyHttpConsts.METHOD_POST], pattern, handler)
         this
     }
 
     public func put(pattern: String, handler: JoyRequestHandler): JoyRouters {
-        handle(["PUT"], pattern, handler)
+        handle([JoyHttpConsts.METHOD_PUT], pattern, handler)
         this
     }
 
     public func delete(pattern: String, handler: JoyRequestHandler): JoyRouters {
-        handle(["DELETE"], pattern, handler)
+        handle([JoyHttpConsts.METHOD_DELETE], pattern, handler)
         this
     }
 
     public func patch(pattern: String, handler: JoyRequestHandler): JoyRouters {
-        handle(["PATCH"], pattern, handler)
+        handle([JoyHttpConsts.METHOD_PATCH], pattern, handler)
         this
     }
 
     public func options(pattern: String, handler: JoyRequestHandler): JoyRouters {
-        handle(["OPTIONS"], pattern, handler)
+        handle([JoyHttpConsts.METHOD_OPTIONS], pattern, handler)
         this
     }
 
     public func head(pattern: String, handler: JoyRequestHandler): JoyRouters {
-        handle(["HEAD"], pattern, handler)
+        handle([JoyHttpConsts.METHOD_HEAD], pattern, handler)
         this
     }
 
@@ -456,12 +458,12 @@ class JoyRouteGroup <: JoyRouters {
             throw FSException("invalid file, filepath=${filepath}")
         }
 
-        handle(["GET"], relativePath, JoyFileServeHandler(fp.toString()))
+        handle([JoyHttpConsts.METHOD_GET], relativePath, JoyFileServeHandler(fp.toString()))
         this
     }
 
     public func websocket(pattern: String, handler: JoyWebSocketHandler): JoyRouters {
-        handle(["GET"], pattern, JoyWebSocketUpgradeHandler(handler))
+        handle([JoyHttpConsts.METHOD_GET], pattern, JoyWebSocketUpgradeHandler(handler))
         this
     }
 }

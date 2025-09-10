@@ -51,6 +51,11 @@ joy.router
 |AccessLog|[请求日志](../../doc/usage_guide/logger.md)|
 |SessionManager|[会话管理](../../doc/usage_guide/session.md)|
 |CORS|跨源资源共享(待验证)|
+|RequestId|[请求Id](../../examples/src/requestid/main.cj)|
+|NoCache|[禁用缓存](../../examples/src/nocache/main.cj)|
+|TokenAuth|[Token认证](../../examples/src/tokenauth//main.cj)|
+|CrsfProtect|[CRSF保护](../../examples/src/crsf/main.cj)|
+|Security|安全头域设置|
 
 ----
 << [返回](../../README.md#使用指导)

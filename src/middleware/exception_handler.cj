@@ -16,6 +16,9 @@ import cjoy.{JoyMiddlewareHandler, JoyRequestHandlerChain, JoyContext}
 import cjoy.validation.JoyValidationException
 import cjoy.log.LogTool
 
+/**
+ * covering catch all exception
+ */
 public class ExceptionHandler <: JoyMiddlewareHandler {
     public func handle(ctx: JoyContext, chain: JoyRequestHandlerChain): Unit {
         try {
@@ -29,12 +32,9 @@ public class ExceptionHandler <: JoyMiddlewareHandler {
                 case _: NoneValueException =>
                     // for Option.getOrThrow, Parable.parse
                     ctx.status(HttpStatusCode.STATUS_BAD_REQUEST)
-                case _: IllegalArgumentException =>
-                    ctx.status(HttpStatusCode.STATUS_BAD_REQUEST)
-                case e: JoyValidationException =>
-                    ctx.status(HttpStatusCode.STATUS_BAD_REQUEST).json(e.toMap())
-                case _ => 
-                    ctx.status(HttpStatusCode.STATUS_INTERNAL_SERVER_ERROR)
+                case _: IllegalArgumentException => ctx.status(HttpStatusCode.STATUS_BAD_REQUEST)
+                case e: JoyValidationException => ctx.status(HttpStatusCode.STATUS_BAD_REQUEST).json(e.toMap())
+                case _ => ctx.status(HttpStatusCode.STATUS_INTERNAL_SERVER_ERROR)
             }
         }
     }

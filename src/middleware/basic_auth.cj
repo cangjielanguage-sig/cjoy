@@ -16,10 +16,23 @@ import stdx.encoding.base64.fromBase64String
 import cjoy.{JoyMiddlewareHandler, JoyRequestHandlerChain, JoyContext, JoyHttpConsts}
 import cjoy.log.LogTool
 
+public type BasicAuthFilterFunc = (ctx: JoyContext) -> Bool
+
+/**
+ * the basic authorization
+ */
 public class BasicAuth <: JoyMiddlewareHandler {
-    public BasicAuth(let realm: String, let creads: HashMap<String, String>) {}
+    public BasicAuth(let realm: String, let creads: HashMap<String, String>,
+        let filterFunc!: ?BasicAuthFilterFunc = None) {}
 
     public func handle(ctx: JoyContext, chain: JoyRequestHandlerChain): Unit {
+        if (let Some(fn) <- filterFunc) {
+            if (fn(ctx)) {
+                chain.next(ctx)
+                return
+            }
+        }
+
         let (user, pwd, ok) = basicAuth(ctx)
         if (!ok) {
             basicAuthFailed(ctx)
@@ -68,6 +81,6 @@ public class BasicAuth <: JoyMiddlewareHandler {
     private func basicAuthFailed(ctx: JoyContext) {
         LogTool.error("[BasicAuth] auth failed, ${ctx.getClientIP()}, ${ctx.method} ${ctx.url}")
         ctx.header(JoyHttpConsts.HEADER_WWW_AUTHENTICATE, "Basic realm=${realm}")
-            .status(HttpStatusCode.STATUS_UNAUTHORIZED)
+        ctx.status(HttpStatusCode.STATUS_UNAUTHORIZED)
     }
 }
