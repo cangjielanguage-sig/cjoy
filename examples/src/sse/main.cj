@@ -8,10 +8,8 @@ import cjoy.*
 import std.sync.SyncCounter
 
 main(): Int64 {
-    var cfg = JoyConfig()
-    cfg.enableDebugLog = true
     // 创建joy实例
-    let joy = Joy.create(cfg)
+    let joy = Joy.default()
     // 注册路由
     joy.router.get("/sse", {
         ctx: JoyContext =>

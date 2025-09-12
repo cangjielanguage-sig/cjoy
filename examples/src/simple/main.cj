@@ -9,10 +9,8 @@ import cjoy.*
 import cjoy.middleware.*
 
 main(): Int64 {
-    var cfg = JoyConfig()
-    cfg.enableDebugLog = true
     // 创建joy实例
-    let joy = Joy.create(cfg)
+    let joy = Joy.default()
 
     // 注册路由
     let router = joy.router

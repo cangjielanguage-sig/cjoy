@@ -43,10 +43,8 @@ func testMiddleware(ctx: JoyContext, chain: JoyRequestHandlerChain): Unit {
 }
 
 main(): Int64 {
-    var cfg = JoyConfig()
-    cfg.enableDebugLog = true
     // 创建joy实例
-    let joy = Joy.create(cfg)
+    let joy = Joy.default()
     // 注册生成的handlers
     joy.router.use(ExceptionHandler())
     JoyMiddlewares.registerTo(joy)

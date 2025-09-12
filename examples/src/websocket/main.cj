@@ -26,10 +26,8 @@ class TextEchoJoyWebSocketHandler <: JoyWebSocketHandler {
 }
 
 main(): Int64 {
-       var cfg = JoyConfig()
-    cfg.enableDebugLog = true
     // 创建joy实例
-    let joy = Joy.create(cfg)
+    let joy = Joy.default()
     // 注册路由
     joy.router.websocket("/ws/chat/{name}", TextEchoJoyWebSocketHandler())
     // 启动服务
