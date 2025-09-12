@@ -63,10 +63,8 @@ class UserHandler {
 }
 
 main(): Int64 {
-    var cfg = JoyConfig()
-    cfg.enableDebugLog = true
-    let joy = Joy.create(cfg)
-
+    let joy = Joy.default()
+    
     let userHandler = UserHandler()
     joy.router.post("/users", userHandler.create)
     joy.router.get("/users/{name}", userHandler.query)

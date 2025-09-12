@@ -83,10 +83,8 @@ public func dataAnalysisPrompt(
 }
 
 main(): Int64 {
-    var cfg = JoyConfig()
-    cfg.enableDebugLog = true
     // 创建joy实例
-    let joy = Joy.create(cfg)
+    let joy = Joy.default()
     joy.router.use(ExceptionHandler())
     // 注册生成的handlers
     McpServer.registerSseTo(joy)

@@ -22,9 +22,7 @@ PNG ... content of photo.png
 --WebKitFormBoundaryrGKCBY7qhFd3TrwA--
  */
 main(): Int64 {
-    var cfg = JoyConfig()
-    cfg.enableDebugLog = true
-    let joy = Joy.create(cfg)
+    let joy = Joy.default()
     let router = joy.router
     // 方式1，默认缓存
     router.post(
