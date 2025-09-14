@@ -8,54 +8,15 @@
  * See the Mulan PSL v2 for more details.
  */
 
-package cjoy.middleware.session
+package cjoy.middleware
 
 import std.sync.Mutex
 import std.time.DateTime
 import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable}
 import stdx.net.http.Cookie
 import cjoy.{JoyMiddlewareHandler, JoyRequestHandlerChain, JoyContext}
+import cjoy.session.*
 import cjoy.utils.randStr
-
-/**
- * the http session
- */
-public interface JoySession {
-    /**
-     * return the session id
-     */
-    prop id: String
-
-    /**
-     * return the invalidated status
-     */
-    prop isInvalidated: Bool
-
-    /**
-     * set value to given key in session.
-     */
-    func set<T>(key: String, value: T): Unit where T <: JsonSerializable & JsonDeserializable<T>
-
-    /**
-     * get value by given key in session.
-     */
-    func get<T>(key: String): ?T where T <: JsonSerializable & JsonDeserializable<T>
-
-    /**
-     * delete and retune a key from session.
-     */
-    func remove<T>(key: String): ?T where T <: JsonSerializable & JsonDeserializable<T>
-
-    /**
-     * flush to storage when handling http request finished
-     */
-    func flush(): Unit
-
-    /**
-     * delete the session
-     */
-    func invalidate(): Unit
-}
 
 /**
  * the sssion config
@@ -77,36 +38,6 @@ public struct JoySessionConfig {
         // Session ID length. Default is 32.
         public let idLength!: Int = 32
     ) {}
-}
-
-/**
- * Store the sesson to storage
- */
-public interface JoySessionStorage {
-    /**
-     * the size of sessions
-     */
-    prop size: Int
-
-    /**
-     * delete session in storage
-     */
-    func delete(sid: String): Unit
-
-    /**
-     * get or create new session
-     */
-    func getOrCreate(sid: String): JoySession
-
-    /**
-     * exist or not
-     */
-    func exists(sid: String): Bool
-
-    /**
-     * clean expired sessions
-     */
-    func clean(): Unit
 }
 
 /**

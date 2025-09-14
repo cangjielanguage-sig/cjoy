@@ -8,7 +8,8 @@ import std.collection.*
 import cjoy.*
 import cjoy.macros.*
 import cjoy.json.*
-import cjoy.middleware.session.*
+import cjoy.session.*
+import cjoy.middleware.{getSession, SessionManager, JoySessionConfig}
 
 @Json
 class UserInfo {

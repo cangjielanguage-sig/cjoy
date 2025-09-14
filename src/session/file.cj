@@ -8,7 +8,7 @@
  * See the Mulan PSL v2 for more details.
  */
 
-package cjoy.middleware.session
+package cjoy.session
 
 import std.collection.HashSet
 import std.fs.{Path, File, FileInfo, Directory, exists, removeIfExists, canonicalize, OpenMode}

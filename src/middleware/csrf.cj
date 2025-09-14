@@ -16,7 +16,6 @@ import stdx.encoding.base64.toBase64String
 import stdx.net.http.HttpStatusCode
 import cjoy.{JoyMiddlewareHandler, JoyRequestHandlerChain, JoyContext, JoyHttpConsts, JoyRequestHandler, 
     JoyRequestHandlerFunc, JoyFuncHandler, JoyRequestFilterFunc}
-import cjoy.middleware.session.getSession
 import cjoy.log.LogTool
 import cjoy.utils.randStr
 

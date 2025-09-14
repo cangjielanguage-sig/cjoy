@@ -8,7 +8,7 @@
  * See the Mulan PSL v2 for more details.
  */
 
-package cjoy.middleware.session
+package cjoy.session
 
 /**
 * the memory session
