@@ -2,7 +2,7 @@
 
 [package]
   cjc-version = "1.0.0"
-  compile-option = "-Woff unused"
+  compile-option = "-Woff unused --diagnostic-format=noColor"
   description = "a fast, lightweight and joy web framework"
   link-option = ""
   name = "cjoy"

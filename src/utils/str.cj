@@ -14,6 +14,10 @@ protected interface StrFunc {
     func cut(b: Byte): (String, String, Bool)
 
     func indexFunc(f: (x: Byte) -> Bool): Int
+
+    static func repeat(b: Byte, num: Int): String 
+
+    static func repeat(str: String, num: Int): String 
 }
 
 extend String <: StrFunc {
@@ -31,6 +35,26 @@ extend String <: StrFunc {
             }
         }
         -1
+    }
+
+    public  static func repeat(b: Byte, num: Int): String {
+        let buidler = StringBuilder()
+        var idx = 0
+        while(idx < num) {
+            buidler.append(b)
+            idx++
+        }
+        buidler.toString()
+    }
+
+    public  static func repeat(str: String, num: Int): String {
+        let buidler = StringBuilder()
+        var idx = 0
+        while(idx < num) {
+            buidler.append(str)
+            idx++
+        }
+        buidler.toString()
     }
 }
 
