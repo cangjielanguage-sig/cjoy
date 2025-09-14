@@ -48,6 +48,10 @@ public class JsonTool {
      * @return String the json string
      */
     public static func toJson<T>(val: T, indent!: Bool = false): String where T <: JsonSerializable {
+        String.fromUtf8(toJsonBytes(val, indent: indent))
+    }
+
+    public static func toJsonBytes<T>(val: T, indent!: Bool = false): Array<Byte> where T <: JsonSerializable {
         let stream = ByteBuffer()
         let writer = JsonWriter(stream)
         if (indent) {
@@ -55,7 +59,14 @@ public class JsonTool {
         }
         writer.writeValue(val)
         writer.flush()
-        String.fromUtf8(stream.bytes())
+        stream.bytes()
+    }
+
+    public static func fromJsonToAny(bs: Array<Byte>): JsonSerializable {
+        var buffer = ByteBuffer()
+        buffer.write(bs)
+        let reader = JsonReader(buffer)
+        return fromJsonToAny(reader)
     }
 
     /**

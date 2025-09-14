@@ -6,8 +6,8 @@ package examples.crsf
 
 import cjoy.*
 import cjoy.macros.*
-import cjoy.middleware.session.*
-import cjoy.middleware.{getCrsfToken, CrsfProtect}
+import cjoy.session.*
+import cjoy.middleware.{getCrsfToken, CrsfProtect, SessionManager}
 
 // 1. 先在Get 请求某个url，生成CRSF token
 @Get[path = "/get_token"]
