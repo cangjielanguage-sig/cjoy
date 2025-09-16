@@ -10,10 +10,10 @@
 
 package cjoy.framework
 
-import std.collection.{ArrayList, HashMap, forEach}
+import std.collection.{ArrayList}
 import std.collection.concurrent.ConcurrentHashMap
 import std.fs.{Path, FileInfo, exists}
-import stdx.net.http.{HttpRequestHandler, HttpStatusCode, FileHandler, HttpContext}
+import stdx.net.http.{HttpStatusCode, FileHandler}
 import cjoy.log.LogTool
 
 class JoyGroupRouteHandler <: JoyRequestHandler {

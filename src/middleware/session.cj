@@ -105,13 +105,20 @@ public class SessionManager <: JoyMiddlewareHandler {
             var maxAge = _config.cookieMaxAge
             if (session.isInvalidated) {
                 newCookie = true
-                maxAge = 0 // delete the cookie 
+                maxAge = -1 // delete the cookie 
             } else {
                 session.flush()
             }
+
             if (newCookie) {
-                let c = Cookie(_config.cookieName, session.id, maxAge: maxAge, domain: _config.cookieDomain,
-                    path: _config.cookiePath, secure: _config.cookieSecure, httpOnly: _config.cookieHttpOnly)
+                let c = if (maxAge == -1) {
+                    Cookie(_config.cookieName, session.id, expires: DateTime.UnixEpoch, domain: _config.cookieDomain,
+                        path: _config.cookiePath, secure: _config.cookieSecure, httpOnly: _config.cookieHttpOnly)
+                } else {
+                    Cookie(_config.cookieName, session.id, maxAge: maxAge, domain: _config.cookieDomain,
+                        path: _config.cookiePath, secure: _config.cookieSecure, httpOnly: _config.cookieHttpOnly)
+                }
+
                 ctx.cookie(c)
             }
         }

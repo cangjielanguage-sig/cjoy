@@ -11,6 +11,7 @@
 macro package cjoy.validation
 
 // reimport the dependent
+public import std.convert.Parsable
 public import cjoy.validation.api.*
 public import cjoy.validation.macros.{Valid, NestedValid, Validated, Size, Length, NotEmpty, NotBlank, NumberRange, 
     Patten, DateTimeRange}

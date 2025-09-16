@@ -23,13 +23,14 @@ a fast，extensible，lightweight and joy cangjie web framework.<br/>
 在仓颉SDK提供的HTTP框架基础上进一步封装以简化Web应用开发：
 
 - 1️⃣ 基于压缩前辍树的路由管理，支持静态Path，参数匹配Path，正则匹配Path，全路径通配符Path的高效注册与查找，支持路由组；
-- 2️⃣ 基于拦截器的中间件扩展能力，支持Basic认证等多种能力扩展；
+- 2️⃣ 基于拦截器的中间件扩展能力，支持Session等多种能力扩展；
 - 3️⃣ 基于Context的上下文管理，支持快速获取请求参数与构建Json/Text响应；
 - 4️⃣ 基于编译宏的Json序列化与反序列，支持对请求与响应消息的Json直接绑定映射;
 - 5️⃣ 基于编译宏支持自动注册与参数注入请求处理函数与中间件函数;
 - 6️⃣ 基于编译宏支持对请求参数校验；
 - 7️⃣ 基于编译宏支持MCP服务暴露工具等能力给LLM；
 - 8️⃣ 内置文件下载与上传，WebSocket，SSE等能力;
+- 9️⃣ 内置多种中间件，支持Basic, Token, JWT认证;
 
 ### 应用场景
 
@@ -204,14 +205,8 @@ main(): Int64 {
 - [MCP](doc/usage_guide/mcp.md)
   - [服务端](doc/usage_guide/mcp.md#服务端) 
     - [Tool](doc/usage_guide/mcp.md#Tool) 
-      - [入参](doc/usage_guide/mcp.md#Tool入参)
-      - [出参](doc/usage_guide/mcp.md#Tool出参)
     - [Resource](doc/usage_guide/mcp.md#Resource) 
-      - [入参](doc/usage_guide/mcp.md#Resource入参)
-      - [出参](doc/usage_guide/mcp.md#Resource出参)
-    - [Prompt](doc/usage_guide/mcp.md#Prompt) 
-      - [入参](doc/usage_guide/mcp.md#Prompt入参)
-      - [出参](doc/usage_guide/mcp.md#Prompt出参)    
+    - [Prompt](doc/usage_guide/mcp.md#Prompt)    
     - [注册](doc/usage_guide/mcp.md#注册) 
   - [客户端](doc/usage_guide/mcp.md#客户端)  
 - [分块传输](doc/usage_guide/mcp.md)

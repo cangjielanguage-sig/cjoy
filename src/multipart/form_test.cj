@@ -11,9 +11,7 @@
 package cjoy.multipart
 
 import std.io.ByteBuffer
-import std.collection.*
 import std.fs.remove
-import std.unittest.*
 import std.unittest.testmacro.*
 import stdx.net.http.*
 

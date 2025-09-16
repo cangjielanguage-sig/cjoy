@@ -12,7 +12,6 @@ package cjoy.framework
 
 import std.collection.{ArrayList, HashMap, forEach}
 import std.fs.{canonicalize, FSException, exists, FileInfo}
-//import std.objectpool.ObjectPool 
 import stdx.encoding.url.URL
 import stdx.net.http.{HttpRequestDistributor, HttpRequestHandler, HttpRequest, HttpContext}
 import cjoy.log.LogTool
@@ -443,7 +442,7 @@ class JoyRouteGroup <: JoyRouters {
             relativePath + "/*"
         }
 
-        handle(["GET"], path, JoyFileSystemServeHandler(fp, _distributor._config))
+        handle([JoyHttpConsts.METHOD_GET], path, JoyFileSystemServeHandler(fp, _distributor._config))
         this
     }
 

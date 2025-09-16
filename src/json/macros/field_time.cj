@@ -11,7 +11,6 @@
 macro package cjoy.json.macros
 
 import std.ast.*
-import std.collection.Map
 
 class DateTimeJsonFieldGenerator <: JsonFieldGenerator {
     init(vd: VarDecl, info: JsonFieldInfo) {

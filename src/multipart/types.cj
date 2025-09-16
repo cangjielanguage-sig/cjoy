@@ -10,9 +10,6 @@
 
 package cjoy.multipart
 
-import std.collection.HashMap
-import std.io.ByteBuffer
-
 public class MultiPartParseException <: Exception {
     public init(message: String) {
         super(message)

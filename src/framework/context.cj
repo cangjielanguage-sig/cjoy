@@ -13,8 +13,7 @@ package cjoy.framework
 import std.collection.{HashMap, ArrayList}
 import std.io.{InputStream, ByteBuffer, copy, StringReader}
 import std.net.IPAddress
-import stdx.log.Logger
-import stdx.net.http.{HttpContext, RedirectHandler, NotFoundHandler, HttpStatusCode, HttpResponseBuilder, Cookie}
+import stdx.net.http.{HttpContext, RedirectHandler, HttpStatusCode, HttpResponseBuilder, Cookie}
 import stdx.encoding.url.URL
 import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonReader, JsonWriter}
 import cjoy.bind.api.JoyBindable

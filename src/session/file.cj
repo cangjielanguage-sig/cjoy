@@ -14,7 +14,7 @@ import std.collection.HashSet
 import std.fs.{Path, File, FileInfo, Directory, exists, removeIfExists, canonicalize, OpenMode}
 import std.sync.Mutex
 import std.io.{ByteBuffer, readToEnd}
-import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonReader, JsonWriter, JsonToken}
+import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonReader, JsonWriter}
 
 /**
  * the file session

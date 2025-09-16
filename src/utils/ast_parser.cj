@@ -11,7 +11,7 @@
 package cjoy.utils
 
 import std.ast.*
-import std.collection.{ArrayList, HashMap, HashSet, map, collectArray}
+import std.collection.{ArrayList, HashMap}
 import std.convert.Parsable
 
 protected interface TokenVisitor<T> {

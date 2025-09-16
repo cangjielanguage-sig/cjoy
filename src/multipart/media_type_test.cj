@@ -13,7 +13,6 @@
 package cjoy.multipart
 
 import std.collection.*
-import std.unittest.*
 import std.unittest.testmacro.*
 
 struct MediaTypeTest {

@@ -11,7 +11,6 @@
 package cjoy.session
 
 import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable}
-import cjoy.{JoyMiddlewareHandler, JoyRequestHandlerChain, JoyContext}
 
 /**
  * the http session

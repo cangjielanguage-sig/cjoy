@@ -10,13 +10,10 @@
 
 package cjoy.test
 
-import cjoy.*
 import cjoy.json.*
-import cjoy.macros.*
 import cjoy.validation.*
-import std.deriving.*
-import std.collection.*
 import std.time.*
+import std.convert.*
 
 @Valid
 @Json

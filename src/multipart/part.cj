@@ -12,7 +12,7 @@ package cjoy.multipart
 
 import std.collection.HashMap
 import std.fs.File
-import std.io.{InputStream, ByteBuffer}
+import std.io.{ByteBuffer}
 import stdx.net.http.HttpHeaders
 
 public class JoyMultiPart {

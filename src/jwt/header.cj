@@ -10,10 +10,8 @@
 
 package cjoy.jwt
 
-import std.collection.{HashMap, map, collectArray}
-import std.time.DateTime
-import std.math.trunc
-import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonWriter, JsonReader, JsonToken}
+import std.collection.{HashMap}
+import stdx.encoding.json.stream.{JsonSerializable}
 
 public type MapHeaders = HashMap<String, JsonSerializable>
 
@@ -21,6 +19,8 @@ public interface Headers {
     func header(name: String, value: JsonSerializable): Headers
     func getString(name: String): ?String
     func getInt<T>(name: String): ?T
+
+    prop alg: String
 }
 
 extend MapHeaders <: Headers {
@@ -36,5 +36,11 @@ extend MapHeaders <: Headers {
     public func getInt<T>(name: String): ?T {
         (get(name) ?? Option<JsonSerializable>.None) as T
         None
+    }
+
+    public prop alg: String {
+        get() {
+            getString("alg") ?? ""
+        }
     }
 }
