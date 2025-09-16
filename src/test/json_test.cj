@@ -12,8 +12,6 @@ package cjoy.test
 
 import cjoy.json.*
 import std.collection.*
-import std.deriving.Derive
-import std.unittest.*
 import std.unittest.testmacro.*
 
 @Json

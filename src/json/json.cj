@@ -13,7 +13,7 @@ macro package cjoy.json
 // reimport the dependent
 public import std.time.DateTime
 public import std.io.ByteBuffer
-public import std.collection.ArrayList
+public import std.collection.{ArrayList, HashMap}
 public import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonWriter, JsonReader, JsonToken}
 public import cjoy.json.api.{JsonTool, JsonSchemaInfo, JsonSchemaType, Jsonable}
 public import cjoy.json.macros.{Json, JsonField, ToJson}

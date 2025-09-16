@@ -15,7 +15,6 @@ import std.unittest.mock.*
 import std.unittest.mock.mockmacro.*
 import stdx.encoding.url.URL
 import stdx.encoding.base64.toBase64String
-import stdx.net.http.HttpStatusCode
 import cjoy.framework.{JoyContext, JoyRequestHandlerChain, JoyHttpConsts}
 
 @Test

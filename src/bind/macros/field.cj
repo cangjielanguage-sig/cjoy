@@ -11,9 +11,8 @@
 macro package cjoy.bind.macros
 
 import std.ast.*
-import std.collection.{HashMap, Map}
-import stdx.net.http.HttpRequest
-import cjoy.utils.{parserAttrs, MapToString, MapListGetFunc, TypeNodeInfo, getDefValueOfType}
+import std.collection.{HashMap}
+import cjoy.utils.{parserAttrs, MapToString, MapListGetFunc, getDefValueOfType}
 
 class BindFieldInfo {
     let filedName: String

@@ -11,12 +11,10 @@
 package cjoy.framework
 
 import std.collection.concurrent.ConcurrentHashMap
-import std.collection.ArrayList
 import std.fs.{File, OpenMode}
 import std.io.{readToEnd}
 import stdx.net.tls.TlsServerConfig
 import stdx.net.http.{Server, ServerBuilder}
-import stdx.log.{LogLevel, Logger}
 import stdx.crypto.x509.{X509Certificate, PrivateKey}
 import cjoy.log.LogTool
 

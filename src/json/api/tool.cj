@@ -14,7 +14,6 @@ import std.io.ByteBuffer
 import std.collection.{ArrayList, HashMap}
 import std.convert.Parsable
 import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonReader, JsonWriter, JsonToken}
-import cjoy.utils.{converterMap, converterList}
 
 /**
  * json util tool

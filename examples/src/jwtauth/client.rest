@@ -1,0 +1,26 @@
+@host=http://127.0.0.1:18881
+@token=
+
+### login
+POST {{host}}/login HTTP/1.1
+content-type: application/json
+
+{
+    "password": "admin",
+    "username": "admin"
+}
+
+### refresh token
+GET {{host}}/auth/refresh_token HTTP/1.1
+content-type: application/json
+Authorization: Bearer {{token}}
+
+### ping with tokne
+GET {{host}}/auth/ping HTTP/1.1
+content-type: application/json
+Authorization: Bearer {{token}}
+
+### logout
+POST {{host}}/auth/logout HTTP/1.1
+content-type: application/json
+Authorization: Bearer {{token}}

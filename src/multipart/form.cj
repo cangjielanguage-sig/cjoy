@@ -11,7 +11,6 @@
 package cjoy.multipart
 
 import std.collection.HashMap
-import std.fs.File
 import stdx.net.http.HttpRequest
 import cjoy.JoyContext
 

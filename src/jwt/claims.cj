@@ -28,7 +28,7 @@ public class NumberData <: JsonSerializable & JsonDeserializable<NumberData> {
 
     public static func of(number: Float64): NumberData {
         let a = trunc(number)
-        let b = number - a
+        let b = (number - a) * 1e9
         NumberData(DateTime.ofEpoch(second: Int64(a), nanosecond: Int64(b)))
     }
 
@@ -88,6 +88,7 @@ public interface Claims {
     func getIssuer(): ?String
     func getSubject(): ?String
     func getAudience(): ?ClaimStrings
+    func getClaimString(name: String): ?String
 
     func expirationTime(exp: DateTime): Claims
     func issuedAt(iat: DateTime): Claims
@@ -123,6 +124,10 @@ extend MapClaims <: Claims {
 
     public func getSubject(): ?String {
         toString("sub")
+    }
+
+    public func getClaimString(name: String): ?String {
+        toString(name)
     }
 
     public func expirationTime(exp: DateTime): Claims {
@@ -180,7 +185,7 @@ extend MapClaims <: Claims {
     func toClaimStrings(key: String): ?ClaimStrings {
         if (let Some(v) <- get(key)) {
             return match (v) {
-                case x: ToString => ClaimStrings([x.toString()])
+                case x: String => ClaimStrings([x])
                 case x: Array<String> => ClaimStrings(x)
                 case x: Collection<String> => ClaimStrings(x.toArray())
                 case x: ClaimStrings => x

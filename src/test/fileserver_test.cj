@@ -10,13 +10,9 @@
 
 package cjoy.test
 
-import std.io.*
-import std.unittest.*
 import std.unittest.testmacro.*
 import stdx.net.http.*
-import stdx.encoding.url.*
 import cjoy.*
-import cjoy.json.*
 
 @Test
 public class FileServerTestCaseSuit {

@@ -10,8 +10,7 @@
 
 package cjoy.multipart
 
-import std.io.{OutputStream, BufferedOutputStream, ByteBuffer}
-import std.collection.{map, collectArray}
+import std.io.{OutputStream, BufferedOutputStream}
 import stdx.net.http.HttpHeaders
 import cjoy.utils.{StrFunc, randStr}
 

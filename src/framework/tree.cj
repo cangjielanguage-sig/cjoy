@@ -12,7 +12,7 @@ package cjoy.framework
 
 import std.regex.Regex
 import std.sort.sort
-import std.collection.{ArrayList, HashMap, forEach}
+import std.collection.{ArrayList, HashMap}
 import cjoy.log.LogTool
 
 class Endpoint<T> <: ToString {

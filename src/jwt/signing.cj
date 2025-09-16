@@ -12,11 +12,30 @@ package cjoy.jwt
 
 import std.collection.concurrent.ConcurrentHashMap
 
+/**
+ * the interface for singing algorithm
+ */
 public interface SigningMethod {
-    // the alg identifier for this method (example: 'HS256')
+    /**
+     * return the algorithm identifier for this method (example: 'HS256')
+     */
     prop alg: String
 
+    /**
+     * signing the token using the key with the algorithm
+     *
+     * @param signing: the string will be sign
+     * @param key: the key of algorithm, like Array<Byte> or RSAPrivateKey
+     */
     func sign(signing: String, key: Any): Array<Byte>
+
+    /**
+     * verify the token using the key with the algorithm
+     *
+     * @param signing: the signing string
+     * @param sig: the signed data for checking
+     * @param key: the key of algorithm, like Array<Byte> or RSAPublicKey
+     */
     func verify(signing: String, sig: Array<Byte>, key: Any): Unit
 }
 

@@ -11,8 +11,6 @@
 macro package cjoy.macros
 
 import std.ast.*
-import std.collection.*
-import cjoy.*
 import cjoy.utils.{parserAttrs, MapToString, MapListGetFunc}
 
 class MiddlewareInfo {

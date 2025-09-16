@@ -11,7 +11,6 @@
 package cjoy.jwt
 
 import std.crypto.digest.Digest
-import std.io.ByteBuffer
 import stdx.crypto.digest.{SHA256, SHA384, SHA512}
 import stdx.crypto.keys.{RSAPrivateKey, RSAPublicKey, PadOption, PSSOption}
 
@@ -56,8 +55,8 @@ let _: Unit = SigningMethods.register("RS384", SigningMethodRsa("RS384", SHA384(
 
 let _: Unit = SigningMethods.register("RS512", SigningMethodRsa("RS512", SHA512(), PadOption.PKCS1))
 
-let _: Unit = SigningMethods.register("PS256", SigningMethodRsa("RS256", SHA256(), PadOption.PSS(PSSOption(16))))
+let _: Unit = SigningMethods.register("PS256", SigningMethodRsa("PS256", SHA256(), PadOption.PSS(PSSOption(16))))
 
-let _: Unit = SigningMethods.register("PS384", SigningMethodRsa("RS384", SHA384(), PadOption.PSS(PSSOption(16))))
+let _: Unit = SigningMethods.register("PS384", SigningMethodRsa("PS384", SHA384(), PadOption.PSS(PSSOption(16))))
 
-let _: Unit = SigningMethods.register("PS512", SigningMethodRsa("RS512", SHA512(), PadOption.PSS(PSSOption(16))))
+let _: Unit = SigningMethods.register("PS512", SigningMethodRsa("PS512", SHA512(), PadOption.PSS(PSSOption(16))))

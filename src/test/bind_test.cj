@@ -10,14 +10,11 @@
 
 package cjoy.test
 
-import cjoy.*
 import cjoy.bind.*
-import std.deriving.*
 import std.collection.*
 import std.time.*
 import stdx.net.http.*
 import stdx.encoding.url.URL
-import std.unittest.*
 import std.unittest.testmacro.*
 
 @Bind

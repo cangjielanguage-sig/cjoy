@@ -49,6 +49,8 @@
       output-type = "executable"
     [package.package-configuration."examples.multipkgs"]
       output-type = "executable"
+    [package.package-configuration."examples.jwtauth"]
+      output-type = "executable"
 
 [target]
   [target.aarch64-linux-ohos]

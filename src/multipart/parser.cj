@@ -10,9 +10,8 @@
 
 package cjoy.multipart
 
-import std.collection.{HashMap, ArrayList}
+import std.collection.{ArrayList}
 import std.io.{InputStream, BufferedInputStream, ByteBuffer, SeekPosition}
-import stdx.net.http.HttpHeaders
 
 type ParseState = Int
 

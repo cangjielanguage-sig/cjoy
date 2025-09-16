@@ -11,7 +11,6 @@
 package cjoy.test
 
 import std.io.*
-import std.unittest.*
 import std.unittest.testmacro.*
 import stdx.net.http.*
 import cjoy.*

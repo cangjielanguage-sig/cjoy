@@ -11,10 +11,7 @@
 macro package cjoy.validation.macros
 
 import std.collection.{ArrayList, filter, first}
-import cjoy.validation.api.*
 import cjoy.utils.{parserAttrs, MapToString, MapListGetFunc, joinTokens}
-import std.convert.Parsable
-import std.time.DateTime
 import std.ast.*
 
 enum ConstraintCatgory {

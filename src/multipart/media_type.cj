@@ -12,7 +12,7 @@
 
 package cjoy.multipart
 
-import std.collection.{HashMap, ArrayList}
+import std.collection.{HashMap}
 import std.io.ByteBuffer
 import cjoy.utils.{StrFunc, HexUtils}
 

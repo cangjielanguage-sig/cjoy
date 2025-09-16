@@ -12,7 +12,6 @@ package cjoy.jwt
 
 import std.time.DateTime
 import stdx.encoding.base64.{toBase64String, fromBase64String}
-import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable}
 import cjoy.json.JsonTool
 import cjoy.utils.StrFunc
 
@@ -31,24 +30,35 @@ public class Jwt {
     }
 
     /**
-     * create a JWT and sign to token string
+     * create a JWT and sign it to token string
      */
     public static func create(): Jwt {
         Jwt()
     }
 
+    /**
+     * return the headers of JWT
+     */
     public prop headers: Headers {
         get() {
             _headers
         }
     }
 
+    /**
+     * return the claims of JWT
+     */
     public prop claims: Claims {
         get() {
             _claims
         }
     }
 
+    /**
+     * specify the signing algorithm
+     *
+     * @param alg: the algorithm
+     */
     public func alg(alg: String): Jwt {
         _method = SigningMethods.getMethod(alg)
         if (_method.isNone()) {
@@ -58,6 +68,21 @@ public class Jwt {
         this
     }
 
+    /**
+     * copy claims from origin jwt
+     *
+     * @param jwt: the origin jwt
+     */
+    public func copyClaims(jwt: Jwt): Unit {
+        _claims.add(all: jwt._claims)
+    }
+
+    /**
+     * signs the JWT to a string with algorithm and key
+     *
+     * @param key: the key of algorithm, like Array<Byte> or RSAPrivateKey
+     * @return: a signed JWT string
+     */
     public func signWith(key: Any): String {
         if (_method.isNone()) {
             throw JwtException("must invoke alg(str) firstly.")
@@ -70,6 +95,10 @@ public class Jwt {
 
     /**
      * pasrse the string token to JWT
+     *
+     * @param token: the token to parse
+     * @param config: the paser config
+     * @return: a JWT object
      */
     public static func pasrse(token: String, config!: ParserConfig = ParserConfig()): Jwt {
         let jwt = Jwt()
@@ -78,6 +107,12 @@ public class Jwt {
         jwt
     }
 
+    /**
+     * verify the JWT with the key with the algorithm
+     *
+     * @param key: the key of algorithm, like Array<Byte> or RSAPublicKey
+     * @throw JwtException: verify failure
+     */
     public func verifyWith(key: Any): Jwt {
         if (_valid) {
             return this
@@ -198,6 +233,10 @@ public class Jwt {
     }
 
     private func parseToken(token: String): Unit {
+        if (token.isEmpty()) {
+            throw JwtException("token is malformed, token is empty")
+        }
+
         let segs = token.split(".")
         if (segs.size != 3) {
             throw JwtException("token is malformed, token contains an invalid number of segments")
@@ -243,9 +282,24 @@ public class Jwt {
 }
 
 public struct ParserConfig {
-    public ParserConfig(let validMethods!: Array<String> = Array(), let skipClaimsValidation!: Bool = false,
-        let leeway!: Duration = Duration.second * 0, let timeFunc!: ?() -> DateTime = None,
-        let issueAtRequired!: Bool = false, let expirationRequired!: Bool = false, let notBeforeRequired!: Bool = false,
-        let expectedAud!: Array<String> = [], let expectedAllAud!: Bool = false) {
+    public ParserConfig(
+        // if populated, only these methods will be considered valid.
+        let validMethods!: Array<String> = Array(),
+        // skip claims validation during token parsing.
+        let skipClaimsValidation!: Bool = false,
+        // specifying the leeway window.
+        let leeway!: Duration = Duration.second * 0,
+        // the primary use-case for this is testing. if you are looking for a way to account for clock-skew, specifying leeway should be used instead.
+        let timeFunc!: ?() -> DateTime = None,
+        // require `iat` claim.
+        let issueAtRequired!: Bool = false,
+        // require `exp` claim.
+        let expirationRequired!: Bool = false,
+        // require `nbf` claim.
+        let notBeforeRequired!: Bool = false,
+        // require any of the specified audiences in the `aud` claim. it will fail if the audience is not listed in the token or the `aud` claim is missing.
+        let expectedAud!: Array<String> = [],
+        // require all the specified audiences 
+        let expectedAllAud!: Bool = false) {
     }
 }

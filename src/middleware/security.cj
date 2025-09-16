@@ -23,18 +23,18 @@ public class Security <: JoyMiddlewareHandler {
         let frameDeny!: Bool = false,
         // CustomFrameOptionsValue allows the X-Frame-Options header value to be set with a custom value. This overrides the FrameDeny option.
         let customFrameOptionsValue!: String = "",
-            // If ContentTypeNosniff is true, adds the X-Content-Type-Options header  with the value `nosniff`. Default is false.
-            let contentTypeNosniff!: Bool = false,
+        // If ContentTypeNosniff is true, adds the X-Content-Type-Options header  with the value `nosniff`. Default is false.
+        let contentTypeNosniff!: Bool = false,
         // If BrowserXssFilter is true, adds the X-XSS-Protection header with the value `1; mode=block`. Default is false.
         let browserXssFilter!: Bool = false,
-            // ContentSecurityPolicy allows the Content-Security-Policy header value to be set with a custom value. Default is "".
-            let contentSecurityPolicy!: String = "",
-            //  HTTP header "Referrer-Policy" governs which referrer information, sent in the Referrer header, should be included with requests made.
-            let referrerPolicy!: String = "",
+        // ContentSecurityPolicy allows the Content-Security-Policy header value to be set with a custom value. Default is "".
+        let contentSecurityPolicy!: String = "",
+        // HTTP header "Referrer-Policy" governs which referrer information, sent in the Referrer header, should be included with requests made.
+        let referrerPolicy!: String = "",
         // Prevent Internet Explorer from executing downloads in your site’s context
         let ieNoOpen!: Bool = false,
-            // Feature Policy is a new header that allows a site to control which features and APIs can be used in the browser.
-            let featurePolicy!: String = "") {
+        // Feature Policy is a new header that allows a site to control which features and APIs can be used in the browser.
+        let featurePolicy!: String = "") {
     }
 
     public func handle(ctx: JoyContext, chain: JoyRequestHandlerChain): Unit {

@@ -46,7 +46,7 @@ joy.router
 
 |Middleware|说明|
 |---|---|
-|BasicAuth|Basic认证|
+|BasicAuth|[Basic认证](../../examples/src/simple/main.cj)||
 |ExceptionHandler|异常兜底|
 |AccessLog|[请求日志](../../doc/usage_guide/logger.md)|
 |SessionManager|[会话管理](../../doc/usage_guide/session.md)|
@@ -56,6 +56,7 @@ joy.router
 |TokenAuth|[Token认证](../../examples/src/tokenauth//main.cj)|
 |CrsfProtect|[CRSF保护](../../examples/src/crsf/main.cj)|
 |Security|安全头域设置|
+|JwtAuth|[Jwt认证](../../examples/src/jwtauth//main.cj)|
 
 ----
 << [返回](../../README.md#使用指导)
