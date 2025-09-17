@@ -6,6 +6,7 @@
 - [rest](src/rest/main.cj): Restful风格
 - [macros](src/macros/main.cj): 使用宏实现Handler注册与参数展开
 - [multi packages](src/multipkgs/main.cj): 使用宏实现Handler在不同的package下
+- [combination](src/combination/main.cj): 组合使用Json，Bind，Validation，Handler宏
 
 ## 协议
 - [chuncked](src/chuncked/main.cj): chuncked响应

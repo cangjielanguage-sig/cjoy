@@ -107,7 +107,8 @@ class PathParamVarGenerator <: ParamInfo {
 
     public override func genTokens(): Tokens {
         return quote(
-            let $(pname) = $(getType()).bind(ctx.params, $(getName()), $(getDefValue()), $(getTimeformat())).getOrThrow() )
+            let $(pname) = $(getType()).bind(ctx.params, $(getName()), $(getDefValue()), $(getTimeformat())).getOrThrow() 
+        )
     }
 }
 
@@ -118,7 +119,8 @@ class QueryParamVarGenerator <: ParamInfo {
 
     public override func genTokens(): Tokens {
         return quote(
-            let $(pname) = $(getType()).bind(ctx.httpContext.request.url.queryForm, $(getName()), $(getDefValue()), $(getTimeformat())).getOrThrow() )
+            let $(pname) = $(getType()).bind(ctx.httpContext.request.url.queryForm, $(getName()), $(getDefValue()), $(getTimeformat())).getOrThrow()
+        )
     }
 }
 
@@ -129,7 +131,8 @@ class PostFormParamVarGenerator <: ParamInfo {
 
     public override func genTokens(): Tokens {
         return quote(
-            let $(pname) = $(getType()).bind(ctx.httpContext.request.form, $(getName()), $(getDefValue()), $(getTimeformat())).getOrThrow() )
+            let $(pname) = $(getType()).bind(ctx.httpContext.request.form, $(getName()), $(getDefValue()), $(getTimeformat())).getOrThrow() 
+        )
     }
 }
 
@@ -140,7 +143,8 @@ class HeaderParamVarGenerator <: ParamInfo {
 
     public override func genTokens(): Tokens {
         return quote(
-            let $(pname) = $(getType()).bind(ctx.httpContext.request.headers, $(getName()), $(getDefValue()), $(getTimeformat())).getOrThrow() )
+            let $(pname) = $(getType()).bind(ctx.httpContext.request.headers, $(getName()), $(getDefValue()), $(getTimeformat())).getOrThrow()
+        )
     }
 }
 
@@ -151,7 +155,8 @@ class CookieParamVarGenerator <: ParamInfo {
 
     public override func genTokens(): Tokens {
         return quote(
-            let $(pname) = $(getType()).bind(ctx.cookies, $(getName()), $(getDefValue()), $(getTimeformat())).getOrThrow() )
+            let $(pname) = $(getType()).bind(ctx.cookies, $(getName()), $(getDefValue()), $(getTimeformat())).getOrThrow() 
+        )
     }
 }
 
@@ -162,7 +167,8 @@ class ContextParamVarGenerator <: ParamInfo {
 
     public override func genTokens(): Tokens {
         if (typeNode.vtype.value == "Option") {
-            return quote(let $(pname): ?$(typeNode.genericType)= ctx.getCtxParam<$(typeNode.genericType)>($(this.getName()))
+            return quote(
+                let $(pname): ?$(typeNode.genericType)= ctx.getCtxParam<$(typeNode.genericType)>($(this.getName()))
             )
         } else {
             return quote(

@@ -12,8 +12,11 @@ main(): Int64 {
     // 注册路由
     joy.router.get("/chuncked", {
         ctx: JoyContext =>
+        // 注意，目前不能切换到其它线程发送响应块
+        // 获取分块Writer
         let writer = ctx.chunkedWriter()
         for (num in 1..10) {
+            // 分块发送响应
             writer.write(num.toString())
             sleep(Duration.millisecond*200)
         }
