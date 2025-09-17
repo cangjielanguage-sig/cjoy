@@ -17,18 +17,21 @@ class UserInfo {
     var gender: Int = 0
 }
 
+// GET /abc
 @Get[path = "/abc"]
 func getStaticPath(): String {
     "/abc"
 }
 
+// GET /users/xiao
 @Get[path = "/users/{name}"]
 func getUserName(@PathParam name: String): (UInt16, String) {
     (200, "/users/${name}")
 }
 
+// GET /users?id=00009527
 @Get[path = "/users", produce = "json"]
-func listUsers(@QueryParam[name = id, default = xiao] id: String): UserInfo {
+func listUsers(@QueryParam[name = id, default = "00009527"] id: String): UserInfo {
     let usr = UserInfo()
     usr.id = id
     usr.name = "xiao"
@@ -36,6 +39,7 @@ func listUsers(@QueryParam[name = id, default = xiao] id: String): UserInfo {
     usr
 }
 
+// 注册中间件到Group /users上，可以拦截所有/users请求
 @Middleware[groups = "/users"]
 func testMiddleware(ctx: JoyContext, chain: JoyRequestHandlerChain): Unit {
     println("intercept /users")
