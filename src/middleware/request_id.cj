@@ -13,13 +13,15 @@ package cjoy.middleware
 import std.convert.Formattable
 import std.sync.AtomicUInt64
 import cjoy.{JoyMiddlewareHandler, JoyRequestHandlerChain, JoyContext}
-import cjoy.utils.randStr
+import cjoy.utils.secureRandStr
+
+const requestIdCtxKey = "__request_id__"
 
 /**
  * get request id from context
  */
 public func getRequestId(ctx: JoyContext): ?String {
-    ctx.getCtxParam("__request_id__")
+    ctx.getCtxParam(requestIdCtxKey)
 }
 
 /**
@@ -34,7 +36,7 @@ public class RequestId <: JoyMiddlewareHandler {
         _prefix = if (prefix != "") {
             prefix
         } else {
-            randStr(8)
+            secureRandStr(8)
         }
         _headerName = headerName
     }
@@ -42,10 +44,10 @@ public class RequestId <: JoyMiddlewareHandler {
     public func handle(ctx: JoyContext, chain: JoyRequestHandlerChain): Unit {
         let reqId = ctx.getHeader(_headerName)
         if (let Some(id) <- reqId) {
-            ctx.setCtxParam("__request_id__", id)
+            ctx.setCtxParam(requestIdCtxKey, id)
         } else {
             let id = "${_prefix}-${_id.fetchAdd(1).format("06")}"
-            ctx.setCtxParam("__request_id__", id)
+            ctx.setCtxParam(requestIdCtxKey, id)
             ctx.header(_headerName, id)
         }
 

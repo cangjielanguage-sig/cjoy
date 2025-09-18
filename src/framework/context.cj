@@ -16,6 +16,7 @@ import std.net.IPAddress
 import stdx.net.http.{HttpContext, RedirectHandler, HttpStatusCode, HttpResponseBuilder, Cookie}
 import stdx.encoding.url.URL
 import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonReader, JsonWriter}
+import stdx.encoding.base64.fromBase64String
 import cjoy.bind.api.JoyBindable
 
 /**
@@ -372,6 +373,11 @@ public interface JoyContext {
      * create a SseEmitter
      */
     func eventEmitter(): JoySseEmitter
+
+    /**
+    * get basic auth info
+    */
+    func basicAuth(): (String, String, Bool)
 }
 
 class JoyHttpContext <: JoyContext {
@@ -703,5 +709,30 @@ class JoyHttpContext <: JoyContext {
 
     public func eventEmitter(): JoySseEmitter {
         JoySseEmitter(_httpContext)
+    }
+
+    public func basicAuth(): (String, String, Bool) {
+        let auth = getHeader(JoyHttpConsts.HEADER_AUTHORIZATION)
+        if (auth.isNone()) {
+            return ("", "", false)
+        }
+
+        let b64 = auth.getOrThrow().split(" ")
+        if (b64.size != 2 || b64[0].trimAscii() != 'Basic') {
+            return ("", "", false)
+        }
+
+        let decode = fromBase64String(b64[1])
+        if (decode.isNone()) {
+            return ("", "", false)
+        }
+
+        let upStr = String.fromUtf8(decode.getOrThrow())
+        let up = upStr.split(":")
+        if (up.size != 2) {
+            return ("", "", false)
+        }
+
+        (up[0], up[1], true)
     }
 }

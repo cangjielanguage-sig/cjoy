@@ -13,9 +13,17 @@ package cjoy.utils
 import std.convert.Formattable
 import std.collection.{map, collectArray}
 import std.random.Random
+import stdx.crypto.crypto.SecureRandom
 
 protected func randStr(len: Int32): String {
     let r = Random()
+    let bs = r.nextBytes(len)
+    let array = bs |> map {b => b.format("x")} |> collectArray
+    String.join(array)
+}
+
+protected func secureRandStr(len: Int32): String {
+    let r = SecureRandom()
     let bs = r.nextBytes(len)
     let array = bs |> map {b => b.format("x")} |> collectArray
     String.join(array)

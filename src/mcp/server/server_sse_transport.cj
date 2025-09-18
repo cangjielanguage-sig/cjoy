@@ -13,10 +13,9 @@ package cjoy.mcp.server
 import std.collection.concurrent.ConcurrentHashMap
 import std.io.ByteBuffer
 import std.time.DateTime
-import std.sync.SyncCounter
 import stdx.net.http.HttpStatusCode
 import cjoy.framework.{JoyContext, JoySseEmitter, JoyServerEventBuilder}
-import cjoy.utils.randStr
+import cjoy.utils.secureRandStr
 import cjoy.mcp.api.*
 import cjoy.log.LogTool
 
@@ -32,7 +31,7 @@ class McpSseServerTransport <: McpServerTransport {
         LogTool.info("[MCP] recv sse request from ${ctx.getClientIP()}")
         let emitter = ctx.eventEmitter()
         // create session
-        let sessionId = randStr(16)
+        let sessionId = secureRandStr(16)
         let state = McpServerSessionState(sessionId, emitter)
         let transport = McpSseServerSessionTransport(emitter, state, _sessions)
         let session = DefaultMcpServerSession(sessionId, transport, false, false)

@@ -16,7 +16,9 @@ import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable}
 import stdx.net.http.Cookie
 import cjoy.{JoyMiddlewareHandler, JoyRequestHandlerChain, JoyContext}
 import cjoy.session.*
-import cjoy.utils.randStr
+import cjoy.utils.secureRandStr
+
+const sessionCtxKey = "__session__"
 
 /**
  * the sssion config
@@ -44,7 +46,7 @@ public struct JoySessionConfig {
  * Get session from context
  */
 public func getSession(ctx: JoyContext): ?JoySession {
-    ctx.getCtxParam("__session__")
+    ctx.getCtxParam(sessionCtxKey)
 }
 
 /**
@@ -77,7 +79,7 @@ public class SessionManager <: JoyMiddlewareHandler {
         var newCookie = false
         let session = if (let Some(id) <- sid) {
             let sess = _storage.getOrCreate(id)
-            ctx.setCtxParam("__session__", sess)
+            ctx.setCtxParam(sessionCtxKey, sess)
             sess
         } else {
             synchronized(_lock) {
@@ -125,9 +127,9 @@ public class SessionManager <: JoyMiddlewareHandler {
     }
 
     private func createNewSessoin(ctx: JoyContext): JoySession {
-        let sid = randStr(Int32(_config.idLength / 2))
+        let sid = secureRandStr(Int32(_config.idLength / 2))
         let sess = _storage.getOrCreate(sid)
-        ctx.setCtxParam("__session__", sess)
+        ctx.setCtxParam(sessionCtxKey, sess)
         sess
     }
 }

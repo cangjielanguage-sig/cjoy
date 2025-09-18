@@ -13,11 +13,9 @@ package cjoy.mcp.server
 import std.collection.concurrent.ConcurrentHashMap
 import std.collection.{any, map, collectArrayList}
 import std.io.ByteBuffer
-import std.time.DateTime
-import std.sync.SyncCounter
 import stdx.net.http.HttpStatusCode
-import cjoy.framework.{JoyContext, JoySseEmitter, JoyServerEventBuilder, JoyHttpConsts}
-import cjoy.utils.randStr
+import cjoy.framework.{JoyContext, JoyHttpConsts}
+import cjoy.utils.secureRandStr
 import cjoy.mcp.api.*
 import cjoy.log.LogTool
 
@@ -203,7 +201,7 @@ class McpStreamableServerTransport <: McpServerTransport {
         if (m.method == McpConsts.METHOD_INITIALIZE) {
             session = validateSession(ctx, mustExist: false)
             if (session.isNone()) {
-                let sessionId = randStr(16)
+                let sessionId = secureRandStr(16)
                 let sess = createSession(ctx, sessionId)
                 LogTool.info("[MCP] create streamable session, sessionId: ${sessionId}")
                 session = sess
