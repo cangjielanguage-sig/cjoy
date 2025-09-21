@@ -49,18 +49,18 @@ public interface JoyContext {
     prop method: String
 
     /*
-    * return the http response status
-    */
+     * return the http response status
+     */
     prop respStatus: UInt16
 
     /*
-    * return the http request path
-    */
+     * return the http request path
+     */
     prop path: String
 
     /*
-    * return the http request url
-    */
+     * return the http request url
+     */
     prop url: URL
 
     /**
@@ -375,13 +375,19 @@ public interface JoyContext {
     func eventEmitter(): JoySseEmitter
 
     /**
-    * get basic auth info
-    */
+     * get basic auth info
+     */
     func basicAuth(): (String, String, Bool)
+
+    /**
+     * get the registered service
+     */
+    func getService<T>(name: String): ?T
 }
 
 class JoyHttpContext <: JoyContext {
     var _httpContext: HttpContext
+    private let _services: ServiceConainter
     private let _config: JoyConfig
     private let _paramMap: HashMap<String, String>
     private let _ctxParamMap: HashMap<String, Any>
@@ -392,8 +398,9 @@ class JoyHttpContext <: JoyContext {
     // the index of executing handler chain
     var _handleIndex: Int = 0
 
-    init(httpContext: HttpContext, paramMap: HashMap<String, String>, config: JoyConfig,
+    init(services: ServiceConainter, httpContext: HttpContext, paramMap: HashMap<String, String>, config: JoyConfig,
         ctxParamMap: HashMap<String, Any>) {
+        _services = services
         _httpContext = httpContext
         _config = config
         _paramMap = paramMap
@@ -734,5 +741,9 @@ class JoyHttpContext <: JoyContext {
         }
 
         (up[0], up[1], true)
+    }
+
+    public func getService<T>(name: String): ?T {
+        _services.getService<T>(name)
     }
 }

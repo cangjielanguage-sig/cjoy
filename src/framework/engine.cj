@@ -61,6 +61,7 @@ public class JoyConfig {
 public class Joy {
     private static let _INSTANCES: ConcurrentHashMap<String, Joy> = ConcurrentHashMap()
     private var _server: ?Server = None
+    private let _services: ServiceConainter = ServiceConainter()
 
     public let config: JoyConfig
     public let name: String
@@ -69,7 +70,7 @@ public class Joy {
     private init(config: JoyConfig, name: String) {
         this.config = config
         this.name = name
-        router = JoyRouteGroup(config)
+        router = JoyRouteGroup(config, _services)
         LogTool.info(LOGO.replace("VERSION", VERSION))
     }
 
@@ -177,6 +178,16 @@ public class Joy {
             }
         }
         _INSTANCES.remove(this.name)
+    }
+
+    /**
+     * add a service to the joy instance
+     *
+     * @param name: the service unqiue name
+     * @param service : the service instance object
+     */
+    public func addService(name: String, service: Any) {
+        _services.addService(name, service)
     }
 
     private static func readPermFile(path: String): String {

@@ -33,6 +33,7 @@ public interface JoyRouters {
      * change the course of the request execution.
      */
     func use(mw: JoyMiddlewareHandler): JoyRouters
+    func use(mws: Array<JoyMiddlewareHandler>): JoyRouters
     func use(mw: JoyMiddlewareFunc): JoyRouters {
         use(JoyMiddlewareFuncHandler(mw))
     }
@@ -41,6 +42,7 @@ public interface JoyRouters {
      * adds inline middlewares for an endpoint handler.
      */
     func apply(mw: JoyMiddlewareHandler): JoyRouters
+    func apply(mws: Array<JoyMiddlewareHandler>): JoyRouters
     func apply(mw: (ctx: JoyContext, chain: JoyRequestHandlerChain) -> Unit): JoyRouters {
         apply(JoyMiddlewareFuncHandler(mw))
     }
@@ -143,10 +145,12 @@ public interface JoyRouters {
 class TreeRouteDistributor <: HttpRequestDistributor & HttpRequestHandler {
     var _root: TreeNode<JoyRequestHandler> = TreeNode(NT_STATIC, b'\0', "")
     let _config: JoyConfig
+    let _services: ServiceConainter
     let _groups: HashMap<String, JoyRouters> = HashMap()
 
-    init(config: JoyConfig) {
-        this._config = config
+    init(config: JoyConfig, services: ServiceConainter) {
+        _config = config
+        _services = services
     }
 
     public func register(_: String, _: HttpRequestHandler): Unit {
@@ -165,7 +169,7 @@ class TreeRouteDistributor <: HttpRequestDistributor & HttpRequestHandler {
         } else {
             HashMap<String, Any>()
         }
-        let joyCtx = JoyHttpContext(ctx, target.getParams(), _config, ctxParamMap)
+        let joyCtx = JoyHttpContext(_services, ctx, target.getParams(), _config, ctxParamMap)
         target.handler?.handle(joyCtx)
     }
 
@@ -220,8 +224,8 @@ class JoyRouteGroup <: JoyRouters {
         _middlewares = middlewares
     }
 
-    init(config: JoyConfig) {
-        this("", TreeRouteDistributor(config), ArrayList())
+    init(config: JoyConfig, services: ServiceConainter) {
+        this("", TreeRouteDistributor(config, services), ArrayList())
     }
 
     public prop distributor: HttpRequestDistributor {
@@ -239,8 +243,18 @@ class JoyRouteGroup <: JoyRouters {
         this
     }
 
+    public func use(mws: Array<JoyMiddlewareHandler>): JoyRouters {
+        mws |> forEach {mw => _middlewares.add(mw)}
+        this
+    }
+
     public func apply(mw: JoyMiddlewareHandler): JoyRouters {
         _applyMWs.add(mw)
+        this
+    }
+
+    public func apply(mws: Array<JoyMiddlewareHandler>): JoyRouters {
+        mws |> forEach {mw => _applyMWs.add(mw)}
         this
     }
 

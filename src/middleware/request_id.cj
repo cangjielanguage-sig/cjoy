@@ -36,7 +36,7 @@ public class RequestId <: JoyMiddlewareHandler {
         _prefix = if (prefix != "") {
             prefix
         } else {
-            secureRandStr(8)
+            secureRandStr(4)
         }
         _headerName = headerName
     }
@@ -46,7 +46,7 @@ public class RequestId <: JoyMiddlewareHandler {
         if (let Some(id) <- reqId) {
             ctx.setCtxParam(requestIdCtxKey, id)
         } else {
-            let id = "${_prefix}-${_id.fetchAdd(1).format("06")}"
+            let id = "${_prefix}-${_id.fetchAdd(1).format("010")}"
             ctx.setCtxParam(requestIdCtxKey, id)
             ctx.header(_headerName, id)
         }
