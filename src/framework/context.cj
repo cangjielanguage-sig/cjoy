@@ -460,7 +460,7 @@ class JoyHttpContext <: JoyContext {
             if (_parsedCookie) {
                 return _cookieCache
             }
-            let cookies = _httpContext.request.headers.get("cookie")
+            let cookies = _httpContext.request.headers.get(JoyHttpConsts.HEADER_COOKIE)
             for (c in cookies) {
                 let arr = c.split(";")
                 for (a in arr) {

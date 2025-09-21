@@ -69,7 +69,7 @@ public interface JoySessionStorage {
     /**
      * get or create new session
      */
-    func getOrCreate(sid: String): JoySession
+    func getOrCreate(sid: String, idLen: Int32): JoySession
 
     /**
      * exist or not

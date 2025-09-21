@@ -14,6 +14,7 @@ import std.collection.concurrent.ConcurrentHashMap
 import std.time.DateTime
 import std.sync.Mutex
 import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable}
+import cjoy.utils.secureRandStr
 
 abstract sealed class AbstractSession <: JoySession {
     let _sid: String
@@ -83,19 +84,21 @@ protected abstract class AbstractSessionStorage <: JoySessionStorage {
         _sessions.remove(sid)
     }
 
-    public func getOrCreate(sid: String): JoySession {
+    public func getOrCreate(sid: String, idLen: Int32): JoySession {
         var s = _sessions.get(sid)
         if (s.isNone()) {
             synchronized(_lock) {
                 s = _sessions.get(sid)
                 if (s.isNone()) {
-                    let ns = createSession(sid)
-                    _sessions.add(sid, ns)
+                    // should create new session id when not existed
+                    let newSid = secureRandStr(idLen)
+                    let ns = createSession(newSid)
+                    _sessions.add(newSid, ns)
                     return ns
                 }
             }
         }
-        
+
         let session = s.getOrThrow()
         session.updateAccessTime()
         session

@@ -78,12 +78,15 @@ public class SessionManager <: JoyMiddlewareHandler {
         let sid = ctx.getCookie(_config.cookieName)
         var newCookie = false
         let session = if (let Some(id) <- sid) {
-            let sess = _storage.getOrCreate(id)
+            let sess = _storage.getOrCreate(id, Int32(_config.idLength / 2))
             ctx.setCtxParam(sessionCtxKey, sess)
+            if (sess.id != id) {
+                newCookie = true
+            }
             sess
         } else {
             synchronized(_lock) {
-                let existed = ctx.getCtxParam<JoySession>("__session__")
+                let existed = ctx.getCtxParam<JoySession>(sessionCtxKey)
                 if (let Some(s) <- existed) {
                     if (!_storage.exists(s.id)) {
                         s.invalidate()
@@ -114,7 +117,7 @@ public class SessionManager <: JoyMiddlewareHandler {
 
             if (newCookie) {
                 let c = if (maxAge == -1) {
-                    Cookie(_config.cookieName, session.id, expires: DateTime.UnixEpoch, domain: _config.cookieDomain,
+                    Cookie(_config.cookieName, "", expires: DateTime.UnixEpoch, domain: _config.cookieDomain,
                         path: _config.cookiePath, secure: _config.cookieSecure, httpOnly: _config.cookieHttpOnly)
                 } else {
                     Cookie(_config.cookieName, session.id, maxAge: maxAge, domain: _config.cookieDomain,
@@ -127,8 +130,7 @@ public class SessionManager <: JoyMiddlewareHandler {
     }
 
     private func createNewSessoin(ctx: JoyContext): JoySession {
-        let sid = secureRandStr(Int32(_config.idLength / 2))
-        let sess = _storage.getOrCreate(sid)
+        let sess = _storage.getOrCreate("", Int32(_config.idLength / 2))
         ctx.setCtxParam(sessionCtxKey, sess)
         sess
     }
