@@ -96,6 +96,7 @@ public interface Claims {
     func issuer(iss: String): Claims
     func subject(sub: String): Claims
     func audience(aud: String): Claims
+    func audiences(auds: Array<String>): Claims
     func claim(name: String, value: JsonSerializable): Claims
 }
 
@@ -156,6 +157,11 @@ extend MapClaims <: Claims {
 
     public func audience(aud: String): Claims {
         add("aud", aud)
+        this
+    }
+
+    public func audiences(auds: Array<String>): Claims {
+        add("aud", auds)
         this
     }
 

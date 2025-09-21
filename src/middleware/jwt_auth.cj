@@ -18,11 +18,14 @@ import cjoy.log.LogTool
 import cjoy.jwt.*
 import cjoy.json.*
 
+const jwtCtxKey = "__jwt__"
+const jwtPayloadCtxKey = "__jwt_payload__"
+
 /**
  * return the jwt token form context
  */
 public func getJwt(ctx: JoyContext): ?String {
-    ctx.getCtxParam("__jwt__")
+    ctx.getCtxParam(jwtCtxKey)
 }
 
 public interface Jwtkey {
@@ -126,7 +129,7 @@ public class JwtAuth <: JoyMiddlewareHandler {
         if (this.identityHandler.isNone()) {
             this.identityHandler = {
                 ctx: JoyContext =>
-                    let claims = ctx.getCtxParam<Claims>("__jwt__payload__")
+                    let claims = ctx.getCtxParam<Claims>(jwtPayloadCtxKey)
                     claims.getOrThrow().getClaimString(identityKey) ?? ""
             }
         }
@@ -276,7 +279,7 @@ public class JwtAuth <: JoyMiddlewareHandler {
 
         jwt.verifyWith(keyProvider.getKeys(jwt)[1])
         // save token string if valid
-        ctx.setCtxParam("__jwt__", token)
+        ctx.setCtxParam(jwtCtxKey, token)
         jwt
     }
 
@@ -288,7 +291,7 @@ public class JwtAuth <: JoyMiddlewareHandler {
             }
         }
 
-        ctx.setCtxParam("__jwt__payload__", jwt.claims)
+        ctx.setCtxParam(jwtPayloadCtxKey, jwt.claims)
     }
 
     private func checkIfTokenExpire(ctx: JoyContext): Jwt {

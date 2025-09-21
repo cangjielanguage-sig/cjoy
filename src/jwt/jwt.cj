@@ -11,9 +11,8 @@
 package cjoy.jwt
 
 import std.time.DateTime
-import stdx.encoding.base64.{toBase64String, fromBase64String}
 import cjoy.json.JsonTool
-import cjoy.utils.StrFunc
+import cjoy.utils.{StrFunc, rawBase64URLEncode, rawBase64URLDecode}
 
 public class Jwt {
     private var _headers: MapHeaders = MapHeaders()
@@ -219,11 +218,7 @@ public class Jwt {
     }
 
     private func encodeSegemnt(seg: Array<Byte>): String {
-        var res: String = toBase64String(seg)
-        res = res.trimEnd("=")
-        res = res.replace("+", "_")
-        res = res.replace("/", "_")
-        res
+        rawBase64URLEncode(seg)
     }
 
     private func signingString(): String {
@@ -270,14 +265,7 @@ public class Jwt {
     }
 
     private func decodeSegemnt(seg: String): Array<Byte> {
-        var v = seg
-        let len = seg.size % 4
-        if (len > 0) {
-            v += String.repeat("=", 4 - len)
-        }
-        v = v.replace("-", "+")
-        v = v.replace("_", "/")
-        fromBase64String(v).getOrThrow({=> JwtException("token is malformed, could not base64 decode")})
+        rawBase64URLDecode(seg).getOrThrow({=> JwtException("token is malformed, could not base64 decode")})
     }
 }
 

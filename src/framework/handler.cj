@@ -28,7 +28,7 @@ public interface JoyRequestHandler {
 // the request handler function
 public type JoyRequestHandlerFunc = (ctx: JoyContext) -> Unit
 
-// the filter function 
+// the request filter function 
 public type JoyRequestFilterFunc = (ctx: JoyContext) -> Bool
 
 public class JoyFuncHandler <: JoyRequestHandler {

@@ -12,7 +12,7 @@ package cjoy.multipart
 
 import std.io.{OutputStream, BufferedOutputStream}
 import stdx.net.http.HttpHeaders
-import cjoy.utils.{StrFunc, randStr}
+import cjoy.utils.{StrFunc, secureRandStr}
 
 /**
  * multi part writer
@@ -29,7 +29,7 @@ public class JoyMultiPartWriter <: Resource {
             checkBoundary(b)
             _boundary = b
         } else {
-            _boundary = randStr(30)
+            _boundary = secureRandStr(30)
         }
     }
 

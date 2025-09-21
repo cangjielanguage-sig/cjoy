@@ -16,4 +16,4 @@ tmpFile*
 cov_output/
 cjcov_logs/
 .VSCodeCounter
-.log.txt
+log.txt

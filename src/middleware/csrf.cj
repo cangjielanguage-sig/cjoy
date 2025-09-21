@@ -12,12 +12,15 @@ package cjoy.middleware
 
 import std.crypto.digest.digest
 import stdx.crypto.digest.SHA256
-import stdx.encoding.base64.toBase64String
 import stdx.net.http.HttpStatusCode
 import cjoy.{JoyMiddlewareHandler, JoyRequestHandlerChain, JoyContext, JoyHttpConsts, JoyRequestHandler, 
     JoyRequestHandlerFunc, JoyFuncHandler, JoyRequestFilterFunc}
 import cjoy.log.LogTool
-import cjoy.utils.randStr
+import cjoy.utils.{secureRandStr, rawBase64URLEncode}
+
+const csrfSecretCtxKey = "__csrf_secret__"
+const csrfTokenCtxKey = "__csrf_token__"
+const csrfSaltCtxKey = "__csrf_salt__"
 
 // the extract token function
 type CrsfExtractFunc = (ctx: JoyContext) -> (String, String)
@@ -37,22 +40,22 @@ class DefaultCrsfErrorHandler <: JoyRequestHandler {
  */
 public func getCrsfToken(ctx: JoyContext): String {
     let session = getSession(ctx).getOrThrow()
-    let secret = session.get<String>("__csrf_secret__").getOrThrow()
+    let secret = session.get<String>(csrfSecretCtxKey).getOrThrow()
 
-    if (let Some(t) <- session.get<String>("__csrf_token__")) {
+    if (let Some(t) <- session.get<String>(csrfTokenCtxKey)) {
         return t
     }
 
-    let salt = if (let Some(s) <- session.get<String>("__csrf_salt__")) {
+    let salt = if (let Some(s) <- session.get<String>(csrfSaltCtxKey)) {
         s
     } else {
-        let s = randStr(16)
-        session.set("__csrf_salt__", s)
+        let s = secureRandStr(16)
+        session.set(csrfSaltCtxKey, s)
         s
     }
 
     let token = CrsfProtect.tokenize(secret, salt)
-    session.set("__csrf_token__", token)
+    session.set(csrfTokenCtxKey, token)
     token
 }
 
@@ -101,35 +104,35 @@ public class CrsfProtect <: JoyMiddlewareHandler {
         match (sn[0]) {
             case "header" => {
                 ctx: JoyContext =>
-                let value = ctx.getHeader(sn[1])
-                if (let Some(v) <- value) {
-                    return (v, sn[0])
-                }
-                return ("", sn[0])
+                    let value = ctx.getHeader(sn[1])
+                    if (let Some(v) <- value) {
+                        return (v, sn[0])
+                    }
+                    return ("", sn[0])
             }
             case "query" => {
                 ctx: JoyContext =>
-                let value = ctx.getQuery(sn[1])
-                if (let Some(v) <- value) {
-                    return (v, sn[0])
-                }
-                return ("", sn[0])
+                    let value = ctx.getQuery(sn[1])
+                    if (let Some(v) <- value) {
+                        return (v, sn[0])
+                    }
+                    return ("", sn[0])
             }
             case "param" => {
                 ctx: JoyContext =>
-                let value = ctx.getParam(sn[1])
-                if (let Some(v) <- value) {
-                    return (v, sn[0])
-                }
-                return ("", sn[0])
+                    let value = ctx.getParam(sn[1])
+                    if (let Some(v) <- value) {
+                        return (v, sn[0])
+                    }
+                    return ("", sn[0])
             }
             case "form" => {
                 ctx: JoyContext =>
-                let value = ctx.getPostForm(sn[1])
-                if (let Some(v) <- value) {
-                    return (v, sn[0])
-                }
-                return ("", sn[0])
+                    let value = ctx.getPostForm(sn[1])
+                    if (let Some(v) <- value) {
+                        return (v, sn[0])
+                    }
+                    return ("", sn[0])
             }
             case _ => throw IllegalArgumentException(
                 "lookupKey format must be <source>:<name>, source must be one of [header, query, form, param]")
@@ -138,7 +141,7 @@ public class CrsfProtect <: JoyMiddlewareHandler {
 
     static func tokenize(secret: String, salt: String): String {
         var md: Array<Byte> = digest(SHA256(), "${salt}-${secret}".toArray())
-        toBase64String(md)
+        rawBase64URLEncode(md)
     }
 
     public func handle(ctx: JoyContext, chain: JoyRequestHandlerChain): Unit {
@@ -151,14 +154,14 @@ public class CrsfProtect <: JoyMiddlewareHandler {
 
         // Set secret to generate token in getCrsfToken func
         let session = getSession(ctx).getOrThrow()
-        session.set("__csrf_secret__", _secret)
+        session.set(csrfSecretCtxKey, _secret)
 
         if (_ignoreMethods.contains(ctx.method)) {
             chain.next(ctx)
             return
         }
 
-        let salt = session.get<String>("__csrf_salt__")
+        let salt = session.get<String>(csrfSaltCtxKey)
         if (salt.isNone()) {
             LogTool.error("[CRSF] miss salt")
             _errorHandler.handle(ctx)

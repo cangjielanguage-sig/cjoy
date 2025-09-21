@@ -33,7 +33,7 @@ public class BasicAuth <: JoyMiddlewareHandler {
             }
         }
 
-        let (user, pwd, ok) = basicAuth(ctx)
+        let (user, pwd, ok) = ctx.basicAuth()
         if (!ok) {
             basicAuthFailed(ctx)
             return
@@ -51,31 +51,6 @@ public class BasicAuth <: JoyMiddlewareHandler {
         }
 
         chain.next(ctx)
-    }
-
-    private func basicAuth(ctx: JoyContext): (String, String, Bool) {
-        let auth = ctx.getHeader(JoyHttpConsts.HEADER_AUTHORIZATION)
-        if (auth.isNone()) {
-            return ("", "", false)
-        }
-
-        let b64 = auth.getOrThrow().split(" ")
-        if (b64.size != 2 || b64[0].trimAscii() != 'Basic') {
-            return ("", "", false)
-        }
-
-        let decode = fromBase64String(b64[1])
-        if (decode.isNone()) {
-            return ("", "", false)
-        }
-
-        let upStr = String.fromUtf8(decode.getOrThrow())
-        let up = upStr.split(":")
-        if (up.size != 2) {
-            return ("", "", false)
-        }
-
-        (up[0], up[1], true)
     }
 
     private func basicAuthFailed(ctx: JoyContext) {

@@ -18,7 +18,7 @@ public type MapHeaders = HashMap<String, JsonSerializable>
 public interface Headers {
     func header(name: String, value: JsonSerializable): Headers
     func getString(name: String): ?String
-    func getInt<T>(name: String): ?T
+    func getValue<T>(name: String): ?T
 
     prop alg: String
 }
@@ -33,7 +33,7 @@ extend MapHeaders <: Headers {
         (get(name) ?? Option<JsonSerializable>.None) as String
     }
 
-    public func getInt<T>(name: String): ?T {
+    public func getValue<T>(name: String): ?T {
         (get(name) ?? Option<JsonSerializable>.None) as T
         None
     }
