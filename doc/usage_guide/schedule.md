@@ -21,8 +21,8 @@ CJoy提供Linux风格的crontab定时调试任务。
 
  - `* * * * * *`: 每 1 秒钟执行一次
  - `* * * * *`: 每 1 分钟执行一次 
- - `0,15,30,45,18-06 * * *`: 每小时的第 3 和第 15 分钟执行
- - `3,15 * * * *`: 在上午 8 点到 11 点的第 3 和第 15 分钟执行
+ - `0,15,30,45,8-12 * * *`:  在 8 点 到12 点每隔 15 分钟执行
+ - `3,15 8-11 * * *`: 在上午 8 点到 11 点的第 3 和第 15 分钟执行
  - `3,15 8-11 */2 * *` : 每隔两天的上午 8 点到 11 点的第 3 和第 15 分钟执行
   
 
@@ -32,7 +32,7 @@ CJoy提供Linux风格的crontab定时调试任务。
 public type ScheduleFunc = (ctx: ScheduleContext) -> Unit
 ```
 
- - 只有一个入参：ScheduleContext，调度任务多次执行时，您可以在上下文中记录一些信息。
+ - 只有一个入参：ScheduleContext，调度任务多次执行时，您可以在上下文中记录一些信息在下次回调时再使用。
 
 ## 使用方式1：
 
@@ -66,7 +66,7 @@ func addCrontab(ctx: JoyContext): Unit {
 }
 ```
 
-注：在Handler或Midlleware中使用需要先注册crontab服务，参见 [服务](../../doc/usage_guide/service.md) 说明。
+注：在Handler或Midlleware中使用服务需要先注册crontab服务，参见 [服务](../../doc/usage_guide/service.md) 说明。
 
 
 ----
