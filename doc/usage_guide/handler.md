@@ -12,7 +12,7 @@ JoyRequestHandler定义参见  [handler.cj](../../src/framework/handler.cj) 。
 // 实现JoyRequestHandler
 class UserHandler <: JoyRequestHandler {
     public func handle(ctx: JoyContext): Unit {
-        let name = ctx.getParam("name") ?? "no name"	    ...
+        let name = ctx.getParam("name") ?? "no name"
     }
 }
 router.get("/{name}", UserHandler())
@@ -32,7 +32,7 @@ HTTP的Handler通过调用JoyRouters的get, post, put等方法注册到路由分
 
 ## 处理上下文
 
-Handler的入参JoyContext提供上下文支持对HTTP获取与回响应处理，主要API如下，请多的API请参见源码 [context.cj](../../src/framework/context.cj)  。
+Handler的入参JoyContext提供上下文支持对HTTP获取请求内容与回响应，主要API如下，请多的API请参见源码 [context.cj](../../src/framework/context.cj)  。
 
 |函数|说明|
 |---|---|
@@ -51,7 +51,7 @@ Handler的入参JoyContext提供上下文支持对HTTP获取与回响应处理�
 |header|设置Header|
 |cookie|设置Cookie|
 
-给HTTP回响应，支持链式调用，如`ctx.status(HttpStatusCode.STATUS_OK).header(hname, value).json(obj)`，当Hanler函数返回值，构建响应消息回给客户端。
+给HTTP回响应，支持链式调用，如`ctx.status(HttpStatusCode.STATUS_OK).header(hname, value).json(obj)`，当Handler函数返回时，构建响应消息回给客户端。
 
 ----
 << [返回](../../README.md#使用指导)
