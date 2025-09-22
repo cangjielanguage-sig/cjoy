@@ -186,8 +186,9 @@ public class Joy {
      * @param name: the service unqiue name
      * @param service : the service instance object
      */
-    public func addService(name: String, service: Any) {
+    public func addService(name: String, service: Any): Joy {
         _services.addService(name, service)
+        this
     }
 
     private static func readPermFile(path: String): String {
