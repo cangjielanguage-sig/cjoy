@@ -28,12 +28,15 @@ public class Crontab {
         })
     }
 
-    public func addJob(name: String, cronExp: String, fn: ScheduleFunc) {
+    public func addJob(name: String, cronExp: String, fn: ScheduleFunc): Unit {
+        if (exists(name)) {
+            throw ScheduleException("the cron job name is existed")
+        }
         let job = CronJob.parse(name, cronExp, fn)
         _jobs.add(name, job)
     }
 
-    public func addJobIfAbsent(name: String, cronExp: String, fn: ScheduleFunc) {
+    public func addJobIfAbsent(name: String, cronExp: String, fn: ScheduleFunc): Unit {
         let job = CronJob.parse(name, cronExp, fn)
         _jobs.addIfAbsent(name, job)
     }

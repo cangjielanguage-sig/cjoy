@@ -10,5 +10,5 @@
 
 macro package cjoy.schedule
 
-public import cjoy.schedule.macros.{Cron, Scheduled}
+public import cjoy.schedule.macros.Scheduled
 public import cjoy.schedule.api.{Crontab, ScheduleContext}

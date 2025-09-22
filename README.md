@@ -189,6 +189,8 @@ main(): Int64 {
   - [Handler宏](doc/usage_guide/macro.md#handler宏)
   - [Middleware宏](doc/usage_guide/macro.md#Middleware宏)
   - [注册](doc/usage_guide/macro.md#注册)
+- [服务](doc/usage_guide/service.md)
+  - [调度任务](doc/usage_guide/schedule.md)
 - [参数绑定](doc/usage_guide/binding.md)
 - [Json](doc/usage_guide/json.md)
   - [基础用法](doc/usage_guide/json.md#基础用法)

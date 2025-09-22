@@ -12,10 +12,12 @@ macro package cjoy.schedule.macros
 
 import std.ast.*
 
-public macro Cron(attr: Tokens, input: Tokens): Tokens {
-    input
-}
-
+/**
+ * register a schedule job
+ *
+ * @attribute name: the name of job
+ * @attribute cron: the crontab express
+ */
 public macro Scheduled(attr: Tokens, input: Tokens): Tokens {
-    input
+    input + parseFunc("Scheduled", attr, input)
 }
