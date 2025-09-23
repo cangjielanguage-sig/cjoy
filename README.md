@@ -1,7 +1,7 @@
 <div align="center">
 <h1>CJoy</h1>
-a fast，extensible，lightweight and joy cangjie web framework.<br/>
-一个高性能、可扩展、轻量、省心的仓颉Web框架。
+a fast，extensible，lightweight and joy cangjie application framework.<br/>
+一个高性能、可扩展、轻量、省心的仓颉应用开发框架。
 <br/>
 <img alt="" src="doc/imgs/logo.png" height="118" width="200" style="display: inline-block;" />
 </div>
@@ -16,11 +16,11 @@ a fast，extensible，lightweight and joy cangjie web framework.<br/>
 
 ## 🔑 概览
 
-本项目参考多种语言Web开源框架的设计优点，基于仓颉语言打造的具有高性能、高扩展性，高易用性等特点的Web框架。
+本项目参考多种语言Web开源框架的设计优点，基于仓颉语言打造的具有高性能、高扩展性，高易用性等特点的应用开发框架。
 
 ### 特性
 
-在仓颉SDK提供的HTTP框架基础上进一步封装以简化Web应用开发：
+在仓颉SDK提供的HTTP框架基础上进一步封装以简化后端应用开发：
 
 - 1️⃣ 基于压缩前辍树的路由管理，支持静态Path，参数匹配Path，正则匹配Path，全路径通配符Path的高效注册与查找，支持路由组；
 - 2️⃣ 基于拦截器的中间件扩展能力，支持Session等多种能力扩展；
@@ -30,20 +30,20 @@ a fast，extensible，lightweight and joy cangjie web framework.<br/>
 - 6️⃣ 基于编译宏支持对请求参数校验；
 - 7️⃣ 基于编译宏支持MCP服务暴露工具等能力给LLM；
 - 8️⃣ 内置文件下载与上传，WebSocket，SSE等能力;
-- 9️⃣ 内置多种中间件，支持Basic, Token, JWT认证;
+- 9️⃣ 内置多种中间件，支持Basic, Token, JWT，OAuth2等认证;
 
 ### 应用场景
 
 - ♠️ API服务：帮助您快速开发API服务并配置路由规则与管理各种资源；
 - ♥️ Web服务：压缩前辍树高性能路由查找与文件服务，让您的Web服务更具有性能优势；
-- ♦️ 微服务：路由组与内置Json编译宏，轻松实现微服务各类接口分组管理与接口实现；
+- ♦️ 微服务：路由组与内置Json编译宏，轻松实现微服务各类接口分组管理与接口调用；
 - ♣️ MCP服务：提供AI MCP服务组件编译宏，可以让您快速暴露MCP的工具等能力给LLM；
 
 ### 技术特点
 
 - 🚀 高性能：零反射，基于编译宏生成代码，前辍树高效路由，运行时高性能；
-- 🧩 轻量化：内置Web应用开发常见能力，模块化按需使用，能灵活组装；
-- 🔌 可扩展：提供中间件机制，支持对Web请求拦截进行处理，丰富您的Web应用；
+- 🧩 轻量化：零第三方库依赖，内置Web应用开发常见能力，模块化按需使用，能灵活组装；
+- 🔌 可扩展：提供中间件与服务扩展机制，支持对请求拦截与服务调用，丰富您的Web应用；
 - 😊 易上手：内置多种能力，提供编译宏，简化Web，MCP应用开发，让您聚焦你的应用逻辑；
 - 🛠️ 多协议：支持HTTP1，HTTP2，WebSocket, SSE, MCP等协议；
 
@@ -191,6 +191,7 @@ main(): Int64 {
   - [注册](doc/usage_guide/macro.md#注册)
 - [服务](doc/usage_guide/service.md)
   - [调度任务](doc/usage_guide/schedule.md)
+  - [Http服务](doc/usage_guide/httpx.md)
 - [参数绑定](doc/usage_guide/binding.md)
 - [Json](doc/usage_guide/json.md)
   - [基础用法](doc/usage_guide/json.md#基础用法)
@@ -226,7 +227,7 @@ main(): Int64 {
 
 ## 🏁 版本说明
 
-CJoy目前还在开发阶段，框架主要能力已完成开发，后续重点是提升测试覆盖率，以及增加各类中间件实现。
+CJoy目前还在开发阶段，框架主要能力已完成开发，后续重点是提升测试覆盖率，以及扩展各类中间件与服务。
 
 版本发布采用打Tag的方式。您引用Cjoy可以在你的项目cjpm.toml采用如下方式：
 

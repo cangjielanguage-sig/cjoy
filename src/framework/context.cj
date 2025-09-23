@@ -19,10 +19,37 @@ import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonRead
 import stdx.encoding.base64.fromBase64String
 import cjoy.bind.api.JoyBindable
 
+public interface Context {
+    /**
+     * set param in context
+     *
+     * @param key: the param key name
+     * @param value: the param value
+     *
+     */
+    func set(key: String, value: Any): Unit
+
+    /**
+     * get param from context
+     *
+     * @param key: the param key name
+     * @return the param value
+     *
+     */
+    func get<T>(key: String): ?T
+
+    /**
+     * remove param from context
+     *
+     * @param key: the param key name
+     */
+    func remove(key: String): Unit
+}
+
 /**
  * the context which holds the engine config, params, context params and any you need.
  */
-public interface JoyContext {
+public interface JoyContext <: Context {
     /**
      * return the http context
      */
@@ -70,7 +97,9 @@ public interface JoyContext {
      * @param value: the param value
      *
      */
-    func setCtxParam(key: String, value: Any): Unit
+    func setCtxParam(key: String, value: Any): Unit {
+        set(key, value)
+    }
 
     /**
      * get param from context
@@ -79,7 +108,9 @@ public interface JoyContext {
      * @return the param value
      *
      */
-    func getCtxParam<T>(key: String): ?T
+    func getCtxParam<T>(key: String): ?T {
+        get(key)
+    }
 
     /**
      * get url path param from context
@@ -502,16 +533,20 @@ class JoyHttpContext <: JoyContext {
         }
     }
 
-    public func setCtxParam(key: String, value: Any): Unit {
+    public func set(key: String, value: Any): Unit {
         _ctxParamMap.add(key, value)
     }
 
-    public func getCtxParam<T>(key: String): ?T {
+    public func get<T>(key: String): ?T {
         let val = _ctxParamMap.get(key)
         match (val) {
             case Some(v) => v as T
             case _ => None
         }
+    }
+
+    public func remove(key: String): Unit {
+        _ctxParamMap.remove(key)
     }
 
     public func getParam(name: String): ?String {

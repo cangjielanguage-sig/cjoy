@@ -10,7 +10,7 @@
 
 package cjoy.schedule.api
 
-import std.sync.{Mutex, Timer}
+import std.sync.{Timer}
 import std.collection.concurrent.ConcurrentHashMap
 import std.time.DateTime
 
@@ -26,6 +26,14 @@ public class Crontab {
         _timer = Timer.repeat(Duration.second, Duration.second, {
             => runScheduled(jobs)
         })
+    }
+
+    ~init() {
+        _timer.cancel()
+    }
+
+    public func destroy(): Unit {
+        _timer.cancel()
     }
 
     public func addJob(name: String, cronExp: String, fn: ScheduleFunc): Unit {
