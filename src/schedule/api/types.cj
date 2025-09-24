@@ -11,11 +11,12 @@
 package cjoy.schedule.api
 
 import std.collection.concurrent.ConcurrentHashMap
+import cjoy.framework.Context
 
-public class ScheduleContext {
+public class ScheduleContext <: Context {
     private let _data: ConcurrentHashMap<String, Any> = ConcurrentHashMap()
 
-    public func set(key: String, value: Any) {
+    public func set(key: String, value: Any): Unit {
         _data.add(key, value)
     }
 
