@@ -29,8 +29,8 @@ main(): Int64 {
     )
 
     // 启动服务
-    let certificatePath = "src/tls/server_cert.pem"
-    let certificateKeyPath = "src/tls/server_key.pem"
+    let certificatePath = "../testdata/server_cert.pem"
+    let certificateKeyPath = "../testdata/server_key.pem"
     joy.run("127.0.0.1", 18881, certificatePath, certificateKeyPath)
     return 0
 }
