@@ -138,10 +138,12 @@ public class Joy {
      * @param port: the listen port
      * @param certFilePath: the certificate server file path
      * @param keyFilePath: the certificate server key file path
+     * @param password: the password of certificate server key
      * @param h2: run as http2
      */
-    public func run(addr: String, port: UInt16, certFilePath: String, keyFilePath: String, h2!: Bool = false): Unit {
-        var tlsConfig = loadTlsConfig(certFilePath, keyFilePath)
+    public func run(addr: String, port: UInt16, certFilePath: String, keyFilePath: String, password!: ?String = None,
+        h2!: Bool = false): Unit {
+        var tlsConfig = loadTlsConfig(certFilePath, keyFilePath, password)
         if (h2) {
             tlsConfig.supportedAlpnProtocols = ["h2"]
         }
@@ -198,12 +200,12 @@ public class Joy {
         ""
     }
 
-    private static func loadTlsConfig(certFilePath: String, keyFilePath: String): TlsServerConfig {
+    private static func loadTlsConfig(certFilePath: String, keyFilePath: String, password: ?String): TlsServerConfig {
         let certText = readPermFile(certFilePath)
         let keyText = readPermFile(keyFilePath)
 
         let certificate = X509Certificate.decodeFromPem(certText)
-        let privateKey = PrivateKey.decodeFromPem(keyText)
+        let privateKey = PrivateKey.decodeFromPem(keyText, password: password)
 
         TlsServerConfig(certificate, privateKey)
     }

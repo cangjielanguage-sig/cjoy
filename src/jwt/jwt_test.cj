@@ -11,13 +11,40 @@
 package cjoy.jwt
 
 import std.time.DateTime
+import stdx.crypto.keys.{RSAPrivateKey, RSAPublicKey}
 
 @Test
 public class JwtTestCaseSuit {
     @TestCase
     public func testSignHS256() {
+        let key = "abcd".toArray()
+        let jwt = createJwt("HS256")
+        let token = jwt.signWith(key)
+        let jwt2 = Jwt.pasrse(token).verifyWith(key)
+        assertJwt(jwt2)
+    }
+
+    @TestCase
+    public func testSignHS384() {
+        let key = "abcd".toArray()
+        let jwt = createJwt("HS384")
+        let token = jwt.signWith(key)
+        let jwt2 = Jwt.pasrse(token).verifyWith(key)
+        assertJwt(jwt2)
+    }
+
+    @TestCase
+    public func testSignHS512() {
+        let key = "abcd".toArray()
+        let jwt = createJwt("HS512")
+        let token = jwt.signWith(key)
+        let jwt2 = Jwt.pasrse(token).verifyWith(key)
+        assertJwt(jwt2)
+    }
+
+    private func createJwt(alg: String): Jwt {
         let jwt = Jwt.create()
-        jwt.alg("HS256")
+        jwt.alg(alg)
         jwt.headers.header("h1", "v1")
         jwt.claims
             .issuer("cjoy")
@@ -27,14 +54,46 @@ public class JwtTestCaseSuit {
             .notBefore(DateTime.now())
             .subject("sub")
             .claim("c1", "v1")
-        let token = jwt.signWith("abcd".toArray())
-        let jwt2 = Jwt.pasrse(token).verifyWith("abcd".toArray())
-        @Assert(jwt2.headers.getString("h1").getOrThrow() == "v1")
-        @Assert(jwt2.claims.getIssuer().getOrThrow() == "cjoy")
-        @Assert(jwt2.claims.getSubject().getOrThrow() == "sub")
-        @Assert(jwt2.claims.getAudience().getOrThrow().getFirstValue() == "aud")
-        @Assert(jwt2.claims.getExpirationTime().isSome())
-        @Assert(jwt2.claims.getNotBefore().isSome())
-        @Assert(jwt2.claims.getIssuedAt().isSome())
+        jwt
+    }
+
+    private func assertJwt(jwt: Jwt): Unit {
+        @Assert(jwt.headers.getString("h1").getOrThrow() == "v1")
+        @Assert(jwt.claims.getIssuer().getOrThrow() == "cjoy")
+        @Assert(jwt.claims.getSubject().getOrThrow() == "sub")
+        @Assert(jwt.claims.getAudience().getOrThrow().getFirstValue() == "aud")
+        @Assert(jwt.claims.getExpirationTime().isSome())
+        @Assert(jwt.claims.getNotBefore().isSome())
+        @Assert(jwt.claims.getIssuedAt().isSome())
+    }
+
+    @TestCase
+    public func testSignRS256() {
+        let priv = RSAPrivateKey(2048)
+        let pub = RSAPublicKey(priv)
+        let jwt = createJwt("RS256")
+        let token = jwt.signWith(priv)
+        let jwt2 = Jwt.pasrse(token).verifyWith(pub)
+        assertJwt(jwt2)
+    }
+
+    @TestCase
+    public func testSignRS256FromFile() {
+        let priv = loadRSAPrivateKey("./testdata/rsa_private.pem")
+        let pub = loadRSAPublicKey("./testdata/rsa_public.pem")
+        let jwt = createJwt("RS256")
+        let token = jwt.signWith(priv)
+        let jwt2 = Jwt.pasrse(token).verifyWith(pub)
+        assertJwt(jwt2)
+    }
+
+    @TestCase
+    public func testSignPS256() {
+        let priv = RSAPrivateKey(2048)
+        let pub = RSAPublicKey(priv)
+        let jwt = createJwt("PS256")
+        let token = jwt.signWith(priv)
+        let jwt2 = Jwt.pasrse(token).verifyWith(pub)
+        assertJwt(jwt2)
     }
 }

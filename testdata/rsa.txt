@@ -1,0 +1,2 @@
+openssl genrsa -ase256 -out rsa_private.pem
+openssl rsa -in rsa_private.pem -pubout -out rsa_public.pem
