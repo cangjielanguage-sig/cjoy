@@ -8,45 +8,7 @@
  * See the Mulan PSL v2 for more details.
  */
 
-package cjoy.log
+macro package cjoy.log
 
-import stdx.log.{LogLevel, Logger}
-import stdx.logger.SimpleLogger
-import std.env.getStdOut
-
-public class LogTool {
-    private static var _logger: Logger = SimpleLogger(getStdOut())
-
-    /**
-     * you can set the logger in program begin
-     */
-    public mut static prop logger: Logger {
-        get() {
-            _logger
-        }
-        set(value) {
-            // non thread safe
-            _logger = value
-        }
-    }
-
-    public static func enableDebugLog(): Unit {
-        logger.level = LogLevel.DEBUG
-    }
-
-    public static func debug(msg: String): Unit {
-        logger.debug(msg)
-    }
-
-    public static func info(msg: String): Unit {
-        logger.info(msg)
-    }
-
-    public static func error(msg: String): Unit {
-        logger.error(msg)
-    }
-
-    public static func warn(msg: String): Unit {
-        logger.warn(msg)
-    }
-}
+public import cjoy.log.api.LogTool
+public import cjoy.log.macros.*

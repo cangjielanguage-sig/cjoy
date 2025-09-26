@@ -16,7 +16,7 @@ import std.io.{readToEnd}
 import stdx.net.tls.TlsServerConfig
 import stdx.net.http.{Server, ServerBuilder}
 import stdx.crypto.x509.{X509Certificate, PrivateKey}
-import cjoy.log.LogTool
+import cjoy.log.*
 
 public const VERSION = "v0.60.0"
 const LOGO = ##"
@@ -161,8 +161,8 @@ public class Joy {
             LogTool.enableDebugLog()
         }
         _server = Some(server)
-        LogTool.info("[Joy#run] run cjoy app ${name}, bind at ${server.addr}:${server.port}")
-        LogTool.info("[Joy#run] route tree:\n${router.dump()}")
+        @LogInfo("run cjoy app ${name}, bind at ${server.addr}:${server.port}")
+        @LogInfo("route tree:\n${router.dump()}")
         server.serve()
     }
 
@@ -191,6 +191,10 @@ public class Joy {
     public func addService(name: String, service: Any): Joy {
         _services.addService(name, service)
         this
+    }
+
+    public func getService<T>(name: String): ?T {
+        _services.getService<T>(name)
     }
 
     private static func readPermFile(path: String): String {

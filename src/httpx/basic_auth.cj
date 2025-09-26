@@ -13,7 +13,8 @@ package cjoy.httpx
 import std.collection.{Map}
 import stdx.net.http.{HttpHeaders}
 import stdx.encoding.base64.toBase64String
-import cjoy.framework.{Context, JoyHttpConsts}
+import cjoy.context.Context
+import cjoy.framework.{JoyHttpConsts}
 
 public class BasicAuthClient <: JoyHttpClient {
     public BasicAuthClient(let http: JoyHttpClient, let username!: String, let password!: String) {

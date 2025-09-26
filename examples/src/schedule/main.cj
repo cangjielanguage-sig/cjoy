@@ -8,12 +8,12 @@ import cjoy.*
 import cjoy.macros.*
 import cjoy.schedule.*
 import cjoy.middleware.ExceptionHandler
-import cjoy.log.LogTool
+import cjoy.log.*
 
 // 使用方式1： 采用宏标注函数，函数只有一个参数ScheduleContext
 @Scheduled[name = "metric job", cron = "*/2 * * * * *"]
 func logMetric(ctx: ScheduleContext): Unit {
-    LogTool.info("log metric in crontab ...")
+    @LogInfo("log metric in crontab ...")
 }
 
 @Post[path = "/crontab"]
@@ -21,7 +21,7 @@ func addCrontab(ctx: JoyContext): Unit {
     let crontab = ctx.getService<Crontab>("crontab").getOrThrow()
     crontab.addJobIfAbsent("the name", "*/5 * * * * *",
         {
-            schedCtx: ScheduleContext => LogTool.info("another crontab ...")
+            schedCtx: ScheduleContext => @LogInfo("another crontab ...")
         })
 }
 

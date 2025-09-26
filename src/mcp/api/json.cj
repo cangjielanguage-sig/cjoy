@@ -12,7 +12,7 @@ package cjoy.mcp.api
 
 import std.io.ByteBuffer
 import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonReader, JsonWriter, JsonToken}
-import cjoy.log.LogTool
+import cjoy.log.*
 
 protected class RPCJsonTool {
     public static func serialize(obj: JsonSerializable): ByteBuffer {
@@ -38,7 +38,7 @@ protected class RPCJsonTool {
 
     public static func deserialize(buffer: ByteBuffer): JSONRPCMessage {
         let reader = JsonReader(buffer)
-        LogTool.debug("[MCP] deserializing json: ${String.fromUtf8(buffer.bytes())}")
+        @LogDebug("[MCP] deserializing json: ${String.fromUtf8(buffer.bytes())}")
 
         var id: ?JsonSerializable = None
         var method: String = ""

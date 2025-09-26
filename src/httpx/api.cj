@@ -14,7 +14,8 @@ import std.collection.{Map, HashMap}
 import std.io.{InputStream, StringReader, ByteBuffer}
 import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonReader, JsonWriter}
 import stdx.net.http.{HttpHeaders, HttpResponse, HttpRequestBuilder}
-import cjoy.framework.{JoyHttpConsts, Context}
+import cjoy.context.Context
+import cjoy.framework.{JoyHttpConsts}
 
 /*
  * the http reponse wrapper

@@ -11,7 +11,7 @@
 package cjoy.utils
 
 import std.deriving.Derive
-import cjoy.log.LogTool
+import cjoy.log.*
 
 // modified from CangjieMagic
 
@@ -38,7 +38,7 @@ protected class SSEventStream <: Iterator<SSEvent> {
                 }
                 return line.removePrefix(typ).trimAscii()
             } else {
-                LogTool.debug("SSE stream finished")
+                @LogDebug("SSE stream finished")
                 return None
             }
         }
@@ -53,13 +53,13 @@ protected class SSEventStream <: Iterator<SSEvent> {
             } else {
                 return None
             }
-            LogTool.debug("SSE stream event: ${event}")
+            @LogDebug("SSE stream event: ${event}")
             let data = if (let Some(x) <- this.read("data:")) {
                 x
             } else {
                 return None
             }
-            LogTool.debug("SSE stream event: ${data}")
+            @LogDebug("SSE stream event: ${data}")
             return SSEvent(event, data)
         }
         throw UnsupportedException("Unreachable")

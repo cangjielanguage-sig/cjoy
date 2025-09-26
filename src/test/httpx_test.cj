@@ -14,7 +14,7 @@ import std.unittest.mock.*
 import stdx.net.http.*
 import cjoy.*
 import cjoy.macros.*
-import cjoy.framework.Context
+import cjoy.context.Context
 import cjoy.httpx.*
 
 @Get[path = "/get_path"]

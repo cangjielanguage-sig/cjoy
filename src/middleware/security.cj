@@ -13,7 +13,6 @@ package cjoy.middleware
 import std.collection.HashMap
 import stdx.net.http.HttpStatusCode
 import cjoy.{JoyMiddlewareHandler, JoyRequestHandlerChain, JoyContext, JoyHttpConsts}
-import cjoy.log.LogTool
 
 public class Security <: JoyMiddlewareHandler {
     public Security(

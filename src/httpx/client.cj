@@ -17,7 +17,8 @@ import stdx.net.http.{ClientBuilder, Client, HttpRequestBuilder, HttpHeaders}
 import stdx.net.tls.{TlsClientConfig, CertificateVerifyMode}
 import stdx.encoding.json.stream.{JsonSerializable, JsonWriter}
 import stdx.encoding.url.URL
-import cjoy.framework.{JoyHttpConsts, Context}
+import cjoy.context.Context
+import cjoy.framework.{JoyHttpConsts}
 
 func defaultNoVerifyHttpCert(url: String): ClientBuilder {
     let cb = ClientBuilder()

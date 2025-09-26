@@ -14,7 +14,7 @@ import std.time.{DateTime, DateTimeFormat}
 import stdx.net.http.{HttpStatusCode, Cookie}
 import stdx.crypto.keys.{RSAPrivateKey, RSAPublicKey}
 import cjoy.{JoyMiddlewareHandler, JoyRequestHandlerChain, JoyContext, JoyHttpConsts, JoyRequestHandlerFunc}
-import cjoy.log.LogTool
+import cjoy.log.*
 import cjoy.jwt.*
 import cjoy.json.*
 
@@ -308,7 +308,7 @@ public class JwtAuth <: JoyMiddlewareHandler {
 
     private func doUnauthorized(ctx: JoyContext, code: UInt16, message: String): Unit {
         ctx.header(JoyHttpConsts.HEADER_WWW_AUTHENTICATE, "JWT realm=" + realm)
-        LogTool.error("[JwtAuth] auth failed, ${ctx.getClientIP()}, ${ctx.method} ${ctx.url}, ${message}")
+        @LogError("[JwtAuth] auth failed, ${ctx.getClientIP()}, ${ctx.method} ${ctx.url}, ${message}")
         unauthorized(ctx, code, message)
     }
 }

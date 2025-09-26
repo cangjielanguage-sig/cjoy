@@ -12,7 +12,7 @@ package cjoy.middleware
 
 import std.collection.{ArrayList, any, filter, count}
 import cjoy.{JoyMiddlewareHandler, JoyRequestHandlerChain, JoyContext, JoyHttpConsts}
-import cjoy.log.LogTool
+import cjoy.log.*
 
 public type AllowOriginFunc = (ctx: JoyContext, origin: String) -> Bool
 
@@ -163,7 +163,7 @@ public class Cors <: JoyMiddlewareHandler {
         ctx.header(JoyHttpConsts.HEADER_VARY, JoyHttpConsts.HEADER_ACCESS_CONTROL_REQUEST_HEADERS)
 
         if (!isOriginAllowed(ctx, origin)) {
-            LogTool.error("[CORS] Preflight aborted, origin '${origin}' not allowed")
+            @LogError("[CORS] Preflight aborted, origin '${origin}' not allowed")
             return
         }
 
@@ -171,7 +171,7 @@ public class Cors <: JoyMiddlewareHandler {
         if (let Some(m) <- ctx.getHeader(JoyHttpConsts.HEADER_ACCESS_CONTROL_REQUEST_METHOD)) {
             method = m
             if (!isMethodAllowed(method)) {
-                LogTool.error("[CORS] Preflight aborted, method  '${method}' not allowed")
+                @LogError("[CORS] Preflight aborted, method  '${method}' not allowed")
                 return
             }
         }
@@ -180,7 +180,7 @@ public class Cors <: JoyMiddlewareHandler {
         if (let Some(header) <- ctx.getHeader(JoyHttpConsts.HEADER_ACCESS_CONTROL_REQUEST_HEADERS)) {
             let headers = parseHeaders(header)
             if (!areHeadersAllowed(headers)) {
-                LogTool.error("[CORS] Preflight aborted, headers '${header}' not allowed")
+                @LogError("[CORS] Preflight aborted, headers '${header}' not allowed")
                 return
             }
             reqHeader = headers.toArray()
@@ -209,18 +209,18 @@ public class Cors <: JoyMiddlewareHandler {
         let originOpt = ctx.getHeader(JoyHttpConsts.HEADER_ORIGIN)
         ctx.header(JoyHttpConsts.HEADER_VARY, JoyHttpConsts.HEADER_ORIGIN)
         if (originOpt.isNone()) {
-            LogTool.error("[CORS] Actual request no headers added, missing origin")
+            @LogError("[CORS] Actual request no headers added, missing origin")
             return
         }
 
         let origin = originOpt.getOrThrow()
         if (!isOriginAllowed(ctx, origin)) {
-            LogTool.error("[CORS] Actual request no headers added, origin '${origin}' not allowed")
+            @LogError("[CORS] Actual request no headers added, origin '${origin}' not allowed")
             return
         }
 
         if (!isMethodAllowed(ctx.method)) {
-            LogTool.error("[CORS] Actual request no headers added, method  '${ctx.method}' not allowed")
+            @LogError("[CORS] Actual request no headers added, method  '${ctx.method}' not allowed")
             return
         }
 

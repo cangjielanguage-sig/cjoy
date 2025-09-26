@@ -16,7 +16,7 @@ import stdx.encoding.json.stream.JsonSerializable
 import stdx.encoding.base64.toBase64String
 import cjoy.mcp.api.*
 import cjoy.framework.{JoyContext, RouteInfo, TreeNode, JoyHttpConsts}
-import cjoy.log.LogTool
+import cjoy.log.*
 import cjoy.json.JsonTool
 
 public class McpResources {
@@ -30,15 +30,15 @@ public class McpResources {
     }
 
     public func dump() {
-        LogTool.info("[MCP] resource handler:\n${_root.dumpTree()}")
+        @LogInfo("[MCP] resource handler:\n${_root.dumpTree()}")
     }
 
     public func addResource(resource: McpResource): Unit {
         if (resources.contains(resource.uri)) {
-            LogTool.warn("[MCP] resource `${resource.uri}` is existed, will be overwrite")
+            @LogError("[MCP] resource `${resource.uri}` is existed, will be overwrite")
         }
         if (resource.uri.indexOf("://").isNone()) {
-            LogTool.error("[MCP] resource `${resource.uri}` is invalid")
+            @LogError("[MCP] resource `${resource.uri}` is invalid")
             return
         }
         if (resource.uri.indexOf("{").isSome()) {
@@ -69,7 +69,7 @@ public class McpResources {
     private func addCtxParam(ctx: JoyContext, ri: RouteInfo<McpReadResourceHandler>) {
         if (!ri.routeParamKeys.isEmpty()) {
             if (ri.routeParamKeys.size != ri.routeParamValues.size) {
-                LogTool.error("[MCP] resource handler parameter list length mismatch when find route target")
+                @LogError("[MCP] resource handler parameter list length mismatch when find route target")
                 throw Exception("parameter list length mismatch")
             }
             for (idx in 0..ri.routeParamKeys.size) {
@@ -84,7 +84,7 @@ public class McpResources {
         let _ = _root.findRouteHandler(ri, "GET", uri)
         match (ri.handler) {
             case Some(x) =>
-                LogTool.debug("[MCP] found resource handler, uri=${request.uri}")
+                @LogDebug("[MCP] found resource handler, uri=${request.uri}")
                 addCtxParam(ctx, ri)
                 let result: Any = x.readResource(ctx)
                 let contents: Array<ResourceContents> = match (result) {
@@ -119,12 +119,12 @@ public class McpResources {
                     case x: ToString => [createTextResourceContents(request.uri, x.toString(),
                         getMimeType(ctx, JoyHttpConsts.MIME_TEXT_PLAIN))]
                     case _ =>
-                        LogTool.warn("[MCP] read resource `${request.uri}`unknow return type")
+                        @LogWarn("[MCP] read resource `${request.uri}`unknow return type")
                         [createTextResourceContents(request.uri, "", getMimeType(ctx, JoyHttpConsts.MIME_TEXT_PLAIN))]
                 }
                 ReadResourceResult(contents: ArrayList<ResourceContents>(contents))
             case _ =>
-                LogTool.error("[MCP] not found resource handler, uri=${request.uri}")
+                @LogError("[MCP] not found resource handler, uri=${request.uri}")
                 throw Exception("not found resource handler")
         }
     }

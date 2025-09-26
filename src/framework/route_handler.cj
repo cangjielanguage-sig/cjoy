@@ -14,7 +14,7 @@ import std.collection.{ArrayList}
 import std.collection.concurrent.ConcurrentHashMap
 import std.fs.{Path, FileInfo, exists}
 import stdx.net.http.{HttpStatusCode, FileHandler}
-import cjoy.log.LogTool
+import cjoy.log.*
 
 class JoyGroupRouteHandler <: JoyRequestHandler {
     static let INSTANCE = JoyGroupRouteHandler()
@@ -77,7 +77,7 @@ class JoyFileSystemServeHandler <: JoyRequestHandler {
 
     private func serves(ctx: JoyContext, path: String): Unit {
         if (path.contains("..")) {
-            LogTool.warn("[JoyFileSystemServeHandler#handle] url path contain `..`, path=${path}")
+            @LogWarn("url path contain `..`, path=${path}")
             ctx.status(HttpStatusCode.STATUS_BAD_REQUEST)
             return
         }
@@ -94,12 +94,12 @@ class JoyFileSystemServeHandler <: JoyRequestHandler {
             case _ =>
                 let fi = FileInfo(filePath)
                 if (fi.isDirectory() || fi.isHidden() || !fi.canRead()) {
-                    LogTool.warn("[JoyFileSystemServeHandler#handle] forbidden to donwnload file ${fp}")
+                    @LogWarn("forbidden to donwnload file ${fp}")
                     ctx.status(HttpStatusCode.STATUS_FORBIDDEN)
                     return
                 }
                 if (!fp.startsWith(root.toString())) {
-                    LogTool.warn("[JoyFileSystemServeHandler#handle] forbidden to donwnload file ${fp}")
+                    @LogWarn("forbidden to donwnload file ${fp}")
                     ctx.status(HttpStatusCode.STATUS_FORBIDDEN)
                     return
                 }

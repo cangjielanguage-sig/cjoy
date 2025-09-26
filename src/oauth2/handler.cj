@@ -14,7 +14,7 @@ import std.collection.HashMap
 import stdx.encoding.url.URL
 import cjoy.framework.{JoyContext, JoyHttpConsts}
 import cjoy.json.*
-import cjoy.log.LogTool
+import cjoy.log.*
 
 public interface ClientPasswordVerifier {
     func verifyPassword(client: ClientInfo, pwd: String): Bool
@@ -102,9 +102,9 @@ public func accessTokenCookieResolveHandleFunc(ctx: JoyContext): String {
 }
 
 func defaultInternalErrorHandleFunc(ctx: JoyContext, ex: ErrorInfo): Unit {
-    LogTool.error("[OAuth2] internal error, ${ex.code}, ${ex.description}")
+    @LogError("[OAuth2] internal error, ${ex.code}, ${ex.description}")
 }
 
 func defaultResponseErrorHandleFunc(ctx: JoyContext, er: ErrorResponse): Unit {
-    LogTool.error("[OAuth2] reponse error, ${er.errorInfo.code}, ${er.errorInfo.description}")
+    @LogError("[OAuth2] reponse error, ${er.errorInfo.code}, ${er.errorInfo.description}")
 }

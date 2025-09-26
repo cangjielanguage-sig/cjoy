@@ -13,7 +13,7 @@ public package cjoy.mcp.client
 import std.sync.AtomicBool
 import cjoy.mcp.api.*
 import cjoy.utils.TimeoutCache
-import cjoy.log.LogTool
+import cjoy.log.*
 
 public func createMcpSseClient(url: String, features!: McpClientFeatures = McpClientFeatures()): McpClient {
     let transport = McpSseClientTransport(url)
@@ -92,37 +92,39 @@ class DefaultMcpClient <: McpClient {
         _serverCapabilities = result.capabilities
         _serverInfo = result.serverInfo
         _serverInstructions = result.instructions
-        LogTool.info(
+        @LogInfo(
             "[MCP]initialize server response with protocol:${result.protocolVersion}, capabilities:${_serverCapabilities}, info:${_serverInfo}, instructions:${_serverInstructions}"
         )
 
         if (!_features.protocolVesions.contains(result.protocolVersion)) {
             let msg = "[MCP]unsupported protocal version[${result.protocolVersion}] from server"
-            LogTool.info(msg)
+            @LogInfo(msg)
             throw McpException(JSONRPCError(code: McpConsts.ERR_INVALID_PARAMS, message: msg))
         }
 
         _session.sendNotification(McpConsts.METHOD_NOTIFICATION_INITIALIZED)
         _initialized.store(true)
-        LogTool.info("[MCP]client initialized")
+        @LogInfo("[MCP]client initialized")
         result
     }
 
     public func listTools(cursor: ?String): ListToolsResult {
         checkInitialized()
         checkToolCapbilities()
-        let result: ListToolsResult = _session.sendRequest(McpConsts.METHOD_TOOLS_LIST, PaginatedRequest(cursor: cursor)
+        let result: ListToolsResult = _session.sendRequest(
+            McpConsts.METHOD_TOOLS_LIST,
+            PaginatedRequest(cursor: cursor)
         )
-        LogTool.info("[MCP]list tool result:${result}")
+        @LogInfo("[MCP]list tool result:${result}")
         result
     }
 
     public func callTool(request: CallToolRequest): CallToolResult {
         checkInitialized()
         checkToolCapbilities()
-        LogTool.info("[MCP]call tool request:${request}")
+        @LogInfo("[MCP]call tool request:${request}")
         let result: CallToolResult = _session.sendRequest(McpConsts.METHOD_TOOLS_CALL, request)
-        LogTool.info("[MCP]call tool result:${result}")
+        @LogInfo("[MCP]call tool result:${result}")
         result
     }
 
@@ -130,7 +132,7 @@ class DefaultMcpClient <: McpClient {
         checkInitialized()
         let result: ListResourcesResult = _session.sendRequest(McpConsts.METHOD_RESOURCES_LIST,
             PaginatedRequest(cursor: cursor))
-        LogTool.info("[MCP]list resource result:${result}")
+        @LogInfo("[MCP]list resource result:${result}")
         result
     }
 
@@ -138,15 +140,15 @@ class DefaultMcpClient <: McpClient {
         checkInitialized()
         let result: ListResourceTemplatesResult = _session.sendRequest(McpConsts.METHOD_RESOURCES_TEMPLATES_LIST,
             PaginatedRequest(cursor: cursor))
-        LogTool.info("[MCP]list resource template result:${result}")
+        @LogInfo("[MCP]list resource template result:${result}")
         result
     }
 
     public func readResource(request: ReadResourceRequest): ReadResourceResult {
         checkInitialized()
-        LogTool.info("[MCP]read resource request:${request}")
+        @LogInfo("[MCP]read resource request:${request}")
         let result: ReadResourceResult = _session.sendRequest(McpConsts.METHOD_RESOURCES_READ, request)
-        LogTool.info("[MCP]read resource result:${result}")
+        @LogInfo("[MCP]read resource result:${result}")
         result
     }
 
@@ -154,15 +156,15 @@ class DefaultMcpClient <: McpClient {
         checkInitialized()
         let result: ListPromptResult = _session.sendRequest(McpConsts.METHOD_PROMPTS_LIST,
             PaginatedRequest(cursor: cursor))
-        LogTool.info("[MCP]list prompt result:${result}")
+        @LogInfo("[MCP]list prompt result:${result}")
         result
     }
 
     public func getPrompt(request: GetPromptRequest): GetPromptResult {
         checkInitialized()
-        LogTool.info("[MCP]get prompt request:${request}")
+        @LogInfo("[MCP]get prompt request:${request}")
         let result: GetPromptResult = _session.sendRequest(McpConsts.METHOD_PROMPTS_GET, request)
-        LogTool.info("[MCP]get prompt result:${result}")
+        @LogInfo("[MCP]get prompt result:${result}")
         result
     }
 
