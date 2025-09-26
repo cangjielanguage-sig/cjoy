@@ -20,10 +20,10 @@ public class TokenAuthClient <: JoyHttpClient {
         let authSchema!: String = "Bearer") {
     }
 
-    public func exachange(ctx: Context, method: String, path: String, params: Map<String, ToString>,
+    public func exechange(ctx: Context, method: String, path: String, params: Map<String, ToString>,
         headers: HttpHeaders, body: Any): JoyHttpResponse {
         createFunc(token, position, authSchema)(path, headers)
-        http.exachange(ctx, method, path, params, headers, body)
+        http.exechange(ctx, method, path, params, headers, body)
     }
 
     private func createFunc(token: String, position: String, authSchema: String): (path: String, headers: HttpHeaders) -> Unit {
