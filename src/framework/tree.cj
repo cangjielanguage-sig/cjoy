@@ -13,7 +13,7 @@ package cjoy.framework
 import std.regex.Regex
 import std.sort.sort
 import std.collection.{ArrayList, HashMap}
-import cjoy.log.LogTool
+import cjoy.log.*
 
 class Endpoint<T> <: ToString {
     Endpoint(let handler: T, let pattern: String, let paramKeys: Array<String>) {
@@ -42,7 +42,7 @@ public class RouteInfo<T> {
         let paramMap: HashMap<String, String> = HashMap()
         if (!routeParamKeys.isEmpty()) {
             if (routeParamKeys.size != routeParamValues.size) {
-                LogTool.error("parameter list length mismatch when find route target")
+                @LogError("parameter list length mismatch when find route target")
                 throw Exception("parameter list length mismatch")
             }
             for (idx in 0..routeParamKeys.size) {

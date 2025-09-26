@@ -16,7 +16,7 @@ import stdx.encoding.json.stream.JsonSerializable
 import stdx.encoding.base64.toBase64String
 import cjoy.mcp.api.*
 import cjoy.framework.{JoyContext}
-import cjoy.log.LogTool
+import cjoy.log.*
 import cjoy.json.JsonTool
 
 public class McpTools {
@@ -30,7 +30,7 @@ public class McpTools {
 
     public func addTool(tool: McpTool): Unit {
         if (tools.contains(tool.name)) {
-            LogTool.warn("[MCP]tool `${tool.name}` is existed, will be overwrite")
+            @LogWarn("[MCP]tool `${tool.name}` is existed, will be overwrite")
         }
         tools.add(tool.name, tool)
     }
@@ -62,13 +62,13 @@ public class McpTools {
                     case x: Collection<Image> => x |> map {it => it.toImageContext()} |> collectArray
                     case x: Collection<Audio> => x |> map {it => it.toAudioContent()} |> collectArray
                     case _ =>
-                        LogTool.error("[MCP] call tool `${request.name}` failed, unknow return type")
+                        @LogError("[MCP] call tool `${request.name}` failed, unknow return type")
                         isError = true
                         [createTextContent("unknow return type")]
                 }
             } catch (ex: Exception) {
                 isError = true
-                LogTool.error("[MCP]call tool `${request.name}` failed, ${ex.message}")
+                @LogError("[MCP]call tool `${request.name}` failed, ${ex.message}")
                 [createTextContent(ex.message)]
             }
             CallToolResult(isError: isError, content: ArrayList<Content>(contents))

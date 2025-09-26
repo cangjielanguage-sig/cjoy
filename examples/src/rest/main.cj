@@ -8,7 +8,7 @@ import std.collection.*
 import stdx.net.http.HttpStatusCode
 import cjoy.*
 import cjoy.json.*
-import cjoy.log.LogTool
+import cjoy.log.*
 
 @Json
 class UserInfo {
@@ -24,7 +24,7 @@ class UserHandler {
         let user = ctx.bindJsonBody<UserInfo>()
         if (let Some(u) <- user) {
             users.add(u.name, u)
-            LogTool.info("save user info, name=${u.name}")
+            @LogInfo("save user info, name=${u.name}")
             ctx.status(HttpStatusCode.STATUS_CREATED)
         } else {
             ctx.status(HttpStatusCode.STATUS_BAD_REQUEST)

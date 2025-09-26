@@ -15,7 +15,7 @@ import std.sync.SyncCounter
 import std.io.ByteBuffer
 import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonReader}
 import cjoy.mcp.api.*
-import cjoy.log.LogTool
+import cjoy.log.*
 import cjoy.json.JsonTool
 import cjoy.framework.{JoyContext, JoySseEmitter}
 
@@ -25,9 +25,9 @@ class McpServerSessionState {
     public McpServerSessionState(let sessionId: String, let sseEmitter: JoySseEmitter) {}
 
     public func waitEnd() {
-        LogTool.info("[MCP] waiting sse transport end, sessionId=${sessionId}")
+        @LogInfo("[MCP] waiting sse transport end, sessionId=${sessionId}")
         _counter.waitUntilZero()
-        LogTool.info("[MCP] server SSE transport is end, sessionId: ${sessionId}")
+        @LogInfo("[MCP] server SSE transport is end, sessionId: ${sessionId}")
         sseEmitter.end()
     }
 
@@ -54,11 +54,11 @@ class DefaultMcpServerSession <: McpServerSession & McpRequestHandler & McpRespo
     func updateTransport(transport: McpTransport): Unit {
         _transport.close()
         _transport = transport
-        LogTool.info("[MCP] update SSE transport, sessionId=${_sessionId}")
+        @LogInfo("[MCP] update SSE transport, sessionId=${_sessionId}")
     }
 
     func closeTransport(): Unit {
-        LogTool.info("[MCP] close SSE transport, sessionId=${_sessionId}")
+        @LogInfo("[MCP] close SSE transport, sessionId=${_sessionId}")
         _transport.close()
     }
 
@@ -67,7 +67,7 @@ class DefaultMcpServerSession <: McpServerSession & McpRequestHandler & McpRespo
             case m: JSONRPCRequest => onRequest(ctx, m)
             case m: JSONRPCNotification => onNotification(m)
             case m: JSONRPCResponse => onResponse(m)
-            case _ => LogTool.info("[MCP] server recv unknown message, sessionId: ${_sessionId}")
+            case _ => @LogInfo("[MCP] server recv unknown message, sessionId: ${_sessionId}")
         }
     }
 
@@ -82,7 +82,7 @@ class DefaultMcpServerSession <: McpServerSession & McpRequestHandler & McpRespo
             JSONRPCNotification(method: method)
         }
         _transport.send(RPCJsonTool.serialize(message))
-        LogTool.info("[MCP] send notification, method: ${method}, sessionId: ${_sessionId}")
+        @LogInfo("[MCP] send notification, method: ${method}, sessionId: ${_sessionId}")
     }
 
     public func addNotificationConsumer(method: String, consumer: (Array<Byte>) -> Unit): Unit {
@@ -104,43 +104,43 @@ class DefaultMcpServerSession <: McpServerSession & McpRequestHandler & McpRespo
         var jsonResp: Bool = false
         let result = match (message.method) {
             case "ping" =>
-                LogTool.info("[MCP] recv `ping` request")
+                @LogInfo("[MCP] recv `ping` request")
                 message.params
             case "initialize" =>
                 let request: InitializeRequest = RPCJsonTool.deserializeParams(message.params)
-                LogTool.info("[MCP] recv `initialize` request: ${request}, sessionId: ${_sessionId}")
+                @LogInfo("[MCP] recv `initialize` request: ${request}, sessionId: ${_sessionId}")
                 jsonResp = _streamable
                 onRecvInitRequest(request)
             case "tools/list" =>
                 let page: PaginatedRequest = RPCJsonTool.deserializeParams(message.params)
-                LogTool.info("[MCP] recv `tools/list` request: ${page}, sessionId: ${_sessionId}")
+                @LogInfo("[MCP] recv `tools/list` request: ${page}, sessionId: ${_sessionId}")
                 McpServer.tools.listTools(page)
             case "tools/call" =>
                 let req: CallToolRequest = RPCJsonTool.deserializeParams(message.params)
-                LogTool.debug("[MCP] recv `tools/call` request: ${req}, sessionId: ${_sessionId}")
+                @LogDebug("[MCP] recv `tools/call` request: ${req}, sessionId: ${_sessionId}")
                 McpServer.tools.callTool(ctx, req)
             case "resources/list" =>
                 let page: PaginatedRequest = RPCJsonTool.deserializeParams(message.params)
-                LogTool.info("[MCP] recv `resources/list` request: ${page}, sessionId: ${_sessionId}")
+                @LogInfo("[MCP] recv `resources/list` request: ${page}, sessionId: ${_sessionId}")
                 McpServer.resources.listResources(page)
             case "resources/templates/list" =>
                 let page: PaginatedRequest = RPCJsonTool.deserializeParams(message.params)
-                LogTool.info("[MCP] recv `resources/templates/list` request: ${page}, sessionId: ${_sessionId}")
+                @LogInfo("[MCP] recv `resources/templates/list` request: ${page}, sessionId: ${_sessionId}")
                 McpServer.resources.listResourceTemplates(page)
             case "resources/read" =>
                 let req: ReadResourceRequest = RPCJsonTool.deserializeParams(message.params)
-                LogTool.debug("[MCP] recv `resources/read` request: ${req}, sessionId: ${_sessionId}")
+                @LogDebug("[MCP] recv `resources/read` request: ${req}, sessionId: ${_sessionId}")
                 McpServer.resources.readResource(ctx, req)
             case "prompts/list" =>
                 let page: PaginatedRequest = RPCJsonTool.deserializeParams(message.params)
-                LogTool.info("[MCP] recv `prompts/list` request: ${page}, sessionId: ${_sessionId}")
+                @LogInfo("[MCP] recv `prompts/list` request: ${page}, sessionId: ${_sessionId}")
                 McpServer.prompts.listPrompt(page)
             case "prompts/get" =>
                 let req: GetPromptRequest = RPCJsonTool.deserializeParams(message.params)
-                LogTool.debug("[MCP] recv `prompts/get` request: ${req}, sessionId: ${_sessionId}")
+                @LogDebug("[MCP] recv `prompts/get` request: ${req}, sessionId: ${_sessionId}")
                 McpServer.prompts.getPrompt(ctx, req)
             case _ =>
-                LogTool.error("[MCP] recv unknown `${message.method}` request, sessionId: ${_sessionId}")
+                @LogError("[MCP] recv unknown `${message.method}` request, sessionId: ${_sessionId}")
                 let error = JSONRPCError(code: McpConsts.ERR_METHOD_NOT_FOUND, message: "not found method")
                 let resp = JSONRPCResponse(id: message.id, error: error)
                 return sendResp(ctx, resp, false)
@@ -152,7 +152,7 @@ class DefaultMcpServerSession <: McpServerSession & McpRequestHandler & McpRespo
     private func sendResp(ctx: JoyContext, resp: JSONRPCResponse, jsonResp: Bool): Unit {
         if (_isJsonResp || jsonResp) {
             ctx.header(McpConsts.HEADER_MCP_SESSION_ID, _sessionId).json(resp)
-            LogTool.debug("[MCP] send json reponse: ${JsonTool.toJson(resp)}, sessionId: ${_sessionId}")
+            @LogDebug("[MCP] send json reponse: ${JsonTool.toJson(resp)}, sessionId: ${_sessionId}")
         } else {
             let data = RPCJsonTool.serialize(resp)
             _transport.send(data)

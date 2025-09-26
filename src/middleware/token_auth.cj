@@ -14,7 +14,7 @@ import std.collection.HashMap
 import stdx.net.http.HttpStatusCode
 import cjoy.{JoyMiddlewareHandler, JoyRequestHandlerChain, JoyContext, JoyHttpConsts, JoyRequestHandler, 
     JoyRequestHandlerFunc, JoyFuncHandler, JoyRequestFilterFunc}
-import cjoy.log.LogTool
+import cjoy.log.*
 
 // the validate function 
 public type TokenAuthValidatorFunc = (ctx: JoyContext, token: String) -> Bool
@@ -37,7 +37,7 @@ class DefaultAuthFailureHandler <: JoyRequestHandler {
     static let INSTANCE = DefaultAuthFailureHandler()
 
     public func handle(ctx: JoyContext): Unit {
-        LogTool.error("[TokenAuth] auth failed, ${ctx.getClientIP()}, ${ctx.method} ${ctx.url}")
+        @LogError("[TokenAuth] auth failed, ${ctx.getClientIP()}, ${ctx.method} ${ctx.url}")
         ctx.status(HttpStatusCode.STATUS_UNAUTHORIZED)
     }
 }

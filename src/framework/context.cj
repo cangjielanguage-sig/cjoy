@@ -18,33 +18,7 @@ import stdx.encoding.url.URL
 import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonReader, JsonWriter}
 import stdx.encoding.base64.fromBase64String
 import cjoy.bind.api.JoyBindable
-
-public interface Context {
-    /**
-     * set param in context
-     *
-     * @param key: the param key name
-     * @param value: the param value
-     *
-     */
-    func set(key: String, value: Any): Unit
-
-    /**
-     * get param from context
-     *
-     * @param key: the param key name
-     * @return the param value
-     *
-     */
-    func get<T>(key: String): ?T
-
-    /**
-     * remove param from context
-     *
-     * @param key: the param key name
-     */
-    func remove(key: String): Unit
-}
+import cjoy.context.Context
 
 /**
  * the context which holds the engine config, params, context params and any you need.
@@ -409,11 +383,6 @@ public interface JoyContext <: Context {
      * get basic auth info
      */
     func basicAuth(): (String, String, Bool)
-
-    /**
-     * get the registered service
-     */
-    func getService<T>(name: String): ?T
 }
 
 class JoyHttpContext <: JoyContext {

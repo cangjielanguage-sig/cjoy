@@ -16,7 +16,7 @@ import std.collection.HashMap
 import std.sync.AtomicBool
 import stdx.encoding.url.URL
 import cjoy.mcp.api.*
-import cjoy.log.LogTool
+import cjoy.log.*
 import cjoy.utils.{SSEventStream, HttpClient}
 
 class McpSseClientTransport <: McpClientTransport {
@@ -43,7 +43,7 @@ class McpSseClientTransport <: McpClientTransport {
         var u = URL.parse(url)
         u = u.replace(path: "")
         _baseUrl = u.toString()
-        LogTool.info("[MCP]http sse base url: ${_baseUrl}")
+        @LogInfo("[MCP]http sse base url: ${_baseUrl}")
     }
 
     public func connect(consumer: (ByteBuffer) -> Unit): Unit {
@@ -77,14 +77,14 @@ class McpSseClientTransport <: McpClientTransport {
         spawn {
             while (let Some(evt) <- seeStream_.next()) {
                 if (evt.event != McpConsts.EVENT_MESSAGE) {
-                    LogTool.error("invliad message event ${evt}")
+                    @LogError("invliad message event ${evt}")
                     break
                 }
                 let buffer = ByteBuffer()
                 unsafe { buffer.write(evt.data.rawData()) }
                 consumer_(buffer)
             }
-            LogTool.info("[MCP]http sse stream is close")
+            @LogInfo("[MCP]http sse stream is close")
             connected_.store(false)
         }
     }
@@ -103,7 +103,7 @@ class McpSseClientTransport <: McpClientTransport {
         let resp: Option<String> = HttpClient.post("${_baseUrl}${_endpoint}", message.bytes(), header: header, verify: false)
         if (let Some(v) <- resp) {
             if (v !="") {
-                LogTool.info("[MCP]http request response ${v}")
+                @LogInfo("[MCP]http request response ${v}")
             }
         }
     }

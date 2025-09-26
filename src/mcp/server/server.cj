@@ -16,7 +16,7 @@ import stdx.encoding.json.stream.JsonSerializable
 import stdx.encoding.base64.toBase64String
 import cjoy.mcp.api.*
 import cjoy.framework.{Joy, JoyContext, JoyRequestHandler, VERSION}
-import cjoy.log.LogTool
+import cjoy.log.*
 import cjoy.json.JsonTool
 
 public class McpServerFeatures {

@@ -14,7 +14,7 @@ import std.collection.{HashSet}
 import std.regex.Regex
 import std.convert.Parsable
 import std.time.DateTime
-import cjoy.log.LogTool
+import cjoy.log.*
 
 public class CronJob <: Equatable<CronJob> & ToString {
     private static let REG_SPACES = Regex(##"\s+"##)
@@ -114,12 +114,12 @@ public class CronJob <: Equatable<CronJob> & ToString {
     }
 
     public func run(start: DateTime): Unit {
-        LogTool.info("starting cron job: ${_name}")
+        @LogInfo("starting cron job: ${_name}")
         try {
             _fn(_context)
         } finally {
             let dt: Duration = (DateTime.now().toUnixTimeStamp() - start.toUnixTimeStamp())
-            LogTool.info("fininish cron job: ${_name} in ${dt}")
+            @LogInfo("fininish cron job: ${_name} in ${dt}")
         }
     }
 

@@ -15,7 +15,7 @@ import stdx.encoding.url.{URL, Form}
 import stdx.net.http.HttpStatusCode
 import cjoy.framework.{JoyContext, JoyHttpConsts}
 import cjoy.json.*
-import cjoy.log.LogTool
+import cjoy.log.*
 
 public class OAuth2Server {
     private let _cfg: ServerConfig
@@ -243,7 +243,7 @@ public class OAuth2Server {
             .getOrThrow(
                 {
                     =>
-                    LogTool.error("[OAuth2] invalid request, redirectURI is not existed")
+                    @LogError("[OAuth2] invalid request, redirectURI is not existed")
                     OAuthException(OAuthErrors.INVALID_REQ)
                 }
             )
@@ -252,16 +252,16 @@ public class OAuth2Server {
             .getOrThrow(
                 {
                     =>
-                    LogTool.error("[OAuth2] invalid request, client_id is not existed")
+                    @LogError("[OAuth2] invalid request, client_id is not existed")
                     OAuthException(OAuthErrors.INVALID_REQ)
                 }
             )
         if (!(ctx.method == JoyHttpConsts.METHOD_GET || ctx.method == JoyHttpConsts.METHOD_POST)) {
-            LogTool.error("[OAuth2] invalid request, method(${ctx.method}) is invalid")
+            @LogError("[OAuth2] invalid request, method(${ctx.method}) is invalid")
             throw OAuthException(OAuthErrors.INVALID_REQ)
         }
         if (clientId == "") {
-            LogTool.error("[OAuth2] invalid request, clientId is empty")
+            @LogError("[OAuth2] invalid request, clientId is empty")
             throw OAuthException(OAuthErrors.INVALID_REQ)
         }
 
@@ -270,22 +270,22 @@ public class OAuth2Server {
             .getOrThrow(
                 {
                     =>
-                    LogTool.error("[OAuth2] invalid request, response_type is not existed")
+                    @LogError("[OAuth2] invalid request, response_type is not existed")
                     OAuthException(OAuthErrors.UNSUPPORTED_RESP_TYPE)
                 }
             )
         if (!checkResponeType(respType)) {
-            LogTool.error("[OAuth2] unauthorized_client, response type (${respType}) is invalid")
+            @LogError("[OAuth2] unauthorized_client, response type (${respType}) is invalid")
             throw OAuthException(OAuthErrors.UNAUTHORIZED_CLIENT)
         }
 
         let cc = ctx.getPostForm("code_challenge").getOrDefault({=> ""})
         if (cc == "" && _cfg.forcePKCE) {
-            LogTool.error("[OAuth2] invalid_request, code_challenge is empty")
+            @LogError("[OAuth2] invalid_request, code_challenge is empty")
             throw OAuthException(OAuthErrors.CODE_CHALLENG_ERQUIRED)
         }
         if (cc != "" && cc.size < 43 || cc.size > 128) {
-            LogTool.error("[OAuth2] invalid_request, code_challenge len (${cc.size}) is invalid")
+            @LogError("[OAuth2] invalid_request, code_challenge len (${cc.size}) is invalid")
             throw OAuthException(OAuthErrors.INVALID_CODE_CHALLENGE_LEN)
         }
 
@@ -294,7 +294,7 @@ public class OAuth2Server {
             ccm = OAuthConsts.CODE_CHALLENGE_PLAIN
         }
         if (ccm != "" && !checkCodeChallengeMethod(ccm)) {
-            LogTool.error("[OAuth2] invalid_request, code_challenge_method l (${ccm}) is invalid")
+            @LogError("[OAuth2] invalid_request, code_challenge_method l (${ccm}) is invalid")
             throw OAuthException(OAuthErrors.UNSUPPORTED_CODE_CHALLENGE_METHOD)
         }
 
@@ -402,7 +402,7 @@ public class OAuth2Server {
     private func validationTokenRequest(ctx: JoyContext): (String, TokenGenerateRequest) {
         if (!(ctx.method == JoyHttpConsts.METHOD_POST || _cfg.allowGetAccessRequest && ctx.method == JoyHttpConsts
             .METHOD_GET)) {
-            LogTool.error("[OAuth2] invalid_request, method (${ctx.method}) is invalid")
+            @LogError("[OAuth2] invalid_request, method (${ctx.method}) is invalid")
             throw OAuthException(OAuthErrors.INVALID_REQ)
         }
         let gt = ctx
@@ -410,7 +410,7 @@ public class OAuth2Server {
             .getOrThrow(
                 {
                     =>
-                    LogTool.error("[OAuth2] invalid_request, grant_type is not existed")
+                    @LogError("[OAuth2] invalid_request, grant_type is not existed")
                     OAuthException(OAuthErrors.UNSUPPORTED_GRANT_TYPE)
                 }
             )
@@ -426,12 +426,12 @@ public class OAuth2Server {
                 tgr.redirectURI = ctx.getPostForm("redirect_uri").getOrDefault({=> ""})
                 tgr.code = ctx.getPostForm("code").getOrDefault({=> ""})
                 if (tgr.redirectURI == "" || tgr.code == "") {
-                    LogTool.error("[OAuth2] invalid request, redirectURI or code is empty")
+                    @LogError("[OAuth2] invalid request, redirectURI or code is empty")
                     throw OAuthException(OAuthErrors.INVALID_REQ)
                 }
                 tgr.codeVerifier = ctx.getPostForm("code_verifier").getOrDefault({=> ""})
                 if (tgr.codeVerifier == "" && _cfg.forcePKCE) {
-                    LogTool.error("[OAuth2] invalid request, code verifier is empty")
+                    @LogError("[OAuth2] invalid request, code verifier is empty")
                     throw OAuthException(OAuthErrors.INVALID_REQ)
                 }
             case "password" =>
@@ -439,7 +439,7 @@ public class OAuth2Server {
                 let username = ctx.getPostForm("username").getOrDefault({=> ""})
                 let password = ctx.getPostForm("password").getOrDefault({=> ""})
                 if (password == "" || username == "") {
-                    LogTool.error("[OAuth2] invalid request, username or password is empty")
+                    @LogError("[OAuth2] invalid request, username or password is empty")
                     throw OAuthException(OAuthErrors.INVALID_REQ)
                 }
                 let userId = _passwordAuthorizationHanleFunc(ctx, clientId, username, password)

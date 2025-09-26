@@ -17,7 +17,7 @@ import stdx.net.http.HttpStatusCode
 import cjoy.framework.{JoyContext, JoyHttpConsts}
 import cjoy.utils.secureRandStr
 import cjoy.mcp.api.*
-import cjoy.log.LogTool
+import cjoy.log.*
 
 class McpStreamableServerTransport <: McpServerTransport {
     private let _sessions: ConcurrentHashMap<String, McpServerSession> = ConcurrentHashMap()
@@ -26,14 +26,14 @@ class McpStreamableServerTransport <: McpServerTransport {
     public init(isJsonResp: Bool) {
         _isJsonResp = isJsonResp
         if (isJsonResp) {
-            LogTool.info("[MCP] started streamable transport, return JSON response for requests instead of SSE streams")
+            @LogInfo("[MCP] started streamable transport, return JSON response for requests instead of SSE streams")
         }
     }
 
     public func handleGetRequest(ctx: JoyContext): Unit {
         let (_, hasSse) = checkAcceptHeader(ctx)
         if (!hasSse) {
-            LogTool.error("[MCP] handle get request faild, Not Acceptable")
+            @LogError("[MCP] handle get request faild, Not Acceptable")
             let err = createErrorMsg("Not Acceptable: client must accept ${JoyHttpConsts.MIME_TEXT_EVENT_STREAM}")
             ctx.status(HttpStatusCode.STATUS_NOT_ACCEPTABLE).json(err)
             return
@@ -57,7 +57,7 @@ class McpStreamableServerTransport <: McpServerTransport {
     public func handlePostRequest(ctx: JoyContext): Unit {
         let (hasJson, hasSse) = checkAcceptHeader(ctx)
         if (!(hasJson && hasSse)) {
-            LogTool.error("[MCP] handle post request faild, Not Acceptable")
+            @LogError("[MCP] handle post request faild, Not Acceptable")
             let err = createErrorMsg(
                 "Not Acceptable: Client both ${JoyHttpConsts.MIME_APP_JSON} and ${JoyHttpConsts.MIME_TEXT_EVENT_STREAM}")
             ctx
@@ -68,7 +68,7 @@ class McpStreamableServerTransport <: McpServerTransport {
         }
 
         if (!checkContentType(ctx)) {
-            LogTool.error("[MCP] handle post request faild, Unsupported Media Type")
+            @LogError("[MCP] handle post request faild, Unsupported Media Type")
             let err = createErrorMsg("Unsupported Media Type: Content-Type must be ${JoyHttpConsts.MIME_APP_JSON}")
             ctx.status(HttpStatusCode.STATUS_UNSUPPORTED_MEDIA_TYPE).json(err)
             return
@@ -80,7 +80,7 @@ class McpStreamableServerTransport <: McpServerTransport {
             let message = RPCJsonTool.deserialize(data)
             handleMessage(ctx, message)
         } catch (ex: McpException) {
-            LogTool.error("[MCP] handle post request faild, error: ${ex.message}")
+            @LogError("[MCP] handle post request faild, error: ${ex.message}")
             let resp = JSONRPCResponse(id: "server-error", error: ex.error)
             ctx.status(HttpStatusCode.STATUS_BAD_REQUEST).json(resp)
             return
@@ -106,13 +106,13 @@ class McpStreamableServerTransport <: McpServerTransport {
             if (let Some(s) <- session) {
                 return s
             } else {
-                LogTool.error("[MCP] not found streamable session, sessionId: ${id}")
+                @LogError("[MCP] not found streamable session, sessionId: ${id}")
                 let err = createErrorMsg("Not Found: Invalid or expired session id")
                 ctx.status(HttpStatusCode.STATUS_NOT_FOUND).json(err)
             }
         } else {
             if (mustExist) {
-                LogTool.error("[MCP] not found `${McpConsts.HEADER_MCP_SESSION_ID}` in header")
+                @LogError("[MCP] not found `${McpConsts.HEADER_MCP_SESSION_ID}` in header")
                 let err = createErrorMsg("Bad Request: Missing session id")
                 ctx.status(HttpStatusCode.STATUS_BAD_REQUEST).json(err)
             }
@@ -203,7 +203,7 @@ class McpStreamableServerTransport <: McpServerTransport {
             if (session.isNone()) {
                 let sessionId = secureRandStr(16)
                 let sess = createSession(ctx, sessionId)
-                LogTool.info("[MCP] create streamable session, sessionId: ${sessionId}")
+                @LogInfo("[MCP] create streamable session, sessionId: ${sessionId}")
                 session = sess
                 _sessions.add(sessionId, sess)
             }

@@ -15,7 +15,7 @@ import std.io.ByteBuffer
 import stdx.net.http.{WebSocket, WebSocketException, WebSocketFrameType, HttpHeaders}
 import stdx.encoding.url.Form
 import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonReader, JsonWriter}
-import cjoy.log.LogTool
+import cjoy.log.*
 
 /**
  * the websocket message type.
@@ -322,7 +322,7 @@ class JoyWebSocketUpgradeHandler <: JoyRequestHandler {
             origins: handler.supportedOrigins()
         )
 
-        LogTool.debug("[JoyWebSocketUpdateHandler#handle] upgrade websocket success from ${ctx.getClientIP()}")
+        @LogDebug("upgrade websocket success from ${ctx.getClientIP()}")
 
         let ctxHttp = (ctx as JoyHttpContext).getOrThrow()
         let req = ctx.httpContext.request
@@ -376,17 +376,14 @@ class JoyWebSocketUpgradeHandler <: JoyRequestHandler {
                     case CloseWebFrame =>
                         match {
                             case frame.payload.size == 0 =>
-                                LogTool.debug("[JoyWebSocketUpgradeHandler#handleReceive] revceive empty close status")
+                                @LogDebug("revceive empty close status")
                                 handler.onClose(session, JoyWebSocketCloseStatus.NORMAL)
                             case frame.payload.size <= 125 && frame.payload.size > 1 =>
                                 let statusCode = toUInt16(frame.payload[0..2])
-                                LogTool.debug(
-                                    "[JoyWebSocketUpgradeHandler#handleReceive] revceive close status code, ${statusCode}"
-                                )
+                                @LogDebug("revceive close status code, ${statusCode}")
                                 handler.onClose(session, statusCode)
                             case _ =>
-                                LogTool.warn(
-                                    "[JoyWebSocketUpgradeHandler#handleReceive] revceive invalid close status code")
+                                @LogWarn("revceive invalid close status code")
                                 handler.onError(session, WebSocketException("invalid close status code"))
                         }
                         isOpen = false
@@ -394,9 +391,7 @@ class JoyWebSocketUpgradeHandler <: JoyRequestHandler {
                     case _ => ()
                 }
             } catch (ex: Exception) {
-                LogTool.warn(
-                    "[JoyWebSocketUpgradeHandler#handleReceive] read frame from websocket occurs an error, message=${ex.message}"
-                )
+                @LogWarn("read frame from websocket occurs an error, message=${ex.message}")
                 handler.onError(session, ex)
                 isOpen = false
             }

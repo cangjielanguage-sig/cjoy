@@ -16,7 +16,7 @@ import stdx.encoding.json.stream.JsonSerializable
 import stdx.encoding.base64.toBase64String
 import cjoy.mcp.api.*
 import cjoy.framework.JoyContext
-import cjoy.log.LogTool
+import cjoy.log.*
 import cjoy.json.JsonTool
 
 public class McpPrompts {
@@ -26,7 +26,7 @@ public class McpPrompts {
     //-----Prompt -----
     public func addPrompt(prompt: McpPrompt): Unit {
         if (prompts.contains(prompt.name)) {
-            LogTool.warn("[MCP] prompt `${prompt.name}` is existed, will be overwrite")
+            @LogWarn("[MCP] prompt `${prompt.name}` is existed, will be overwrite")
         }
         prompts.add(prompt.name, prompt)
     }
@@ -60,11 +60,11 @@ public class McpPrompts {
                         collectArray
                     case x: Collection<ToString> => x |> map {it => toPromptMessage(it.toString())} |> collectArray
                     case _ =>
-                        LogTool.error("[MCP] unknow prompt return type, name=${req.name}")
+                        @LogError("[MCP] unknow prompt return type, name=${req.name}")
                         throw Exception("unknow prompt return type")
                 }
             case _ =>
-                LogTool.error("[MCP] not found prompt handler, name=${req.name}")
+                @LogError("[MCP] not found prompt handler, name=${req.name}")
                 throw Exception("not found prompt handler")
         }
         GetPromptResult(messages: ArrayList(messages))

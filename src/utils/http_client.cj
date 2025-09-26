@@ -16,7 +16,7 @@ import std.io.StringReader
 import stdx.net.tls.{TlsClientConfig, CertificateVerifyMode}
 import stdx.net.http.*
 import stdx.encoding.url.URL
-import cjoy.log.LogTool
+import cjoy.log.*
 
 // modified from CangjieMagic
 
@@ -57,7 +57,7 @@ protected struct HttpClient {
         let (client, resp) = sendHttp(method, url, header, body, verify)
         if (resp.status != HttpStatusCode.STATUS_OK) {
             let err = readHttpBody(resp)
-            LogTool.error("http request failed, ${method} ${url}, error:${err}")
+            @LogError("http request failed, ${method} ${url}, error:${err}")
             client.close()
             return None
         }
@@ -96,7 +96,7 @@ protected struct HttpClient {
         let httpStream = HttpStream()
         if (resp.status != HttpStatusCode.STATUS_OK) {
             let err = readHttpBody(resp)
-            LogTool.error("http request failed, ${method} ${url}, error:${err}")
+            @LogError("http request failed, ${method} ${url}, error:${err}")
             client.close()
             httpStream.markError()
         } else {
@@ -187,6 +187,6 @@ protected struct HttpClient {
         if (let Some(b) <- body) {
             sb.append("${String.fromUtf8(b)}\n")
         }
-        LogTool.debug("${sb.toString()}")
+        @LogDebug("${sb.toString()}")
     }
 }

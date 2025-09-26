@@ -16,7 +16,7 @@ import std.io.ByteBuffer
 import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonReader}
 import cjoy.mcp.api.*
 import cjoy.utils.{TimeoutCache, randStr}
-import cjoy.log.LogTool
+import cjoy.log.*
 
 class ResponseWaiter {
     ResponseWaiter(var response!: ?JSONRPCResponse = None, let counter!: SyncCounter = SyncCounter(1)) {}
@@ -35,7 +35,7 @@ class DefaultMcpClientSession <: McpClientSession & McpResponseHandler & McpNoti
         _transport = transport
         _requestTimeout = requestTimeout
         _respWaiters = TimeoutCache(requestTimeout) {
-            k, v => LogTool.info("MCP request is timout, id: ${k}")
+            k, v => @LogWarn("MCP request is timout, id: ${k}")
         }
     }
 
@@ -51,7 +51,7 @@ class DefaultMcpClientSession <: McpClientSession & McpResponseHandler & McpNoti
                 match (message) {
                     case m: JSONRPCResponse => onResponse(m)
                     case m: JSONRPCNotification => onNotification(m)
-                    case _ => LogTool.info("[MCP]client recv unknown message")
+                    case _ => @LogInfo("[MCP]client recv unknown message")
                 }
             }
         )
@@ -63,7 +63,7 @@ class DefaultMcpClientSession <: McpClientSession & McpResponseHandler & McpNoti
         let waiter = ResponseWaiter()
         _respWaiters.add(id, waiter)
         _transport.send(RPCJsonTool.serialize(request))
-        LogTool.debug("[MCP]sent request, method: ${method}, id: ${id}")
+        @LogDebug("[MCP]sent request, method: ${method}, id: ${id}")
 
         waiter.counter.waitUntilZero(timeout: _requestTimeout)
         match (waiter.response) {
@@ -87,7 +87,7 @@ class DefaultMcpClientSession <: McpClientSession & McpResponseHandler & McpNoti
             JSONRPCNotification(method: method)
         }
         _transport.send(RPCJsonTool.serialize(message))
-        LogTool.info("[MCP]send notification, method:${method}")
+        @LogInfo("[MCP]send notification, method:${method}")
     }
 
     public func addNotificationConsumer(method: String, consumer: (Array<Byte>) -> Unit): Unit {

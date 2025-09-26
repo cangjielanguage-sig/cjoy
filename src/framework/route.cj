@@ -14,7 +14,7 @@ import std.collection.{ArrayList, HashMap, forEach}
 import std.fs.{canonicalize, FSException, exists, FileInfo}
 import stdx.encoding.url.URL
 import stdx.net.http.{HttpRequestDistributor, HttpRequestHandler, HttpRequest, HttpContext}
-import cjoy.log.LogTool
+import cjoy.log.*
 
 /**
  * the inferface of router
@@ -181,10 +181,10 @@ class TreeRouteDistributor <: HttpRequestDistributor & HttpRequestHandler {
         }
 
         let ri: RouteInfo<JoyRequestHandler> = RouteInfo()
-        LogTool.debug("[TreeRouteDistributor#lookup] finding handler, method=${req.method}, path=${path}")
+        @LogDebug("finding handler, method=${req.method}, path=${path}")
         var node = _root.findRouteHandler(ri, req.method, path)
         if (node.isNone()) {
-            LogTool.debug("[TreeRouteDistributor#lookup] not found handler, method=${req.method}, path=${path}")
+            @LogDebug("not found handler, method=${req.method}, path=${path}")
             ri.handler = _config.notFoundHandler
             return ri
         }
@@ -200,7 +200,7 @@ class TreeRouteDistributor <: HttpRequestDistributor & HttpRequestHandler {
                 return ri
             }
 
-            LogTool.debug("[TreeRouteDistributor#lookup] not found handler, method=${req.method}, path=${path}")
+            @LogDebug("not found handler, method=${req.method}, path=${path}")
             ri.handler = _config.notFoundHandler
             return ri
         }
@@ -428,14 +428,14 @@ class JoyRouteGroup <: JoyRouters {
         _applyMWs.clear()
         let wrapperHandler = JoyRequestHandlerWrapper(handler, mws)
         methods |> forEach {method => addHandler(method, pattern, wrapperHandler)}
-        LogTool.info("[Routers#handle] add route handler, pattern=${pattern}, methods=${methods}")
+        @LogInfo("add route handler, pattern=${pattern}, methods=${methods}")
         this
     }
 
     private func groupHandle(methods: Array<String>, pattern: String, handler: JoyRequestHandler): JoyRouters {
         let wrapperHandler = JoyRequestHandlerWrapper(handler, _middlewares)
         methods |> forEach {method => addHandler(method, pattern, wrapperHandler)}
-        LogTool.info("[Routers#groupHandle] add groute route handler, pattern=${pattern}, methods=${methods}")
+        @LogInfo("add groute route handler, pattern=${pattern}, methods=${methods}")
         this
     }
 

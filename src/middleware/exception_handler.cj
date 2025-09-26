@@ -14,7 +14,7 @@ import std.collection.HashMap
 import stdx.net.http.HttpStatusCode
 import cjoy.{JoyMiddlewareHandler, JoyRequestHandlerChain, JoyContext}
 import cjoy.validation.JoyValidationException
-import cjoy.log.LogTool
+import cjoy.log.*
 
 /**
  * covering catch all exception
@@ -27,7 +27,7 @@ public class ExceptionHandler <: JoyMiddlewareHandler {
             if (ctx.config.enableDebugLog) {
                 ex.printStackTrace()
             }
-            LogTool.error("handle request occurs an error, message=${ex.message}")
+            @LogError("handle request occurs an error, message=${ex.message}")
             match (ex) {
                 case _: NoneValueException =>
                     // for Option.getOrThrow, Parable.parse

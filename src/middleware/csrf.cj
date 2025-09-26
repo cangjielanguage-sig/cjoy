@@ -15,7 +15,7 @@ import stdx.crypto.digest.SHA256
 import stdx.net.http.HttpStatusCode
 import cjoy.{JoyMiddlewareHandler, JoyRequestHandlerChain, JoyContext, JoyHttpConsts, JoyRequestHandler, 
     JoyRequestHandlerFunc, JoyFuncHandler, JoyRequestFilterFunc}
-import cjoy.log.LogTool
+import cjoy.log.*
 import cjoy.utils.{secureRandStr, rawBase64URLEncode}
 
 const csrfSecretCtxKey = "__csrf_secret__"
@@ -30,7 +30,7 @@ class DefaultCrsfErrorHandler <: JoyRequestHandler {
     static let INSTANCE = DefaultCrsfErrorHandler()
 
     public func handle(ctx: JoyContext): Unit {
-        LogTool.error("[CRSF] verify failed, ${ctx.getClientIP()}, ${ctx.method} ${ctx.url}")
+        @LogError("[CRSF] verify failed, ${ctx.getClientIP()}, ${ctx.method} ${ctx.url}")
         ctx.status(HttpStatusCode.STATUS_UNAUTHORIZED)
     }
 }
@@ -163,20 +163,20 @@ public class CrsfProtect <: JoyMiddlewareHandler {
 
         let salt = session.get<String>(csrfSaltCtxKey)
         if (salt.isNone()) {
-            LogTool.error("[CRSF] miss salt")
+            @LogError("[CRSF] miss salt")
             _errorHandler.handle(ctx)
             return
         }
 
         let (token, source) = _handleFunc(ctx)
         if (token.isEmpty()) {
-            LogTool.error("[CRSF] miss token in ${source}")
+            @LogError("[CRSF] miss token in ${source}")
             _errorHandler.handle(ctx)
             return
         }
 
         if (tokenize(_secret, salt.getOrThrow()) != token) {
-            LogTool.error("[CRSF] invalid token")
+            @LogError("[CRSF] invalid token")
             _errorHandler.handle(ctx)
             return
         }

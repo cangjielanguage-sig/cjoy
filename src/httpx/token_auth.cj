@@ -12,7 +12,8 @@ package cjoy.httpx
 
 import std.collection.{Map}
 import stdx.net.http.{HttpHeaders}
-import cjoy.framework.{Context, JoyHttpConsts}
+import cjoy.context.Context
+import cjoy.framework.{JoyHttpConsts}
 
 public class TokenAuthClient <: JoyHttpClient {
     public TokenAuthClient(let http: JoyHttpClient, let token!: String, let position!: String = "header:Authorization",

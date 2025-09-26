@@ -12,7 +12,7 @@ package cjoy.httpx
 
 import std.collection.{Map}
 import stdx.net.http.{HttpHeaders, HttpStatusCode}
-import cjoy.framework.{Context}
+import cjoy.context.Context
 
 public class RetryClient <: JoyHttpClient {
     public RetryClient(let http: JoyHttpClient, let maxRetries!: Int = 3) {
