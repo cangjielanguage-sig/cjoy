@@ -15,13 +15,13 @@ import cjoy.utils.{parserAttrs, MapToString, MapListGetFunc, joinTokens}
 import std.ast.*
 
 enum ConstraintCatgory {
-    | C_SIZE
-    | C_LENGTH
-    | C_NOT_EMTPY
-    | C_NOT_BLANK
-    | C_NUBMER_RANGE
-    | C_PATTERN
-    | C_DATETIME_RANGE
+    | ConstrSize
+    | ConstrLength
+    | ConstrNotEmpty
+    | ConstrNotBlank
+    | ConstrNumberRange
+    | ConstrPattern
+    | ConstrDatetimeRange
 }
 
 open class FieldInfo {
@@ -265,13 +265,13 @@ class DateTimeRangeConstraintGenerator <: ConstraintGenerator {
 
 func createConstraintGenerator(catgory: ConstraintCatgory): ConstraintGenerator {
     match (catgory) {
-        case C_SIZE => SizeConstraintGenerator()
-        case C_LENGTH => LengthConstraintGenerator()
-        case C_NOT_EMTPY => NotEmptyConstraintGenerator()
-        case C_NOT_BLANK => NotBlankConstraintGenerator()
-        case C_NUBMER_RANGE => RangeConstraintGenerator()
-        case C_PATTERN => PatternConstraintGenerator()
-        case C_DATETIME_RANGE => DateTimeRangeConstraintGenerator()
+        case ConstrSize => SizeConstraintGenerator()
+        case ConstrLength => LengthConstraintGenerator()
+        case ConstrNotEmpty => NotEmptyConstraintGenerator()
+        case ConstrNotBlank => NotBlankConstraintGenerator()
+        case ConstrNumberRange => RangeConstraintGenerator()
+        case ConstrPattern => PatternConstraintGenerator()
+        case ConstrDatetimeRange => DateTimeRangeConstraintGenerator()
     }
 }
 

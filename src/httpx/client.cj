@@ -57,7 +57,7 @@ public class JoyHttpClientService <: JoyHttpClient {
         _client.close()
     }
 
-    public func exachange(ctx: Context, method: String, path: String, params: Map<String, ToString>,
+    public func exechange(ctx: Context, method: String, path: String, params: Map<String, ToString>,
         headers: HttpHeaders, body: Any): JoyHttpResponse {
         var url = if (path.startsWith("/")) {
             _url + path

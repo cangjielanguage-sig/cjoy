@@ -105,7 +105,7 @@ let emptyParams = HashMap<String, ToString>()
  */
 public interface JoyHttpClient {
     func get(ctx: Context, path: String, params: Map<String, ToString>, headers: HttpHeaders): JoyHttpResponse {
-        exachange(ctx, JoyHttpConsts.METHOD_GET, path, params, headers, Option<Any>.None)
+        exechange(ctx, JoyHttpConsts.METHOD_GET, path, params, headers, Option<Any>.None)
     }
     func get(ctx: Context, path: String): JoyHttpResponse {
         get(ctx, path, emptyParams, HttpHeaders())
@@ -118,7 +118,7 @@ public interface JoyHttpClient {
     }
 
     func post(ctx: Context, path: String, params: Map<String, ToString>, headers: HttpHeaders, body: Any): JoyHttpResponse {
-        exachange(ctx, JoyHttpConsts.METHOD_POST, path, params, headers, body)
+        exechange(ctx, JoyHttpConsts.METHOD_POST, path, params, headers, body)
     }
     func post(ctx: Context, path: String, body: Any): JoyHttpResponse {
         post(ctx, path, emptyParams, HttpHeaders(), body)
@@ -131,7 +131,7 @@ public interface JoyHttpClient {
     }
 
     func put(ctx: Context, path: String, params: Map<String, ToString>, headers: HttpHeaders, body: Any): JoyHttpResponse {
-        exachange(ctx, JoyHttpConsts.METHOD_PUT, path, params, headers, body)
+        exechange(ctx, JoyHttpConsts.METHOD_PUT, path, params, headers, body)
     }
     func put(ctx: Context, path: String, body: Any): JoyHttpResponse {
         put(ctx, path, emptyParams, HttpHeaders(), body)
@@ -144,7 +144,7 @@ public interface JoyHttpClient {
     }
 
     func delete(ctx: Context, path: String, params: Map<String, ToString>, headers: HttpHeaders, body: Any): JoyHttpResponse {
-        exachange(ctx, JoyHttpConsts.METHOD_PUT, path, params, headers, body)
+        exechange(ctx, JoyHttpConsts.METHOD_PUT, path, params, headers, body)
     }
     func delete(ctx: Context, path: String, body: Any): JoyHttpResponse {
         delete(ctx, path, emptyParams, HttpHeaders(), body)
@@ -156,6 +156,6 @@ public interface JoyHttpClient {
         delete(ctx, path, emptyParams, headers, body)
     }
 
-    func exachange(ctx: Context, method: String, path: String, params: Map<String, ToString>, headers: HttpHeaders,
+    func exechange(ctx: Context, method: String, path: String, params: Map<String, ToString>, headers: HttpHeaders,
         body: Any): JoyHttpResponse
 }
