@@ -42,7 +42,7 @@ public macro Validated(input: Tokens): Tokens {
 * @attribute msg: the verification error tip
 */
 public macro Size(attr: Tokens, input: Tokens): Tokens {
-    parseConstraint(ConstraintCatgory.C_SIZE, attr, input)
+    parseConstraint(ConstraintCatgory.Size, attr, input)
     input
 }
 
@@ -54,7 +54,7 @@ public macro Size(attr: Tokens, input: Tokens): Tokens {
 * @attribute msg: the verification error tip
 */
 public macro Length(attr: Tokens, input: Tokens): Tokens {
-    parseConstraint(ConstraintCatgory.C_LENGTH, attr, input)
+    parseConstraint(ConstraintCatgory.Length, attr, input)
     input
 }
 
@@ -64,7 +64,7 @@ public macro Length(attr: Tokens, input: Tokens): Tokens {
 * @attribute msg: the verification error tip
 */
 public macro NotEmpty(attr: Tokens, input: Tokens): Tokens {
-    parseConstraint(ConstraintCatgory.C_NOT_EMTPY, attr, input)
+    parseConstraint(ConstraintCatgory.NotEmpty, attr, input)
     input
 }
 
@@ -74,7 +74,7 @@ public macro NotEmpty(attr: Tokens, input: Tokens): Tokens {
 * @attribute msg: the verification error tip
 */
 public macro NotBlank(attr: Tokens, input: Tokens): Tokens {
-    parseConstraint(ConstraintCatgory.C_NOT_BLANK, attr, input)
+    parseConstraint(ConstraintCatgory.NotBlank, attr, input)
     input
 }
 
@@ -83,7 +83,7 @@ public macro NotBlank(attr: Tokens, input: Tokens): Tokens {
 *
 */
 public macro NotEmpty(input: Tokens): Tokens {
-    parseConstraint(ConstraintCatgory.C_NOT_EMTPY, input)
+    parseConstraint(ConstraintCatgory.NotEmpty, input)
     input
 }
 
@@ -92,7 +92,7 @@ public macro NotEmpty(input: Tokens): Tokens {
 *
 */
 public macro NotBlank(input: Tokens): Tokens {
-    parseConstraint(ConstraintCatgory.C_NOT_BLANK, input)
+    parseConstraint(ConstraintCatgory.NotBlank, input)
     input
 }
 
@@ -104,7 +104,7 @@ public macro NotBlank(input: Tokens): Tokens {
 * @attribute msg: the verification error tip
 */
 public macro NumberRange(attr: Tokens, input: Tokens): Tokens {
-    parseConstraint(ConstraintCatgory.C_NUBMER_RANGE, attr, input)
+    parseConstraint(ConstraintCatgory.NumberRange, attr, input)
     input
 }
 
@@ -115,7 +115,7 @@ public macro NumberRange(attr: Tokens, input: Tokens): Tokens {
 * @attribute msg: the verification error tip
 */
 public macro Patten(attr: Tokens, input: Tokens): Tokens {
-    parseConstraint(ConstraintCatgory.C_PATTERN, attr, input)
+    parseConstraint(ConstraintCatgory.Pattern, attr, input)
     input
 }
 
@@ -127,6 +127,6 @@ public macro Patten(attr: Tokens, input: Tokens): Tokens {
 * @attribute msg: the verification error tip
 */
 public macro DateTimeRange(attr: Tokens, input: Tokens): Tokens {
-    parseConstraint(ConstraintCatgory.C_DATETIME_RANGE, attr, input)
+    parseConstraint(ConstraintCatgory.DatetimeRange, attr, input)
     input
 }

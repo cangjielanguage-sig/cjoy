@@ -17,7 +17,7 @@ import std.sync.AtomicBool
 import stdx.encoding.url.URL
 import cjoy.mcp.api.*
 import cjoy.log.*
-import cjoy.utils.{SSEventStream, HttpClient}
+import cjoy.httpx.{JoySSEventStream, JoySimpleHttpClient}
 
 class McpSseClientTransport <: McpClientTransport {
     private let _url: String
@@ -26,12 +26,12 @@ class McpSseClientTransport <: McpClientTransport {
     private var _endpoint: String = ""
     private var _consumer: ?(ByteBuffer) -> Unit = None
     private var _callback: ?()->Unit = None
-    private var _sseStream: ?SSEventStream = None
+    private var _sseStream: ?JoySSEventStream = None
     private var _connected = AtomicBool(false)
 
     private var _isClosed: Bool = false
 
-    prop seeStream: SSEventStream {
+    prop seeStream: JoySSEventStream {
         get() {
             _sseStream.getOrThrow()
         }
@@ -60,7 +60,7 @@ class McpSseClientTransport <: McpClientTransport {
             return
         }
         _lastInitTime = DateTime.now()
-        _sseStream = HttpClient.sseConnect(_url)
+        _sseStream = JoySimpleHttpClient.sseConnect(_url)
         let seeStream_ = this.seeStream
         if (let Some(evt) <- seeStream_.next()) {
             if (evt.event != McpConsts.EVENT_ENDPOINT) {
@@ -100,7 +100,7 @@ class McpSseClientTransport <: McpClientTransport {
     public func send(message: ByteBuffer): Unit {
         checkConnected()
         let header = HashMap<String, String>([("Content-Type", "application/json")])
-        let resp: Option<String> = HttpClient.post("${_baseUrl}${_endpoint}", message.bytes(), header: header, verify: false)
+        let resp: Option<String> = JoySimpleHttpClient.post("${_baseUrl}${_endpoint}", message.bytes(), header: header, verify: false)
         if (let Some(v) <- resp) {
             if (v !="") {
                 @LogInfo("[MCP]http request response ${v}")

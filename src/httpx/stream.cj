@@ -8,26 +8,24 @@
  * See the Mulan PSL v2 for more details.
  */
 
-package cjoy.utils
+package cjoy.httpx
 
 import std.collection.concurrent.LinkedBlockingQueue
 import std.collection.{HashMap, ArrayList}
 import std.io.{InputStream, StringReader}
 
-// modified from CangjieMagic
-
 enum StreamData {
     | Bytes(Array<Byte>)
     | EOF
-    | Error
+    | Error(String)
 }
 
-protected class HttpStream <: Iterator<String> & InputStream {
-    let _queue = LinkedBlockingQueue<StreamData>()
-    let _byteBuffer = ArrayList<Byte>()
+public class JoyHttpStream <: Iterator<String> & InputStream {
+    private let _queue = LinkedBlockingQueue<StreamData>()
+    private let _byteBuffer = ArrayList<Byte>()
     private let _closeFn: Option<() -> Unit>
-    var _finished = false
-    var _reader: Option<StringReader<HttpStream>> = None
+    private var _finished = false
+    private var _reader: Option<StringReader<JoyHttpStream>> = None
 
     init(closeFn!: Option<() -> Unit> = None) {
         _closeFn = closeFn
@@ -38,7 +36,7 @@ protected class HttpStream <: Iterator<String> & InputStream {
             return false
         }
         match (_queue.remove()) {
-            case Error => throw Exception("Http byte stream error")
+            case Error(text) => throw Exception("Http byte stream error, ${text}")
             case EOF =>
                 _finished = true
                 return false
@@ -48,7 +46,7 @@ protected class HttpStream <: Iterator<String> & InputStream {
         }
     }
 
-    public override func read(buffer: Array<Byte>): Int64 {
+    public func read(buffer: Array<Byte>): Int64 {
         if (_byteBuffer.isEmpty() && !this.readBytes()) {
             return 0
         }
@@ -72,7 +70,7 @@ protected class HttpStream <: Iterator<String> & InputStream {
         return len
     }
 
-    private prop reader: StringReader<HttpStream> {
+    private prop reader: StringReader<JoyHttpStream> {
         get() {
             if (let Some(r) <- this._reader) {
                 return r
@@ -84,7 +82,7 @@ protected class HttpStream <: Iterator<String> & InputStream {
         }
     }
 
-    public override func next(): Option<String> {
+    public func next(): Option<String> {
         return this.reader.readln()
     }
 
@@ -96,8 +94,8 @@ protected class HttpStream <: Iterator<String> & InputStream {
         _queue.add(StreamData.EOF)
     }
 
-    public func markError(): Unit {
-        _queue.add(StreamData.Error)
+    public func markError(err: String): Unit {
+        _queue.add(StreamData.Error(err))
     }
 
     public func close(): Unit {

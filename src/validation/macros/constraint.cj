@@ -15,13 +15,13 @@ import cjoy.utils.{parserAttrs, MapToString, MapListGetFunc, joinTokens}
 import std.ast.*
 
 enum ConstraintCatgory {
-    | ConstrSize
-    | ConstrLength
-    | ConstrNotEmpty
-    | ConstrNotBlank
-    | ConstrNumberRange
-    | ConstrPattern
-    | ConstrDatetimeRange
+    | Size
+    | Length
+    | NotEmpty
+    | NotBlank
+    | NumberRange
+    | Pattern
+    | DatetimeRange
 }
 
 open class FieldInfo {
@@ -265,13 +265,13 @@ class DateTimeRangeConstraintGenerator <: ConstraintGenerator {
 
 func createConstraintGenerator(catgory: ConstraintCatgory): ConstraintGenerator {
     match (catgory) {
-        case ConstrSize => SizeConstraintGenerator()
-        case ConstrLength => LengthConstraintGenerator()
-        case ConstrNotEmpty => NotEmptyConstraintGenerator()
-        case ConstrNotBlank => NotBlankConstraintGenerator()
-        case ConstrNumberRange => RangeConstraintGenerator()
-        case ConstrPattern => PatternConstraintGenerator()
-        case ConstrDatetimeRange => DateTimeRangeConstraintGenerator()
+        case Size => SizeConstraintGenerator()
+        case Length => LengthConstraintGenerator()
+        case NotEmpty => NotEmptyConstraintGenerator()
+        case NotBlank => NotBlankConstraintGenerator()
+        case NumberRange => RangeConstraintGenerator()
+        case Pattern => PatternConstraintGenerator()
+        case DatetimeRange => DateTimeRangeConstraintGenerator()
     }
 }
 
@@ -299,8 +299,8 @@ func parseConstraint(catgory: ConstraintCatgory, attr: ?Tokens, input: Tokens): 
             let funcParam = FuncParam(input)
             FieldInfoCache.addCache(funcParam.identifier, true, JoyConstraint.toConstraint())
         } catch (_: Exception) {
-            diagReport(DiagReportLevel.ERROR, input, "${JoyConstraint.marcroName} macro only using for the func paramter",
-                "")
+            diagReport(DiagReportLevel.ERROR, input,
+                "${JoyConstraint.marcroName} macro only using for the func paramter", "")
             throw Exception("${JoyConstraint.marcroName} macro only using for the func paramter")
         }
     }
