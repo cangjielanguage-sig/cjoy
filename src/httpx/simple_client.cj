@@ -8,7 +8,7 @@
  * See the Mulan PSL v2 for more details.
  */
 
-package cjoy.utils
+package cjoy.httpx
 
 import std.collection.HashMap
 import std.net.{SocketAddress, TcpSocket}
@@ -16,16 +16,19 @@ import std.io.StringReader
 import stdx.net.tls.{TlsClientConfig, CertificateVerifyMode}
 import stdx.net.http.*
 import stdx.encoding.url.URL
+import cjoy.framework.JoyHttpConsts
 import cjoy.log.*
 
-// modified from CangjieMagic
-
-protected struct HttpClient {
-    public static func sseConnect(url: String, verify!: Bool = false): SSEventStream {
+/**
+ * This is a simple HTTP client that closes the connection directly after each request response,
+ * which is not suitable for high-performance connection reuse scenarios.
+ */
+public struct JoySimpleHttpClient {
+    public static func sseConnect(url: String, verify!: Bool = false): JoySSEventStream {
         let header = HashMap<String, String>()
-        header.add("Accept", "text/event-stream")
+        header.add(JoyHttpConsts.HEADER_ACCEPT, JoyHttpConsts.MIME_TEXT_EVENT_STREAM)
         let httpStream = asyncGet(url, header: header, body: None, verify: verify)
-        return SSEventStream(httpStream)
+        return JoySSEventStream(httpStream)
     }
 
     public static func get(
@@ -56,12 +59,12 @@ protected struct HttpClient {
         logHttpInfo(method, url, header, body)
         let (client, resp) = sendHttp(method, url, header, body, verify)
         if (resp.status != HttpStatusCode.STATUS_OK) {
-            let err = readHttpBody(resp)
+            let err = resp.text
             @LogError("http request failed, ${method} ${url}, error:${err}")
             client.close()
             return None
         }
-        let respBody = readHttpBody(resp)
+        let respBody = resp.text
         client.close()
         return respBody
     }
@@ -71,7 +74,7 @@ protected struct HttpClient {
         body!: Option<Array<Byte>> = None,
         header!: HashMap<String, String> = HashMap(),
         verify!: Bool = false
-    ): HttpStream {
+    ): JoyHttpStream {
         return asyncSend("GET", url, header, body, verify: verify)
     }
 
@@ -80,7 +83,7 @@ protected struct HttpClient {
         body: Array<Byte>,
         header!: HashMap<String, String> = HashMap(),
         verify!: Bool = false
-    ): HttpStream {
+    ): JoyHttpStream {
         return asyncSend("POST", url, header, body, verify: verify)
     }
 
@@ -90,21 +93,22 @@ protected struct HttpClient {
         header: HashMap<String, String>,
         body: Option<Array<Byte>>,
         verify!: Bool
-    ): HttpStream {
+    ): JoyHttpStream {
         logHttpInfo(method, url, header, body)
         let (client, resp) = sendHttp(method, url, header, body, verify)
-        let httpStream = HttpStream()
-        if (resp.status != HttpStatusCode.STATUS_OK) {
-            let err = readHttpBody(resp)
+        let httpStream = JoyHttpStream()
+        if (resp.status >= 300) {
+            let err = resp.text
             @LogError("http request failed, ${method} ${url}, error:${err}")
             client.close()
-            httpStream.markError()
+            httpStream.markError(err)
         } else {
             spawn {
                 let buffer = Array<Byte>(1024 * 10, {_ => 0})
                 while (true) {
                     let length = resp.body.read(buffer)
                     if (length == 0) {
+                        httpStream.markEOF()
                         break
                     } else {
                         httpStream.put(buffer[..length])
@@ -114,29 +118,6 @@ protected struct HttpClient {
             }
         }
         return httpStream
-    }
-
-    private static func buildHttpClient(url: String, verify: Bool): Client {
-        let cb = ClientBuilder()
-        cb.readTimeout(Duration.minute * 10)
-        if (url.startsWith("https")) {
-            var config = TlsClientConfig()
-            if (!verify) {
-                config.verifyMode = TrustAll
-            }
-            config.domain = URL.parse(url).hostName
-            cb.tlsConfig(config)
-        }
-        let TcpSocketConnector = {
-            sa: SocketAddress =>
-            let socket = TcpSocket(sa)
-            socket.readTimeout = Duration.second * 60
-            socket.writeTimeout = Duration.second * 60
-            socket.connect(timeout: Duration.second * 60)
-            return socket
-        }
-        cb.connector(TcpSocketConnector)
-        return cb.build()
     }
 
     private static func prepareHttpRequest(
@@ -167,14 +148,9 @@ protected struct HttpClient {
         body: Option<Array<Byte>>,
         verify: Bool
     ): (Client, HttpResponse) {
-        let client = buildHttpClient(url, verify)
+        let client = defaultNoVerifyHttpCert(url, verify).build()
         let req = prepareHttpRequest(method, url, header, body)
         return (client, client.send(req))
-    }
-
-    private static func readHttpBody(resp: HttpResponse): String {
-        let reader = StringReader(resp.body)
-        return reader.readToEnd()
     }
 
     private static func logHttpInfo(method: String, url: String, header: HashMap<String, String>,

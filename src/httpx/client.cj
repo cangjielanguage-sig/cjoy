@@ -20,21 +20,23 @@ import stdx.encoding.url.URL
 import cjoy.context.Context
 import cjoy.framework.{JoyHttpConsts}
 
-func defaultNoVerifyHttpCert(url: String): ClientBuilder {
+func defaultNoVerifyHttpCert(url: String, verify: Bool): ClientBuilder {
     let cb = ClientBuilder()
     if (url.startsWith("https")) {
         var config = TlsClientConfig()
-        config.verifyMode = TrustAll
+        if (!verify) {
+            config.verifyMode = TrustAll
+        }
         config.domain = URL.parse(url).hostName
         cb.tlsConfig(config)
     }
     let socketConnector = {
         sa: SocketAddress =>
-            let socket = TcpSocket(sa)
-            socket.readTimeout = Duration.minute
-            socket.writeTimeout = Duration.minute
-            socket.connect(timeout: Duration.minute)
-            return socket
+        let socket = TcpSocket(sa)
+        socket.readTimeout = Duration.minute
+        socket.writeTimeout = Duration.minute
+        socket.connect(timeout: Duration.minute)
+        return socket
     }
     cb.readTimeout(Duration.minute)
     cb.connector(socketConnector)
@@ -44,9 +46,10 @@ public class JoyHttpClientService <: JoyHttpClient {
     private let _client: Client
     private let _url: String
 
-    public init(url: String, budilerFn!: (url: String) -> ClientBuilder = defaultNoVerifyHttpCert) {
+    public init(url: String, verify!: Bool = false,
+        budilerFn!: (url: String, verify: Bool) -> ClientBuilder = defaultNoVerifyHttpCert) {
         _url = url.trimEnd("/")
-        _client = budilerFn(url).build()
+        _client = budilerFn(url, verify).build()
     }
 
     ~init() {

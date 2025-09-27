@@ -15,13 +15,13 @@ import cjoy.utils.{parserAttrs, MapToString, MapListGetFunc, joinTokens}
 import std.ast.*
 
 enum ConstraintCatgory {
-    | C_SIZE
-    | C_LENGTH
-    | C_NOT_EMTPY
-    | C_NOT_BLANK
-    | C_NUBMER_RANGE
-    | C_PATTERN
-    | C_DATETIME_RANGE
+    | Size
+    | Length
+    | NotEmpty
+    | NotBlank
+    | NumberRange
+    | Pattern
+    | DatetimeRange
 }
 
 open class FieldInfo {
@@ -265,13 +265,13 @@ class DateTimeRangeConstraintGenerator <: ConstraintGenerator {
 
 func createConstraintGenerator(catgory: ConstraintCatgory): ConstraintGenerator {
     match (catgory) {
-        case C_SIZE => SizeConstraintGenerator()
-        case C_LENGTH => LengthConstraintGenerator()
-        case C_NOT_EMTPY => NotEmptyConstraintGenerator()
-        case C_NOT_BLANK => NotBlankConstraintGenerator()
-        case C_NUBMER_RANGE => RangeConstraintGenerator()
-        case C_PATTERN => PatternConstraintGenerator()
-        case C_DATETIME_RANGE => DateTimeRangeConstraintGenerator()
+        case Size => SizeConstraintGenerator()
+        case Length => LengthConstraintGenerator()
+        case NotEmpty => NotEmptyConstraintGenerator()
+        case NotBlank => NotBlankConstraintGenerator()
+        case NumberRange => RangeConstraintGenerator()
+        case Pattern => PatternConstraintGenerator()
+        case DatetimeRange => DateTimeRangeConstraintGenerator()
     }
 }
 
@@ -299,8 +299,8 @@ func parseConstraint(catgory: ConstraintCatgory, attr: ?Tokens, input: Tokens): 
             let funcParam = FuncParam(input)
             FieldInfoCache.addCache(funcParam.identifier, true, JoyConstraint.toConstraint())
         } catch (_: Exception) {
-            diagReport(DiagReportLevel.ERROR, input, "${JoyConstraint.marcroName} macro only using for the func paramter",
-                "")
+            diagReport(DiagReportLevel.ERROR, input,
+                "${JoyConstraint.marcroName} macro only using for the func paramter", "")
             throw Exception("${JoyConstraint.marcroName} macro only using for the func paramter")
         }
     }

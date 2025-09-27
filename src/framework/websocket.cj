@@ -21,7 +21,7 @@ import cjoy.log.*
  * the websocket message type.
  */
 public enum JoyWebSocketMsgType {
-    WS_TEXT | WS_BINARY | WS_PING
+    WsText | WsBinary | WsPing
 }
 
 /**
@@ -129,7 +129,7 @@ public class JoyWebSocketMessage {
      */
     public func asText(): String {
         match (_msgType) {
-            case WS_TEXT => String.fromUtf8(_data)
+            case WsText => String.fromUtf8(_data)
             case _ => throw IllegalArgumentException("not is text message")
         }
     }
@@ -139,7 +139,7 @@ public class JoyWebSocketMessage {
      */
     public func asJsonToObj<T>(): ?T where T <: JsonDeserializable<T> {
         match (_msgType) {
-            case WS_TEXT =>
+            case WsText =>
                 let stream = ByteBuffer()
                 stream.write(_data)
                 let reader = JsonReader(stream)
@@ -153,7 +153,7 @@ public class JoyWebSocketMessage {
      */
     public func asBinary(): Array<Byte> {
         match (_msgType) {
-            case WS_BINARY => _data
+            case WsBinary => _data
             case _ => throw IllegalArgumentException("not is binary message")
         }
     }
@@ -168,7 +168,7 @@ public class JoyWebSocketMessage {
      * @param playload: message playload
      */
     public static func createText(playload: String): JoyWebSocketMessage {
-        JoyWebSocketMessage(WS_TEXT, true, playload.toArray())
+        JoyWebSocketMessage(WsText, true, playload.toArray())
     }
 
     /**
@@ -181,7 +181,7 @@ public class JoyWebSocketMessage {
         let writer = JsonWriter(buffer)
         writer.writeValue(playload)
         writer.flush()
-        JoyWebSocketMessage(WS_TEXT, true, buffer.bytes())
+        JoyWebSocketMessage(WsText, true, buffer.bytes())
     }
 
     /**
@@ -190,7 +190,7 @@ public class JoyWebSocketMessage {
      * @param playload: message playload
      */
     public static func createBinary(playload: Array<Byte>): JoyWebSocketMessage {
-        JoyWebSocketMessage(WS_BINARY, true, playload)
+        JoyWebSocketMessage(WsBinary, true, playload)
     }
 
     /**
@@ -199,7 +199,7 @@ public class JoyWebSocketMessage {
      * @param playload: message playload
      */
     public static func createPing(): JoyWebSocketMessage {
-        JoyWebSocketMessage(WS_PING, true, Array<UInt8>(5, repeat: 0))
+        JoyWebSocketMessage(WsPing, true, Array<UInt8>(5, repeat: 0))
     }
 }
 
@@ -305,9 +305,9 @@ public class JoyWebSocketSession {
      */
     public func send(message: JoyWebSocketMessage): Unit {
         match (message.msgType) {
-            case WS_TEXT => _ws.write(WebSocketFrameType.TextWebFrame, message.data())
-            case WS_BINARY => _ws.write(WebSocketFrameType.BinaryWebFrame, message.data())
-            case WS_PING => _ws.writePingFrame(message.data())
+            case WsText => _ws.write(WebSocketFrameType.TextWebFrame, message.data())
+            case WsBinary => _ws.write(WebSocketFrameType.BinaryWebFrame, message.data())
+            case WsPing => _ws.writePingFrame(message.data())
         }
     }
 }
@@ -341,7 +341,7 @@ class JoyWebSocketUpgradeHandler <: JoyRequestHandler {
 
         handler.onOpen(session)
 
-        var msgType = JoyWebSocketMsgType.WS_PING
+        var msgType = JoyWebSocketMsgType.WsPing
         while (isOpen) {
             try {
                 var frame = websocket.read()
@@ -358,9 +358,9 @@ class JoyWebSocketUpgradeHandler <: JoyRequestHandler {
                         }
                     case TextWebFrame | BinaryWebFrame =>
                         msgType = if (frame.frameType == TextWebFrame) {
-                            JoyWebSocketMsgType.WS_TEXT
+                            JoyWebSocketMsgType.WsText
                         } else {
-                            JoyWebSocketMsgType.WS_BINARY
+                            JoyWebSocketMsgType.WsBinary
                         }
 
                         buffer.clear()
