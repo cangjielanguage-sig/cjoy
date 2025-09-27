@@ -39,7 +39,7 @@ public class LogTool {
     }
 
     public static func debug(msg: String, file: String, line: Int): Unit {
-        logger.debug("[${file}:${line}] ${msg}")
+        logger.debug("[${thread()}][${file}:${line}] ${msg}")
     }
 
     public static func info(msg: String): Unit {

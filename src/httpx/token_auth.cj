@@ -13,17 +13,16 @@ package cjoy.httpx
 import std.collection.{Map}
 import stdx.net.http.{HttpHeaders}
 import cjoy.context.Context
-import cjoy.framework.{JoyHttpConsts}
 
 public class TokenAuthClient <: JoyHttpClient {
     public TokenAuthClient(let http: JoyHttpClient, let token!: String, let position!: String = "header:Authorization",
         let authSchema!: String = "Bearer") {
     }
 
-    public func exechange(ctx: Context, method: String, path: String, params: Map<String, ToString>,
+    public func exchange(ctx: Context, method: String, path: String, params: Map<String, ToString>,
         headers: HttpHeaders, body: Any): JoyHttpResponse {
         createFunc(token, position, authSchema)(path, headers)
-        http.exechange(ctx, method, path, params, headers, body)
+        http.exchange(ctx, method, path, params, headers, body)
     }
 
     private func createFunc(token: String, position: String, authSchema: String): (path: String, headers: HttpHeaders) -> Unit {

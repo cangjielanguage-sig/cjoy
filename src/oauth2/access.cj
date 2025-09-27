@@ -15,7 +15,6 @@ import std.io.ByteBuffer
 import std.crypto.digest.digest
 import stdx.crypto.digest.{HashType, HMAC}
 import stdx.crypto.crypto.SecureRandom
-import cjoy.framework.JoyContext
 import cjoy.utils.{rawBase64URLEncode}
 
 /**

@@ -10,11 +10,9 @@
 
 package cjoy.httpx
 
-import std.collection.{Map, HashMap}
-import std.io.{InputStream, StringReader, ByteBuffer}
-import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonReader, JsonWriter}
-import stdx.net.http.{HttpHeaders, HttpResponse, HttpRequestBuilder}
-import cjoy.context.Context
+import std.io.{InputStream, StringReader}
+import stdx.encoding.json.stream.{JsonDeserializable, JsonReader}
+import stdx.net.http.{HttpHeaders, HttpResponse}
 import cjoy.framework.{JoyHttpConsts}
 
 /*
@@ -22,6 +20,7 @@ import cjoy.framework.{JoyHttpConsts}
  */
 public class JoyHttpResponse {
     private let _response: HttpResponse
+    private var _sseStream: ?JoySSEventStream = None
 
     public JoyHttpResponse(response: HttpResponse) {
         _response = response
@@ -76,10 +75,16 @@ public class JoyHttpResponse {
 
     public prop eventStream: JoySSEventStream {
         get() {
-            if (contentType != JoyHttpConsts.MIME_TEXT_EVENT_STREAM) {
-                throw IllegalArgumentException("the reponse is not event stream")
+            if (let Some(ss) <- _sseStream) {
+                return ss
+            } else {
+                if (contentType != JoyHttpConsts.MIME_TEXT_EVENT_STREAM) {
+                    throw IllegalArgumentException("the reponse is not event stream")
+                }
+                let stream = JoySSEventStream(_response.stream)
+                _sseStream = stream
+                stream
             }
-            JoySSEventStream(_response.stream)
         }
     }
 }

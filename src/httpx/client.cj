@@ -32,11 +32,11 @@ func defaultNoVerifyHttpCert(url: String, verify: Bool): ClientBuilder {
     }
     let socketConnector = {
         sa: SocketAddress =>
-        let socket = TcpSocket(sa)
-        socket.readTimeout = Duration.minute
-        socket.writeTimeout = Duration.minute
-        socket.connect(timeout: Duration.minute)
-        return socket
+            let socket = TcpSocket(sa)
+            socket.readTimeout = Duration.minute
+            socket.writeTimeout = Duration.minute
+            socket.connect(timeout: Duration.minute)
+            return socket
     }
     cb.readTimeout(Duration.minute)
     cb.connector(socketConnector)
@@ -60,7 +60,7 @@ public class JoyHttpClientService <: JoyHttpClient {
         _client.close()
     }
 
-    public func exechange(ctx: Context, method: String, path: String, params: Map<String, ToString>,
+    public func exchange(ctx: Context, method: String, path: String, params: Map<String, ToString>,
         headers: HttpHeaders, body: Any): JoyHttpResponse {
         var url = if (path.startsWith("/")) {
             _url + path

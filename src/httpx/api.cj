@@ -11,9 +11,7 @@
 package cjoy.httpx
 
 import std.collection.{Map, HashMap}
-import std.io.{InputStream, StringReader, ByteBuffer}
-import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonReader, JsonWriter}
-import stdx.net.http.{HttpHeaders, HttpResponse, HttpRequestBuilder}
+import stdx.net.http.{HttpHeaders}
 import cjoy.context.Context
 import cjoy.framework.{JoyHttpConsts}
 
@@ -25,7 +23,7 @@ let emptyParams = HashMap<String, ToString>()
  */
 public interface JoyHttpClient {
     func get(ctx: Context, path: String, params: Map<String, ToString>, headers: HttpHeaders): JoyHttpResponse {
-        exechange(ctx, JoyHttpConsts.METHOD_GET, path, params, headers, Option<Any>.None)
+        exchange(ctx, JoyHttpConsts.METHOD_GET, path, params, headers, Option<Any>.None)
     }
     func get(ctx: Context, path: String): JoyHttpResponse {
         get(ctx, path, emptyParams, HttpHeaders())
@@ -38,7 +36,7 @@ public interface JoyHttpClient {
     }
 
     func post(ctx: Context, path: String, params: Map<String, ToString>, headers: HttpHeaders, body: Any): JoyHttpResponse {
-        exechange(ctx, JoyHttpConsts.METHOD_POST, path, params, headers, body)
+        exchange(ctx, JoyHttpConsts.METHOD_POST, path, params, headers, body)
     }
     func post(ctx: Context, path: String, body: Any): JoyHttpResponse {
         post(ctx, path, emptyParams, HttpHeaders(), body)
@@ -51,7 +49,7 @@ public interface JoyHttpClient {
     }
 
     func put(ctx: Context, path: String, params: Map<String, ToString>, headers: HttpHeaders, body: Any): JoyHttpResponse {
-        exechange(ctx, JoyHttpConsts.METHOD_PUT, path, params, headers, body)
+        exchange(ctx, JoyHttpConsts.METHOD_PUT, path, params, headers, body)
     }
     func put(ctx: Context, path: String, body: Any): JoyHttpResponse {
         put(ctx, path, emptyParams, HttpHeaders(), body)
@@ -64,7 +62,7 @@ public interface JoyHttpClient {
     }
 
     func delete(ctx: Context, path: String, params: Map<String, ToString>, headers: HttpHeaders, body: Any): JoyHttpResponse {
-        exechange(ctx, JoyHttpConsts.METHOD_PUT, path, params, headers, body)
+        exchange(ctx, JoyHttpConsts.METHOD_PUT, path, params, headers, body)
     }
     func delete(ctx: Context, path: String, body: Any): JoyHttpResponse {
         delete(ctx, path, emptyParams, HttpHeaders(), body)
@@ -76,6 +74,6 @@ public interface JoyHttpClient {
         delete(ctx, path, emptyParams, headers, body)
     }
 
-    func exechange(ctx: Context, method: String, path: String, params: Map<String, ToString>, headers: HttpHeaders,
+    func exchange(ctx: Context, method: String, path: String, params: Map<String, ToString>, headers: HttpHeaders,
         body: Any): JoyHttpResponse
 }

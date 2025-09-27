@@ -17,7 +17,7 @@ class CronTick {
     }
 
     static func of(dt: DateTime): CronTick {
-        CronTick(sec: dt.second, min: dt.minute, hour: dt.hour, day: dt.hour, month: dt.month.toInteger(),
+        CronTick(sec: dt.second, min: dt.minute, hour: dt.hour, day: dt.dayOfMonth, month: dt.month.toInteger(),
             dayOfWeek: dt.dayOfWeek.toInteger())
     }
 }

@@ -10,7 +10,7 @@
 
 package cjoy.mcp.server
 
-import std.collection.{ArrayList, HashMap, map, collectArray}
+import std.collection.{ArrayList, map, collectArray}
 import std.collection.concurrent.ConcurrentHashMap
 import stdx.encoding.json.stream.JsonSerializable
 import stdx.encoding.base64.toBase64String

@@ -11,7 +11,7 @@
 package cjoy.httpx
 
 import std.collection.concurrent.LinkedBlockingQueue
-import std.collection.{HashMap, ArrayList}
+import std.collection.{ArrayList}
 import std.io.{InputStream, StringReader}
 
 enum StreamData {

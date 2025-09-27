@@ -36,4 +36,3 @@ public class JsonRequest<T> where T <: JsonSerializable {
         }
     }
 }
-

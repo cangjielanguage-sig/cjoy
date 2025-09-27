@@ -20,10 +20,10 @@ public class BasicAuthClient <: JoyHttpClient {
     public BasicAuthClient(let http: JoyHttpClient, let username!: String, let password!: String) {
     }
 
-    public func exechange(ctx: Context, method: String, path: String, params: Map<String, ToString>,
+    public func exchange(ctx: Context, method: String, path: String, params: Map<String, ToString>,
         headers: HttpHeaders, body: Any): JoyHttpResponse {
         let authValue = "Basic " + toBase64String((username + ":" + password).toArray())
         headers.add(JoyHttpConsts.HEADER_AUTHORIZATION, authValue)
-        http.exechange(ctx, method, path, params, headers, body)
+        http.exchange(ctx, method, path, params, headers, body)
     }
 }
