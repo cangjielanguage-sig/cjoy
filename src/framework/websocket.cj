@@ -15,6 +15,7 @@ import std.io.ByteBuffer
 import stdx.net.http.{WebSocket, WebSocketException, WebSocketFrameType, HttpHeaders}
 import stdx.encoding.url.Form
 import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonReader, JsonWriter}
+import cjoy.context.Context
 import cjoy.log.*
 
 /**
@@ -206,22 +207,24 @@ public class JoyWebSocketMessage {
 /**
  * the websocket session.
  */
-public class JoyWebSocketSession {
+public class JoyWebSocketSession <: Context {
     private let _ws: WebSocket
     private let _config: JoyConfig
     private let _headers: HttpHeaders
     private let _paramMap: HashMap<String, String>
     private let _ctxParamMap: HashMap<String, Any>
     private let _query: Form
+    private let _services: ServiceConainter
 
     init(ws: WebSocket, config: JoyConfig, headers: HttpHeaders, query: Form, paramMap: HashMap<String, String>,
-        ctxParamMap: HashMap<String, Any>) {
+        ctxParamMap: HashMap<String, Any>, services: ServiceConainter) {
         _ws = ws
         _config = config
         _headers = headers
         _query = query
         _paramMap = paramMap
         _ctxParamMap = ctxParamMap
+        _services = services
     }
 
     /*
@@ -258,11 +261,23 @@ public class JoyWebSocketSession {
      * obtain the handleshake context param
      */
     public func getCtxParam<T>(key: String): ?T {
-        let val = _ctxParamMap.get(key)
-        match (val) {
-            case Some(v) => v as T
-            case _ => None
-        }
+        get<T>(key)
+    }
+
+    public func set(key: String, value: Any): Unit {
+        _ctxParamMap.add(key, value)
+    }
+
+    public func get<T>(key: String): ?T {
+        (_ctxParamMap.get(key) ?? Option<Any>.None) as T
+    }
+
+    public func remove(key: String): Unit {
+        _ctxParamMap.remove(key)
+    }
+
+    public func getService<T>(name: String): ?T {
+        _services.getService<T>(name)
     }
 
     /*
@@ -327,7 +342,7 @@ class JoyWebSocketUpgradeHandler <: JoyRequestHandler {
         let ctxHttp = (ctx as JoyHttpContext).getOrThrow()
         let req = ctx.httpContext.request
         let session = JoyWebSocketSession(websocket, ctx.config, req.headers, req.url.queryForm.clone(),
-            ctxHttp.copyParams(), ctxHttp.copyCtxParams())
+            ctxHttp.copyParams(), ctxHttp.copyCtxParams(), ctxHttp._services)
 
         // release the context and http framework thread
         spawn {

@@ -30,14 +30,14 @@ a fast，extensible，lightweight and joy cangjie application framework.<br/>
 - 6️⃣ 基于编译宏支持对请求参数校验；
 - 7️⃣ 基于编译宏支持MCP服务暴露工具等能力给LLM；
 - 8️⃣ 内置文件下载与上传，WebSocket，SSE等能力;
-- 9️⃣ 内置多种中间件，支持Basic, Token, JWT，OAuth2等认证;
+- 9️⃣ 内置多种中间件，支持Basic，Token，JWT，OAuth2等认证;
 
 ### 应用场景
 
 - ♠️ API服务：帮助您快速开发API服务并配置路由规则与管理各种资源；
 - ♥️ Web服务：压缩前辍树高性能路由查找与文件服务，让您的Web服务更具有性能优势；
-- ♦️ 微服务：路由组与内置Json编译宏，轻松实现微服务各类接口分组管理与接口调用；
-- ♣️ MCP服务：提供AI MCP服务组件编译宏，可以让您快速暴露MCP的工具等能力给LLM；
+- ♣️ 微服务：路由组与内置Json编译宏，轻松实现微服务各类接口分组管理与接口调用；
+- ♦️ MCP服务：提供AI MCP服务组件编译宏，可以让您快速暴露MCP的工具等能力给LLM；
 
 ### 技术特点
 
@@ -173,6 +173,7 @@ main(): Int64 {
 - [日志](doc/usage_guide/logger.md)
   - [默认日志](doc/usage_guide/logger.md#默认日志)
   - [请求访问日志](doc/usage_guide/logger.md#请求访问日志) 
+  - [日志宏](doc/usage_guide/logger.md#日志宏) 
 - [路由](doc/usage_guide/routing.md)
   - [路由规则](doc/usage_guide/routing.md#路由规则)
   - [路由优先级](doc/usage_guide/routing.md#路由优先级)
