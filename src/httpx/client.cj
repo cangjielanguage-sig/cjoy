@@ -68,14 +68,16 @@ public class JoyHttpClientService <: JoyHttpClient {
             _url + "/" + path
         }
 
-        let queryForm = Form()
-        for ((k, v) in params) {
-            queryForm.add(k, v.toString())
-        }
-        if (url.contains("?")) {
-            url = url + "&" + queryForm.toEncodeString()
-        } else {
-            url = url + "?" + queryForm.toEncodeString()
+        if (!params.isEmpty()) {
+            let queryForm = Form()
+            for ((k, v) in params) {
+                queryForm.add(k, v.toString())
+            }
+            if (url.contains("?")) {
+                url = url + "&" + queryForm.toEncodeString()
+            } else {
+                url = url + "?" + queryForm.toEncodeString()
+            }
         }
 
         let rb = HttpRequestBuilder().url(url)

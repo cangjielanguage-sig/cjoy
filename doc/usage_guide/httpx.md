@@ -4,6 +4,8 @@ CJoy提供调用Http服务能力，支持多种认证，自定义扩展认证。
 
 ## 使用方式 
 
+使用示例：[examples/httpx](../../examples/src/httpx/main.cj) 。
+
 1. 注册Http服务
 
 ```
@@ -49,7 +51,15 @@ println(rsp.status)
 ctx.string(rsp.text)
 ```
 
-框架定义了 [JoyHttpClient](../../src/httpx/api.cj) 接口。应用调用其get/post/put/delete函数发请求。若发送JSON请求时，方法入参body类型如下会自动转换为JSON Body：
+框架定义了 [JoyHttpClient](../../src/httpx/api.cj) 接口。应用调用其get/post/put/delete/patch/postform函数发送请求。参数说明如下：
+
+- `ctx`: 上下文，取接收请求的ctx
+- `path`: URL Path
+- `queries`: 请求Query参数请求
+- `headers`：请求头域
+- `body`: 请求体
+
+若发送JSON请求时，方法入参body类型如下会自动转换为JSON Body：
 
  - JsonRequest对象
  - 实现JsonSerializable接口的对象

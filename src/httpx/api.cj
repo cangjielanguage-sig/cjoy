@@ -61,11 +61,27 @@ public interface JoyHttpClient {
         put(ctx, path, emptyParams, headers, body)
     }
 
+    func patch(ctx: Context, path: String, queries: Map<String, ToString>, headers: HttpHeaders, body: Any): JoyHttpResponse {
+        exchange(ctx, JoyHttpConsts.METHOD_PUT, path, queries, headers, body)
+    }
+    func patch(ctx: Context, path: String, body: Any): JoyHttpResponse {
+        patch(ctx, path, emptyParams, HttpHeaders(), body)
+    }
+    func patch(ctx: Context, path: String, queries: Map<String, ToString>, body: Any): JoyHttpResponse {
+        patch(ctx, path, queries, HttpHeaders(), body)
+    }
+    func patch(ctx: Context, path: String, headers: HttpHeaders, body: Any): JoyHttpResponse {
+        patch(ctx, path, emptyParams, headers, body)
+    }
+
     func delete(ctx: Context, path: String, queries: Map<String, ToString>, headers: HttpHeaders, body: Any): JoyHttpResponse {
         exchange(ctx, JoyHttpConsts.METHOD_PUT, path, queries, headers, body)
     }
     func delete(ctx: Context, path: String, body: Any): JoyHttpResponse {
         delete(ctx, path, emptyParams, HttpHeaders(), body)
+    }
+    func delete(ctx: Context, path: String): JoyHttpResponse {
+        delete(ctx, path, emptyParams, HttpHeaders(), Option<Any>.None)
     }
     func delete(ctx: Context, path: String, queries: Map<String, ToString>, body: Any): JoyHttpResponse {
         delete(ctx, path, queries, HttpHeaders(), body)
