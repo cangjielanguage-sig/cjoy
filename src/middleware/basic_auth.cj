@@ -18,12 +18,14 @@ import cjoy.log.*
 
 public type BasicAuthFilterFunc = (ctx: JoyContext) -> Bool
 
+public type BasicAuthValidationFunc = (ctx: JoyContext, username: String, password: String) -> Bool
+
 /**
  * the basic authorization
  */
 public class BasicAuth <: JoyMiddlewareHandler {
     public BasicAuth(let realm: String, let creads: HashMap<String, String>,
-        let filterFunc!: ?BasicAuthFilterFunc = None) {}
+        let valiateFunc!: ?BasicAuthValidationFunc = None, let filterFunc!: ?BasicAuthFilterFunc = None) {}
 
     public func handle(ctx: JoyContext, chain: JoyRequestHandlerChain): Unit {
         if (let Some(fn) <- filterFunc) {
@@ -36,6 +38,15 @@ public class BasicAuth <: JoyMiddlewareHandler {
         let (user, pwd, ok) = ctx.basicAuth()
         if (!ok) {
             basicAuthFailed(ctx)
+            return
+        }
+
+        if (let Some(fn) <- valiateFunc) {
+            if (!fn(ctx, user, pwd)) {
+                basicAuthFailed(ctx)
+                return
+            }
+            chain.next(ctx)
             return
         }
 

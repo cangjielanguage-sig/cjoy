@@ -22,13 +22,13 @@ public type TokenAuthValidatorFunc = (ctx: JoyContext, token: String) -> Bool
 // the authentication function
 type AuthFunc = (ctx: JoyContext) -> Bool
 
-// Verify a single token
-public class SingleTokenAuthValidator {
-    public SingleTokenAuthValidator(let token: String) {
+// Predefined tokens
+class PredefinedTokenAuthValidator {
+    public PredefinedTokenAuthValidator(let tokens: Array<String>) {
     }
 
     public func validate(ctx: JoyContext, token: String): Bool {
-        this.token == token
+        this.tokens.contains(token)
     }
 }
 
@@ -84,10 +84,10 @@ public class TokenAuth <: JoyMiddlewareHandler {
         _authFunc = createAuthFunc(validator, lookupKey, authSchema)
     }
 
-    public init(token: String, lookupKey!: String = "header:Authorization",
+    public init(tokens: Array<String>, lookupKey!: String = "header:Authorization",
         errorHandler!: ?JoyRequestHandlerFunc = None, successHandler!: ?JoyRequestHandlerFunc = None,
         authSchema!: String = "Bearer", filterHandler!: ?JoyRequestFilterFunc = None) {
-        this(SingleTokenAuthValidator(token).validate, lookupKey: lookupKey, errorHandler: errorHandler,
+        this(PredefinedTokenAuthValidator(tokens).validate, lookupKey: lookupKey, errorHandler: errorHandler,
             successHandler: successHandler, authSchema: authSchema, filterHandler: filterHandler)
     }
 

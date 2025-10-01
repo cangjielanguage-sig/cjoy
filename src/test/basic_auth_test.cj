@@ -25,6 +25,10 @@ public class BasicAuthTestCaseSuit {
     @BeforeAll
     func setup() {
         let basicAuth = BasicAuth("test", HashMap<String, String>([("xiao", "xiao"), ("lanling", "lanling")]))
+        let basicAuthWithValFunc = BasicAuth("test", HashMap<String, String>(), valiateFunc: {
+            ctx: JoyContext, username: String, password: String => username == "xiao" && password == "xiao"
+        })
+
         spawn {
             let joy = Joy.default()
             let router = joy.router
@@ -35,10 +39,19 @@ public class BasicAuthTestCaseSuit {
                     ctx: JoyContext => ctx.string("/basic_auth")
                 }
             )
+
+            let group = router.group("/auth2")
+            group.use(basicAuthWithValFunc)
+            group.get(
+                "/a",
+                {
+                    ctx: JoyContext => ctx.string("/basic_auth")
+                }
+            )
             _instance = joy
             joy.run("127.0.0.1", 18881)
         }
-        sleep(Duration.second)
+        sleep(Duration.second * 2)
     }
 
     @AfterAll
@@ -56,6 +69,18 @@ public class BasicAuthTestCaseSuit {
     public func testAuthOk() {
         let req = HttpRequestBuilder()
             .url("http://127.0.0.1:18881/basic_auth")
+            .method("GET")
+            .header(JoyHttpConsts.HEADER_AUTHORIZATION, createAuthHeader())
+            .build()
+        let rsp = _client.send(req)
+        let reader = StringReader(rsp.body)
+        @Assert(reader.readToEnd(), "/basic_auth")
+    }
+
+    @TestCase
+    public func testAuthOkWithValidateFun() {
+        let req = HttpRequestBuilder()
+            .url("http://127.0.0.1:18881/auth2/a")
             .method("GET")
             .header(JoyHttpConsts.HEADER_AUTHORIZATION, createAuthHeader())
             .build()
