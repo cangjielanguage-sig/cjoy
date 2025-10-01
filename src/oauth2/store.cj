@@ -108,15 +108,16 @@ public class MemoryTokenStore <: TokenStore {
             let d = it[1]
             match (d._type) {
                 case "code" =>
-                    if (d._info.codeCreateAt.addSeconds(d._info.codeExpiredIn) <= now) {
+                    if (d._info.codeExpiredIn > 0 && d._info.codeCreateAt.addSeconds(d._info.codeExpiredIn) <= now) {
                         data.remove(d._info.code)
                     }
                 case "access" =>
-                    if (d._info.accessCreateAt.addSeconds(d._info.accessExpiredIn) <= now) {
+                    if (d._info.accessExpiredIn > 0 && d._info.accessCreateAt.addSeconds(d._info.accessExpiredIn) <= now) {
                         data.remove(d._info.access)
                     }
                 case "refresh" =>
-                    if (d._info.refreshCreateAt.addSeconds(d._info.refreshExpiredIn) <= now) {
+                    if (d._info.refreshExpiredIn > 0 && d._info.refreshCreateAt.addSeconds(d._info.refreshExpiredIn) <=
+                        now) {
                         data.remove(d._info.refresh)
                     }
                 case _ => ()
@@ -128,9 +129,17 @@ public class MemoryTokenStore <: TokenStore {
         if (tokenInfo.code != "") {
             _data.add(tokenInfo.code, TokenStoreItem(tokenInfo, "code"))
         }
+
         if (tokenInfo.access != "") {
+            if (tokenInfo.refresh != "" && tokenInfo.codeExpiredIn > 0) {
+                let rexp = tokenInfo.refreshCreateAt.addSeconds(tokenInfo.refreshExpiredIn) - DateTime.now()
+                if (tokenInfo.accessExpiredIn > rexp.toSeconds()) {
+                    tokenInfo.accessExpiredIn = rexp.toSeconds()
+                }
+            }
             _data.add(tokenInfo.access, TokenStoreItem(tokenInfo, "access"))
         }
+
         if (tokenInfo.refresh != "") {
             _data.add(tokenInfo.refresh, TokenStoreItem(tokenInfo, "refresh"))
         }

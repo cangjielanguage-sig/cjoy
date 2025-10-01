@@ -66,21 +66,22 @@ public type RefreshTokenResolveHandleFunc = (ctx: JoyContext) -> String
 public type AccessTokenResolveHandleFunc = (ctx: JoyContext) -> String
 
 public func clientFormHandleFunc(ctx: JoyContext): (String, String) {
-    let clientId = ctx.getPostForm("client_id").getOrThrow({=> OAuthException(OAuthErrors.INVALID_CLIENT)})
-    let clientSecret = ctx.getPostForm("client_id").getOrDefault({=> ""})
+    let clientId = ctx.getForm("client_id").getOrThrow({=> OAuthException(OAuthErrors.INVALID_CLIENT)})
+    let clientSecret = ctx.getForm("client_secret").getOrDefault({=> ""})
     return (clientId, clientSecret)
 }
 
 public func clientBasicHandleFunc(ctx: JoyContext): (String, String) {
     let (user, pwd, ok) = ctx.basicAuth()
     if (!ok) {
+        @LogError("[OAuth2] get basic auth from header failed")
         throw OAuthException(OAuthErrors.INVALID_CLIENT)
     }
     (user, pwd)
 }
 
 public func refreshTokenFormResolveHandleFunc(ctx: JoyContext): String {
-    ctx.getPostForm("refresh_token").getOrThrow({=> OAuthException(OAuthErrors.INVALID_REQ)})
+    ctx.getForm("refresh_token").getOrThrow({=> OAuthException(OAuthErrors.INVALID_REQ)})
 }
 
 public func refreshTokenCookieResolveHandleFunc(ctx: JoyContext): String {
@@ -93,7 +94,7 @@ public func accessTokenDefaultResolveHandleFunc(ctx: JoyContext): String {
     if (let Some(h) <- auth && h.startsWith(prefix)) {
         h[prefix.size..]
     } else {
-        ctx.getPostForm("access_token").getOrDefault({=> ""})
+        ctx.getForm("access_token").getOrDefault({=> ""})
     }
 }
 

@@ -16,7 +16,7 @@ import std.net.{SocketAddress, TcpSocket}
 import stdx.net.http.{ClientBuilder, Client, HttpRequestBuilder, HttpHeaders}
 import stdx.net.tls.{TlsClientConfig, CertificateVerifyMode}
 import stdx.encoding.json.stream.{JsonSerializable, JsonWriter}
-import stdx.encoding.url.URL
+import stdx.encoding.url.{URL, Form}
 import cjoy.context.Context
 import cjoy.framework.{JoyHttpConsts}
 
@@ -67,8 +67,15 @@ public class JoyHttpClientService <: JoyHttpClient {
         } else {
             _url + "/" + path
         }
+
+        let queryForm = Form()
         for ((k, v) in params) {
-            url = url.replace("{${k}}", v.toString())
+            queryForm.add(k, v.toString())
+        }
+        if (url.contains("?")) {
+            url = url + "&" + queryForm.toEncodeString()
+        } else {
+            url = url + "?" + queryForm.toEncodeString()
         }
 
         let rb = HttpRequestBuilder().url(url)
@@ -82,7 +89,11 @@ public class JoyHttpClientService <: JoyHttpClient {
         }
 
         match (body) {
-            case x: String => rb.header(JoyHttpConsts.HEADER_CONTENT_TYPE, JoyHttpConsts.MIME_TEXT_PLAIN_UTF8).body(x)
+            case x: String =>
+                if (headers.getFirst(JoyHttpConsts.HEADER_CONTENT_TYPE).isNone()) {
+                    rb.header(JoyHttpConsts.HEADER_CONTENT_TYPE, JoyHttpConsts.MIME_TEXT_PLAIN_UTF8)
+                }
+                rb.body(x)
             case x: JsonRequest<JsonSerializable> => x.write(rb)
             case x: Array<Byte> => rb.body(x)
             case x: JsonSerializable =>
@@ -90,7 +101,10 @@ public class JoyHttpClientService <: JoyHttpClient {
                 let writer = JsonWriter(buffer)
                 writer.writeValue(x)
                 writer.flush()
-                rb.header(JoyHttpConsts.HEADER_CONTENT_TYPE, JoyHttpConsts.MIME_APP_JSON_UTF8).body(buffer)
+                if (headers.getFirst(JoyHttpConsts.HEADER_CONTENT_TYPE).isNone()) {
+                    rb.header(JoyHttpConsts.HEADER_CONTENT_TYPE, JoyHttpConsts.MIME_APP_JSON_UTF8)
+                }
+                rb.body(buffer)
             case x: InputStream => rb.body(x)
             case _ => ()
         }

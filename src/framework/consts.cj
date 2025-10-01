@@ -27,6 +27,7 @@ public struct JoyHttpConsts {
     public static const MIME_TEXT_PLAIN = "text/plain"
     public static const MIME_TEXT_PLAIN_UTF8 = "text/plain; charset=utf-8"
     public static const MIME_APP_OCTET_STREAM = "application/octet-stream"
+    public static const MIME_APP_FORM_URL_ENCODED = "application/x-www-form-urlencoded"
 
     // header
     public static const HEADER_ACCEPT = "Accept"

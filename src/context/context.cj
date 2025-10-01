@@ -43,6 +43,7 @@ public interface Context {
      * get the service from context
      *
      * @param name: the name of service
+     * @return the service instance
      */
     func getService<T>(name: String): ?T
 }

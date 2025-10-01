@@ -19,6 +19,7 @@ import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonRead
 import stdx.encoding.base64.fromBase64String
 import cjoy.bind.api.JoyBindable
 import cjoy.context.Context
+import cjoy.log.*
 
 /**
  * the context which holds the engine config, params, context params and any you need.
@@ -159,6 +160,23 @@ public interface JoyContext <: Context {
      *
      */
     func getPostFormList(name: String): ArrayList<String>
+
+    func getForm(name: String): ?String {
+        getPostForm(name) ?? getQuery(name)
+    }
+
+    func getForm(name: String, defaultValue: String): String {
+        getForm(name) ?? defaultValue
+    }
+
+    func getFormList(name: String, defaultValue: String): ArrayList<String> {
+        var res = getPostFormList(name)
+        if (res.isEmpty()) {
+            getQueryList(name)
+        } else {
+            res
+        }
+    }
 
     /**
      * read the request json body content then deserialize to T
@@ -717,7 +735,6 @@ class JoyHttpContext <: JoyContext {
         if (up.size != 2) {
             return ("", "", false)
         }
-
         (up[0], up[1], true)
     }
 

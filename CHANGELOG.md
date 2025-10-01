@@ -3,9 +3,12 @@ Changelog
 
 # v0.60.0
 
-- 特性：增加AccessLog, Session等中间件
+- 特性：增加日志宏
+- 特性：增加Service框架，Schedule与Http client服务
+- 特性：增加AccessLog, Session，JWT、Token认证等中间件
 - 变更：引入STDX包采用环境变量CANGJIE_STDX_PATH
 - 变更：样例代码examples移到独立工程
+- 变更：删除JoyRender接口
 
 # v0.50.0
 

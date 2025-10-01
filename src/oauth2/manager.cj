@@ -131,7 +131,7 @@ public class DefaultOAuth2Manager <: OAuth2Manager {
                 let (at, rt) = _accessGenerate.generate(td, icfg.isGenerateRefresh)
                 token.access = at
                 token.refresh = rt
-            case _ => ()
+            case _ => throw OAuthException(OAuthErrors.UNSUPPORTED_RESP_TYPE)
         }
 
         _tokenStore.create(token)
@@ -142,8 +142,7 @@ public class DefaultOAuth2Manager <: OAuth2Manager {
         let client = getClient(request.clientId)
         if (!(_clientPasswordVerifier?.verifyPassword(client, request.clientSecret) ?? true)) {
             throw OAuthException(OAuthErrors.INVALID_CLIENT)
-        }
-        if (client.secret != "" && request.clientSecret != client.secret) {
+        } else if (client.secret != "" && request.clientSecret != client.secret) {
             @LogError("[OAuth2] invalid client, client secret is invalid")
             throw OAuthException(OAuthErrors.INVALID_CLIENT)
         }
@@ -152,7 +151,7 @@ public class DefaultOAuth2Manager <: OAuth2Manager {
             _validateURIFunc(client.domain, request.redirectURI)
         }
 
-        if (gt == OAuthConsts.GRANT_TYPE_CLIENT_CREDENTIALS && client.public) {
+        if (gt == OAuthConsts.GRANT_TYPE_CLIENT_CREDENTIALS && client.isPublic) {
             @LogError("[OAuth2] invalid client, client is public but grant type is client_credentials")
             throw OAuthException(OAuthErrors.INVALID_CLIENT)
         }
@@ -192,6 +191,8 @@ public class DefaultOAuth2Manager <: OAuth2Manager {
         let (at, rt) = _accessGenerate.generate(td, gcfg.isGenerateRefresh)
         token.access = at
         token.refresh = rt
+
+        _tokenStore.create(token)
 
         token
     }
@@ -286,15 +287,13 @@ public class DefaultOAuth2Manager <: OAuth2Manager {
         }
 
         let ct = DateTime.now()
-        let token = _tokenStore
-            .getByRefresh(refresh)
-            .getOrThrow(
-                {
-                    =>
+        let token = _tokenStore.getByRefresh(refresh).getOrThrow(
+            {
+                =>
                     @LogError("[OAuth2] not found refresh token")
                     OAuthException(OAuthErrors.INVALID_REFRESH_TOKEN)
-                }
-            )
+            }
+        )
 
         if (token.refresh != refresh) {
             @LogError("[OAuth2] refresh token is not equal")
@@ -347,6 +346,7 @@ public class DefaultOAuth2Manager <: OAuth2Manager {
         if (ccm == "") {
             ccm = OAuthConsts.CODE_CHALLENGE_PLAIN
         }
+        @LogDebug("[OAuth2], code_challenge=${cc}, verfiy_code=${ver}, method=${ccm}")
         if (!ccm.validate(cc, ver)) {
             throw OAuthException(OAuthErrors.INVALID_CODE_CHALLENGE)
         }

@@ -19,6 +19,23 @@ import cjoy.framework.JoyContext
 import cjoy.utils.rawBase64URLEncode
 
 /**
+ * the return token base info when invoke /token path
+ */
+@Json
+public class TokenBody {
+    @JsonField[name = "token_type"]
+    public var tokenType: String = ""
+    @JsonField[name = "access_token"]
+    public var accessToken: String = ""
+    @JsonField[name = "refresh_token"]
+    public var refreshToken: String = ""
+    @JsonField[name = "code"]
+    public var code: String = ""
+    @JsonField[name = "expires_in"]
+    public var expiresIn: Int = 0
+}
+
+/**
  * the token information
  */
 @Json
@@ -52,7 +69,7 @@ public class ClientInfo {
     public var id: String = ""
     public var secret: String = ""
     public var domain: String = ""
-    public var public: Bool = false
+    public var isPublic: Bool = false
     public var userId: String = ""
 }
 
@@ -76,7 +93,7 @@ public class GenerateBasic {
 public class TokenGenerateRequest {
     public TokenGenerateRequest(
         public let request!: JoyContext,
-        public let clientId!: String,
+        public let clientId!: String = "",
         public var clientSecret!: String = "",
         public var userId!: String = "",
         public var redirectURI!: String = "",
@@ -178,7 +195,7 @@ public type CodeChallengeMethod = String
 extend CodeChallengeMethod {
     public func validate(cc: String, ver: String): Bool {
         match (this) {
-            case "plan" => cc == ver
+            case "plain" => cc == ver
             case "S256" =>
                 let bs = digest(SHA256(), ver.toArray())
                 let a = rawBase64URLEncode(bs)

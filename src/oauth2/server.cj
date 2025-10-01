@@ -66,7 +66,7 @@ public class OAuth2Server {
     }
 
     public func setAllowedResponseType(types: Array<ResponseType>) {
-        _cfg.allowGrantTypes = types
+        _cfg.allowResponseTypes = types
     }
 
     public func setAllowedGrantType(types: Array<GrantType>) {
@@ -186,7 +186,7 @@ public class OAuth2Server {
     }
 
     private func getRedirectURI(req: AuthorizeRequest, data: HashMap<String, JsonSerializable>): String {
-        let url = URL.parse(req.redirectURI)
+        var url = URL.parse(req.redirectURI)
         match (req.responseType) {
             case "code" =>
                 let q = Form()
@@ -200,7 +200,7 @@ public class OAuth2Server {
                         case _ => ()
                     }
                 }
-                url.replace(query: q.toEncodeString())
+                url = url.replace(query: q.toEncodeString())
             case "token" =>
                 let b = StringBuilder()
                 if (req.state != "") {
@@ -218,9 +218,11 @@ public class OAuth2Server {
                         b.append("${k}=", s)
                     }
                 }
-                url.replace(query: "")
-                url.replace(fragment: b.toString())
-            case _ => ()
+                url = url.replace(query: "")
+                url = url.replace(fragment: b.toString())
+            case _ =>
+                @LogError("[OAuth2] unsupported_response_type, invalid response type ${req.responseType}")
+                throw OAuthException(OAuthErrors.UNSUPPORTED_RESP_TYPE)
         }
         url.toString()
     }
@@ -238,24 +240,20 @@ public class OAuth2Server {
     }
 
     private func validationAuthorizeRequest(ctx: JoyContext): AuthorizeRequest {
-        let redirectURI = ctx
-            .getPostForm("redirect_uri")
-            .getOrThrow(
-                {
-                    =>
+        let redirectURI = ctx.getForm("redirect_uri").getOrThrow(
+            {
+                =>
                     @LogError("[OAuth2] invalid request, redirectURI is not existed")
                     OAuthException(OAuthErrors.INVALID_REQ)
-                }
-            )
-        let clientId = ctx
-            .getPostForm("client_id")
-            .getOrThrow(
-                {
-                    =>
+            }
+        )
+        let clientId = ctx.getForm("client_id").getOrThrow(
+            {
+                =>
                     @LogError("[OAuth2] invalid request, client_id is not existed")
                     OAuthException(OAuthErrors.INVALID_REQ)
-                }
-            )
+            }
+        )
         if (!(ctx.method == JoyHttpConsts.METHOD_GET || ctx.method == JoyHttpConsts.METHOD_POST)) {
             @LogError("[OAuth2] invalid request, method(${ctx.method}) is invalid")
             throw OAuthException(OAuthErrors.INVALID_REQ)
@@ -265,21 +263,19 @@ public class OAuth2Server {
             throw OAuthException(OAuthErrors.INVALID_REQ)
         }
 
-        let respType = ctx
-            .getPostForm("response_type")
-            .getOrThrow(
-                {
-                    =>
+        let respType = ctx.getForm("response_type").getOrThrow(
+            {
+                =>
                     @LogError("[OAuth2] invalid request, response_type is not existed")
                     OAuthException(OAuthErrors.UNSUPPORTED_RESP_TYPE)
-                }
-            )
+            }
+        )
         if (!checkResponeType(respType)) {
             @LogError("[OAuth2] unauthorized_client, response type (${respType}) is invalid")
             throw OAuthException(OAuthErrors.UNAUTHORIZED_CLIENT)
         }
 
-        let cc = ctx.getPostForm("code_challenge").getOrDefault({=> ""})
+        let cc = ctx.getForm("code_challenge").getOrDefault({=> ""})
         if (cc == "" && _cfg.forcePKCE) {
             @LogError("[OAuth2] invalid_request, code_challenge is empty")
             throw OAuthException(OAuthErrors.CODE_CHALLENG_ERQUIRED)
@@ -289,7 +285,7 @@ public class OAuth2Server {
             throw OAuthException(OAuthErrors.INVALID_CODE_CHALLENGE_LEN)
         }
 
-        var ccm = ctx.getPostForm("code_challenge_method").getOrDefault({=> ""})
+        var ccm = ctx.getForm("code_challenge_method").getOrDefault({=> ""})
         if (ccm == "") {
             ccm = OAuthConsts.CODE_CHALLENGE_PLAIN
         }
@@ -298,8 +294,8 @@ public class OAuth2Server {
             throw OAuthException(OAuthErrors.UNSUPPORTED_CODE_CHALLENGE_METHOD)
         }
 
-        let scope = ctx.getPostForm("scope").getOrDefault({=> ""})
-        let state = ctx.getPostForm("state").getOrDefault({=> ""})
+        let scope = ctx.getForm("scope").getOrDefault({=> ""})
+        let state = ctx.getForm("state").getOrDefault({=> ""})
         AuthorizeRequest(responseType: respType, clientId: clientId, scope: scope, redirectURI: redirectURI,
             state: state, codeChallenge: cc, codeChallengeMethod: ccm, userId: "", accessTokenExp: Duration.Zero,
             request: ctx)
@@ -313,6 +309,7 @@ public class OAuth2Server {
         }
         var allowed = _clientAuthorizedHandleFunc?(req.clientId, gt) ?? true
         if (!allowed) {
+            @LogError("[OAuth2] client authorized handle return not allowed")
             throw OAuthException(OAuthErrors.UNAUTHORIZED_CLIENT)
         }
 
@@ -400,22 +397,22 @@ public class OAuth2Server {
     }
 
     private func validationTokenRequest(ctx: JoyContext): (String, TokenGenerateRequest) {
+        @LogDebug("[OAuth2] form=${ctx.httpContext.request.form.toEncodeString()}")
         if (!(ctx.method == JoyHttpConsts.METHOD_POST || _cfg.allowGetAccessRequest && ctx.method == JoyHttpConsts
             .METHOD_GET)) {
             @LogError("[OAuth2] invalid_request, method (${ctx.method}) is invalid")
             throw OAuthException(OAuthErrors.INVALID_REQ)
         }
-        let gt = ctx
-            .getPostForm("grant_type")
-            .getOrThrow(
-                {
-                    =>
+        let gt = ctx.getForm("grant_type").getOrThrow(
+            {
+                =>
                     @LogError("[OAuth2] invalid_request, grant_type is not existed")
                     OAuthException(OAuthErrors.UNSUPPORTED_GRANT_TYPE)
-                }
-            )
+            }
+        )
 
         let (clientId, clientSecret) = _clientInfoHandleFunc(ctx)
+        // @LogDebug("[OAuth2] client info: ${clientId}, ${clientSecret}")
         let tgr = TokenGenerateRequest(
             request: ctx,
             clientId: clientId,
@@ -423,35 +420,38 @@ public class OAuth2Server {
         )
         match (gt) {
             case "authorization_code" =>
-                tgr.redirectURI = ctx.getPostForm("redirect_uri").getOrDefault({=> ""})
-                tgr.code = ctx.getPostForm("code").getOrDefault({=> ""})
+                tgr.redirectURI = ctx.getForm("redirect_uri").getOrDefault({=> ""})
+                tgr.code = ctx.getForm("code").getOrDefault({=> ""})
                 if (tgr.redirectURI == "" || tgr.code == "") {
                     @LogError("[OAuth2] invalid request, redirectURI or code is empty")
                     throw OAuthException(OAuthErrors.INVALID_REQ)
                 }
-                tgr.codeVerifier = ctx.getPostForm("code_verifier").getOrDefault({=> ""})
+                tgr.codeVerifier = ctx.getForm("code_verifier").getOrDefault({=> ""})
                 if (tgr.codeVerifier == "" && _cfg.forcePKCE) {
                     @LogError("[OAuth2] invalid request, code verifier is empty")
                     throw OAuthException(OAuthErrors.INVALID_REQ)
                 }
             case "password" =>
-                tgr.code = ctx.getPostForm("scope").getOrDefault({=> ""})
-                let username = ctx.getPostForm("username").getOrDefault({=> ""})
-                let password = ctx.getPostForm("password").getOrDefault({=> ""})
+                tgr.code = ctx.getForm("scope").getOrDefault({=> ""})
+                let username = ctx.getForm("username").getOrDefault({=> ""})
+                let password = ctx.getForm("password").getOrDefault({=> ""})
                 if (password == "" || username == "") {
                     @LogError("[OAuth2] invalid request, username or password is empty")
                     throw OAuthException(OAuthErrors.INVALID_REQ)
                 }
                 let userId = _passwordAuthorizationHanleFunc(ctx, clientId, username, password)
                 if (userId == "") {
+                    @LogError("[OAuth2] invalid grant, PasswordAuthorizationHanleFunc return user_id empty")
                     throw OAuthException(OAuthErrors.INVALID_GRANT)
                 }
                 tgr.userId = userId
-            case "client_credentials" => tgr.code = ctx.getPostForm("scope").getOrDefault({=> ""})
+            case "client_credentials" => tgr.scope = ctx.getForm("scope").getOrDefault({=> ""})
             case "refresh_token" =>
                 tgr.refresh = _refreshTokenResolveHandleFunc(ctx)
-                tgr.code = ctx.getPostForm("scope").getOrDefault({=> ""})
-            case _ => ()
+                tgr.scope = ctx.getForm("scope").getOrDefault({=> ""})
+            case _ =>
+                @LogError("[OAuth2] unsupported_grant_type, invalid grant type ${gt}")
+                throw OAuthException(OAuthErrors.UNSUPPORTED_GRANT_TYPE)
         }
 
         (gt, tgr)
@@ -459,11 +459,13 @@ public class OAuth2Server {
 
     private func getAccessToken(ctx: JoyContext, gt: GrantType, tgr: TokenGenerateRequest): TokenInfo {
         if (!checkGrantType(gt)) {
+            @LogError("[OAuth2] unauthorized_client, invalid grant type ${gt}")
             throw OAuthException(OAuthErrors.UNAUTHORIZED_CLIENT)
         }
 
         var allowed = _clientAuthorizedHandleFunc?(tgr.clientId, gt) ?? true
         if (!allowed) {
+            @LogError("[OAuth2] unauthorized_client, client authorized handle return not allowed")
             throw OAuthException(OAuthErrors.UNAUTHORIZED_CLIENT)
         }
 
@@ -472,6 +474,7 @@ public class OAuth2Server {
             case "password" | "client_credentials" =>
                 allowed = _clientScopeHandleFunc?(tgr) ?? true
                 if (!allowed) {
+                    @LogError("[OAuth2] invalid scope, ClientScopeHandleFunc return not allowed")
                     throw OAuthException(OAuthErrors.INVALID_SCOPE)
                 }
                 return _manager.generateAccessToken(gt, tgr)
@@ -480,6 +483,7 @@ public class OAuth2Server {
                     let rti = _manager.loadRefreshToken(tgr.refresh)
                     allowed = scopeFn(tgr, rti.scope)
                     if (!allowed) {
+                        @LogError("[OAuth2] invalid scope, RefreshingScopeHandleFunc return not allowed")
                         throw OAuthException(OAuthErrors.INVALID_SCOPE)
                     }
                 }
@@ -487,12 +491,15 @@ public class OAuth2Server {
                     let rti = _manager.loadRefreshToken(tgr.refresh)
                     allowed = validationFn(rti)
                     if (!allowed) {
-                        throw OAuthException(OAuthErrors.INVALID_SCOPE)
+                        @LogError("[OAuth2] invalid refresh_token, RefreshingValidationHandleFunc return not allowed")
+                        throw OAuthException(OAuthErrors.INVALID_REFRESH_TOKEN)
                     }
                     return _manager.refreshAccessToken(tgr)
                 }
                 return _manager.refreshAccessToken(tgr)
-            case _ => throw OAuthException(OAuthErrors.UNSUPPORTED_GRANT_TYPE)
+            case _ =>
+                @LogError("[OAuth2] unsupported_grant_type, invalid grant type ${gt}")
+                throw OAuthException(OAuthErrors.UNSUPPORTED_GRANT_TYPE)
         }
     }
 
@@ -510,5 +517,13 @@ public class OAuth2Server {
     private func tokenError(ctx: JoyContext, ei: ErrorInfo) {
         let data = getErrorData(ctx, ei)
         token(ctx, data)
+    }
+
+    public func validateBearerToken(ctx: JoyContext): TokenInfo {
+        let access = _accessTokenResolveHandleFunc(ctx)
+        if (access.isEmpty()) {
+            throw OAuthException(OAuthErrors.INVALID_ACCESS_TOKEN)
+        }
+        _manager.loadAccessToken(access)
     }
 }

@@ -20,7 +20,7 @@ class Endpoint<T> <: ToString {
     }
 
     public func toString(): String {
-        return "Endpoint[pattern:${pattern},paramKeys:${paramKeys}]"
+        return "(pattern:${pattern},paramKeys:${paramKeys})"
     }
 }
 
@@ -460,7 +460,7 @@ public class TreeNode<T> {
         builder.append(",numEdges:${num}")
         builder.append(",isLeaf:${node.isLeaf()}")
         if (!node._endpoints.isEmpty()) {
-            builder.append(",endpoints:${node._endpoints}")
+            builder.append(",endpoints:{${node._endpoints.keys().toArray()} ${node._endpoints.values().toArray()[0]}}")
         }
         builder.append("\n")
 
