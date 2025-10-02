@@ -80,13 +80,13 @@ public class TokenAuth <: JoyMiddlewareHandler {
             None
         }
 
-        _filterHandler = filterHandler
+        _filterHandler = filterHandleFunc
         _authFunc = createAuthFunc(validator, lookupKey, authSchema)
     }
 
     public init(tokens: Array<String>, lookupKey!: String = "header:Authorization",
         errorHandleFunc!: ?JoyRequestHandlerFunc = None, successHandleFunc!: ?JoyRequestHandlerFunc = None,
-        authSchema!: String = "Bearer", filterHandler!: ?JoyRequestFilterFunc = None) {
+        authSchema!: String = "Bearer", filterHandleFunc!: ?JoyRequestFilterFunc = None) {
         this(PredefinedTokenAuthValidator(tokens).validate, lookupKey: lookupKey, errorHandleFunc: errorHandleFunc,
             successHandleFunc: successHandleFunc, authSchema: authSchema, filterHandleFunc: filterHandleFunc)
     }
