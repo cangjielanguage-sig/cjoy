@@ -25,7 +25,7 @@ public class BasicAuthTestCaseSuit {
     @BeforeAll
     func setup() {
         let basicAuth = BasicAuth("test", HashMap<String, String>([("xiao", "xiao"), ("lanling", "lanling")]))
-        let basicAuthWithValFunc = BasicAuth("test", HashMap<String, String>(), valiateFunc: {
+        let basicAuthWithValFunc = BasicAuth("test", HashMap<String, String>(), validateFunc: {
             ctx: JoyContext, username: String, password: String => username == "xiao" && password == "xiao"
         })
 

@@ -25,7 +25,7 @@ public type BasicAuthValidationFunc = (ctx: JoyContext, username: String, passwo
  */
 public class BasicAuth <: JoyMiddlewareHandler {
     public BasicAuth(let realm: String, let creads: HashMap<String, String>,
-        let valiateFunc!: ?BasicAuthValidationFunc = None, let filterFunc!: ?BasicAuthFilterFunc = None) {}
+        let validateFunc!: ?BasicAuthValidationFunc = None, let filterFunc!: ?BasicAuthFilterFunc = None) {}
 
     public func handle(ctx: JoyContext, chain: JoyRequestHandlerChain): Unit {
         if (let Some(fn) <- filterFunc) {
@@ -41,7 +41,7 @@ public class BasicAuth <: JoyMiddlewareHandler {
             return
         }
 
-        if (let Some(fn) <- valiateFunc) {
+        if (let Some(fn) <- validateFunc) {
             if (!fn(ctx, user, pwd)) {
                 basicAuthFailed(ctx)
                 return

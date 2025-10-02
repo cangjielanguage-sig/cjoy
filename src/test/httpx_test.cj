@@ -17,7 +17,7 @@ import stdx.encoding.url.*
 import cjoy.*
 import cjoy.macros.*
 import cjoy.middleware.{BasicAuth, TokenAuth}
-import cjoy.context.Context
+import cjoy.context.*
 import cjoy.httpx.*
 
 @Handler[path = "/httpx_handler", methods = "GET,POST,PUT,DELETE,PATCH"]
@@ -50,7 +50,7 @@ private func tokenAuth(ctx: JoyContext): Unit {
 @Test
 public class JoyHttpClientServiceTestCaseSuit {
     var _instance: ?Joy = None
-    let _ctx = mock<Context>()
+    let _ctx = MapContext()
     let _client = JoyHttpClientService("http://127.0.0.1:18881/")
 
     @BeforeAll

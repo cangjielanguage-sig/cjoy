@@ -27,14 +27,14 @@ router.use(basicAuth)
 
 ### 自定义校对函数
 
-实现BasicAuthValidationFunc函数，创建BasicAuth中间件对象时，指定valiateFunc，此函数将用户名和密码作为参数，如果有效则返回true，否则返回false。
+实现BasicAuthValidationFunc函数，创建BasicAuth中间件对象时，指定validateFunc，此函数将用户名和密码作为参数，如果有效则返回true，否则返回false。
 
 ```
 let joy = Joy.default()
 let router = joy.router
 
 // 创建BasicAuth中间件对象，指定认证校对函数
-let basicAuth =  BasicAuth("test", HashMap<String, String>(), valiateFunc: {
+let basicAuth =  BasicAuth("test", HashMap<String, String>(), validateFunc: {
     ctx: JoyContext, username: String, password: String => username == "xiao" && password == "abcdef"
 })
 
@@ -50,7 +50,7 @@ BasicAuth提供如下参数，非必选参数提供默认实现，用户可以�
 |realm|否|用于设置所属领域名称|
 |creads|否|认证凭证|
 |filterFunc|是|用于指定过滤函数|
-|valiateFunc|是|用于指定校验函数|
+|validateFunc|是|用于指定校验函数|
 
 #### filterFunc
 
