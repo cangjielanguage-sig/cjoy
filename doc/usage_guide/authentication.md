@@ -41,7 +41,16 @@ let basicAuth =  BasicAuth("test", HashMap<String, String>(), valiateFunc: {
 router.use(basicAuth)
 ```
 
-### 其它入参说明
+### 参数说明
+
+BasicAuth提供如下参数，非必选参数提供默认实现，用户可以实现对应函数扩展自已的逻辑。
+
+|参数|是否可选|说明|
+|---|---|---|
+|realm|否|用于设置所属领域名称|
+|creads|否|认证凭证|
+|filterFunc|是|用于指定过滤函数|
+|valiateFunc|是|用于指定校验函数|
 
 #### filterFunc
 
@@ -81,7 +90,18 @@ let tokenAuth =  TokenAuth({
 router.use(tokenAuth)
 ```
 
-### 其它入参说明
+### 参数说明
+
+TokenAuth提供如下参数，非必选参数提供默认实现，用户可以实现对应函数扩展自已的逻辑。
+
+|参数|是否可选|说明|
+|---|---|---|
+|validator|否|用于指定校验函数|
+|lookupKey|是|用于设置 token 的获取源，可以选择 header、query、cookie、param、form，默认为 header:Authorization|
+|authSchema|否|用于设置从 header 中获取 token 时的Schema，默认为 Bearer|
+|successHandleFunc|否|用于指定认证成功之后扩展逻辑函数|
+|errorHandleFunc|否|用于指定认证失败之后扩展逻辑函数|
+|filterHandleFunc|否|用于指定过滤函数|
 
 #### lookupKey
 
@@ -101,17 +121,17 @@ source 支持如下：
 
 假定Token为abcd，则要求请求在头哉指定为：`Authorization: Bearer abcd`
 
-#### successHandler
+#### successHandleFunc
 
 可选参数，当认证成功之后回调，用于扩展校验 token 通过的自定义处理逻辑。
 
-#### errorHandler
+#### errorHandleFucn
 
 可选参数，当认证失败之后回调，用于扩展校验 token 未通过的自定义处理逻辑。
 
 默认实现会打印日志。
 
-#### filterHandler
+#### filterHandleFunc
 
 可选参数，用于用户指定过滤不需要认证的请求。
 
@@ -241,7 +261,7 @@ func someBizHandle(): JsonSerializable {
 
 #### 参数说明
 
-JwtAuth提供一系统的命名参数，非必选参数提供默认实现，用户可以实现对应函数扩展自已的逻辑。
+JwtAuth提供一系列的命名参数，非必选参数提供默认实现，用户可以实现对应函数扩展自已的逻辑。
 
 |参数|是否可选|说明|
 |---|---|---|
@@ -334,8 +354,169 @@ func setJwtPayload(ctx: JoyContext, jwt: Jwt): Unit {
 }
 ```
 
-
 ## OAuth2认证
+
+OAuth2是一种授权框架，旨在允许用户通过授权服务器授予第三方应用程序对其资源的访问权限，而无需将用户凭据（用户名和密码）直接暴露给这些应用程序。OAuth2定义了一组角色、授权类型和协议流程，以实现安全的身份验证和授权机制。
+
+核心概念：
+
+ - 资源所有者（Resource Owner）：拥有受保护资源的用户。
+ - 客户端（Client）：要访问受保护资源的应用程序。
+ - 授权服务器（Authorization Server）：负责验证用户身份并颁发访问令牌的服务器。
+ - 资源服务器（Resource Server）：存储受保护资源的服务器，并根据授权服务器颁发的访问令牌提供对这些资源的访问。
+ - 访问令牌（Access Token）：用于访问受保护资源的令牌，代表了授权的凭据。
+ - 授权范围（Scope）：指定了访问令牌可访问的资源范围。
+ - 授权类型（Grant Type）：定义了客户端获取访问令牌的方式，如授权码授权、密码授权、客户端凭证授权等。
+
+协议流程：
+
+```
+     +--------+                               +---------------+
+     |        |--(A)- Authorization Request ->|   Resource    |
+     |        |                               |     Owner     |
+     |        |<-(B)-- Authorization Grant ---|               |
+     |        |                               +---------------+
+     |        |
+     |        |                               +---------------+
+     |        |--(C)-- Authorization Grant -->| Authorization |
+     | Client |                               |     Server    |
+     |        |<-(D)----- Access Token -------|               |
+     |        |                               +---------------+
+     |        |
+     |        |                               +---------------+
+     |        |--(E)----- Access Token ------>|    Resource   |
+     |        |                               |     Server    |
+     |        |<-(F)--- Protected Resource ---|               |
+     +--------+                               +---------------+
+```
+
+核心流程包括以下步骤：
+
+- （A）用户打开客户端以后，客户端要求用户给予授权。
+- （B）用户同意给予客户端授权。
+- （C）客户端使用上一步获得的授权，向认证服务器申请令牌。
+- （D）认证服务器对客户端进行认证以后，确认无误，同意发放令牌。
+- （E）客户端使用令牌，向资源服务器申请获取资源。
+- （F）资源服务器确认令牌无误，同意向客户端开放资源。
+
+理解OAuth2，可以参见[理解OAuth 2.0](https://www.ruanyifeng.com/blog/2014/05/oauth_2_0.html)
+
+### OAuth2框架
+
+### 关键设计
+
+CJoy内置了JWT的实现，关键设计如下：
+
+- ClientStore：客户端（Client）信息存储，默认提供内存存储
+- TokenStore：访问令牌（Access Token/Refresh Token/ Authorization Code）信息存储，默认提供内存存储
+- AccessGenerate：Access Token/Refresh Token的生成器，默认提供基于安全随机HMAC的实现
+- AuthorizeGenerate：Authorization Code的生成器，默认提供基于安全随机HMAC的实现
+- OAuth2Manager：聚合上述接口实现的管理器
+- OAuth2Server： 提供OAuth2的认证外部接口，处理整体流程。
+
+支持如下身份验证模式：
+
+ - 授权码模式：适用于后端应用，确保令牌安全存储。
+ - 隐式模式：适用于前端单页应用，直接颁发访问令牌。
+ - 密码模式：适用于高信任度的客户端应用。
+ - 客户端模式：适用于无用户参与的后端服务。
+
+### 使用示例：
+
+使用示例：[test/oauth2_test](../../src/test/oauth2_test.cj) 。
+
+授权服务器服务端：
+
+```
+// 创建信息存储器
+let clientStore = MemoryClientStore()
+
+// 注册客户端信息
+let cli = ClientInfo(id: clientId, secret: "", domain: "http://127.0.0.1:28882", isPublic: true)
+clientStore.add(cli)
+
+// 创建管理器，与OAuth2Server
+let manager = DefaultOAuth2Manager(clientStore: clientStore)
+let server = OAuth2Server(manager)
+
+// 设置server
+server.setUserAuthorizationHandleFunc({
+    ctx: JoyContext => _clientId
+})
+server.setClientInfoHandleFunc(clientFormHandleFunc)
+
+// 开启Http服务器
+let joy = Joy.default()
+let router = joy.router
+// 注册认证处理器
+router.get("/authorize", server.authorizeRequestHandleFunc)
+router.post("/authorize", server.authorizeRequestHandleFunc)
+// 注册获取Token处理器
+router.get("/token", server.tokenRequestHandleFunc)
+router.post("/token", server.tokenRequestHandleFunc)
+
+```
+
+资源服务器实现授权回调接口：
+
+```
+let joy = Joy.default()
+let router = joy.router
+let handler2 = {
+    ctx: JoyContext =>
+        let code = ctx.getForm("code").getOrThrow()
+        let state = ctx.getForm("state").getOrThrow()
+        if (state != "123") {
+            @Fail("unrecognized state: ${state}")
+            return
+        }
+
+        let form = Form()
+        form.add("redirect_uri", "http://127.0.0.1:28882/oauth2_cb_2")
+        form.add("code", code)
+        form.add("grant_type", "authorization_code")
+        form.add("client_id", clientId)
+        form.add("code_verifier", _plainChallenge)
+        
+        // 调用 授权服务器的 /token
+        let rsp = client.postform(ctx, "/token", form)
+        let token = rsp.json<TokenBody>().getOrThrow()
+        // 获取 accessToken
+        validateAccessToken(ctx, token.accessToken)
+}
+
+// 注册授权处理器
+router.post("/oauth2_cb_2", handler2)
+router.get("/oauth2_cb_2", handler2)
+```
+
+客户端发送请求：
+
+```
+let clientId: String = "abcdef"
+let plainChallenge = "axxdafafdddaafdadadfdsafadfdafdada"
+
+// 向授权服务器发送请求
+// redirect_uri为资源服务器地址
+let client = JoyHttpClientService("http://127.0.0.1:18881/")
+let rsp = client.get(
+    ctx,
+    "/authorize",
+    HashMap<String, ToString>(
+        [
+            ("response_type", "code"),
+            ("client_id", clientId),
+            ("scope", "all"),
+            ("state", "123"),
+            ("redirect_uri", "http://127.0.0.1:28882/oauth2_cb_2"),
+            ("code_challenge", plainChallenge)
+        ]
+    )
+)
+
+// 拿到Token
+let token = rsp.json<TokenBody>().getOrThrow()
+```
 
 ----
 << [返回](../../README.md#使用指导)
