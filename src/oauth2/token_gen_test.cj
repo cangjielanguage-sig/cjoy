@@ -15,9 +15,9 @@ import std.unittest.mock.*
 import cjoy.framework.*
 
 @Test
-public class SecureRandAuthorizeGenerateTestCaseSuit {
+public class SecureRandTokenGenerateTestCaseSuit {
     @TestCase
-    public func testCode() {
+    public func testGenerate() {
         let data = GenerateBasic(
             client: ClientInfo(id: "123456", secret: "abbcdef"),
             userId: "00009527",
@@ -25,7 +25,10 @@ public class SecureRandAuthorizeGenerateTestCaseSuit {
             tokenInfo: TokenInfo(),
             request: mock<JoyContext>()
         )
-        let code = SecureRandAuthorizeGenerate().generate(data)
-        @Assert(code != "")
+        let (access, refresh) = SecureRandTokenGenerate().generate(data, true)
+        @Assert(access != "")
+        @Assert(refresh != "")
+        println(access)
+        println(refresh)
     }
 }

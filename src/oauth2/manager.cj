@@ -31,8 +31,8 @@ public interface OAuth2Manager {
 public class DefaultOAuth2Manager <: OAuth2Manager {
     private let _clientStore: ClientStore
     private let _tokenStore: TokenStore
-    private let _accessGenerate: AccessGenerate
-    private let _authorizeGenerate: AuthorizeGenerate
+    private let _tokenGenerate: TokenGenerate
+    private let _codeGenerate: CodeGenerate
     private let _validateURIFunc: ValidateURIFunc
     private let _clientPasswordVerifier: ?ClientPasswordVerifier
 
@@ -45,16 +45,16 @@ public class DefaultOAuth2Manager <: OAuth2Manager {
     public init(
         clientStore!: ClientStore = MemoryClientStore(),
         tokenStore!: TokenStore = MemoryTokenStore(),
-        accessGenerate!: AccessGenerate = SecureRandAccessGenerate(),
-        authorizeGenerate!: AuthorizeGenerate = SecureRandAuthorizeGenerate(),
+        tokenGenerate!: TokenGenerate = SecureRandTokenGenerate(),
+        codeGenerate!: CodeGenerate = SecureRandCodeGenerate(),
         validateURIFunc!: ValidateURIFunc = defaultValidateURIFunc,
         codeExpire!: Duration = GrantConfig.CODE_EXP,
         clientPasswordVerifier!: ?ClientPasswordVerifier = None
     ) {
         _clientStore = clientStore
         _tokenStore = tokenStore
-        _accessGenerate = accessGenerate
-        _authorizeGenerate = authorizeGenerate
+        _tokenGenerate = tokenGenerate
+        _codeGenerate = codeGenerate
         _validateURIFunc = validateURIFunc
         _codeExpire = codeExpire
         _clientPasswordVerifier = clientPasswordVerifier
@@ -115,7 +115,7 @@ public class DefaultOAuth2Manager <: OAuth2Manager {
                     token.codeChallenge = request.codeChallenge
                     token.codeChallengeMethod = request.codeChallengeMethod
                 }
-                token.code = _authorizeGenerate.generate(td)
+                token.code = _codeGenerate.generate(td)
             case "token" =>
                 let icfg = getGrantConfig(OAuthConsts.GRANT_TYPE_IMPLICIT)
                 var aexp = icfg.accessTokenExp
@@ -128,10 +128,12 @@ public class DefaultOAuth2Manager <: OAuth2Manager {
                     token.refreshCreateAt = createAt
                     token.refreshExpiredIn = icfg.refreshTokenExp.toSeconds()
                 }
-                let (at, rt) = _accessGenerate.generate(td, icfg.isGenerateRefresh)
+                let (at, rt) = _tokenGenerate.generate(td, icfg.isGenerateRefresh)
                 token.access = at
                 token.refresh = rt
-            case _ => throw OAuthException(OAuthErrors.UNSUPPORTED_RESP_TYPE)
+            case _ =>
+                @LogError("[OAuth2] unsupported response type, ${rt}")
+                throw OAuthException(OAuthErrors.UNSUPPORTED_RESP_TYPE)
         }
 
         _tokenStore.create(token)
@@ -188,7 +190,7 @@ public class DefaultOAuth2Manager <: OAuth2Manager {
 
         let td = GenerateBasic(client: client, userId: request.userId, createAt: createAt, tokenInfo: token,
             request: request.request)
-        let (at, rt) = _accessGenerate.generate(td, gcfg.isGenerateRefresh)
+        let (at, rt) = _tokenGenerate.generate(td, gcfg.isGenerateRefresh)
         token.access = at
         token.refresh = rt
 
@@ -217,7 +219,7 @@ public class DefaultOAuth2Manager <: OAuth2Manager {
         if (request.scope != "") {
             token.scope = request.scope
         }
-        let (at, rt) = _accessGenerate.generate(td, _rfcfg.isGenerateRefresh)
+        let (at, rt) = _tokenGenerate.generate(td, _rfcfg.isGenerateRefresh)
         token.access = at
         token.refresh = rt
 
@@ -287,13 +289,15 @@ public class DefaultOAuth2Manager <: OAuth2Manager {
         }
 
         let ct = DateTime.now()
-        let token = _tokenStore.getByRefresh(refresh).getOrThrow(
-            {
-                =>
+        let token = _tokenStore
+            .getByRefresh(refresh)
+            .getOrThrow(
+                {
+                    =>
                     @LogError("[OAuth2] not found refresh token")
                     OAuthException(OAuthErrors.INVALID_REFRESH_TOKEN)
-            }
-        )
+                }
+            )
 
         if (token.refresh != refresh) {
             @LogError("[OAuth2] refresh token is not equal")

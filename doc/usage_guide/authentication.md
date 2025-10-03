@@ -405,12 +405,12 @@ OAuth2是一种授权框架，旨在允许用户通过授权服务器授予第�
 
 ### 关键设计
 
-CJoy内置了JWT的实现，关键设计如下：
+CJoy内置了Oauth2的实现，关键设计如下：
 
 - ClientStore：客户端（Client）信息存储，默认提供内存存储
 - TokenStore：访问令牌（Access Token/Refresh Token/ Authorization Code）信息存储，默认提供内存存储
-- AccessGenerate：Access Token/Refresh Token的生成器，默认提供基于安全随机HMAC的实现
-- AuthorizeGenerate：Authorization Code的生成器，默认提供基于安全随机HMAC的实现
+- TokenGenerate：Access Token/Refresh Token的生成器，默认提供基于安全随机HMAC的实现
+- CodeGenerate：Authorization Code的生成器，默认提供基于安全随机HMAC的实现
 - OAuth2Manager：聚合上述接口实现的管理器
 - OAuth2Server： 提供OAuth2的认证外部接口，处理整体流程。
 
@@ -428,27 +428,29 @@ CJoy内置了JWT的实现，关键设计如下：
 授权服务器服务端：
 
 ```
-// 创建信息存储器
+// 创建Client信息存储器
 let clientStore = MemoryClientStore()
 
 // 注册客户端信息
 let cli = ClientInfo(id: clientId, secret: "", domain: "http://127.0.0.1:28882", isPublic: true)
 clientStore.add(cli)
 
-// 创建管理器，与OAuth2Server
+// 创建OAuth2Manager与OAuth2Server
 let manager = DefaultOAuth2Manager(clientStore: clientStore)
 let server = OAuth2Server(manager)
 
 // 设置server
 server.setUserAuthorizationHandleFunc({
-    ctx: JoyContext => _clientId
+    // 测试代码，直接返回clientId
+    ctx: JoyContext => clientId
 })
+// 从提交表单中获取Client信息
 server.setClientInfoHandleFunc(clientFormHandleFunc)
 
 // 开启Http服务器
 let joy = Joy.default()
 let router = joy.router
-// 注册认证处理器
+// 注册认证授权处理器
 router.get("/authorize", server.authorizeRequestHandleFunc)
 router.post("/authorize", server.authorizeRequestHandleFunc)
 // 注册获取Token处理器
@@ -457,7 +459,7 @@ router.post("/token", server.tokenRequestHandleFunc)
 
 ```
 
-资源服务器实现授权回调接口：
+资源服务器实现授权回调接口，并调用授权服务器的 `/token` 接口获取Token
 
 ```
 let joy = Joy.default()
@@ -478,10 +480,11 @@ let handler2 = {
         form.add("client_id", clientId)
         form.add("code_verifier", _plainChallenge)
         
-        // 调用 授权服务器的 /token
+        // 调用授权服务器的 /token
         let rsp = client.postform(ctx, "/token", form)
         let token = rsp.json<TokenBody>().getOrThrow()
-        // 获取 accessToken
+        // 获取accessToken，并存储accessToken
+        // 后续Client拿accessToken访问受保护的资源时，对AccessToken进行检查
         validateAccessToken(ctx, token.accessToken)
 }
 
@@ -490,7 +493,7 @@ router.post("/oauth2_cb_2", handler2)
 router.get("/oauth2_cb_2", handler2)
 ```
 
-客户端发送请求：
+Client向授权服务器`/authorize`发送请求：
 
 ```
 let clientId: String = "abcdef"
@@ -517,6 +520,42 @@ let rsp = client.get(
 // 拿到Token
 let token = rsp.json<TokenBody>().getOrThrow()
 ```
+
+### 自定义扩展
+
+OAuth2模块面向接口编程，您可以实现如下接口，扩展自己的实现。
+
+- ClientStore：默认实现MemoryClientStore，建议扩展实现存储在数据库中
+- TokenStore：默认实现MMemoryTokenStore，建议扩展实现存储在Redis或数据库中
+- TokenGenerate：默认实现SecureRandTokenGenerate，是基于安全随机HMAC的实现，可以扩展实现生成JWT
+- CodeGenerate：默认实现SecureRandCodeGenerate，是基于安全随机HMAC的实现
+
+流程控制管理类 `OAuth2Server` 也提供一系列的setXXX方法，其函数原型定义在 `oauth2/handler.cj` 文件，您可以扩展自己的实现。
+
+ - ClientInfoHandleFunc：获取Client信息，默认提供如下两个实现
+   - clientFormHandleFunc：从提交表单中获取
+   - clientBasicHandleFunc： 从头域Basic认证获取，默认采用它
+ - ClientAuthorizedHandleFunc： 检查客户端是否允许使用此授权
+ - ClientScopeHandleFunc： 检查客户端是否允许使用Scope
+ - UserAuthorizationHandleFunc：从请求授权中获取UserId
+ - PasswordAuthorizationHanleFunc：从请求授权中根据用户名+密码获取UserId
+ - RefreshingScopeHandleFunc：检查Refresh Token的允许使用Scope
+ - RefreshingValidationHandleFunc：检查Refresh Token还是否有效
+ - ResponseErrorHandleFunc：回错误响应时回调，默认提供
+   - defaultResponseErrorHandleFunc：只打印日志，默认采用它
+ - InternalErrorHandleFunc：发现内部错误时回调，默认提供
+   - defaultInternalErrorHandleFunc：只打印日志，默认采用它
+ - PreRedirectErrorHandleFunc：当Redirect Error之前回调
+ - AuthorizeScopeHandleFunc：认证对使用Scope进行设置
+ - AccessTokenExpHandleFunc：对Access Token过期时间进行设置
+ - ExtensionFieldsHandleFunc：生成响应时提取扩展字段回调
+ - ResponseTokenHandleFunc：生成响应回调，设置是覆默认实现
+ - RefreshTokenResolveHandleFunc：获取Refresh Token，默认提供如下两个实现
+   - refreshTokenFormResolveHandleFunc：从提交表单中获取，默认采用它
+   - refreshTokenCookieResolveHandleFunc：从Cookies中获取
+ - AccessTokenResolveHandleFunc：获取Access Token,默认提供如下两个实现
+   - accessTokenDefaultResolveHandleFunc：从头域或提交表单中获取，默认采用它
+   - accessTokenCookieResolveHandleFunc：从Cookies中获取
 
 ----
 << [返回](../../README.md#使用指导)
