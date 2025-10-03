@@ -11,7 +11,9 @@
 package cjoy.schedule.api
 
 import std.time.DateTime
+import std.deriving.Derive
 
+@Derive[ToString]
 class CronTick {
     CronTick(let sec!: Int, let min!: Int, let hour!: Int, let day!: Int, let month!: Int, let dayOfWeek!: Int) {
     }

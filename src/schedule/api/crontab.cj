@@ -13,6 +13,7 @@ package cjoy.schedule.api
 import std.sync.{Timer}
 import std.collection.concurrent.ConcurrentHashMap
 import std.time.DateTime
+import cjoy.log.*
 
 public class Crontab <: Resource {
     public static let INSTANCE = Crontab()
@@ -55,11 +56,14 @@ public class Crontab <: Resource {
         }
         let job = CronJob.parse(name, cronExp, fn)
         _jobs.add(name, job)
+        @LogInfo("[Schedule] add crontab job, name=${name}")
     }
 
     public func addJobIfAbsent(name: String, cronExp: String, fn: ScheduleFunc): Unit {
         let job = CronJob.parse(name, cronExp, fn)
-        _jobs.addIfAbsent(name, job)
+        if (_jobs.addIfAbsent(name, job).isNone()) {
+            @LogInfo("[Schedule] add crontab job, name=${name}")
+        }
     }
 
     public func exists(name: String): Bool {

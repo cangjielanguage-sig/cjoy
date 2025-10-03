@@ -114,12 +114,12 @@ public class CronJob <: Equatable<CronJob> & ToString {
     }
 
     public func run(start: DateTime): Unit {
-        @LogInfo("starting cron job: ${_name}")
+        @LogInfo("[Schedule] starting cron job: ${_name}")
         try {
             _fn(_context)
         } finally {
             let dt: Duration = (DateTime.now().toUnixTimeStamp() - start.toUnixTimeStamp())
-            @LogInfo("fininish cron job: ${_name} in ${dt}")
+            @LogInfo("[Schedule] fininish cron job: ${_name} in ${dt}")
         }
     }
 
@@ -187,6 +187,10 @@ public class CronJob <: Equatable<CronJob> & ToString {
             let lmax = Int
                 .tryParse(rng[0].matchString(2))
                 .getOrThrow({=> ScheduleException("parse single or range failed, ${part}")})
+
+            if (lmin < min || lmax > max) {
+                throw ScheduleException(OutOfRange(rangeVal: part, input: part, min: min, max: max).toString())
+            }
             for (i in lmin..=lmax) {
                 res.add(i)
             }

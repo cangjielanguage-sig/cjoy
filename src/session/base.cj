@@ -16,7 +16,7 @@ import std.sync.Mutex
 import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable}
 import cjoy.utils.secureRandStr
 
-abstract sealed class AbstractSession <: JoySession {
+public abstract class AbstractSession <: JoySession {
     let _sid: String
     let _data: ConcurrentHashMap<String, Any> = ConcurrentHashMap()
     var _lastAccessTime: DateTime = DateTime.now()
@@ -62,7 +62,7 @@ abstract sealed class AbstractSession <: JoySession {
     }
 }
 
-protected abstract class AbstractSessionStorage <: JoySessionStorage {
+public abstract class AbstractSessionStorage <: JoySessionStorage {
     let _sessions: ConcurrentHashMap<String, AbstractSession> = ConcurrentHashMap()
     let _lock: Mutex = Mutex()
     private let _maxLifetime: Int

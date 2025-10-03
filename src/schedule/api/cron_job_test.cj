@@ -17,6 +17,11 @@ class TestCronJob {
     }
 }
 
+class TestCronJobErr {
+    TestCronJobErr(let name: String, let schedules: Array<String>, let expErrStr: String) {
+    }
+}
+
 func jobrun(ctx: ScheduleContext): Unit {
 }
 
@@ -134,6 +139,57 @@ public class CronJobTestCaseSuit {
         for (cs in cases) {
             let job = CronJob.parse(cs.name, cs.schedule, jobrun)
             @Assert(job, cs.expJob)
+        }
+    }
+
+    @TestCase
+    public func testParseError() {
+        let cases = [
+            TestCronJobErr(
+                "incorrect number of schedule parts: less",
+                [
+                    "* * * * ",
+                    "* * * * * * *"
+                ],
+                "schedule string must have five components like * * * * *"
+            ),
+            TestCronJobErr(
+                "incorrect range",
+                [
+                    "1-100 * * * * *",
+                    "1-200 * * * *",
+                    "* 0-30 * * *",
+                    "* * 0-10 * *",
+                    "* * 1-33 * *",
+                    "* * * 0-22 *",
+                    "* * * * 0-7",
+                    "* * 1-40/2 * *",
+                    "60 * * * *"
+                ],
+                "out of range"
+            ),
+            TestCronJobErr(
+                "unparsable schedule parts",
+                [
+                    "* * ab/2 * *",
+                    "* 1,2/10 * * *",
+                    "* * 1,2,3,1-15/10 * *",
+                    "a b c d e"
+                ],
+                "unable to parse"
+            )
+        ]
+
+        for (cs in cases) {
+            for (schedule in cs.schedules) {
+                try {
+                    CronJob.parse(cs.name, schedule, jobrun)
+                    @Fail("should parse error and throw a exception, schedule=${schedule}")
+                } catch (ex: ScheduleException) {
+                    eprintln(ex.message)
+                    @Assert(ex.message.contains(cs.expErrStr))
+                }
+            }
         }
     }
 }
