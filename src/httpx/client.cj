@@ -73,17 +73,30 @@ public class JoyHttpClientService <: JoyHttpClient & Resource {
         _isClosed
     }
 
-    public func exchange(ctx: Context, method: String, path: String, params: Map<String, ToString>,
-        headers: HttpHeaders, body: Any): JoyHttpResponse {
-        var url = if (path.startsWith("/")) {
-            _url + path
-        } else {
-            _url + "/" + path
+    public func send(ctx: Context, request: JoyHttpRequest): JoyHttpResponse {
+        let url = mergeUrl(request)
+        let rb = HttpRequestBuilder().url(url)
+        rb.setHeaders(request._headers)
+        rb.method(request._method)
+        if (let Some(t) <- request._timeout) {
+            rb.readTimeout(t)
         }
 
-        if (!params.isEmpty()) {
+        writeBody(request, rb)
+        let rsp = _client.send(rb.build())
+        JoyHttpResponse(rsp)
+    }
+
+    private func mergeUrl(request: JoyHttpRequest): String {
+        var url = if (request._path.startsWith("/")) {
+            _url + request._path
+        } else {
+            _url + "/" + request._path
+        }
+
+        if (!request._queries.isEmpty()) {
             let queryForm = Form()
-            for ((k, v) in params) {
+            for ((k, v) in request._queries) {
                 queryForm.add(k, v.toString())
             }
             if (url.contains("?")) {
@@ -92,14 +105,13 @@ public class JoyHttpClientService <: JoyHttpClient & Resource {
                 url = url + "?" + queryForm.toEncodeString()
             }
         }
+        url
+    }
 
-        let rb = HttpRequestBuilder().url(url)
-        rb.setHeaders(headers)
-        rb.method(method)
-
-        match (body) {
+    private func writeBody(request: JoyHttpRequest, rb: HttpRequestBuilder): Unit {
+        match (request._body) {
             case x: String =>
-                if (headers.getFirst(JoyHttpConsts.HEADER_CONTENT_TYPE).isNone()) {
+                if (request._headers.getFirst(JoyHttpConsts.HEADER_CONTENT_TYPE).isNone()) {
                     rb.header(JoyHttpConsts.HEADER_CONTENT_TYPE, JoyHttpConsts.MIME_TEXT_PLAIN_UTF8)
                 }
                 rb.body(x)
@@ -110,15 +122,12 @@ public class JoyHttpClientService <: JoyHttpClient & Resource {
                 let writer = JsonWriter(buffer)
                 writer.writeValue(x)
                 writer.flush()
-                if (headers.getFirst(JoyHttpConsts.HEADER_CONTENT_TYPE).isNone()) {
+                if (request._headers.getFirst(JoyHttpConsts.HEADER_CONTENT_TYPE).isNone()) {
                     rb.header(JoyHttpConsts.HEADER_CONTENT_TYPE, JoyHttpConsts.MIME_APP_JSON_UTF8)
                 }
                 rb.body(buffer)
             case x: InputStream => rb.body(x)
             case _ => ()
         }
-
-        let rsp = _client.send(rb.build())
-        JoyHttpResponse(rsp)
     }
 }

@@ -18,12 +18,11 @@ public class RetryClient <: JoyHttpClient {
     public RetryClient(let http: JoyHttpClient, let maxRetries!: Int = 3) {
     }
 
-    public func exchange(ctx: Context, method: String, path: String, params: Map<String, ToString>,
-        headers: HttpHeaders, body: Any): JoyHttpResponse {
+    public func send(ctx: Context, request: JoyHttpRequest): JoyHttpResponse {
         var lastEx: ?Exception = None
         for (_ in 0..maxRetries) {
             try {
-                let resp = http.exchange(ctx, method, path, params, headers, body)
+                let resp = http.send(ctx, request)
                 if (resp.status != HttpStatusCode.STATUS_INTERNAL_SERVER_ERROR) {
                     return resp
                 }

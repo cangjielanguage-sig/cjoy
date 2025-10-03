@@ -50,7 +50,7 @@ public class JoyMultiPartWriter <: Resource {
         }
     }
 
-    public func createPart(headers: HttpHeaders): Unit {
+    public func createPart(headers: HttpHeaders): JoyMultiPartWriter {
         if (let Some(p) <- _lastPart) {
             p.close()
         }
@@ -67,9 +67,10 @@ public class JoyMultiPartWriter <: Resource {
 
         _buffer.write([b'\r', b'\n'])
         _lastPart = TmpPart()
+        this
     }
 
-    public func writePartData(bs: Array<Byte>): Unit {
+    public func writePartData(bs: Array<Byte>): JoyMultiPartWriter {
         if (_lastPart.isNone()) {
             throw IllegalArgumentException("part is not exist, must create it firstly.")
         }
@@ -79,9 +80,10 @@ public class JoyMultiPartWriter <: Resource {
             }
         }
         _buffer.write(bs)
+        this
     }
 
-    public func createFromFile(fieldname: String, filename: String, contentType!: String = "application/octet-stream"): Unit {
+    public func createFromFile(fieldname: String, filename: String, contentType!: String = "application/octet-stream"): JoyMultiPartWriter {
         let headers = HttpHeaders()
         headers.add(JoyHttpConsts.HEADER_CONTENT_DISPOSITION,
             "form-data; name=\"${escapeQuotes(fieldname)}\"; filename=\"${escapeQuotes(filename)}\"")
@@ -89,15 +91,16 @@ public class JoyMultiPartWriter <: Resource {
         createPart(headers)
     }
 
-    public func createFormField(fieldname: String): Unit {
+    public func createFormField(fieldname: String): JoyMultiPartWriter {
         let headers = HttpHeaders()
         headers.add(JoyHttpConsts.HEADER_CONTENT_DISPOSITION, "form-data; name=\"${escapeQuotes(fieldname)}\"")
         createPart(headers)
     }
 
-    public func writeField(fieldname: String, value: String): Unit {
+    public func writeField(fieldname: String, value: String): JoyMultiPartWriter {
         createFormField(fieldname)
         writePartData(value.toArray())
+        this
     }
 
     private static func checkBoundary(boundary: String): Unit {

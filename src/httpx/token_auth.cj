@@ -19,25 +19,24 @@ public class TokenAuthClient <: JoyHttpClient {
         let authSchema!: String = "Bearer") {
     }
 
-    public func exchange(ctx: Context, method: String, path: String, params: Map<String, ToString>,
-        headers: HttpHeaders, body: Any): JoyHttpResponse {
-        createFunc(token, position, authSchema)(path, headers)
-        http.exchange(ctx, method, path, params, headers, body)
+    public func send(ctx: Context, request: JoyHttpRequest): JoyHttpResponse {
+        createFunc(token, position, authSchema)(request)
+        http.send(ctx, request)
     }
 
-    private func createFunc(token: String, position: String, authSchema: String): (path: String, headers: HttpHeaders) -> Unit {
+    private func createFunc(token: String, position: String, authSchema: String): (request: JoyHttpRequest) -> Unit {
         let sn = position.split(":")
         if (sn.size != 2) {
             throw IllegalArgumentException("position format must be <source>:<name>")
         }
         {
-            _: String, headers: HttpHeaders => match (sn[0]) {
+            request: JoyHttpRequest => match (sn[0]) {
                 // first support header
                 case "header" =>
                     if (authSchema.isEmpty()) {
-                        headers.add(sn[1], token)
+                        request.header(sn[1], token)
                     } else {
-                        headers.add(sn[1], "${authSchema} ${token}")
+                        request.header(sn[1], "${authSchema} ${token}")
                     }
                 case _ => ()
             }
