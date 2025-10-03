@@ -71,7 +71,7 @@ public class JoyHandlers {
      * @param methods: the methods
      * @param handler: the handler
      */
-    public static func addHandler(path: String, methods: Array<String>, handler: JoyRequestHandler) {
+    public static func addHandler(path: String, methods: Array<String>, handler: JoyRequestHandler): Unit {
         HANDLERS.add((path, methods, handler))
     }
 
@@ -88,16 +88,4 @@ public class JoyHandlers {
             rg.handle(methods, rpath, handler)
         }
     }
-}
-
-/**
- * the interface of request handler chain
- */
-public interface JoyRequestHandlerChain {
-    /**
-     * move next handler
-     *
-     * @param ctx: the context
-     */
-    func next(ctx: JoyContext): Unit
 }

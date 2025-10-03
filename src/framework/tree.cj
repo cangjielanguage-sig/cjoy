@@ -318,7 +318,7 @@ public class TreeNode<T> {
 
     func findRoute(ri: RouteInfo<T>, method: String, path: String): ?TreeNode<T> {
         var search = path
-        var label = if (search != "") {
+        let label = if (search != "") {
             search[0]
         } else {
             b'\0'

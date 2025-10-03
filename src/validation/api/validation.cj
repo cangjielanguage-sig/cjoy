@@ -16,6 +16,14 @@ import std.time.DateTime
 import std.unicode.UnicodeStringExtension
 
 public interface JoyValidatable {
+    /**
+     * validate the field value with the constraints
+     *
+     * @param field: the field name
+     * @param nestedValid: whether to nested validate
+     * @param constraints: a array of constraints
+     * throw JoyValidationException: when validate failed
+     */
     func validate(field: String, nestedValid: Bool, constraints: Array<JoyConstraint>): Unit
 
     func validate(): Unit {

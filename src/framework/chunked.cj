@@ -63,7 +63,7 @@ public class JoyServerEventBuilder {
 public open class ChunkedWriter {
     protected let _httpContext: HttpContext
     protected let _httpResponseWriter: HttpResponseWriter
-    protected var _end = false
+    protected var _end: Bool = false
 
     init(httpContext: HttpContext) {
         _httpContext = httpContext
@@ -96,6 +96,9 @@ public class JoyChunkedWriter <: ChunkedWriter {
 
     /**
      * write string data then send it
+     *
+     * @param data: the chunked data
+     * @return the JoyChunkedWriter
      */
     public func write(data: String): JoyChunkedWriter {
         checkEnd()
@@ -105,6 +108,9 @@ public class JoyChunkedWriter <: ChunkedWriter {
 
     /**
      * write bytes data then send it
+     *
+     * @param data: the chunked data
+     * @return the JoyChunkedWriter
      */
     public func write(data: Array<Byte>): JoyChunkedWriter {
         checkEnd()
@@ -114,6 +120,9 @@ public class JoyChunkedWriter <: ChunkedWriter {
 
     /**
      * write data which be serializabled to json then send it
+     *
+     * @param data: the chunked data
+     * @return the JoyChunkedWriter
      */
     public func writeJson<T>(data: T): JoyChunkedWriter where T <: JsonSerializable {
         let buffer = ByteBuffer()
@@ -134,6 +143,9 @@ public class JoySseEmitter <: ChunkedWriter {
 
     /**
      * write data which be encoded to SSE
+     *
+     * @param data: the event
+     * @return the JoySseEmitter
      */
     public func sendEvent(data: JoyServerEventBuilder): JoySseEmitter {
         checkEnd()

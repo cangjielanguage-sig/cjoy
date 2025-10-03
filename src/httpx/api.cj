@@ -16,7 +16,7 @@ import stdx.encoding.url.Form
 import cjoy.context.Context
 import cjoy.framework.{JoyHttpConsts}
 
-let emptyParams = HashMap<String, ToString>()
+let EMPTY_QUERIES = HashMap<String, ToString>()
 
 /**
  * the http client service interface
@@ -26,83 +26,83 @@ public interface JoyHttpClient {
         exchange(ctx, JoyHttpConsts.METHOD_GET, path, queries, headers, Option<Any>.None)
     }
     func get(ctx: Context, path: String): JoyHttpResponse {
-        get(ctx, path, emptyParams, HttpHeaders())
+        get(ctx, path, EMPTY_QUERIES, HttpHeaders())
     }
     func get(ctx: Context, path: String, queries: Map<String, ToString>): JoyHttpResponse {
         get(ctx, path, queries, HttpHeaders())
     }
     func get(ctx: Context, path: String, headers: HttpHeaders): JoyHttpResponse {
-        get(ctx, path, emptyParams, headers)
+        get(ctx, path, EMPTY_QUERIES, headers)
     }
 
     func post(ctx: Context, path: String, queries: Map<String, ToString>, headers: HttpHeaders, body: Any): JoyHttpResponse {
         exchange(ctx, JoyHttpConsts.METHOD_POST, path, queries, headers, body)
     }
     func post(ctx: Context, path: String, body: Any): JoyHttpResponse {
-        post(ctx, path, emptyParams, HttpHeaders(), body)
+        post(ctx, path, EMPTY_QUERIES, HttpHeaders(), body)
     }
     func post(ctx: Context, path: String, queries: Map<String, ToString>, body: Any): JoyHttpResponse {
         post(ctx, path, queries, HttpHeaders(), body)
     }
     func post(ctx: Context, path: String, headers: HttpHeaders, body: Any): JoyHttpResponse {
-        post(ctx, path, emptyParams, headers, body)
+        post(ctx, path, EMPTY_QUERIES, headers, body)
     }
 
     func put(ctx: Context, path: String, queries: Map<String, ToString>, headers: HttpHeaders, body: Any): JoyHttpResponse {
         exchange(ctx, JoyHttpConsts.METHOD_PUT, path, queries, headers, body)
     }
     func put(ctx: Context, path: String, body: Any): JoyHttpResponse {
-        put(ctx, path, emptyParams, HttpHeaders(), body)
+        put(ctx, path, EMPTY_QUERIES, HttpHeaders(), body)
     }
     func put(ctx: Context, path: String, queries: Map<String, ToString>, body: Any): JoyHttpResponse {
         put(ctx, path, queries, HttpHeaders(), body)
     }
     func put(ctx: Context, path: String, headers: HttpHeaders, body: Any): JoyHttpResponse {
-        put(ctx, path, emptyParams, headers, body)
+        put(ctx, path, EMPTY_QUERIES, headers, body)
     }
 
     func patch(ctx: Context, path: String, queries: Map<String, ToString>, headers: HttpHeaders, body: Any): JoyHttpResponse {
         exchange(ctx, JoyHttpConsts.METHOD_PATCH, path, queries, headers, body)
     }
     func patch(ctx: Context, path: String, body: Any): JoyHttpResponse {
-        patch(ctx, path, emptyParams, HttpHeaders(), body)
+        patch(ctx, path, EMPTY_QUERIES, HttpHeaders(), body)
     }
     func patch(ctx: Context, path: String, queries: Map<String, ToString>, body: Any): JoyHttpResponse {
         patch(ctx, path, queries, HttpHeaders(), body)
     }
     func patch(ctx: Context, path: String, headers: HttpHeaders, body: Any): JoyHttpResponse {
-        patch(ctx, path, emptyParams, headers, body)
+        patch(ctx, path, EMPTY_QUERIES, headers, body)
     }
 
     func delete(ctx: Context, path: String, queries: Map<String, ToString>, headers: HttpHeaders, body: Any): JoyHttpResponse {
         exchange(ctx, JoyHttpConsts.METHOD_PUT, path, queries, headers, body)
     }
     func delete(ctx: Context, path: String, body: Any): JoyHttpResponse {
-        delete(ctx, path, emptyParams, HttpHeaders(), body)
+        delete(ctx, path, EMPTY_QUERIES, HttpHeaders(), body)
     }
     func delete(ctx: Context, path: String): JoyHttpResponse {
-        delete(ctx, path, emptyParams, HttpHeaders(), Option<Any>.None)
+        delete(ctx, path, EMPTY_QUERIES, HttpHeaders(), Option<Any>.None)
     }
     func delete(ctx: Context, path: String, queries: Map<String, ToString>, body: Any): JoyHttpResponse {
         delete(ctx, path, queries, HttpHeaders(), body)
     }
     func delete(ctx: Context, path: String, headers: HttpHeaders, body: Any): JoyHttpResponse {
-        delete(ctx, path, emptyParams, headers, body)
+        delete(ctx, path, EMPTY_QUERIES, headers, body)
     }
 
     func postform(ctx: Context, path: String, queries: Map<String, ToString>, headers: HttpHeaders, form: Form): JoyHttpResponse {
         let body = form.toEncodeString()
         headers.add(JoyHttpConsts.HEADER_CONTENT_TYPE, JoyHttpConsts.MIME_APP_FORM_URL_ENCODED)
-        post(ctx, path, emptyParams, headers, body)
+        post(ctx, path, EMPTY_QUERIES, headers, body)
     }
     func postform(ctx: Context, path: String, headers: HttpHeaders, form: Form): JoyHttpResponse {
-        postform(ctx, path, emptyParams, headers, form)
+        postform(ctx, path, EMPTY_QUERIES, headers, form)
     }
     func postform(ctx: Context, path: String, queries: Map<String, ToString>, form: Form): JoyHttpResponse {
         postform(ctx, path, queries, HttpHeaders(), form)
     }
     func postform(ctx: Context, path: String, form: Form): JoyHttpResponse {
-        postform(ctx, path, emptyParams, HttpHeaders(), form)
+        postform(ctx, path, EMPTY_QUERIES, HttpHeaders(), form)
     }
 
     func exchange(ctx: Context, method: String, path: String, queries: Map<String, ToString>, headers: HttpHeaders,

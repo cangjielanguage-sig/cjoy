@@ -73,13 +73,19 @@ public class JoyHttpResponse {
         }
     }
 
+    /**
+     * get the event stream
+     *
+     * @return the sse stream
+     * @throw IllegalArgumentException: when the response is not event stream
+     */
     public prop eventStream: JoySSEventStream {
         get() {
             if (let Some(ss) <- _sseStream) {
                 return ss
             } else {
                 if (contentType != JoyHttpConsts.MIME_TEXT_EVENT_STREAM) {
-                    throw IllegalArgumentException("the reponse is not event stream")
+                    throw IllegalArgumentException("the response is not event stream")
                 }
                 let stream = JoySSEventStream(_response.stream)
                 _sseStream = stream

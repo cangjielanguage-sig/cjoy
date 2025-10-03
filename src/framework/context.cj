@@ -161,15 +161,34 @@ public interface JoyContext <: Context {
      */
     func getPostFormList(name: String): ArrayList<String>
 
+    /**
+     * get post form or query form param
+     *
+     * @param name: the param name
+     * @return the param value
+     */
     func getForm(name: String): ?String {
         getPostForm(name) ?? getQuery(name)
     }
 
+    /**
+     * get post form or query form param
+     *
+     * @param name: the param name
+     * @param defaultValue: the default value when it not existed
+     * @return the param value
+     */
     func getForm(name: String, defaultValue: String): String {
         getForm(name) ?? defaultValue
     }
 
-    func getFormList(name: String, defaultValue: String): ArrayList<String> {
+    /**
+     * get post form or query form param
+     *
+     * @param name: the param name
+     * @return the param value
+     */
+    func getFormList(name: String): ArrayList<String> {
         var res = getPostFormList(name)
         if (res.isEmpty()) {
             getQueryList(name)
@@ -385,8 +404,10 @@ public interface JoyContext <: Context {
 
     /**
      * get basic auth info
+     * 
+     * return the username and password
      */
-    func basicAuth(): (String, String, Bool)
+    func basicAuth(): ?(String, String)
 }
 
 class JoyHttpContext <: JoyContext {
@@ -714,28 +735,28 @@ class JoyHttpContext <: JoyContext {
         JoySseEmitter(_httpContext)
     }
 
-    public func basicAuth(): (String, String, Bool) {
+    public func basicAuth(): ?(String, String) {
         let auth = getHeader(JoyHttpConsts.HEADER_AUTHORIZATION)
         if (auth.isNone()) {
-            return ("", "", false)
+            return None
         }
 
         let b64 = auth.getOrThrow().split(" ")
         if (b64.size != 2 || b64[0].trimAscii() != 'Basic') {
-            return ("", "", false)
+            return None
         }
 
         let decode = fromBase64String(b64[1])
         if (decode.isNone()) {
-            return ("", "", false)
+            return None
         }
 
         let upStr = String.fromUtf8(decode.getOrThrow())
         let up = upStr.split(":")
         if (up.size != 2) {
-            return ("", "", false)
+            return None
         }
-        (up[0], up[1], true)
+        (up[0], up[1])
     }
 
     public func getService<T>(name: String): ?T {

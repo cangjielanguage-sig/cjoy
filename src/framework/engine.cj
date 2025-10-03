@@ -18,8 +18,8 @@ import stdx.net.http.{Server, ServerBuilder}
 import stdx.crypto.x509.{X509Certificate, PrivateKey}
 import cjoy.log.*
 
-public const VERSION = "v0.61.0"
-const LOGO = ##"
+public const VERSION: String = "v0.61.0"
+const LOGO: String = ##"
  ________        ___  ________      ___    ___ 
 |\   ____\      |\  \|\   __  \    |\  \  /  /|
 \ \  \___|      \ \  \ \  \|\  \   \ \  \/  / /
@@ -111,6 +111,7 @@ public class Joy {
      * @parame name: the instance name
      * @param config: the global config
      * @return the instance of Joy
+     * @throw IllegalArgumentException: when the name is existed
      */
     public static func create(config: JoyConfig, name!: String = "default"): Joy {
         if (_INSTANCES.contains(name)) {
@@ -171,7 +172,7 @@ public class Joy {
      *
      * @param gracefully: whether gracefully shutdown
      */
-    public func shutdown(gracefully!: Bool = true) {
+    public func shutdown(gracefully!: Bool = true): Unit {
         if (let Some(server) <- _server) {
             if (gracefully) {
                 server.closeGracefully()
@@ -187,6 +188,7 @@ public class Joy {
      *
      * @param name: the service unqiue name
      * @param service : the service instance object
+     * @return the joy instance
      */
     public func addService(name: String, service: Any): Joy {
         _services.addService(name, service)

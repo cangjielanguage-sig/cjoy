@@ -24,8 +24,10 @@ public interface JoyBindable<T> {
      *
      * bind http request query, postform or header params to object
      *
-     * @param source: the http request
-     * @param meta: the bind meta info
+     * @param source: the bind source object
+     * @param name: the name of bind field
+     * @param defaultValue: the default value of field
+     * @param timeformat: the datetime field format
      * @return the object
      */
     static func bind(source: JoyBindSource, name: String, defaultValue: ?String, timeformat: ?String): ?T
@@ -37,8 +39,18 @@ public interface JoyBindable<T> {
     }
 }
 
+/**
+ * the interface of bind source, JoyBindable can get value from the source
+ */
 public interface JoyBindSource {
+    /**
+     * get one value by name from source
+     */
     func getOne(name: String): ?String
+
+    /**
+     * get all values by name from source
+     */
     func getAll(name: String): Collection<String>
 }
 

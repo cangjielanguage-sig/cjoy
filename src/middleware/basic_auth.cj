@@ -35,12 +35,13 @@ public class BasicAuth <: JoyMiddlewareHandler {
             }
         }
 
-        let (user, pwd, ok) = ctx.basicAuth()
-        if (!ok) {
+        let authInfo = ctx.basicAuth()
+        if (authInfo.isNone()) {
             basicAuthFailed(ctx)
             return
         }
 
+        let (user, pwd) = authInfo.getOrThrow()
         if (let Some(fn) <- validateFunc) {
             if (!fn(ctx, user, pwd)) {
                 basicAuthFailed(ctx)

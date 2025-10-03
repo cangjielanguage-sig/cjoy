@@ -127,6 +127,9 @@ public class JoyWebSocketMessage {
 
     /*
      * convert to text
+     *
+     * @return the text string
+     * @throw IllegalArgumentException: when not is text message
      */
     public func asText(): String {
         match (_msgType) {
@@ -137,6 +140,9 @@ public class JoyWebSocketMessage {
 
     /*
      * convert to json deseriabled object
+     *
+     * @return the json object
+     * @throw IllegalArgumentException: when not is text message
      */
     public func asJsonToObj<T>(): ?T where T <: JsonDeserializable<T> {
         match (_msgType) {
@@ -151,6 +157,9 @@ public class JoyWebSocketMessage {
 
     /*
      * convert to binary
+     *
+     * @return the array of bytes
+     * @throw IllegalArgumentException: when not is binary message
      */
     public func asBinary(): Array<Byte> {
         match (_msgType) {

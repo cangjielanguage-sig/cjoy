@@ -31,7 +31,7 @@ public class TokenAuthClient <: JoyHttpClient {
             throw IllegalArgumentException("position format must be <source>:<name>")
         }
         {
-            path: String, headers: HttpHeaders => match (sn[0]) {
+            _: String, headers: HttpHeaders => match (sn[0]) {
                 // first support header
                 case "header" =>
                     if (authSchema.isEmpty()) {

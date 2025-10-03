@@ -379,7 +379,7 @@ class JoyRouteGroup <: JoyRouters {
 
         if (_distributor._config.escapeAddedRoutes) {
             let escapedPath = unescapeSpecial(thePath)
-            if (escapedPath != thePath) {
+            if (thePath != escapedPath) {
                 addOne(method, escapedPath, handler)
             }
         }

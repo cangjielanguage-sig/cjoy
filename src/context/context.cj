@@ -30,7 +30,6 @@ public interface Context {
      *
      * @param key: the param key name
      * @return the param value
-     *
      */
     func get<T>(key: String): ?T
 
@@ -65,7 +64,7 @@ public open class MapContext <: Context {
         _data.remove(key)
     }
 
-    public open func getService<T>(name: String): ?T {
+    public open func getService<T>(_: String): ?T {
         None
     }
 }

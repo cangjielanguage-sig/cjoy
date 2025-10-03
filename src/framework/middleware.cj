@@ -13,6 +13,18 @@ package cjoy.framework
 import std.collection.{forEach, ArrayList, HashMap}
 
 /**
+ * the interface of request handler chain
+ */
+public interface JoyRequestHandlerChain {
+    /**
+     * move next handler
+     *
+     * @param ctx: the context
+     */
+    func next(ctx: JoyContext): Unit
+}
+
+/**
  * the interface of request middleware handler
  */
 public interface JoyMiddlewareHandler {
@@ -44,7 +56,7 @@ public class JoyMiddlewares {
      * @param group: the path of group
      * @param mw: the middleware hander
      */
-    public static func addHandler(groups: Array<String>, mw: JoyMiddlewareHandler) {
+    public static func addHandler(groups: Array<String>, mw: JoyMiddlewareHandler): Unit {
         groups |> forEach {group => MIDDLEWARES.add(group, mw)}
     }
 
