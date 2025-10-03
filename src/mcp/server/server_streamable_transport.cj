@@ -224,7 +224,7 @@ class McpStreamableServerTransport <: McpServerTransport {
         // TODO 
     }
 
-    public func close() {
+    public func close(): Unit {
     }
 
     public func isClosed(): Bool {

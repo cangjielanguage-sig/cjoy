@@ -113,7 +113,7 @@ class DefaultMcpClientSession <: McpClientSession & McpResponseHandler & McpNoti
             })
     }
 
-    public func close() {
+    public func close(): Unit {
         if (_isClosed) {
             return
         }

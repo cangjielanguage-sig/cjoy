@@ -19,7 +19,8 @@ import cjoy.utils.{StrFunc, HexUtils}
 public class JoyMediaType {
     private static let ERR = JoyMediaType("")
 
-    public let params = HashMap<String, String>()
+    let params = HashMap<String, String>()
+
     JoyMediaType(public let mediaType: String) {}
 
     /**
@@ -211,24 +212,6 @@ public class JoyMediaType {
         return ("", v)
     }
 
-    private static func decode2231Enc(str: String): (String) {
-        let sv = str.split("'", 3)
-        if (sv.size != 3) {
-            return ""
-        }
-
-        let charset = sv[0].toAsciiLower()
-        if (charset.isEmpty()) {
-            return ""
-        }
-
-        if (charset != "us-ascii" && charset != "utf-8") {
-            return ""
-        }
-
-        return percentHexUnescape(sv[2])
-    }
-
     private static func consumeMediaParam(v: String): (String, String, String) {
         // return (param, value, rest)
         var rest = v.trimAsciiStart()
@@ -261,7 +244,7 @@ public class JoyMediaType {
     }
 }
 
-public func percentHexUnescape(str: String): String {
+protected func percentHexUnescape(str: String): String {
     // Count %, check that they're well-formed.
     var percents = 0
     var i = 0
@@ -305,14 +288,4 @@ public func percentHexUnescape(str: String): String {
         }
     }
     return String.fromUtf8(bs)
-}
-
-private let specail_chars = #"()<>@,;:\"/[]?="#.toArray()
-
-private func isTSpecial(b: Byte): Bool {
-    specail_chars.contains(b)
-}
-
-private func isNotTokenChar(b: Byte): Bool {
-    return !(b > 0x20 && b < 0x7f && !isTSpecial(b))
 }

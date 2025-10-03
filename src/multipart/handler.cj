@@ -67,7 +67,7 @@ class JoyMemoryMultiPartHandler <: JoyMultiPartHandler & Resource {
         _isClosed
     }
 
-    public func close() {
+    public func close(): Unit {
         if (_isClosed) {
             return
         }
@@ -126,7 +126,7 @@ class JoyDiskMultiPartHandler <: JoyMultiPartHandler & Resource {
         _isClosed
     }
 
-    public func close() {
+    public func close(): Unit {
         if (_isClosed) {
             return
         }

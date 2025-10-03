@@ -224,6 +224,7 @@ main(): Int64 {
 - [文件服务器](doc/usage_guide/fileserver.md)
   - [单个文件路由](doc/usage_guide/fileserver.md#单个文件路由) 
   - [多文件路由](doc/usage_guide/fileserver.md#多文件路由) 
+  - [附件下载](doc/usage_guide/fileserver.md#附件下载) 
 - [WebSocket](doc/usage_guide/websocket.md)
   - [路由注册](doc/usage_guide/websocket.md#路由注册) 
   - [Handler](doc/usage_guide/websocket.md#Handler) 

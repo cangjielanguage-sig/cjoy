@@ -163,7 +163,7 @@ class DefaultMcpServerSession <: McpServerSession & McpRequestHandler & McpRespo
         McpServer.exchangeInit()
     }
 
-    public func close() {
+    public func close(): Unit {
         if (_isClosed) {
             return
         }

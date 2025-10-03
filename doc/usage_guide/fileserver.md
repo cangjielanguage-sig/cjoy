@@ -22,5 +22,19 @@ CJoy 提供文件服务器的封装，提供两个API：`staticFile` 与 `static
 
 使用示例：[examples/fileserver](../../examples/src/fileserver/main.cj) 。
 
+## 附件下载
+
+提供API支持以附件方式下载指定的文件。
+
+```
+import cjoy.fs.downloadAttachment
+
+@Get[path = "/xxx"]
+func downloadFie(ctx: JoyContext): Unit {
+  // 下载某个文件
+  downloadAttachment(ctx, "./path/a.tar.gz")
+}
+```
+
 ----
 << [返回](../../README.md#使用指导)

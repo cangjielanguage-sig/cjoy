@@ -168,7 +168,7 @@ class DefaultMcpClient <: McpClient {
         result
     }
 
-    public func close() {
+    public func close(): Unit {
         if (_isClosed) {
             return
         }

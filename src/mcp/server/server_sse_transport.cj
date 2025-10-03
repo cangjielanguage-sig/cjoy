@@ -84,11 +84,11 @@ class McpSseServerTransport <: McpServerTransport {
         }
     }
 
-    public func send(message: ByteBuffer): Unit {
+    public func send(_: ByteBuffer): Unit {
         // nothing
     }
 
-    public func close() {
+    public func close(): Unit {
     }
 
     public func isClosed(): Bool {
