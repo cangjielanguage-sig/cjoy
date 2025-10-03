@@ -14,11 +14,12 @@ import std.sync.{Timer}
 import std.collection.concurrent.ConcurrentHashMap
 import std.time.DateTime
 
-public class Crontab {
+public class Crontab <: Resource {
     public static let INSTANCE = Crontab()
 
     private let _jobs: ConcurrentHashMap<String, CronJob>
     private let _timer: Timer
+    private var _isClosed = false
 
     public init() {
         let jobs = ConcurrentHashMap<String, CronJob>()
@@ -33,7 +34,19 @@ public class Crontab {
     }
 
     public func destroy(): Unit {
+        close()
+    }
+
+    public func close(): Unit {
+        if (_isClosed) {
+            return
+        }
         _timer.cancel()
+        _isClosed = true
+    }
+
+    public func isClosed(): Bool {
+        _isClosed
     }
 
     public func addJob(name: String, cronExp: String, fn: ScheduleFunc): Unit {

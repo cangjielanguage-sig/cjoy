@@ -32,19 +32,20 @@ func defaultNoVerifyHttpCert(url: String, verify: Bool): ClientBuilder {
     }
     let socketConnector = {
         sa: SocketAddress =>
-            let socket = TcpSocket(sa)
-            socket.readTimeout = Duration.minute
-            socket.writeTimeout = Duration.minute
-            socket.connect(timeout: Duration.minute)
-            return socket
+        let socket = TcpSocket(sa)
+        socket.readTimeout = Duration.minute
+        socket.writeTimeout = Duration.minute
+        socket.connect(timeout: Duration.minute)
+        return socket
     }
     cb.readTimeout(Duration.minute)
     cb.connector(socketConnector)
 }
 
-public class JoyHttpClientService <: JoyHttpClient {
+public class JoyHttpClientService <: JoyHttpClient & Resource {
     private let _client: Client
     private let _url: String
+    private var _isClosed = false
 
     public init(url: String, verify!: Bool = false,
         budilerFn!: (url: String, verify: Bool) -> ClientBuilder = defaultNoVerifyHttpCert) {
@@ -57,7 +58,19 @@ public class JoyHttpClientService <: JoyHttpClient {
     }
 
     public func destroy(): Unit {
+        close()
+    }
+
+    public func close(): Unit {
+        if (_isClosed) {
+            return
+        }
         _client.close()
+        _isClosed = true
+    }
+
+    public func isClosed(): Bool {
+        _isClosed
     }
 
     public func exchange(ctx: Context, method: String, path: String, params: Map<String, ToString>,
@@ -82,13 +95,7 @@ public class JoyHttpClientService <: JoyHttpClient {
 
         let rb = HttpRequestBuilder().url(url)
         rb.setHeaders(headers)
-        match (method) {
-            case "GET" => rb.get()
-            case "POST" => rb.post()
-            case "PUT" => rb.put()
-            case "DELETE" => rb.delete()
-            case _ => ()
-        }
+        rb.method(method)
 
         match (body) {
             case x: String =>

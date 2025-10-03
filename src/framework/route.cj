@@ -32,7 +32,6 @@ public interface JoyRouters {
      * route to a specific handler, which provides opportunity to respond early,
      * change the course of the request execution.
      */
-    func use(mw: JoyMiddlewareHandler): JoyRouters
     func use(mws: Array<JoyMiddlewareHandler>): JoyRouters
     func use(mw: JoyMiddlewareFunc): JoyRouters {
         use(JoyMiddlewareFuncHandler(mw))
@@ -41,9 +40,8 @@ public interface JoyRouters {
     /**
      * adds inline middlewares for an endpoint handler.
      */
-    func apply(mw: JoyMiddlewareHandler): JoyRouters
     func apply(mws: Array<JoyMiddlewareHandler>): JoyRouters
-    func apply(mw: (ctx: JoyContext, chain: JoyRequestHandlerChain) -> Unit): JoyRouters {
+    func apply(mw: JoyMiddlewareFunc): JoyRouters {
         apply(JoyMiddlewareFuncHandler(mw))
     }
 
@@ -53,8 +51,31 @@ public interface JoyRouters {
      * set of middlewares.
      */
     func group(relativePath: String): JoyRouters
+
+    /**
+     * find group by the full path
+     */
     func findGroup(path: String): JoyRouters
+
+    /**
+     * recursive creates a set of routes split by '/', invoke createGroups("/a/b/c") method is same as
+     * invoke group("/a").group("/b").group("/c")
+     */
     func createGroups(path: String): JoyRouters
+
+    /**
+     * used to define routes with a common prefix inside the supplied function.
+     * it reuses the group method to create a sub-router.
+     */
+    func route(relativePath: String, fn: (router: JoyRouters) -> Unit): JoyRouters {
+        let g = group(relativePath)
+        fn(g)
+        g
+    }
+
+    /**
+     * return the route base prefix path
+     */
     func basePath(): String
 
     /**
@@ -181,7 +202,6 @@ class TreeRouteDistributor <: HttpRequestDistributor & HttpRequestHandler {
         }
 
         let ri: RouteInfo<JoyRequestHandler> = RouteInfo()
-        @LogDebug("finding handler, method=${req.method}, path=${path}")
         var node = _root.findRouteHandler(ri, req.method, path)
         if (node.isNone()) {
             @LogDebug("not found handler, method=${req.method}, path=${path}")
@@ -238,18 +258,8 @@ class JoyRouteGroup <: JoyRouters {
         _distributor._root.dumpTree()
     }
 
-    public func use(mw: JoyMiddlewareHandler): JoyRouters {
-        _middlewares.add(mw)
-        this
-    }
-
     public func use(mws: Array<JoyMiddlewareHandler>): JoyRouters {
         mws |> forEach {mw => _middlewares.add(mw)}
-        this
-    }
-
-    public func apply(mw: JoyMiddlewareHandler): JoyRouters {
-        _applyMWs.add(mw)
         this
     }
 

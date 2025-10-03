@@ -62,7 +62,7 @@ public interface JoyHttpClient {
     }
 
     func patch(ctx: Context, path: String, queries: Map<String, ToString>, headers: HttpHeaders, body: Any): JoyHttpResponse {
-        exchange(ctx, JoyHttpConsts.METHOD_PUT, path, queries, headers, body)
+        exchange(ctx, JoyHttpConsts.METHOD_PATCH, path, queries, headers, body)
     }
     func patch(ctx: Context, path: String, body: Any): JoyHttpResponse {
         patch(ctx, path, emptyParams, HttpHeaders(), body)
