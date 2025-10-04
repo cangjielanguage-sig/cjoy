@@ -22,7 +22,7 @@ public interface JoyValidatable {
      * @param field: the field name
      * @param nestedValid: whether to nested validate
      * @param constraints: a array of constraints
-     * throw JoyValidationException: when validate failed
+     * @throws JoyValidationException if validate failed
      */
     func validate(field: String, nestedValid: Bool, constraints: Array<JoyConstraint>): Unit
 

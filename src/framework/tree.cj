@@ -556,6 +556,9 @@ class Segment {
         return ret
     }
 
+    /**
+     * @throws IllegalArgumentException if miss closing delimiter '}'
+     */
     private static func findEndIdx(pattern: String, ps: Int): Int {
         // read to closing } taking into account opens and closes in curl count (cc)
         var cc = 0
@@ -586,6 +589,9 @@ class Segment {
         seg
     }
 
+    /**
+     * @throws IllegalArgumentException if the patten is invalid
+     */
     private func parse(pattern: String): Unit {
         let ps = pattern.indexOf(b'{') ?? -1
         let ws = pattern.indexOf(b'*') ?? -1
@@ -632,6 +638,9 @@ class Segment {
         rex = normRexpat(rex)
     }
 
+    /**
+     * @throws IllegalArgumentException if the patten contains duplicate param key
+     */
     static func parseParamKeys(pattern: String): Array<String> {
         var pat = pattern
         var paramKeys = ArrayList<String>()

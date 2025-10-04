@@ -12,7 +12,7 @@ package cjoy.framework
 
 import std.collection.{ArrayList, HashMap}
 import std.io.ByteBuffer
-import stdx.net.http.{WebSocket, WebSocketException, WebSocketFrameType, HttpHeaders}
+import stdx.net.http.{WebSocket, WebSocketException, WebSocketFrame, WebSocketFrameType, HttpHeaders}
 import stdx.encoding.url.Form
 import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonReader, JsonWriter}
 import cjoy.context.Context
@@ -129,7 +129,7 @@ public class JoyWebSocketMessage {
      * convert to text
      *
      * @return the text string
-     * @throw IllegalArgumentException: when not is text message
+     * @throws IllegalArgumentException if not is text message
      */
     public func asText(): String {
         match (_msgType) {
@@ -142,7 +142,7 @@ public class JoyWebSocketMessage {
      * convert to json deseriabled object
      *
      * @return the json object
-     * @throw IllegalArgumentException: when not is text message
+     * @throws IllegalArgumentException if not is text message
      */
     public func asJsonToObj<T>(): ?T where T <: JsonDeserializable<T> {
         match (_msgType) {
@@ -159,7 +159,7 @@ public class JoyWebSocketMessage {
      * convert to binary
      *
      * @return the array of bytes
-     * @throw IllegalArgumentException: when not is binary message
+     * @throws IllegalArgumentException if not is binary message
      */
     public func asBinary(): Array<Byte> {
         match (_msgType) {
@@ -176,6 +176,7 @@ public class JoyWebSocketMessage {
      * create text message
      *
      * @param playload: message playload
+     * @return: the JoyWebSocketMessage
      */
     public static func createText(playload: String): JoyWebSocketMessage {
         JoyWebSocketMessage(WsText, true, playload.toArray())
@@ -185,6 +186,7 @@ public class JoyWebSocketMessage {
      * create text message
      *
      * @param playload: message playload which can be json seriablizable
+     * @return: the JoyWebSocketMessage
      */
     public static func createText<T>(playload: T): JoyWebSocketMessage where T <: JsonSerializable {
         let buffer = ByteBuffer()
@@ -198,6 +200,7 @@ public class JoyWebSocketMessage {
      * create binay message
      *
      * @param playload: message playload
+     * @return: the JoyWebSocketMessage
      */
     public static func createBinary(playload: Array<Byte>): JoyWebSocketMessage {
         JoyWebSocketMessage(WsBinary, true, playload)
@@ -206,7 +209,8 @@ public class JoyWebSocketMessage {
     /**
      * create ping message
      *
-     * @param playload: message playload
+     * @param playload: message playloadWs
+     * @return: the JoyWebSocketMessage
      */
     public static func createPing(): JoyWebSocketMessage {
         JoyWebSocketMessage(WsPing, true, Array<UInt8>(5, repeat: 0))
@@ -346,7 +350,7 @@ class JoyWebSocketUpgradeHandler <: JoyRequestHandler {
             origins: handler.supportedOrigins()
         )
 
-        @LogDebug("upgrade websocket success from ${ctx.getClientIP()}")
+        @LogDebug("[WebSocket] upgrade websocket success from ${ctx.getClientIP()}")
 
         let ctxHttp = (ctx as JoyHttpContext).getOrThrow()
         let req = ctx.httpContext.request
@@ -370,52 +374,16 @@ class JoyWebSocketUpgradeHandler <: JoyRequestHandler {
             try {
                 var frame = websocket.read()
                 match (frame.frameType) {
-                    case ContinuationWebFrame =>
-                        if (handler.mergeFrames()) {
-                            buffer.write(frame.payload)
-                            if (frame.fin) {
-                                handler.onMessage(session, JoyWebSocketMessage(msgType, true, buffer.bytes()))
-                                buffer.clear()
-                            }
-                        } else {
-                            handler.onMessage(session, JoyWebSocketMessage(msgType, frame.fin, frame.payload))
-                        }
-                    case TextWebFrame | BinaryWebFrame =>
-                        msgType = if (frame.frameType == TextWebFrame) {
-                            JoyWebSocketMsgType.WsText
-                        } else {
-                            JoyWebSocketMsgType.WsBinary
-                        }
-
-                        buffer.clear()
-                        if (handler.mergeFrames()) {
-                            if (frame.fin) {
-                                handler.onMessage(session, JoyWebSocketMessage(msgType, true, frame.payload))
-                            } else {
-                                buffer.write(frame.payload)
-                            }
-                        } else {
-                            handler.onMessage(session, JoyWebSocketMessage(msgType, frame.fin, frame.payload))
-                        }
+                    case ContinuationWebFrame => handleContinuationWebFrame(session, buffer, msgType, frame)
+                    case TextWebFrame | BinaryWebFrame => msgType = handleTextAndBinaryWebFrame(session, buffer, frame)
                     case CloseWebFrame =>
-                        match {
-                            case frame.payload.size == 0 =>
-                                @LogDebug("revceive empty close status")
-                                handler.onClose(session, JoyWebSocketCloseStatus.NORMAL)
-                            case frame.payload.size <= 125 && frame.payload.size > 1 =>
-                                let statusCode = toUInt16(frame.payload[0..2])
-                                @LogDebug("revceive close status code, ${statusCode}")
-                                handler.onClose(session, statusCode)
-                            case _ =>
-                                @LogWarn("revceive invalid close status code")
-                                handler.onError(session, WebSocketException("invalid close status code"))
-                        }
+                        handleCloseWebFrame(session, frame)
                         isOpen = false
                     case PingWebFrame => websocket.writePongFrame(frame.payload)
                     case _ => ()
                 }
             } catch (ex: Exception) {
-                @LogWarn("read frame from websocket occurs an error, message=${ex.message}")
+                @LogWarn("[WebSocket] read frame from websocket occurs an error, message=${ex.message}")
                 handler.onError(session, ex)
                 isOpen = false
             }
@@ -425,6 +393,54 @@ class JoyWebSocketUpgradeHandler <: JoyRequestHandler {
             session.close()
         } else {
             websocket.closeConn()
+        }
+    }
+
+    private func handleContinuationWebFrame(session: JoyWebSocketSession, buffer: ByteBuffer,
+        msgType: JoyWebSocketMsgType, frame: WebSocketFrame): Unit {
+        if (handler.mergeFrames()) {
+            buffer.write(frame.payload)
+            if (frame.fin) {
+                handler.onMessage(session, JoyWebSocketMessage(msgType, true, buffer.bytes()))
+                buffer.clear()
+            }
+        } else {
+            handler.onMessage(session, JoyWebSocketMessage(msgType, frame.fin, frame.payload))
+        }
+    }
+
+    private func handleTextAndBinaryWebFrame(session: JoyWebSocketSession, buffer: ByteBuffer, frame: WebSocketFrame): JoyWebSocketMsgType {
+        let msgType = if (frame.frameType == TextWebFrame) {
+            JoyWebSocketMsgType.WsText
+        } else {
+            JoyWebSocketMsgType.WsBinary
+        }
+
+        buffer.clear()
+        if (handler.mergeFrames()) {
+            if (frame.fin) {
+                handler.onMessage(session, JoyWebSocketMessage(msgType, true, frame.payload))
+            } else {
+                buffer.write(frame.payload)
+            }
+        } else {
+            handler.onMessage(session, JoyWebSocketMessage(msgType, frame.fin, frame.payload))
+        }
+        msgType
+    }
+
+    private func handleCloseWebFrame(session: JoyWebSocketSession, frame: WebSocketFrame): Unit {
+        match {
+            case frame.payload.size == 0 =>
+                @LogDebug("[WebSocket] revceive empty close status")
+                handler.onClose(session, JoyWebSocketCloseStatus.NORMAL)
+            case frame.payload.size <= 125 && frame.payload.size > 1 =>
+                let statusCode = toUInt16(frame.payload[0..2])
+                @LogDebug("[WebSocket] revceive close status code, ${statusCode}")
+                handler.onClose(session, statusCode)
+            case _ =>
+                @LogWarn("[WebSocket] revceive invalid close status code")
+                handler.onError(session, WebSocketException("invalid close status code"))
         }
     }
 

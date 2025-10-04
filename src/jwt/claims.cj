@@ -21,7 +21,7 @@ public class JwtException <: Exception {
     }
 }
 
-public var serializableSingleStringAsArray = true
+public var serializableSingleStringAsArray: Bool = true
 
 public class NumberData <: JsonSerializable & JsonDeserializable<NumberData> {
     public NumberData(public let value: DateTime) {}
@@ -61,6 +61,9 @@ public class ClaimStrings <: JsonSerializable & JsonDeserializable<ClaimStrings>
         }
     }
 
+    /**
+     * @throws JwtException if it is invalid  payload json
+     */
     public static func fromJson(reader: JsonReader): ClaimStrings {
         let token = reader.peek()
         if (let Some(t) <- token) {

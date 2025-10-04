@@ -21,7 +21,7 @@ import cjoy.multipart.{getMimeTypeByExt, escapeQuotes}
  *
  * @param ctx: the joy context
  * @param filePath: the path of file which will to download
- * @throw IOException: file is not existed
+ * @throws IOException if file is not existed
  */
 public func downloadAttachment(ctx: JoyContext, filePath: Path): Unit {
     if (!exists(filePath)) {

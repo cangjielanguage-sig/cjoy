@@ -11,8 +11,8 @@
 package cjoy.session
 
 /**
-* the memory session
-*/
+ * the memory session
+ */
 class MemorySession <: AbstractSession {
     private let _storage: JoySessionStorage
     public init(sid: String, storage: JoySessionStorage) {
@@ -34,7 +34,7 @@ public class MemorySessionStorage <: AbstractSessionStorage {
      * @param maxLifetime: max life time in seconds. Default is 3600.
      */
     public init(maxLifetime!: Int = 3600) {
-        super( maxLifetime)
+        super(maxLifetime)
     }
 
     protected func createSession(sid: String): AbstractSession {

@@ -62,6 +62,9 @@ public interface ClientStore {
      */
     func getById(id: String): ?ClientInfo
 
+    /**
+     * add a client info to store
+     */
     func add(clientInfo: ClientInfo): Unit
 }
 

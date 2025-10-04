@@ -174,6 +174,9 @@ class TreeRouteDistributor <: HttpRequestDistributor & HttpRequestHandler {
         _services = services
     }
 
+    /**
+     * @throws UnsupportedException not supportd register any handler using the func
+     */
     public func register(_: String, _: HttpRequestHandler): Unit {
         throw UnsupportedException("unsupported this method")
     }
@@ -268,6 +271,9 @@ class JoyRouteGroup <: JoyRouters {
         this
     }
 
+    /**
+     * @throws IllegalArgumentException if the relative path is empty
+     */
     public func group(relativePath: String): JoyRouters {
         if (relativePath.isEmpty()) {
             throw IllegalArgumentException("group relativePath must not be empty")
@@ -336,12 +342,18 @@ class JoyRouteGroup <: JoyRouters {
         gr
     }
 
+    /**
+     * @throws IllegalArgumentException if the path not is end with slash
+     */
     private static func checkPath(path: String): Unit {
         if (path.size > 1 && path[0] != b'/') {
             throw IllegalArgumentException("path [${path}] must start with slash")
         }
     }
 
+    /**
+     * @throws IllegalArgumentException if the group path has existed
+     */
     private func setGroupDefaultHandler(): Unit {
         if (_distributor._root.findPattern(_path + "*") || _distributor._root.findPattern(_path + "/*")) {
             throw IllegalArgumentException("a handler on an existing path, `${_path}`")
@@ -370,11 +382,14 @@ class JoyRouteGroup <: JoyRouters {
         _distributor._root.addRoute(method, thePath, handler)
     }
 
+    /**
+     * @throws IllegalArgumentException if the path is empty
+     */
     private func addHandler(method: String, path: String, handler: JoyRequestHandler): Unit {
         checkPath(path)
         var thePath = _path + path
         if (thePath.isEmpty()) {
-            throw IllegalArgumentException("cannot map an empty path")
+            throw IllegalArgumentException("cannot add a handle for an empty path")
         }
 
         if (_distributor._config.escapeAddedRoutes) {

@@ -78,6 +78,9 @@ public open class ChunkedWriter {
         _httpContext.responseBuilder.header(name, value)
     }
 
+    /**
+     * @throws IllegalStateException if send data on end state
+     */
     protected func checkEnd() {
         if (_end) {
             throw IllegalStateException("already end")

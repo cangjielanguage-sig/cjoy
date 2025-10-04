@@ -111,7 +111,7 @@ public class Joy {
      * @parame name: the instance name
      * @param config: the global config
      * @return the instance of Joy
-     * @throw IllegalArgumentException: when the name is existed
+     * @throws IllegalArgumentException if the name is existed
      */
     public static func create(config: JoyConfig, name!: String = "default"): Joy {
         if (_INSTANCES.contains(name)) {

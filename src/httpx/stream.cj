@@ -31,6 +31,9 @@ public class JoyHttpStream <: Iterator<String> & InputStream {
         _closeFn = closeFn
     }
 
+    /**
+     * @throws Exception if receive a error
+     */
     private func readBytes(): Bool {
         if (_finished) {
             return false

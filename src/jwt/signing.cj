@@ -26,7 +26,7 @@ public interface SigningMethod {
      *
      * @param signing: the string will be sign
      * @param key: the key of algorithm, like Array<Byte> or RSAPrivateKey
-     * @throw JwtException: sige failed
+     * @throws JwtException if sige failed
      */
     func sign(signing: String, key: Any): Array<Byte>
 
@@ -36,7 +36,7 @@ public interface SigningMethod {
      * @param signing: the signing string
      * @param sig: the signed data for checking
      * @param key: the key of algorithm, like Array<Byte> or RSAPublicKey
-     * @throw JwtException: verify failed
+     * @throws JwtException if verify failed
      */
     func verify(signing: String, sig: Array<Byte>, key: Any): Unit
 }

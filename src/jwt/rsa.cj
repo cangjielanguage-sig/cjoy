@@ -55,6 +55,9 @@ class SigningMethodRsa <: SigningMethod {
         }
     }
 
+    /**
+     * @throws JwtException if sige failed
+     */
     public func sign(signing: String, key: Any): Array<Byte> {
         match (key) {
             case pk: RSAPrivateKey => try {
@@ -67,6 +70,9 @@ class SigningMethodRsa <: SigningMethod {
         }
     }
 
+    /**
+     * @throws JwtException if verify failed
+     */
     public func verify(signing: String, sig: Array<Byte>, key: Any): Unit {
         match (key) {
             case pk: RSAPublicKey => try {
