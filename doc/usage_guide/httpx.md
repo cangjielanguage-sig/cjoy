@@ -64,6 +64,12 @@ ctx.string(rsp.text)
  - JsonRequest对象
  - 实现JsonSerializable接口的对象
 
+发送通用方法为send函数，入参为JoyHttpRequest：
+
+ - `json`: 支持把对象转成JSON Body
+ - `multiPart`: 支持发送form-data，如提交表单或上传文件
+ - `postform`: 支持发送x-www-form-urlencoded
+
 响应类型为 [JoyHttpResponse](../../src/httpx/api.cj) ，调用如下函数或属性获取内容：
 
  - `json<T>()`: 把JSON Body反序列为对象

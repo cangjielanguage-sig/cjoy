@@ -13,6 +13,7 @@ package cjoy.httpx
 import std.collection.{Map, HashMap}
 import std.io.ByteBuffer
 import stdx.encoding.json.stream.{JsonSerializable, JsonWriter}
+import stdx.encoding.url.Form
 import stdx.net.http.{HttpRequestBuilder, HttpHeaders}
 import cjoy.framework.JoyHttpConsts
 import cjoy.multipart.JoyMultiPartWriter
@@ -24,6 +25,7 @@ public class JoyHttpRequest {
     let _headers: HttpHeaders = HttpHeaders()
     var _body: Any = Option<Any>.None
     var _timeout: ?Duration = None
+    var _form: ?Form = None
 
     init(path: String) {
         _path = path
@@ -105,12 +107,24 @@ public class JoyHttpRequest {
     }
 
     public func multiPart(fn: (writer: JoyMultiPartWriter) -> Unit): JoyHttpRequest {
+        post()
         let buffer = ByteBuffer()
-        let writer = JoyMultiPartWriter(buffer)
-        fn(writer)
-
+        try (writer = JoyMultiPartWriter(buffer)) {
+            fn(writer)
+            _headers.set(JoyHttpConsts.HEADER_CONTENT_TYPE, writer.formDataContentType)
+        }
         _body = buffer
-        _headers.set(JoyHttpConsts.HEADER_CONTENT_TYPE, writer.formDataContentType)
+        this
+    }
+
+    public func postform(name: String, value: String): JoyHttpRequest {
+        if (let Some(f) <- _form) {
+            f.add(name, value)
+        } else {
+            let f = Form()
+            f.add(name, value)
+            _form = f
+        }
         this
     }
 }
@@ -118,21 +132,25 @@ public class JoyHttpRequest {
 /*
  * the http json request
  */
-public class JsonRequest<T> where T <: JsonSerializable {
-    public JsonRequest(let reqBody: T) {
+public class JsonRequest {
+    public JsonRequest(let body: Any) {
     }
 
+    /**
+     * @throws IllegalArgumentException if the request body is not json serializable object
+     */
     public func write(buidler: HttpRequestBuilder): Unit {
-        match (reqBody) {
+        match (body) {
             case x: String => buidler
                 .header(JoyHttpConsts.HEADER_CONTENT_TYPE, JoyHttpConsts.MIME_APP_JSON_UTF8)
                 .body(x)
-            case _ =>
+            case x: JsonSerializable =>
                 let buffer = ByteBuffer()
                 let writer = JsonWriter(buffer)
-                writer.writeValue(reqBody)
+                writer.writeValue(x)
                 writer.flush()
                 buidler.header(JoyHttpConsts.HEADER_CONTENT_TYPE, JoyHttpConsts.MIME_APP_JSON_UTF8).body(buffer)
+            case _ => throw IllegalArgumentException("the request body can not serialize to JSON")
         }
     }
 }

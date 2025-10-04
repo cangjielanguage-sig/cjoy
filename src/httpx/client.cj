@@ -109,13 +109,22 @@ public class JoyHttpClientService <: JoyHttpClient & Resource {
     }
 
     private func writeBody(request: JoyHttpRequest, rb: HttpRequestBuilder): Unit {
+        if (let Some(f) <- request._form) {
+            let body = f.toEncodeString()
+            if (request._headers.getFirst(JoyHttpConsts.HEADER_CONTENT_TYPE).isNone()) {
+                rb.header(JoyHttpConsts.HEADER_CONTENT_TYPE, JoyHttpConsts.MIME_APP_FORM_URL_ENCODED)
+            }
+            rb.post().body(body)
+            return
+        }
+
         match (request._body) {
             case x: String =>
                 if (request._headers.getFirst(JoyHttpConsts.HEADER_CONTENT_TYPE).isNone()) {
                     rb.header(JoyHttpConsts.HEADER_CONTENT_TYPE, JoyHttpConsts.MIME_TEXT_PLAIN_UTF8)
                 }
                 rb.body(x)
-            case x: JsonRequest<JsonSerializable> => x.write(rb)
+            case x: JsonRequest => x.write(rb)
             case x: Array<Byte> => rb.body(x)
             case x: JsonSerializable =>
                 let buffer = ByteBuffer()

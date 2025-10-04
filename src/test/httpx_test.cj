@@ -16,9 +16,17 @@ import stdx.net.http.*
 import stdx.encoding.url.*
 import cjoy.*
 import cjoy.macros.*
+import cjoy.json.*
 import cjoy.middleware.{BasicAuth, TokenAuth}
 import cjoy.context.*
 import cjoy.httpx.*
+import cjoy.multipart.*
+
+@Json
+class TestJsonData {
+    public var a: String = ""
+    public var b: String = ""
+}
 
 @Handler[path = "/httpx_handler", methods = "GET,POST,PUT,DELETE,PATCH"]
 private func handler(ctx: JoyContext): Unit {
@@ -26,6 +34,10 @@ private func handler(ctx: JoyContext): Unit {
     content += ctx.getQuery("q1", "")
     content += ctx.getHeader("h1").getOrDefault({=> ""})
     content += ctx.getPostForm("p1", "")
+    if (let Some(u) <- ctx.readJson<TestJsonData>()) {
+        content += u.a
+        content += u.b
+    }
     ctx.string(content)
 }
 
@@ -45,6 +57,19 @@ private func basicAuth(ctx: JoyContext): Unit {
 @Get[path = "/token_auth"]
 private func tokenAuth(ctx: JoyContext): Unit {
     ctx.string("token_auth")
+}
+
+@Post[path = "/multpart"]
+private func multpart(ctx: JoyContext): Unit {
+    var content = ""
+    try (form = JoyMultiPartForm.create(ctx, JoyMultiPartConfig())) {
+        form.parse()
+        let a: ?String = form.getPart("f1")?.text ?? ""
+        content += (a ?? "")
+        let b: ?String = form.getPart("f2")?.fileName ?? ""
+        content += (b ?? "")
+    }
+    ctx.string(content)
 }
 
 @Test
@@ -116,6 +141,49 @@ public class JoyHttpClientServiceTestCaseSuit {
     }
 
     @TestCase
+    public func testPostWithJson() {
+        let rsp = _client.send(_ctx, JoyHttpRequest.of("/httpx_handler").post().json(TestJsonData(a: "a", b: "b")))
+        assertReponse(rsp, "httpx_handlerab")
+    }
+
+    @TestCase
+    public func testPostWithJson2() {
+        let rsp = _client.send(_ctx, JoyHttpRequest.of("/httpx_handler").post().body(TestJsonData(a: "a", b: "b")))
+        assertReponse(rsp, "httpx_handlerab")
+    }
+
+    @TestCase
+    public func testPostWithJson3() {
+        let rsp = _client.send(_ctx,
+            JoyHttpRequest.of("/httpx_handler").post().body(JsonRequest(TestJsonData(a: "a", b: "b"))))
+        assertReponse(rsp, "httpx_handlerab")
+    }
+
+    @TestCase
+    public func testPostWithJson4() {
+        let rsp = _client.send(_ctx,
+            JoyHttpRequest.of("/httpx_handler").post().body(JsonRequest(JsonTool.toJson(TestJsonData(a: "a", b: "b")))))
+        assertReponse(rsp, "httpx_handlerab")
+    }
+
+    @TestCase
+    public func testPostMultiPart() {
+        let rsp = _client.send(
+            _ctx,
+            JoyHttpRequest
+                .of("/multpart")
+                .multiPart(
+                    {
+                        writer: JoyMultiPartWriter =>
+                        writer.writeField("f1", "text")
+                        writer.writeFile("f2", 'file.txt', "file contents".toArray())
+                    }
+                )
+        )
+        assertReponse(rsp, "textfile.txt")
+    }
+
+    @TestCase
     public func testGetWithQuery() {
         let rsp = _client.get(_ctx, "/httpx_handler", HashMap<String, ToString>([("q1", "v1")]))
         assertReponse(rsp, "httpx_handlerv1")
@@ -134,6 +202,12 @@ public class JoyHttpClientServiceTestCaseSuit {
         let f = Form()
         f.add("p1", "v1")
         let rsp = _client.postform(_ctx, "/httpx_handler", f)
+        assertReponse(rsp, "httpx_handlerv1")
+    }
+
+    @TestCase
+    public func testPostForm2() {
+        let rsp = _client.send(_ctx, JoyHttpRequest.of("/httpx_handler").postform("p1", "v1"))
         assertReponse(rsp, "httpx_handlerv1")
     }
 

@@ -50,7 +50,7 @@ public class JoyMultiPartWriter <: Resource {
         }
     }
 
-    public func createPart(headers: HttpHeaders): JoyMultiPartWriter {
+    private func createPart(headers: HttpHeaders): JoyMultiPartWriter {
         if (let Some(p) <- _lastPart) {
             p.close()
         }
@@ -70,6 +70,9 @@ public class JoyMultiPartWriter <: Resource {
         this
     }
 
+    /**
+     * @throws IllegalArgumentException
+     */
     public func writePartData(bs: Array<Byte>): JoyMultiPartWriter {
         if (_lastPart.isNone()) {
             throw IllegalArgumentException("part is not exist, must create it firstly.")
@@ -97,12 +100,20 @@ public class JoyMultiPartWriter <: Resource {
         createPart(headers)
     }
 
+    public func writeFile(fieldname: String, filename: String, fileContent: Array<Byte>,
+        contentType!: String = "application/octet-stream"): JoyMultiPartWriter {
+        createFromFile(fieldname, filename, contentType: contentType)
+        writePartData(fileContent)
+    }
+
     public func writeField(fieldname: String, value: String): JoyMultiPartWriter {
         createFormField(fieldname)
         writePartData(value.toArray())
-        this
     }
 
+    /**
+     * @throws IllegalArgumentException
+     */
     private static func checkBoundary(boundary: String): Unit {
         if (boundary.size < 1 || boundary.size > 70) {
             throw IllegalArgumentException("invalid boundary length")
