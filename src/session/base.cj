@@ -65,12 +65,12 @@ public abstract class AbstractSession <: JoySession {
 public abstract class AbstractSessionStorage <: JoySessionStorage {
     let _sessions: ConcurrentHashMap<String, AbstractSession> = ConcurrentHashMap()
     let _lock: Mutex = Mutex()
-    private let _maxLifetime: Int
+    private let _maxLifetime: Duration
 
     /*
      * @param maxLifetime: max life time in seconds.
      */
-    public init(maxLifetime: Int) {
+    public init(maxLifetime: Duration) {
         _maxLifetime = maxLifetime
     }
 
@@ -90,6 +90,13 @@ public abstract class AbstractSessionStorage <: JoySessionStorage {
             synchronized(_lock) {
                 s = _sessions.get(sid)
                 if (s.isNone()) {
+                    // try load from storage
+                    s = loadSession(sid)
+                }
+                if (let Some(ss) <- s) {
+                    _sessions.add(ss.id, ss)
+                    return ss
+                } else {
                     // should create new session id when not existed
                     let newSid = secureRandStr(idLen)
                     let ns = createSession(newSid)
@@ -110,12 +117,16 @@ public abstract class AbstractSessionStorage <: JoySessionStorage {
 
     protected func createSession(sid: String): AbstractSession
 
+    protected open func loadSession(_: String): ?AbstractSession {
+        None
+    }
+
     public func clean() {
         let iter = _sessions.iterator()
         let now = DateTime.now()
         while (let Some(entry) <- iter.next()) {
             let (k, v) = entry
-            if (v._lastAccessTime.addSeconds(_maxLifetime) < now) {
+            if ((v._lastAccessTime + _maxLifetime) < now) {
                 delete(k)
             }
         }

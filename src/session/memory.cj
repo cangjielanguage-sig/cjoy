@@ -31,9 +31,9 @@ class MemorySession <: AbstractSession {
  */
 public class MemorySessionStorage <: AbstractSessionStorage {
     /*
-     * @param maxLifetime: max life time in seconds. Default is 3600.
+     * @param maxLifetime: max life time. Default is 1hour.
      */
-    public init(maxLifetime!: Int = 3600) {
+    public init(maxLifetime!: Duration = Duration.hour) {
         super(maxLifetime)
     }
 

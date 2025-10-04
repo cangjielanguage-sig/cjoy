@@ -30,7 +30,9 @@ class FileSession <: AbstractSession {
         super(sid)
         _path = path.join(sid)
         _storage = storage
-        Directory.create(_path, recursive: true)
+        if (!exists(_path)) {
+            Directory.create(_path, recursive: true)
+        }
     }
 
     public func set<T>(key: String, value: T): Unit where T <: JsonSerializable & JsonDeserializable<T> {
@@ -106,9 +108,10 @@ public class FileSessionStorage <: AbstractSessionStorage {
     /*
      *
      * @param path: the sessoin store root path
-     * @param maxLifetime: max life time in seconds. Default is 3600.
+     * @param maxLifetime: max life time. Default is 1hour.
+     * @throws IllegalArgumentException if the path is not dir
      */
-    public init(path: String, maxLifetime!: Int = 3600) {
+    public init(path: String, maxLifetime!: Duration = Duration.hour) {
         super(maxLifetime)
         let p = Path(path)
         if (!exists(p)) {
@@ -125,6 +128,13 @@ public class FileSessionStorage <: AbstractSessionStorage {
 
     protected func createSession(sid: String): AbstractSession {
         FileSession(sid, _path, this)
+    }
+
+    protected func loadSession(sid: String): ?AbstractSession {
+        if (exists(_path.join(sid))) {
+            return FileSession(sid, _path, this)
+        }
+        None
     }
 
     public func delete(sid: String): Unit {
