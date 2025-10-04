@@ -55,6 +55,9 @@ class SigningMethodRsa <: SigningMethod {
         }
     }
 
+    /**
+     * @throws JwtException if sige failed
+     */
     public func sign(signing: String, key: Any): Array<Byte> {
         match (key) {
             case pk: RSAPrivateKey => try {
@@ -67,6 +70,9 @@ class SigningMethodRsa <: SigningMethod {
         }
     }
 
+    /**
+     * @throws JwtException if verify failed
+     */
     public func verify(signing: String, sig: Array<Byte>, key: Any): Unit {
         match (key) {
             case pk: RSAPublicKey => try {
@@ -89,7 +95,7 @@ private func readPermFile(path: String): String {
     ""
 }
 
-const psLen: Int32 = 16
+const PSS_LEN: Int32 = 16
 
 let _: Unit = SigningMethods.register("RS256", SigningMethodRsa("RS256", SHA256(), PadOption.PKCS1))
 
@@ -97,8 +103,8 @@ let _: Unit = SigningMethods.register("RS384", SigningMethodRsa("RS384", SHA384(
 
 let _: Unit = SigningMethods.register("RS512", SigningMethodRsa("RS512", SHA512(), PadOption.PKCS1))
 
-let _: Unit = SigningMethods.register("PS256", SigningMethodRsa("PS256", SHA256(), PadOption.PSS(PSSOption(psLen))))
+let _: Unit = SigningMethods.register("PS256", SigningMethodRsa("PS256", SHA256(), PadOption.PSS(PSSOption(PSS_LEN))))
 
-let _: Unit = SigningMethods.register("PS384", SigningMethodRsa("PS384", SHA384(), PadOption.PSS(PSSOption(psLen))))
+let _: Unit = SigningMethods.register("PS384", SigningMethodRsa("PS384", SHA384(), PadOption.PSS(PSSOption(PSS_LEN))))
 
-let _: Unit = SigningMethods.register("PS512", SigningMethodRsa("PS512", SHA512(), PadOption.PSS(PSSOption(psLen))))
+let _: Unit = SigningMethods.register("PS512", SigningMethodRsa("PS512", SHA512(), PadOption.PSS(PSSOption(PSS_LEN))))

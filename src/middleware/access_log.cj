@@ -29,17 +29,18 @@ public class AccessLog <: JoyMiddlewareHandler {
     }
 
     public func handle(ctx: JoyContext, chain: JoyRequestHandlerChain): Unit {
+        if (_filterFn?(ctx) ?? false) {
+            chain.next(ctx)
+            return
+        }
+
         let start = DateTime.now()
         try {
             chain.next(ctx)
         } finally {
-            if (_filterFn?(ctx) ?? false) {
-                return
-            }
-
-            let clintIp = ctx.getClientIP()
-            let cost = (DateTime.now().toUnixTimeStamp() - start.toUnixTimeStamp()).toMicroseconds()
-            _logger.info("[AccessLog] ${clintIp} ${ctx.method} ${ctx.url} ${ctx.respStatus} ${cost}ms")
+            let clientIp = ctx.getClientIP()
+            let cost = (DateTime.now().toUnixTimeStamp() - start.toUnixTimeStamp())
+            _logger.info("[AccessLog] ${clientIp} ${ctx.method} ${ctx.url} ${ctx.respStatus} ${cost}")
         }
     }
 }

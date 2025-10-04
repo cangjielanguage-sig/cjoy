@@ -57,87 +57,115 @@ public class OAuth2Server {
         }
     }
 
-    public func setTokenType(tt: String) {
+    public func setTokenType(tt: String): Unit {
         _cfg.tokenType = tt
     }
 
-    public func setAllowGetAccessRequest(allow: Bool) {
+    public func setAllowGetAccessRequest(allow: Bool): Unit {
         _cfg.allowGetAccessRequest = allow
     }
 
-    public func setAllowedResponseType(types: Array<ResponseType>) {
+    public func setAllowedResponseType(types: Array<ResponseType>): Unit {
+        _cfg.allowResponseTypes = types
+    }
+
+    public func setAllowedGrantType(types: Array<GrantType>): Unit {
         _cfg.allowGrantTypes = types
     }
 
-    public func setAllowedGrantType(types: Array<GrantType>) {
-        _cfg.allowGrantTypes = types
-    }
-
-    public func setClientInfoHandleFunc(fn: ClientInfoHandleFunc) {
+    public func setClientInfoHandleFunc(fn: ClientInfoHandleFunc): Unit {
         _clientInfoHandleFunc = fn
     }
 
-    public func setUserAuthorizationHandleFunc(fn: UserAuthorizationHandleFunc) {
+    public func setUserAuthorizationHandleFunc(fn: UserAuthorizationHandleFunc): Unit {
         _userAuthorizationHandleFunc = fn
     }
 
-    public func setPasswordAuthorizationHanleFunc(fn: PasswordAuthorizationHanleFunc) {
+    public func setPasswordAuthorizationHanleFunc(fn: PasswordAuthorizationHanleFunc): Unit {
         _passwordAuthorizationHanleFunc = fn
     }
 
-    public func setResponseErrorHandleFunc(fn: ResponseErrorHandleFunc) {
+    public func setResponseErrorHandleFunc(fn: ResponseErrorHandleFunc): Unit {
         _responseErrorHandleFunc = fn
     }
 
-    public func setInternalErrorHandleFunc(fn: InternalErrorHandleFunc) {
+    public func setInternalErrorHandleFunc(fn: InternalErrorHandleFunc): Unit {
         _internalErrorHandleFunc = fn
     }
 
-    public func setAccessTokenResolveHandleFunc(fn: AccessTokenResolveHandleFunc) {
+    public func setAccessTokenResolveHandleFunc(fn: AccessTokenResolveHandleFunc): Unit {
         _accessTokenResolveHandleFunc = fn
     }
 
-    public func setRefreshTokenResolveHandleFunc(fn: RefreshingValidationHandleFunc) {
+    public func setRefreshTokenResolveHandleFunc(fn: RefreshingValidationHandleFunc): Unit {
         _refreshingValidationHandleFunc = fn
     }
 
-    public func setClientAuthorizedHandleFunc(fn: ClientAuthorizedHandleFunc) {
+    public func setClientAuthorizedHandleFunc(fn: ClientAuthorizedHandleFunc): Unit {
         _clientAuthorizedHandleFunc = fn
     }
 
-    public func setClientScopeHandleFunc(fn: ClientScopeHandleFunc) {
+    public func setClientScopeHandleFunc(fn: ClientScopeHandleFunc): Unit {
         _clientScopeHandleFunc = fn
     }
 
-    public func setRefreshingValidationHandleFunc(fn: RefreshingValidationHandleFunc) {
+    public func setRefreshingValidationHandleFunc(fn: RefreshingValidationHandleFunc): Unit {
         _refreshingValidationHandleFunc = fn
     }
 
-    public func setPreRedirectErrorHandleFunc(fn: PreRedirectErrorHandleFunc) {
+    public func setPreRedirectErrorHandleFunc(fn: PreRedirectErrorHandleFunc): Unit {
         _preRedirectErrorHandleFunc = fn
     }
 
-    public func setExtensionFieldsHandleFunc(fn: ExtensionFieldsHandleFunc) {
+    public func setExtensionFieldsHandleFunc(fn: ExtensionFieldsHandleFunc): Unit {
         _extensionFieldsHandleFunc = fn
     }
 
-    public func setAccessTokenExpHandleFunc(fn: AccessTokenExpHandleFunc) {
+    public func setAccessTokenExpHandleFunc(fn: AccessTokenExpHandleFunc): Unit {
         _accessTokenExpHandleFunc = fn
     }
 
-    public func setAuthorizeScopeHandleFunc(fn: AuthorizeScopeHandleFunc) {
+    public func setAuthorizeScopeHandleFunc(fn: AuthorizeScopeHandleFunc): Unit {
         _authorizeScopeHandleFunc = fn
     }
 
-    public func setResponseTokenHandleFunc(fn: ResponseTokenHandleFunc) {
+    public func setResponseTokenHandleFunc(fn: ResponseTokenHandleFunc): Unit {
         _responseTokenHandleFunc = fn
     }
 
-    public func setRefreshingScopeHandleFunc(fn: RefreshingScopeHandleFunc) {
+    public func setRefreshingScopeHandleFunc(fn: RefreshingScopeHandleFunc): Unit {
         _refreshingScopeHandleFunc = fn
     }
 
-    private func handlerError(ctx: JoyContext, req: ?AuthorizeRequest, err: ErrorInfo) {
+    /**
+     * handle the authorize http request, you can bind the func to url path `/authorize`
+     */
+    public func authorizeRequestHandleFunc(ctx: JoyContext): Unit {
+        try {
+            let req = validateAuthorizeRequest(ctx)
+            let userId = _userAuthorizationHandleFunc(ctx)
+            req.userId = userId
+            let scope = _authorizeScopeHandleFunc?(ctx) ?? ""
+            if (scope != "") {
+                req.scope = scope
+            }
+            let exp = _accessTokenExpHandleFunc?(ctx) ?? Duration.Zero
+            req.accessTokenExp = exp
+
+            let ti = getAuthorizeToken(ctx, req)
+            if (req.redirectURI == "") {
+                let client = _manager.getClient(req.clientId)
+                req.redirectURI = client.domain
+            }
+            redirect(ctx, req, getAuthorizeData(req.responseType, ti))
+        } catch (ex: OAuthException) {
+            authorizeReturnError(ctx, None, ex.errorInfo)
+        } catch (ex: Exception) {
+            authorizeReturnError(ctx, None, OAuthErrors.SERVER_ERROR)
+        }
+    }
+
+    private func authorizeReturnError(ctx: JoyContext, req: ?AuthorizeRequest, err: ErrorInfo) {
         if (let Some(h) <- _preRedirectErrorHandleFunc) {
             h(ctx, req.getOrThrow(), err)
         } else {
@@ -185,8 +213,11 @@ public class OAuth2Server {
         data
     }
 
+    /**
+     * @throws OAuthException
+     */
     private func getRedirectURI(req: AuthorizeRequest, data: HashMap<String, JsonSerializable>): String {
-        let url = URL.parse(req.redirectURI)
+        var url = URL.parse(req.redirectURI)
         match (req.responseType) {
             case "code" =>
                 let q = Form()
@@ -200,7 +231,7 @@ public class OAuth2Server {
                         case _ => ()
                     }
                 }
-                url.replace(query: q.toEncodeString())
+                url = url.replace(query: q.toEncodeString())
             case "token" =>
                 let b = StringBuilder()
                 if (req.state != "") {
@@ -218,9 +249,11 @@ public class OAuth2Server {
                         b.append("${k}=", s)
                     }
                 }
-                url.replace(query: "")
-                url.replace(fragment: b.toString())
-            case _ => ()
+                url = url.replace(query: "")
+                url = url.replace(fragment: b.toString())
+            case _ =>
+                @LogError("[OAuth2] unsupported_response_type, invalid response type ${req.responseType}")
+                throw OAuthException(OAuthErrors.UNSUPPORTED_RESP_TYPE)
         }
         url.toString()
     }
@@ -237,9 +270,16 @@ public class OAuth2Server {
         _cfg.allowedCodeChallengeMethods |> any {it => it == ccm}
     }
 
-    private func validationAuthorizeRequest(ctx: JoyContext): AuthorizeRequest {
+    /**
+     * @throws OAuthException
+     */
+    private func validateAuthorizeRequest(ctx: JoyContext): AuthorizeRequest {
+        if (!(ctx.method == JoyHttpConsts.METHOD_GET || ctx.method == JoyHttpConsts.METHOD_POST)) {
+            @LogError("[OAuth2] invalid request, method(${ctx.method}) is invalid")
+            throw OAuthException(OAuthErrors.INVALID_REQ)
+        }
         let redirectURI = ctx
-            .getPostForm("redirect_uri")
+            .getForm("redirect_uri")
             .getOrThrow(
                 {
                     =>
@@ -247,8 +287,24 @@ public class OAuth2Server {
                     OAuthException(OAuthErrors.INVALID_REQ)
                 }
             )
+        let clientId = validateClientId(ctx)
+        let respType = validateResponeType(ctx)
+        let cc = validateCodeChange(ctx)
+        var ccm = validateCodeChangeMethod(ctx)
+        let scope = ctx.getForm("scope").getOrDefault({=> ""})
+        let state = ctx.getForm("state").getOrDefault({=> ""})
+
+        AuthorizeRequest(responseType: respType, clientId: clientId, scope: scope, redirectURI: redirectURI,
+            state: state, codeChallenge: cc, codeChallengeMethod: ccm, userId: "", accessTokenExp: Duration.Zero,
+            request: ctx)
+    }
+
+    /**
+     * @throws OAuthException
+     */
+    private func validateClientId(ctx: JoyContext): String {
         let clientId = ctx
-            .getPostForm("client_id")
+            .getForm("client_id")
             .getOrThrow(
                 {
                     =>
@@ -256,17 +312,19 @@ public class OAuth2Server {
                     OAuthException(OAuthErrors.INVALID_REQ)
                 }
             )
-        if (!(ctx.method == JoyHttpConsts.METHOD_GET || ctx.method == JoyHttpConsts.METHOD_POST)) {
-            @LogError("[OAuth2] invalid request, method(${ctx.method}) is invalid")
-            throw OAuthException(OAuthErrors.INVALID_REQ)
-        }
         if (clientId == "") {
             @LogError("[OAuth2] invalid request, clientId is empty")
             throw OAuthException(OAuthErrors.INVALID_REQ)
         }
+        clientId
+    }
 
+    /**
+     * @throws OAuthException
+     */
+    private func validateResponeType(ctx: JoyContext): String {
         let respType = ctx
-            .getPostForm("response_type")
+            .getForm("response_type")
             .getOrThrow(
                 {
                     =>
@@ -278,8 +336,14 @@ public class OAuth2Server {
             @LogError("[OAuth2] unauthorized_client, response type (${respType}) is invalid")
             throw OAuthException(OAuthErrors.UNAUTHORIZED_CLIENT)
         }
+        respType
+    }
 
-        let cc = ctx.getPostForm("code_challenge").getOrDefault({=> ""})
+    /**
+     * @throws OAuthException
+     */
+    private func validateCodeChange(ctx: JoyContext): String {
+        let cc = ctx.getForm("code_challenge").getOrDefault({=> ""})
         if (cc == "" && _cfg.forcePKCE) {
             @LogError("[OAuth2] invalid_request, code_challenge is empty")
             throw OAuthException(OAuthErrors.CODE_CHALLENG_ERQUIRED)
@@ -288,8 +352,14 @@ public class OAuth2Server {
             @LogError("[OAuth2] invalid_request, code_challenge len (${cc.size}) is invalid")
             throw OAuthException(OAuthErrors.INVALID_CODE_CHALLENGE_LEN)
         }
+        cc
+    }
 
-        var ccm = ctx.getPostForm("code_challenge_method").getOrDefault({=> ""})
+    /**
+     * @throws OAuthException
+     */
+    private func validateCodeChangeMethod(ctx: JoyContext): String {
+        var ccm = ctx.getForm("code_challenge_method").getOrDefault({=> ""})
         if (ccm == "") {
             ccm = OAuthConsts.CODE_CHALLENGE_PLAIN
         }
@@ -297,14 +367,12 @@ public class OAuth2Server {
             @LogError("[OAuth2] invalid_request, code_challenge_method l (${ccm}) is invalid")
             throw OAuthException(OAuthErrors.UNSUPPORTED_CODE_CHALLENGE_METHOD)
         }
-
-        let scope = ctx.getPostForm("scope").getOrDefault({=> ""})
-        let state = ctx.getPostForm("state").getOrDefault({=> ""})
-        AuthorizeRequest(responseType: respType, clientId: clientId, scope: scope, redirectURI: redirectURI,
-            state: state, codeChallenge: cc, codeChallengeMethod: ccm, userId: "", accessTokenExp: Duration.Zero,
-            request: ctx)
+        ccm
     }
 
+    /**
+     * @throws OAuthException
+     */
     private func getAuthorizeToken(ctx: JoyContext, req: AuthorizeRequest): TokenInfo {
         let gt = if (req.responseType == OAuthConsts.RESPONSE_TYPE_CODE) {
             OAuthConsts.GRANT_TYPE_AUTHORIZATION_CODE
@@ -313,6 +381,7 @@ public class OAuth2Server {
         }
         var allowed = _clientAuthorizedHandleFunc?(req.clientId, gt) ?? true
         if (!allowed) {
+            @LogError("[OAuth2] client authorized handle return not allowed")
             throw OAuthException(OAuthErrors.UNAUTHORIZED_CLIENT)
         }
 
@@ -333,31 +402,6 @@ public class OAuth2Server {
         tgr.codeChallengeMethod = req.codeChallengeMethod
 
         _manager.generateAuthToken(req.responseType, tgr)
-    }
-
-    public func authorizeRequestHandleFunc(ctx: JoyContext): Unit {
-        try {
-            let req = validationAuthorizeRequest(ctx)
-            let userId = _userAuthorizationHandleFunc(ctx)
-            req.userId = userId
-            let scope = _authorizeScopeHandleFunc?(ctx) ?? ""
-            if (scope != "") {
-                req.scope = scope
-            }
-            let exp = _accessTokenExpHandleFunc?(ctx) ?? Duration.Zero
-            req.accessTokenExp = exp
-
-            let ti = getAuthorizeToken(ctx, req)
-            if (req.redirectURI == "") {
-                let client = _manager.getClient(req.clientId)
-                req.redirectURI = client.domain
-            }
-            redirect(ctx, req, getAuthorizeData(req.responseType, ti))
-        } catch (ex: OAuthException) {
-            handlerError(ctx, None, ex.errorInfo)
-        } catch (ex: Exception) {
-            handlerError(ctx, None, OAuthErrors.SERVER_ERROR)
-        }
     }
 
     private func getAuthorizeData(rt: ResponseType, token: TokenInfo): HashMap<String, JsonSerializable> {
@@ -387,26 +431,32 @@ public class OAuth2Server {
         data
     }
 
+    /**
+     * handle the token http request, you can bind the func to url path `/token`
+     */
     public func tokenRequestHandleFunc(ctx: JoyContext): Unit {
         try {
-            let (gt, tgr) = validationTokenRequest(ctx)
+            let (gt, tgr) = validateTokenRequest(ctx)
             let ti = getAccessToken(ctx, gt, tgr)
-            token(ctx, getTokenData(ti))
+            tokenReturn(ctx, getTokenData(ti))
         } catch (ex: OAuthException) {
-            tokenError(ctx, ex.errorInfo)
+            tokenReturnError(ctx, ex.errorInfo)
         } catch (ex: Exception) {
-            tokenError(ctx, OAuthErrors.SERVER_ERROR)
+            tokenReturnError(ctx, OAuthErrors.SERVER_ERROR)
         }
     }
-
-    private func validationTokenRequest(ctx: JoyContext): (String, TokenGenerateRequest) {
+    /**
+     * @throws OAuthException
+     */
+    private func validateTokenRequest(ctx: JoyContext): (String, TokenGenerateRequest) {
+        @LogDebug("[OAuth2] form=${ctx.httpContext.request.form.toEncodeString()}")
         if (!(ctx.method == JoyHttpConsts.METHOD_POST || _cfg.allowGetAccessRequest && ctx.method == JoyHttpConsts
             .METHOD_GET)) {
             @LogError("[OAuth2] invalid_request, method (${ctx.method}) is invalid")
             throw OAuthException(OAuthErrors.INVALID_REQ)
         }
         let gt = ctx
-            .getPostForm("grant_type")
+            .getForm("grant_type")
             .getOrThrow(
                 {
                     =>
@@ -416,54 +466,83 @@ public class OAuth2Server {
             )
 
         let (clientId, clientSecret) = _clientInfoHandleFunc(ctx)
+        // @LogDebug("[OAuth2] client info: ${clientId}, ${clientSecret}")
         let tgr = TokenGenerateRequest(
             request: ctx,
             clientId: clientId,
             clientSecret: clientSecret
         )
         match (gt) {
-            case "authorization_code" =>
-                tgr.redirectURI = ctx.getPostForm("redirect_uri").getOrDefault({=> ""})
-                tgr.code = ctx.getPostForm("code").getOrDefault({=> ""})
-                if (tgr.redirectURI == "" || tgr.code == "") {
-                    @LogError("[OAuth2] invalid request, redirectURI or code is empty")
-                    throw OAuthException(OAuthErrors.INVALID_REQ)
-                }
-                tgr.codeVerifier = ctx.getPostForm("code_verifier").getOrDefault({=> ""})
-                if (tgr.codeVerifier == "" && _cfg.forcePKCE) {
-                    @LogError("[OAuth2] invalid request, code verifier is empty")
-                    throw OAuthException(OAuthErrors.INVALID_REQ)
-                }
-            case "password" =>
-                tgr.code = ctx.getPostForm("scope").getOrDefault({=> ""})
-                let username = ctx.getPostForm("username").getOrDefault({=> ""})
-                let password = ctx.getPostForm("password").getOrDefault({=> ""})
-                if (password == "" || username == "") {
-                    @LogError("[OAuth2] invalid request, username or password is empty")
-                    throw OAuthException(OAuthErrors.INVALID_REQ)
-                }
-                let userId = _passwordAuthorizationHanleFunc(ctx, clientId, username, password)
-                if (userId == "") {
-                    throw OAuthException(OAuthErrors.INVALID_GRANT)
-                }
-                tgr.userId = userId
-            case "client_credentials" => tgr.code = ctx.getPostForm("scope").getOrDefault({=> ""})
-            case "refresh_token" =>
-                tgr.refresh = _refreshTokenResolveHandleFunc(ctx)
-                tgr.code = ctx.getPostForm("scope").getOrDefault({=> ""})
-            case _ => ()
+            case "authorization_code" => validateAuthorizationCode(tgr, ctx)
+            case "password" => validatePassword(tgr, ctx)
+            case "client_credentials" => validateClientCredentials(tgr, ctx)
+            case "refresh_token" => validateRefreshToken(tgr, ctx)
+            case _ =>
+                @LogError("[OAuth2] unsupported_grant_type, invalid grant type ${gt}")
+                throw OAuthException(OAuthErrors.UNSUPPORTED_GRANT_TYPE)
         }
 
         (gt, tgr)
     }
 
-    private func getAccessToken(ctx: JoyContext, gt: GrantType, tgr: TokenGenerateRequest): TokenInfo {
+    /**
+     * @throws OAuthException
+     */
+    private func validateAuthorizationCode(tgr: TokenGenerateRequest, ctx: JoyContext): Unit {
+        tgr.redirectURI = ctx.getForm("redirect_uri").getOrDefault({=> ""})
+        tgr.code = ctx.getForm("code").getOrDefault({=> ""})
+        if (tgr.redirectURI == "" || tgr.code == "") {
+            @LogError("[OAuth2] invalid request, redirectURI or code is empty")
+            throw OAuthException(OAuthErrors.INVALID_REQ)
+        }
+        tgr.codeVerifier = ctx.getForm("code_verifier").getOrDefault({=> ""})
+        if (tgr.codeVerifier == "" && _cfg.forcePKCE) {
+            @LogError("[OAuth2] invalid request, code verifier is empty")
+            throw OAuthException(OAuthErrors.INVALID_REQ)
+        }
+    }
+
+    /**
+     * @throws OAuthException
+     */
+    private func validatePassword(tgr: TokenGenerateRequest, ctx: JoyContext): Unit {
+        tgr.code = ctx.getForm("scope").getOrDefault({=> ""})
+        let username = ctx.getForm("username").getOrDefault({=> ""})
+        let pwd = ctx.getForm("password").getOrDefault({=> ""})
+        if (pwd == "" || username == "") {
+            @LogError("[OAuth2] invalid request, username or password is empty")
+            throw OAuthException(OAuthErrors.INVALID_REQ)
+        }
+
+        let userId = _passwordAuthorizationHanleFunc(ctx, tgr.clientId, username, pwd)
+        if (userId == "") {
+            @LogError("[OAuth2] invalid grant, PasswordAuthorizationHanleFunc return user_id empty")
+            throw OAuthException(OAuthErrors.INVALID_GRANT)
+        }
+        tgr.userId = userId
+    }
+
+    private func validateClientCredentials(tgr: TokenGenerateRequest, ctx: JoyContext): Unit {
+        tgr.scope = ctx.getForm("scope").getOrDefault({=> ""})
+    }
+
+    private func validateRefreshToken(tgr: TokenGenerateRequest, ctx: JoyContext): Unit {
+        tgr.refresh = _refreshTokenResolveHandleFunc(ctx)
+        tgr.scope = ctx.getForm("scope").getOrDefault({=> ""})
+    }
+
+    /**
+     * @throws OAuthException
+     */
+    private func getAccessToken(_: JoyContext, gt: GrantType, tgr: TokenGenerateRequest): TokenInfo {
         if (!checkGrantType(gt)) {
+            @LogError("[OAuth2] unauthorized_client, invalid grant type ${gt}")
             throw OAuthException(OAuthErrors.UNAUTHORIZED_CLIENT)
         }
 
         var allowed = _clientAuthorizedHandleFunc?(tgr.clientId, gt) ?? true
         if (!allowed) {
+            @LogError("[OAuth2] unauthorized_client, client authorized handle return not allowed")
             throw OAuthException(OAuthErrors.UNAUTHORIZED_CLIENT)
         }
 
@@ -472,6 +551,7 @@ public class OAuth2Server {
             case "password" | "client_credentials" =>
                 allowed = _clientScopeHandleFunc?(tgr) ?? true
                 if (!allowed) {
+                    @LogError("[OAuth2] invalid scope, ClientScopeHandleFunc return not allowed")
                     throw OAuthException(OAuthErrors.INVALID_SCOPE)
                 }
                 return _manager.generateAccessToken(gt, tgr)
@@ -480,6 +560,7 @@ public class OAuth2Server {
                     let rti = _manager.loadRefreshToken(tgr.refresh)
                     allowed = scopeFn(tgr, rti.scope)
                     if (!allowed) {
+                        @LogError("[OAuth2] invalid scope, RefreshingScopeHandleFunc return not allowed")
                         throw OAuthException(OAuthErrors.INVALID_SCOPE)
                     }
                 }
@@ -487,16 +568,19 @@ public class OAuth2Server {
                     let rti = _manager.loadRefreshToken(tgr.refresh)
                     allowed = validationFn(rti)
                     if (!allowed) {
-                        throw OAuthException(OAuthErrors.INVALID_SCOPE)
+                        @LogError("[OAuth2] invalid refresh_token, RefreshingValidationHandleFunc return not allowed")
+                        throw OAuthException(OAuthErrors.INVALID_REFRESH_TOKEN)
                     }
                     return _manager.refreshAccessToken(tgr)
                 }
                 return _manager.refreshAccessToken(tgr)
-            case _ => throw OAuthException(OAuthErrors.UNSUPPORTED_GRANT_TYPE)
+            case _ =>
+                @LogError("[OAuth2] unsupported_grant_type, invalid grant type ${gt}")
+                throw OAuthException(OAuthErrors.UNSUPPORTED_GRANT_TYPE)
         }
     }
 
-    private func token(ctx: JoyContext, data: HashMap<String, JsonSerializable>): Unit {
+    private func tokenReturn(ctx: JoyContext, data: HashMap<String, JsonSerializable>): Unit {
         if (let Some(fn) <- _responseTokenHandleFunc) {
             fn(ctx, data)
             return
@@ -507,8 +591,21 @@ public class OAuth2Server {
         ctx.json(data)
     }
 
-    private func tokenError(ctx: JoyContext, ei: ErrorInfo) {
+    private func tokenReturnError(ctx: JoyContext, ei: ErrorInfo) {
         let data = getErrorData(ctx, ei)
-        token(ctx, data)
+        tokenReturn(ctx, data)
+    }
+
+    /**
+     * validate the bearer token
+     *
+     * @throws OAuthException if the token is not existed or invalid
+     */
+    public func validateBearerToken(ctx: JoyContext): TokenInfo {
+        let access = _accessTokenResolveHandleFunc(ctx)
+        if (access.isEmpty()) {
+            throw OAuthException(OAuthErrors.INVALID_ACCESS_TOKEN)
+        }
+        _manager.loadAccessToken(access)
     }
 }

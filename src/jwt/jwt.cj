@@ -19,7 +19,7 @@ public class Jwt {
     private var _claims: MapClaims = MapClaims()
     private var _method: ?SigningMethod = None
 
-    private var _valid: Bool = true
+    private var _valid: Bool = false
     private var _signature: String = ""
     private var _text: String = ""
     private var _parseConfig: ?ParserConfig = None
@@ -57,6 +57,7 @@ public class Jwt {
      * specify the signing algorithm
      *
      * @param alg: the algorithm
+     * @throws JwtException if not found sign alg
      */
     public func alg(alg: String): Jwt {
         _method = SigningMethods.getMethod(alg)
@@ -81,6 +82,7 @@ public class Jwt {
      *
      * @param key: the key of algorithm, like Array<Byte> or RSAPrivateKey
      * @return: a signed JWT string
+     * @throws JwtException if not invoke alg
      */
     public func signWith(key: Any): String {
         if (_method.isNone()) {
@@ -110,7 +112,7 @@ public class Jwt {
      * verify the JWT with the key with the algorithm
      *
      * @param key: the key of algorithm, like Array<Byte> or RSAPublicKey
-     * @throw JwtException: verify failure
+     * @throws JwtException if verify failure
      */
     public func verifyWith(key: Any): Jwt {
         if (_valid) {
@@ -154,7 +156,7 @@ public class Jwt {
 
     private func validateExpirationTime(cfg: ParserConfig, now: DateTime): Unit {
         if (let Some(v) <- _claims.getExpirationTime()) {
-            if (v.value.addNanoseconds(cfg.leeway.toNanoseconds()) > now) {
+            if ((v.value + cfg.leeway) < now) {
                 throw JwtException("token is expired")
             }
         } else {
@@ -166,7 +168,7 @@ public class Jwt {
 
     private func validateNotBefore(cfg: ParserConfig, now: DateTime): Unit {
         if (let Some(v) <- _claims.getNotBefore()) {
-            if (v.value.addNanoseconds(-cfg.leeway.toNanoseconds()) < now) {
+            if ((v.value - cfg.leeway) < now) {
                 throw JwtException("token is not valid yet")
             }
         } else {
@@ -178,7 +180,7 @@ public class Jwt {
 
     private func validateIssuedAt(cfg: ParserConfig, now: DateTime): Unit {
         if (let Some(v) <- _claims.getIssuedAt()) {
-            if (v.value.addNanoseconds(-cfg.leeway.toNanoseconds()) < now) {
+            if ((v.value - cfg.leeway) > now) {
                 throw JwtException("token used before issued")
             }
         } else {
@@ -204,6 +206,9 @@ public class Jwt {
                 }
             }
         } else {
+            if (cfg.expectedAud.isEmpty()) {
+                return
+            }
             var found = false
             for (a in auds) {
                 if (cfg.expectedAud.contains(a)) {
@@ -277,17 +282,17 @@ public struct ParserConfig {
         let skipClaimsValidation!: Bool = false,
         // specifying the leeway window.
         let leeway!: Duration = Duration.second * 0,
-        // the primary use-case for this is testing. if you are looking for a way to account for clock-skew, specifying leeway should be used instead.
-        let timeFunc!: ?() -> DateTime = None,
+            // the primary use-case for this is testing. if you are looking for a way to account for clock-skew, specifying leeway should be used instead.
+            let timeFunc!: ?() -> DateTime = None,
         // require `iat` claim.
         let issueAtRequired!: Bool = false,
-        // require `exp` claim.
-        let expirationRequired!: Bool = false,
-        // require `nbf` claim.
-        let notBeforeRequired!: Bool = false,
+            // require `exp` claim.
+            let expirationRequired!: Bool = false,
+            // require `nbf` claim.
+            let notBeforeRequired!: Bool = false,
         // require any of the specified audiences in the `aud` claim. it will fail if the audience is not listed in the token or the `aud` claim is missing.
         let expectedAud!: Array<String> = [],
-        // require all the specified audiences 
-        let expectedAllAud!: Bool = false) {
+            // require all the specified audiences 
+            let expectedAllAud!: Bool = false) {
     }
 }

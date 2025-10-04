@@ -13,7 +13,6 @@ package cjoy.mcp.server
 import std.collection.{ArrayList, HashMap, map, collectArray}
 import std.collection.concurrent.ConcurrentHashMap
 import stdx.encoding.json.stream.JsonSerializable
-import stdx.encoding.base64.toBase64String
 import cjoy.mcp.api.*
 import cjoy.framework.{JoyContext}
 import cjoy.log.*

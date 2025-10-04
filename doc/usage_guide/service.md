@@ -31,6 +31,7 @@ func addCrontab(ctx: JoyContext): Unit {
 # 内置服务
 
  - [调度任务](../../doc/usage_guide/schedule.md)
+ - [Http服务](../../doc/usage_guide/httpx.md)
 
 ----
 << [返回](../../README.md#使用指导)

@@ -20,7 +20,7 @@ class Endpoint<T> <: ToString {
     }
 
     public func toString(): String {
-        return "Endpoint[pattern:${pattern},paramKeys:${paramKeys}]"
+        return "(pattern:${pattern},paramKeys:${paramKeys})"
     }
 }
 
@@ -318,7 +318,7 @@ public class TreeNode<T> {
 
     func findRoute(ri: RouteInfo<T>, method: String, path: String): ?TreeNode<T> {
         var search = path
-        var label = if (search != "") {
+        let label = if (search != "") {
             search[0]
         } else {
             b'\0'
@@ -460,7 +460,7 @@ public class TreeNode<T> {
         builder.append(",numEdges:${num}")
         builder.append(",isLeaf:${node.isLeaf()}")
         if (!node._endpoints.isEmpty()) {
-            builder.append(",endpoints:${node._endpoints}")
+            builder.append(",endpoints:{${node._endpoints.keys().toArray()} ${node._endpoints.values().toArray()[0]}}")
         }
         builder.append("\n")
 
@@ -556,6 +556,9 @@ class Segment {
         return ret
     }
 
+    /**
+     * @throws IllegalArgumentException if miss closing delimiter '}'
+     */
     private static func findEndIdx(pattern: String, ps: Int): Int {
         // read to closing } taking into account opens and closes in curl count (cc)
         var cc = 0
@@ -586,6 +589,9 @@ class Segment {
         seg
     }
 
+    /**
+     * @throws IllegalArgumentException if the patten is invalid
+     */
     private func parse(pattern: String): Unit {
         let ps = pattern.indexOf(b'{') ?? -1
         let ws = pattern.indexOf(b'*') ?? -1
@@ -632,6 +638,9 @@ class Segment {
         rex = normRexpat(rex)
     }
 
+    /**
+     * @throws IllegalArgumentException if the patten contains duplicate param key
+     */
     static func parseParamKeys(pattern: String): Array<String> {
         var pat = pattern
         var paramKeys = ArrayList<String>()

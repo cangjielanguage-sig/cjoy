@@ -10,7 +10,7 @@
 
 package cjoy.jwt
 
-import std.collection.{HashMap, map, collectArray}
+import std.collection.{HashMap, map, collectArray, ArrayList}
 import std.time.DateTime
 import std.math.trunc
 import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonWriter, JsonReader, JsonToken}
@@ -21,7 +21,7 @@ public class JwtException <: Exception {
     }
 }
 
-public var serializableSingleStringAsArray = true
+public var serializableSingleStringAsArray: Bool = true
 
 public class NumberData <: JsonSerializable & JsonDeserializable<NumberData> {
     public NumberData(public let value: DateTime) {}
@@ -61,6 +61,9 @@ public class ClaimStrings <: JsonSerializable & JsonDeserializable<ClaimStrings>
         }
     }
 
+    /**
+     * @throws JwtException if it is invalid  payload json
+     */
     public static func fromJson(reader: JsonReader): ClaimStrings {
         let token = reader.peek()
         if (let Some(t) <- token) {
@@ -156,12 +159,12 @@ extend MapClaims <: Claims {
     }
 
     public func audience(aud: String): Claims {
-        add("aud", aud)
+        add("aud", ClaimStrings([aud]))
         this
     }
 
     public func audiences(auds: Array<String>): Claims {
-        add("aud", auds)
+        add("aud", ClaimStrings(auds))
         this
     }
 
@@ -193,11 +196,10 @@ extend MapClaims <: Claims {
             return match (v) {
                 case x: String => ClaimStrings([x])
                 case x: Array<String> => ClaimStrings(x)
-                case x: Collection<String> => ClaimStrings(x.toArray())
+                case x: Collection<JsonSerializable> => 
+                    let arr = x |> map {it => (it as String).getOrThrow()} |> collectArray
+                    ClaimStrings(arr)
                 case x: ClaimStrings => x
-                case x: Collection<ToString> =>
-                    let a: Array<String> = x |> map {it => it.toString()} |> collectArray
-                    ClaimStrings(a)
                 case _ => None
             }
         }

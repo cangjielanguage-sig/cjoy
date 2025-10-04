@@ -11,7 +11,7 @@
 package cjoy.httpx
 
 import std.collection.concurrent.LinkedBlockingQueue
-import std.collection.{HashMap, ArrayList}
+import std.collection.{ArrayList}
 import std.io.{InputStream, StringReader}
 
 enum StreamData {
@@ -31,6 +31,9 @@ public class JoyHttpStream <: Iterator<String> & InputStream {
         _closeFn = closeFn
     }
 
+    /**
+     * @throws Exception if receive a error
+     */
     private func readBytes(): Bool {
         if (_finished) {
             return false

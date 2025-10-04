@@ -22,13 +22,13 @@ public type TokenAuthValidatorFunc = (ctx: JoyContext, token: String) -> Bool
 // the authentication function
 type AuthFunc = (ctx: JoyContext) -> Bool
 
-// Verify a single token
-public class SingleTokenAuthValidator {
-    public SingleTokenAuthValidator(let token: String) {
+// Predefined tokens
+class PredefinedTokenAuthValidator {
+    public PredefinedTokenAuthValidator(let tokens: Array<String>) {
     }
 
     public func validate(ctx: JoyContext, token: String): Bool {
-        this.token == token
+        this.tokens.contains(token)
     }
 }
 
@@ -60,35 +60,35 @@ public class TokenAuth <: JoyMiddlewareHandler {
      *       - "form:<name>"
      *       - "param:<name>"
      *       - "cookie:<name>"
-     * @param errorHandler: a function which is executed for an invalid key.
-     * @param successHandler: a function which is executed for a valid key.
+     * @param errorHandleFunc: a function which is executed for an invalid key.
+     * @param successHandleFunc: a function which is executed for a valid key.
      * @param authSchema: be used in the Authorization header.
-     * @param filterHandler: a function to skip middleware.
+     * @param filterHandleFunc: a function to skip middleware.
      */
     public init(validator: TokenAuthValidatorFunc, lookupKey!: String = "header:Authorization",
-        errorHandler!: ?JoyRequestHandlerFunc = None, successHandler!: ?JoyRequestHandlerFunc = None,
-        authSchema!: String = "Bearer", filterHandler!: ?JoyRequestFilterFunc = None) {
-        _errorHandler = if (let Some(h) <- errorHandler) {
+        errorHandleFunc!: ?JoyRequestHandlerFunc = None, successHandleFunc!: ?JoyRequestHandlerFunc = None,
+        authSchema!: String = "Bearer", filterHandleFunc!: ?JoyRequestFilterFunc = None) {
+        _errorHandler = if (let Some(h) <- errorHandleFunc) {
             JoyFuncHandler(h)
         } else {
             DefaultAuthFailureHandler.INSTANCE
         }
 
-        _successHandler = if (let Some(h) <- successHandler) {
+        _successHandler = if (let Some(h) <- successHandleFunc) {
             JoyFuncHandler(h)
         } else {
             None
         }
 
-        _filterHandler = filterHandler
+        _filterHandler = filterHandleFunc
         _authFunc = createAuthFunc(validator, lookupKey, authSchema)
     }
 
-    public init(token: String, lookupKey!: String = "header:Authorization",
-        errorHandler!: ?JoyRequestHandlerFunc = None, successHandler!: ?JoyRequestHandlerFunc = None,
-        authSchema!: String = "Bearer", filterHandler!: ?JoyRequestFilterFunc = None) {
-        this(SingleTokenAuthValidator(token).validate, lookupKey: lookupKey, errorHandler: errorHandler,
-            successHandler: successHandler, authSchema: authSchema, filterHandler: filterHandler)
+    public init(tokens: Array<String>, lookupKey!: String = "header:Authorization",
+        errorHandleFunc!: ?JoyRequestHandlerFunc = None, successHandleFunc!: ?JoyRequestHandlerFunc = None,
+        authSchema!: String = "Bearer", filterHandleFunc!: ?JoyRequestFilterFunc = None) {
+        this(PredefinedTokenAuthValidator(tokens).validate, lookupKey: lookupKey, errorHandleFunc: errorHandleFunc,
+            successHandleFunc: successHandleFunc, authSchema: authSchema, filterHandleFunc: filterHandleFunc)
     }
 
     public func handle(ctx: JoyContext, chain: JoyRequestHandlerChain): Unit {

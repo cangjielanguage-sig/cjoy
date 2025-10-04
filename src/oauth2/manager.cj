@@ -12,7 +12,6 @@ package cjoy.oauth2
 
 import std.collection.HashMap
 import std.time.DateTime
-import cjoy.framework.JoyContext
 import cjoy.log.*
 
 /**
@@ -32,8 +31,8 @@ public interface OAuth2Manager {
 public class DefaultOAuth2Manager <: OAuth2Manager {
     private let _clientStore: ClientStore
     private let _tokenStore: TokenStore
-    private let _accessGenerate: AccessGenerate
-    private let _authorizeGenerate: AuthorizeGenerate
+    private let _tokenGenerate: TokenGenerate
+    private let _codeGenerate: CodeGenerate
     private let _validateURIFunc: ValidateURIFunc
     private let _clientPasswordVerifier: ?ClientPasswordVerifier
 
@@ -46,16 +45,16 @@ public class DefaultOAuth2Manager <: OAuth2Manager {
     public init(
         clientStore!: ClientStore = MemoryClientStore(),
         tokenStore!: TokenStore = MemoryTokenStore(),
-        accessGenerate!: AccessGenerate = SecureRandAccessGenerate(),
-        authorizeGenerate!: AuthorizeGenerate = SecureRandAuthorizeGenerate(),
+        tokenGenerate!: TokenGenerate = SecureRandTokenGenerate(),
+        codeGenerate!: CodeGenerate = SecureRandCodeGenerate(),
         validateURIFunc!: ValidateURIFunc = defaultValidateURIFunc,
         codeExpire!: Duration = GrantConfig.CODE_EXP,
         clientPasswordVerifier!: ?ClientPasswordVerifier = None
     ) {
         _clientStore = clientStore
         _tokenStore = tokenStore
-        _accessGenerate = accessGenerate
-        _authorizeGenerate = authorizeGenerate
+        _tokenGenerate = tokenGenerate
+        _codeGenerate = codeGenerate
         _validateURIFunc = validateURIFunc
         _codeExpire = codeExpire
         _clientPasswordVerifier = clientPasswordVerifier
@@ -116,7 +115,7 @@ public class DefaultOAuth2Manager <: OAuth2Manager {
                     token.codeChallenge = request.codeChallenge
                     token.codeChallengeMethod = request.codeChallengeMethod
                 }
-                token.code = _authorizeGenerate.generate(td)
+                token.code = _codeGenerate.generate(td)
             case "token" =>
                 let icfg = getGrantConfig(OAuthConsts.GRANT_TYPE_IMPLICIT)
                 var aexp = icfg.accessTokenExp
@@ -129,10 +128,12 @@ public class DefaultOAuth2Manager <: OAuth2Manager {
                     token.refreshCreateAt = createAt
                     token.refreshExpiredIn = icfg.refreshTokenExp.toSeconds()
                 }
-                let (at, rt) = _accessGenerate.generate(td, icfg.isGenerateRefresh)
+                let (at, rt) = _tokenGenerate.generate(td, icfg.isGenerateRefresh)
                 token.access = at
                 token.refresh = rt
-            case _ => ()
+            case _ =>
+                @LogError("[OAuth2] unsupported response type, ${rt}")
+                throw OAuthException(OAuthErrors.UNSUPPORTED_RESP_TYPE)
         }
 
         _tokenStore.create(token)
@@ -143,8 +144,7 @@ public class DefaultOAuth2Manager <: OAuth2Manager {
         let client = getClient(request.clientId)
         if (!(_clientPasswordVerifier?.verifyPassword(client, request.clientSecret) ?? true)) {
             throw OAuthException(OAuthErrors.INVALID_CLIENT)
-        }
-        if (client.secret != "" && request.clientSecret != client.secret) {
+        } else if (client.secret != "" && request.clientSecret != client.secret) {
             @LogError("[OAuth2] invalid client, client secret is invalid")
             throw OAuthException(OAuthErrors.INVALID_CLIENT)
         }
@@ -153,7 +153,7 @@ public class DefaultOAuth2Manager <: OAuth2Manager {
             _validateURIFunc(client.domain, request.redirectURI)
         }
 
-        if (gt == OAuthConsts.GRANT_TYPE_CLIENT_CREDENTIALS && client.public) {
+        if (gt == OAuthConsts.GRANT_TYPE_CLIENT_CREDENTIALS && client.isPublic) {
             @LogError("[OAuth2] invalid client, client is public but grant type is client_credentials")
             throw OAuthException(OAuthErrors.INVALID_CLIENT)
         }
@@ -190,9 +190,11 @@ public class DefaultOAuth2Manager <: OAuth2Manager {
 
         let td = GenerateBasic(client: client, userId: request.userId, createAt: createAt, tokenInfo: token,
             request: request.request)
-        let (at, rt) = _accessGenerate.generate(td, gcfg.isGenerateRefresh)
+        let (at, rt) = _tokenGenerate.generate(td, gcfg.isGenerateRefresh)
         token.access = at
         token.refresh = rt
+
+        _tokenStore.create(token)
 
         token
     }
@@ -217,7 +219,7 @@ public class DefaultOAuth2Manager <: OAuth2Manager {
         if (request.scope != "") {
             token.scope = request.scope
         }
-        let (at, rt) = _accessGenerate.generate(td, _rfcfg.isGenerateRefresh)
+        let (at, rt) = _tokenGenerate.generate(td, _rfcfg.isGenerateRefresh)
         token.access = at
         token.refresh = rt
 
@@ -348,6 +350,7 @@ public class DefaultOAuth2Manager <: OAuth2Manager {
         if (ccm == "") {
             ccm = OAuthConsts.CODE_CHALLENGE_PLAIN
         }
+        @LogDebug("[OAuth2], code_challenge=${cc}, verfiy_code=${ver}, method=${ccm}")
         if (!ccm.validate(cc, ver)) {
             throw OAuthException(OAuthErrors.INVALID_CODE_CHALLENGE)
         }

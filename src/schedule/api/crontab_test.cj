@@ -8,21 +8,19 @@
  * See the Mulan PSL v2 for more details.
  */
 
-package cjoy.framework
+package cjoy.schedule.api
 
-import stdx.net.http.{HttpResponseBuilder}
+import std.sync.SyncCounter
 
-/**
-* the interface of render
-*/
-public interface JoyRender {
-    func render(builder: HttpResponseBuilder): Unit
-}
-
-public class JoyFuncRender <: JoyRender {
-    public JoyFuncRender(let builder: (HttpResponseBuilder) -> Unit) {}
-
-    public func render(builder: HttpResponseBuilder): Unit {
-        this.builder(builder)
+@Test
+public class CrontabTestCaseSuit {
+    @TestCase
+    public func testRun() {
+        let crontab = Crontab()
+        let count = SyncCounter(1)
+        crontab.addJob("test1", "* * * * * *", {
+            ctx: ScheduleContext => count.dec()
+        })
+        count.waitUntilZero()
     }
 }

@@ -11,71 +11,112 @@
 package cjoy.httpx
 
 import std.collection.{Map, HashMap}
-import std.io.{InputStream, StringReader, ByteBuffer}
-import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonReader, JsonWriter}
-import stdx.net.http.{HttpHeaders, HttpResponse, HttpRequestBuilder}
+import stdx.net.http.{HttpHeaders}
+import stdx.encoding.url.Form
 import cjoy.context.Context
 import cjoy.framework.{JoyHttpConsts}
-
-
-let emptyParams = HashMap<String, ToString>()
 
 /**
  * the http client service interface
  */
 public interface JoyHttpClient {
-    func get(ctx: Context, path: String, params: Map<String, ToString>, headers: HttpHeaders): JoyHttpResponse {
-        exechange(ctx, JoyHttpConsts.METHOD_GET, path, params, headers, Option<Any>.None)
+    func send(ctx: Context, request: JoyHttpRequest): JoyHttpResponse
+
+    func get(ctx: Context, path: String, queries: Map<String, ToString>, headers: HttpHeaders): JoyHttpResponse {
+        send(ctx, JoyHttpRequest.of(path).get().queries(queries).headers(headers))
     }
     func get(ctx: Context, path: String): JoyHttpResponse {
-        get(ctx, path, emptyParams, HttpHeaders())
+        send(ctx, JoyHttpRequest.of(path).get())
     }
-    func get(ctx: Context, path: String, params: Map<String, ToString>): JoyHttpResponse {
-        get(ctx, path, params, HttpHeaders())
+    func get(ctx: Context, path: String, queries: Map<String, ToString>): JoyHttpResponse {
+        send(ctx, JoyHttpRequest.of(path).get().queries(queries))
     }
     func get(ctx: Context, path: String, headers: HttpHeaders): JoyHttpResponse {
-        get(ctx, path, emptyParams, headers)
+        send(ctx, JoyHttpRequest.of(path).get().headers(headers))
     }
 
-    func post(ctx: Context, path: String, params: Map<String, ToString>, headers: HttpHeaders, body: Any): JoyHttpResponse {
-        exechange(ctx, JoyHttpConsts.METHOD_POST, path, params, headers, body)
+    func post(ctx: Context, path: String, queries: Map<String, ToString>, headers: HttpHeaders, body: Any): JoyHttpResponse {
+        send(ctx, JoyHttpRequest.of(path).post().queries(queries).headers(headers).body(body))
     }
     func post(ctx: Context, path: String, body: Any): JoyHttpResponse {
-        post(ctx, path, emptyParams, HttpHeaders(), body)
+        send(ctx, JoyHttpRequest.of(path).post().body(body))
     }
-    func post(ctx: Context, path: String, params: Map<String, ToString>, body: Any): JoyHttpResponse {
-        post(ctx, path, params, HttpHeaders(), body)
+    func post(ctx: Context, path: String, queries: Map<String, ToString>, body: Any): JoyHttpResponse {
+        send(ctx, JoyHttpRequest.of(path).post().queries(queries).body(body))
     }
     func post(ctx: Context, path: String, headers: HttpHeaders, body: Any): JoyHttpResponse {
-        post(ctx, path, emptyParams, headers, body)
+        send(ctx, JoyHttpRequest.of(path).post().headers(headers).body(body))
     }
 
-    func put(ctx: Context, path: String, params: Map<String, ToString>, headers: HttpHeaders, body: Any): JoyHttpResponse {
-        exechange(ctx, JoyHttpConsts.METHOD_PUT, path, params, headers, body)
+    func put(ctx: Context, path: String, queries: Map<String, ToString>, headers: HttpHeaders, body: Any): JoyHttpResponse {
+        send(ctx, JoyHttpRequest.of(path).put().queries(queries).headers(headers).body(body))
     }
     func put(ctx: Context, path: String, body: Any): JoyHttpResponse {
-        put(ctx, path, emptyParams, HttpHeaders(), body)
+        send(ctx, JoyHttpRequest.of(path).put().body(body))
     }
-    func put(ctx: Context, path: String, params: Map<String, ToString>, body: Any): JoyHttpResponse {
-        put(ctx, path, params, HttpHeaders(), body)
+    func put(ctx: Context, path: String, queries: Map<String, ToString>, body: Any): JoyHttpResponse {
+        send(ctx, JoyHttpRequest.of(path).put().queries(queries).body(body))
     }
     func put(ctx: Context, path: String, headers: HttpHeaders, body: Any): JoyHttpResponse {
-        put(ctx, path, emptyParams, headers, body)
+        send(ctx, JoyHttpRequest.of(path).put().headers(headers).body(body))
     }
 
-    func delete(ctx: Context, path: String, params: Map<String, ToString>, headers: HttpHeaders, body: Any): JoyHttpResponse {
-        exechange(ctx, JoyHttpConsts.METHOD_PUT, path, params, headers, body)
+    func patch(ctx: Context, path: String, queries: Map<String, ToString>, headers: HttpHeaders, body: Any): JoyHttpResponse {
+        send(ctx, JoyHttpRequest.of(path).patch().queries(queries).headers(headers).body(body))
+    }
+    func patch(ctx: Context, path: String, body: Any): JoyHttpResponse {
+        send(ctx, JoyHttpRequest.of(path).patch().body(body))
+    }
+    func patch(ctx: Context, path: String, queries: Map<String, ToString>, body: Any): JoyHttpResponse {
+        send(ctx, JoyHttpRequest.of(path).patch().queries(queries).body(body))
+    }
+    func patch(ctx: Context, path: String, headers: HttpHeaders, body: Any): JoyHttpResponse {
+        send(ctx, JoyHttpRequest.of(path).patch().headers(headers).body(body))
+    }
+
+    func delete(ctx: Context, path: String, queries: Map<String, ToString>, headers: HttpHeaders, body: Any): JoyHttpResponse {
+        send(ctx, JoyHttpRequest.of(path).delete().queries(queries).headers(headers).body(body))
     }
     func delete(ctx: Context, path: String, body: Any): JoyHttpResponse {
-        delete(ctx, path, emptyParams, HttpHeaders(), body)
+        send(ctx, JoyHttpRequest.of(path).delete().body(body))
     }
-    func delete(ctx: Context, path: String, params: Map<String, ToString>, body: Any): JoyHttpResponse {
-        delete(ctx, path, params, HttpHeaders(), body)
+    func delete(ctx: Context, path: String): JoyHttpResponse {
+        send(ctx, JoyHttpRequest.of(path).delete())
+    }
+    func delete(ctx: Context, path: String, queries: Map<String, ToString>, body: Any): JoyHttpResponse {
+        send(ctx, JoyHttpRequest.of(path).delete().queries(queries).body(body))
     }
     func delete(ctx: Context, path: String, headers: HttpHeaders, body: Any): JoyHttpResponse {
-        delete(ctx, path, emptyParams, headers, body)
+        send(ctx, JoyHttpRequest.of(path).delete().headers(headers).body(body))
     }
 
-    func exechange(ctx: Context, method: String, path: String, params: Map<String, ToString>, headers: HttpHeaders,
-        body: Any): JoyHttpResponse
+    func postform(ctx: Context, path: String, queries: Map<String, ToString>, headers: HttpHeaders, form: Form): JoyHttpResponse {
+        let body = form.toEncodeString()
+        headers.add(JoyHttpConsts.HEADER_CONTENT_TYPE, JoyHttpConsts.MIME_APP_FORM_URL_ENCODED)
+        send(ctx, JoyHttpRequest.of(path).post().queries(queries).headers(headers).body(body))
+    }
+    func postform(ctx: Context, path: String, headers: HttpHeaders, form: Form): JoyHttpResponse {
+        let body = form.toEncodeString()
+        headers.add(JoyHttpConsts.HEADER_CONTENT_TYPE, JoyHttpConsts.MIME_APP_FORM_URL_ENCODED)
+        send(ctx, JoyHttpRequest.of(path).post().headers(headers).body(body))
+    }
+    func postform(ctx: Context, path: String, queries: Map<String, ToString>, form: Form): JoyHttpResponse {
+        let body = form.toEncodeString()
+        send(ctx,
+            JoyHttpRequest
+                .of(path)
+                .post()
+                .queries(queries)
+                .header(JoyHttpConsts.HEADER_CONTENT_TYPE, JoyHttpConsts.MIME_APP_FORM_URL_ENCODED)
+                .body(body))
+    }
+    func postform(ctx: Context, path: String, form: Form): JoyHttpResponse {
+        let body = form.toEncodeString()
+        send(ctx,
+            JoyHttpRequest
+                .of(path)
+                .post()
+                .header(JoyHttpConsts.HEADER_CONTENT_TYPE, JoyHttpConsts.MIME_APP_FORM_URL_ENCODED)
+                .body(body))
+    }
 }

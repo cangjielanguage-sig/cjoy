@@ -10,14 +10,10 @@
 
 package cjoy.mcp.server
 
-import std.collection.{ArrayList, HashMap, map, collectArray}
 import std.collection.concurrent.ConcurrentHashMap
-import stdx.encoding.json.stream.JsonSerializable
-import stdx.encoding.base64.toBase64String
 import cjoy.mcp.api.*
-import cjoy.framework.{Joy, JoyContext, JoyRequestHandler, VERSION}
+import cjoy.framework.{Joy, VERSION}
 import cjoy.log.*
-import cjoy.json.JsonTool
 
 public class McpServerFeatures {
     public var protocolVesion: String = McpConsts.LASTEST_PROTOCOL_VERSION

@@ -10,6 +10,8 @@
 
 package cjoy.context
 
+import std.collection.concurrent.ConcurrentHashMap
+
 /**
  * the contenxt interface
  */
@@ -28,7 +30,6 @@ public interface Context {
      *
      * @param key: the param key name
      * @return the param value
-     *
      */
     func get<T>(key: String): ?T
 
@@ -43,6 +44,27 @@ public interface Context {
      * get the service from context
      *
      * @param name: the name of service
+     * @return the service instance
      */
     func getService<T>(name: String): ?T
+}
+
+public open class MapContext <: Context {
+    private let _data: ConcurrentHashMap<String, Any> = ConcurrentHashMap()
+
+    public func set(key: String, value: Any): Unit {
+        _data.add(key, value)
+    }
+
+    public func get<T>(key: String): ?T {
+        (_data.get(key) ?? Option<Any>.None) as T
+    }
+
+    public func remove(key: String): Unit {
+        _data.remove(key)
+    }
+
+    public open func getService<T>(_: String): ?T {
+        None
+    }
 }

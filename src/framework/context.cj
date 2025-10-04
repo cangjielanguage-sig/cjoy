@@ -19,6 +19,7 @@ import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonRead
 import stdx.encoding.base64.fromBase64String
 import cjoy.bind.api.JoyBindable
 import cjoy.context.Context
+import cjoy.log.*
 
 /**
  * the context which holds the engine config, params, context params and any you need.
@@ -159,6 +160,42 @@ public interface JoyContext <: Context {
      *
      */
     func getPostFormList(name: String): ArrayList<String>
+
+    /**
+     * get post form or query form param
+     *
+     * @param name: the param name
+     * @return the param value
+     */
+    func getForm(name: String): ?String {
+        getPostForm(name) ?? getQuery(name)
+    }
+
+    /**
+     * get post form or query form param
+     *
+     * @param name: the param name
+     * @param defaultValue: the default value when it not existed
+     * @return the param value
+     */
+    func getForm(name: String, defaultValue: String): String {
+        getForm(name) ?? defaultValue
+    }
+
+    /**
+     * get post form or query form param
+     *
+     * @param name: the param name
+     * @return the param value
+     */
+    func getFormList(name: String): ArrayList<String> {
+        var res = getPostFormList(name)
+        if (res.isEmpty()) {
+            getQueryList(name)
+        } else {
+            res
+        }
+    }
 
     /**
      * read the request json body content then deserialize to T
@@ -343,20 +380,6 @@ public interface JoyContext <: Context {
     func cookie(cookie: Cookie): JoyContext
 
     /**
-     * render the reponse body
-     *
-     * @param r: the render
-     */
-    func render(r: JoyRender): Unit
-
-    /**
-     * render the reponse body
-     *
-     * @param r: the render
-     */
-    func render(r: (HttpResponseBuilder) -> Unit): Unit
-
-    /**
      * redirect to the new url with status code
      *
      * @param status: the http status code
@@ -381,13 +404,15 @@ public interface JoyContext <: Context {
 
     /**
      * get basic auth info
+     * 
+     * return the username and password
      */
-    func basicAuth(): (String, String, Bool)
+    func basicAuth(): ?(String, String)
 }
 
 class JoyHttpContext <: JoyContext {
-    var _httpContext: HttpContext
-    private let _services: ServiceConainter
+    let _httpContext: HttpContext
+    let _services: ServiceConainter
     private let _config: JoyConfig
     private let _paramMap: HashMap<String, String>
     private let _ctxParamMap: HashMap<String, Any>
@@ -507,11 +532,7 @@ class JoyHttpContext <: JoyContext {
     }
 
     public func get<T>(key: String): ?T {
-        let val = _ctxParamMap.get(key)
-        match (val) {
-            case Some(v) => v as T
-            case _ => None
-        }
+        (_ctxParamMap.get(key) ?? Option<Any>.None) as T
     }
 
     public func remove(key: String): Unit {
@@ -698,14 +719,6 @@ class JoyHttpContext <: JoyContext {
         this
     }
 
-    public func render(r: JoyRender): Unit {
-        r.render(_httpContext.responseBuilder)
-    }
-
-    public func render(r: (HttpResponseBuilder) -> Unit): Unit {
-        this.render(JoyFuncRender(r))
-    }
-
     public func redirect(status: UInt16, location: String): Unit {
         RedirectHandler(location, status).handle(_httpContext)
     }
@@ -722,29 +735,28 @@ class JoyHttpContext <: JoyContext {
         JoySseEmitter(_httpContext)
     }
 
-    public func basicAuth(): (String, String, Bool) {
+    public func basicAuth(): ?(String, String) {
         let auth = getHeader(JoyHttpConsts.HEADER_AUTHORIZATION)
         if (auth.isNone()) {
-            return ("", "", false)
+            return None
         }
 
         let b64 = auth.getOrThrow().split(" ")
         if (b64.size != 2 || b64[0].trimAscii() != 'Basic') {
-            return ("", "", false)
+            return None
         }
 
         let decode = fromBase64String(b64[1])
         if (decode.isNone()) {
-            return ("", "", false)
+            return None
         }
 
         let upStr = String.fromUtf8(decode.getOrThrow())
         let up = upStr.split(":")
         if (up.size != 2) {
-            return ("", "", false)
+            return None
         }
-
-        (up[0], up[1], true)
+        (up[0], up[1])
     }
 
     public func getService<T>(name: String): ?T {

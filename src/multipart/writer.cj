@@ -13,6 +13,7 @@ package cjoy.multipart
 import std.io.{OutputStream, BufferedOutputStream}
 import stdx.net.http.HttpHeaders
 import cjoy.utils.{StrFunc, secureRandStr}
+import cjoy.framework.{JoyHttpConsts}
 
 /**
  * multi part writer
@@ -49,7 +50,7 @@ public class JoyMultiPartWriter <: Resource {
         }
     }
 
-    public func createPart(headers: HttpHeaders) {
+    private func createPart(headers: HttpHeaders): JoyMultiPartWriter {
         if (let Some(p) <- _lastPart) {
             p.close()
         }
@@ -66,9 +67,13 @@ public class JoyMultiPartWriter <: Resource {
 
         _buffer.write([b'\r', b'\n'])
         _lastPart = TmpPart()
+        this
     }
 
-    public func writePartData(bs: Array<Byte>) {
+    /**
+     * @throws IllegalArgumentException
+     */
+    public func writePartData(bs: Array<Byte>): JoyMultiPartWriter {
         if (_lastPart.isNone()) {
             throw IllegalArgumentException("part is not exist, must create it firstly.")
         }
@@ -78,28 +83,38 @@ public class JoyMultiPartWriter <: Resource {
             }
         }
         _buffer.write(bs)
+        this
     }
 
-    public func createFromFile(fieldname: String, filename: String, contentType!: String = "application/octet-stream") {
+    public func createFromFile(fieldname: String, filename: String, contentType!: String = "application/octet-stream"): JoyMultiPartWriter {
         let headers = HttpHeaders()
-        headers.add("Content-Disposition",
+        headers.add(JoyHttpConsts.HEADER_CONTENT_DISPOSITION,
             "form-data; name=\"${escapeQuotes(fieldname)}\"; filename=\"${escapeQuotes(filename)}\"")
-        headers.add("Content-Type", contentType)
+        headers.add(JoyHttpConsts.HEADER_CONTENT_TYPE, contentType)
         createPart(headers)
     }
 
-    public func createFormField(fieldname: String) {
+    public func createFormField(fieldname: String): JoyMultiPartWriter {
         let headers = HttpHeaders()
-        headers.add("Content-Disposition", "form-data; name=\"${escapeQuotes(fieldname)}\"")
+        headers.add(JoyHttpConsts.HEADER_CONTENT_DISPOSITION, "form-data; name=\"${escapeQuotes(fieldname)}\"")
         createPart(headers)
     }
 
-    public func writeField(fieldname: String, value: String) {
+    public func writeFile(fieldname: String, filename: String, fileContent: Array<Byte>,
+        contentType!: String = "application/octet-stream"): JoyMultiPartWriter {
+        createFromFile(fieldname, filename, contentType: contentType)
+        writePartData(fileContent)
+    }
+
+    public func writeField(fieldname: String, value: String): JoyMultiPartWriter {
         createFormField(fieldname)
         writePartData(value.toArray())
     }
 
-    private static func checkBoundary(boundary: String) {
+    /**
+     * @throws IllegalArgumentException
+     */
+    private static func checkBoundary(boundary: String): Unit {
         if (boundary.size < 1 || boundary.size > 70) {
             throw IllegalArgumentException("invalid boundary length")
         }
@@ -122,11 +137,7 @@ public class JoyMultiPartWriter <: Resource {
         }
     }
 
-    private static func escapeQuotes(s: String): String {
-        s.replace("\\", "\\\\").replace(#'"'#, "\\\"")
-    }
-
-    public func close() {
+    public func close(): Unit {
         if (_closed) {
             return
         }
@@ -150,10 +161,4 @@ private class TmpPart {
     func close() {
         _closed = true
     }
-}
-
-private let specail_chars = #"()<>@,;:\"/[]?= "#.toArray()
-
-private func isTSpecialAndSpace(b: Byte): Bool {
-    specail_chars.contains(b)
 }

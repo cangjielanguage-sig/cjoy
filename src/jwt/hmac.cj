@@ -28,6 +28,9 @@ class SigningMethodHmac <: SigningMethod {
         }
     }
 
+    /**
+     * @throws JwtException if sige failed
+     */
     public func sign(signing: String, key: Any): Array<Byte> {
         if (key is Array<Byte>) {
             let hmac = HMAC((key as Array<Byte>).getOrThrow(), _hashType)
@@ -37,6 +40,9 @@ class SigningMethodHmac <: SigningMethod {
         }
     }
 
+    /**
+     * @throws JwtException if verify failed
+     */
     public func verify(signing: String, sig: Array<Byte>, key: Any): Unit {
         if (key is Array<Byte>) {
             let signed = sign(signing, (key as Array<Byte>).getOrThrow())

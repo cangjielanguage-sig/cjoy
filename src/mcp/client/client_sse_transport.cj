@@ -25,7 +25,7 @@ class McpSseClientTransport <: McpClientTransport {
     private var _lastInitTime: DateTime
     private var _endpoint: String = ""
     private var _consumer: ?(ByteBuffer) -> Unit = None
-    private var _callback: ?()->Unit = None
+    private var _callback: ?() -> Unit = None
     private var _sseStream: ?JoySSEventStream = None
     private var _connected = AtomicBool(false)
 
@@ -51,7 +51,7 @@ class McpSseClientTransport <: McpClientTransport {
         doConnect()
     }
 
-    public func whenReConnect(callback: ()->Unit): Unit {
+    public func whenReConnect(callback: () -> Unit): Unit {
         _callback = callback
     }
 
@@ -100,15 +100,16 @@ class McpSseClientTransport <: McpClientTransport {
     public func send(message: ByteBuffer): Unit {
         checkConnected()
         let header = HashMap<String, String>([("Content-Type", "application/json")])
-        let resp: Option<String> = JoySimpleHttpClient.post("${_baseUrl}${_endpoint}", message.bytes(), header: header, verify: false)
+        let resp: Option<String> = JoySimpleHttpClient.post("${_baseUrl}${_endpoint}", message.bytes(), header: header,
+            verify: false)
         if (let Some(v) <- resp) {
-            if (v !="") {
+            if (v != "") {
                 @LogInfo("[MCP]http request response ${v}")
             }
         }
     }
 
-    public func close() {
+    public func close(): Unit {
         if (_isClosed) {
             return
         }

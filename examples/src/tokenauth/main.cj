@@ -36,11 +36,11 @@ func auth5(ctx: JoyContext, @CookieParam token: String): String {
 main(): Int64 {
     let joy = Joy.default()
     joy.router.use(ExceptionHandler())
-    joy.router.group("/token_auth/header").use(TokenAuth("abc"))
-    joy.router.group("/token_auth/query").use(TokenAuth("abc", lookupKey: "query:token"))
-    joy.router.group("/token_auth/param").use(TokenAuth("abc", lookupKey: "param:token"))
-    joy.router.group("/token_auth/form").use(TokenAuth("abc", lookupKey: "form:token"))
-    joy.router.group("/token_auth/cookie").use(TokenAuth("abc", lookupKey: "cookie:token"))
+    joy.router.group("/token_auth/header").use(TokenAuth(["abc"]))
+    joy.router.group("/token_auth/query").use(TokenAuth(["abc"], lookupKey: "query:token"))
+    joy.router.group("/token_auth/param").use(TokenAuth(["abc"], lookupKey: "param:token"))
+    joy.router.group("/token_auth/form").use(TokenAuth(["abc"], lookupKey: "form:token"))
+    joy.router.group("/token_auth/cookie").use(TokenAuth(["abc"], lookupKey: "cookie:token"))
     // 启动服务
     JoyMiddlewares.registerTo(joy)
     JoyHandlers.registerTo(joy)

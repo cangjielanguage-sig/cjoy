@@ -71,7 +71,7 @@ public class JoyHandlers {
      * @param methods: the methods
      * @param handler: the handler
      */
-    public static func addHandler(path: String, methods: Array<String>, handler: JoyRequestHandler) {
+    public static func addHandler(path: String, methods: Array<String>, handler: JoyRequestHandler): Unit {
         HANDLERS.add((path, methods, handler))
     }
 
@@ -86,67 +86,6 @@ public class JoyHandlers {
             let rg = joy.router.findGroup(path)
             let rpath = path[rg.basePath().size..path.size]
             rg.handle(methods, rpath, handler)
-        }
-    }
-}
-
-/**
- * the interface of request handler chain
- */
-public interface JoyRequestHandlerChain {
-    /**
-     * move next handler
-     *
-     * @param ctx: the context
-     */
-    func next(ctx: JoyContext): Unit
-}
-
-/**
- * the interface of request middleware handler
- */
-public interface JoyMiddlewareHandler {
-    /**
-     * process the request
-     *
-     * @param ctx: the context
-     * @param chain: the chain of Middleware
-     */
-    func handle(ctx: JoyContext, chain: JoyRequestHandlerChain): Unit
-}
-
-public type JoyMiddlewareFunc = (ctx: JoyContext, chain: JoyRequestHandlerChain) -> Unit
-
-public class JoyMiddlewareFuncHandler <: JoyMiddlewareHandler {
-    public JoyMiddlewareFuncHandler(let handler: (JoyContext, JoyRequestHandlerChain) -> Unit) {}
-
-    public func handle(ctx: JoyContext, chain: JoyRequestHandlerChain): Unit {
-        this.handler(ctx, chain)
-    }
-}
-
-public class JoyMiddlewares {
-    private static let MIDDLEWARES: HashMap<String, JoyMiddlewareHandler> = HashMap()
-
-    /**
-     * add the handler for generate code by macros
-     *
-     * @param group: the path of group
-     * @param mw: the middleware hander
-     */
-    public static func addHandler(groups: Array<String>, mw: JoyMiddlewareHandler) {
-        groups |> forEach {group => MIDDLEWARES.add(group, mw)}
-    }
-
-    /**
-     * register the middleware handlers to joy instance
-     *
-     * @param joy: the instance of joy
-     */
-    public static func registerTo(joy: Joy): Unit {
-        for ((path, handler) in MIDDLEWARES) {
-            let r = joy.router.createGroups(path)
-            r.use(handler)
         }
     }
 }

@@ -46,17 +46,17 @@ joy.router
 
 |Middleware|说明|
 |---|---|
-|BasicAuth|[Basic认证](../../examples/src/simple/main.cj)||
 |ExceptionHandler|异常兜底|
 |AccessLog|[请求日志](../../doc/usage_guide/logger.md)|
 |SessionManager|[会话管理](../../doc/usage_guide/session.md)|
 |CORS|跨源资源共享(待验证)|
 |RequestId|[请求Id](../../examples/src/requestid/main.cj)|
 |NoCache|[禁用缓存](../../examples/src/nocache/main.cj)|
-|TokenAuth|[Token认证](../../examples/src/tokenauth//main.cj)|
 |CrsfProtect|[CRSF保护](../../examples/src/crsf/main.cj)|
 |Security|安全头域设置|
-|JwtAuth|[Jwt认证](../../examples/src/jwtauth//main.cj)|
+|BasicAuth|[Basic认证](../../doc/usage_guide/authentication.md#Basic认证)|
+|TokenAuth|[Token认证](../../doc/usage_guide/authentication.md#token认证)|
+|JwtAuth|[Jwt认证](../../doc/usage_guide/authentication.md#jwt认证)|
 
 ----
 << [返回](../../README.md#使用指导)

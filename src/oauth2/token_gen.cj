@@ -10,6 +10,7 @@
 
 package cjoy.oauth2
 
+import std.time.DateTime
 import std.io.ByteBuffer
 import std.crypto.digest.digest
 import stdx.crypto.digest.{HashType, HMAC}
@@ -17,23 +18,34 @@ import stdx.crypto.crypto.SecureRandom
 import cjoy.utils.{rawBase64URLEncode}
 
 /**
- * the interface to generate the authorization code
+ * the interface to generate the access and refresh tokens 
  */
-public interface AuthorizeGenerate {
-    func generate(data: GenerateBasic): String
+public interface TokenGenerate {
+    func generate(data: GenerateBasic, isGenRefresh: Bool): (String, String)
 }
 
-public class SecureRandAuthorizeGenerate <: AuthorizeGenerate {
-    public func generate(data: GenerateBasic): String {
+public class SecureRandTokenGenerate <: TokenGenerate {
+    public func generate(data: GenerateBasic, isGenRefresh: Bool): (String, String) {
         let buffer = ByteBuffer()
         buffer.write(data.client.id.toArray())
         buffer.write(data.userId.toArray())
+        buffer.write(data.createAt.toUnixTimeStamp().toMilliseconds().toString().toArray())
 
         let sr = SecureRandom()
         let key = sr.nextBytes(8)
 
         let hmac = HMAC(key, HashType.MD5)
         let accessBs = digest(hmac, buffer.bytes())
-        rawBase64URLEncode(accessBs)
+        let access = rawBase64URLEncode(accessBs)
+
+        let refresh = if (isGenRefresh) {
+            let hmac2 = HMAC(key, HashType.SHA1)
+            let bs = digest(hmac2, buffer.bytes())
+            rawBase64URLEncode(bs)
+        } else {
+            ""
+        }
+
+        (access, refresh)
     }
 }

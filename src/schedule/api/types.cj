@@ -10,25 +10,10 @@
 
 package cjoy.schedule.api
 
-import std.collection.concurrent.ConcurrentHashMap
-import cjoy.context.Context
+import cjoy.context.MapContext
 import cjoy.framework.Joy
 
-public class ScheduleContext <: Context {
-    private let _data: ConcurrentHashMap<String, Any> = ConcurrentHashMap()
-
-    public func set(key: String, value: Any): Unit {
-        _data.add(key, value)
-    }
-
-    public func get<T>(key: String): ?T {
-        (_data.get(key) ?? Option<Any>.None) as T
-    }
-
-    public func remove(key: String): Unit {
-        _data.remove(key)
-    }
-
+public class ScheduleContext <: MapContext {
     public func getService<T>(name: String): ?T {
         Joy.default().getService<T>(name)
     }

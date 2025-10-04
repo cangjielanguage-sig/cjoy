@@ -101,18 +101,17 @@ public class JoyMultiPart {
             }
 
             // header line
-            let hKey = readHeaderKey(linebs)
-            if (!hKey.isEmpty()) {
-                if (_nextState != PS_HEADER) {
-                    throw MultiPartParseException(
-                        "parse multi part failed, invalid state(${_nextState}), shoud be header line")
+            if (_nextState == PS_HEADER) {
+                let hKey = readHeaderKey(linebs)
+                if (!hKey.isEmpty()) {
+                    headerNum++
+                    if (headerNum > r._config.maxHeaders) {
+                        throw MultiPartLimitReachedException(
+                            "header limit reached, ${headerNum} > ${r._config.maxHeaders}")
+                    }
+                    _headers.add(String.fromUtf8(hKey), String.fromUtf8(linebs[(hKey.size + 1)..]))
+                    continue
                 }
-                headerNum++
-                if (headerNum > r._config.maxHeaders) {
-                    throw MultiPartLimitReachedException("header limit reached, ${headerNum} > ${r._config.maxHeaders}")
-                }
-                _headers.add(String.fromUtf8(hKey), String.fromUtf8(linebs[(hKey.size + 1)..]))
-                continue
             }
 
             // end with dash line
@@ -127,9 +126,9 @@ public class JoyMultiPart {
                 throw MultiPartParseException(
                     "parse multi part failed, invalid state(${_nextState}), shoud be body line")
             }
+
             if (isEndLine(linebs)) {
                 r._handler.onPart(this, linebs[..linebs.size - 2])
-                _nextState = PS_END
             } else {
                 r._handler.onPart(this, linebs)
             }

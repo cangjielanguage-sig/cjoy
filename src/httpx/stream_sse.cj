@@ -80,7 +80,7 @@ public class JoySSEventStream <: Iterator<JoySSEvent> {
             }
         }
 
-        throw UnsupportedException("Unreachable")
+        throw IllegalStateException("Unreachable")
     }
 
     public func close(): Unit {

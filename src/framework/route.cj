@@ -32,7 +32,6 @@ public interface JoyRouters {
      * route to a specific handler, which provides opportunity to respond early,
      * change the course of the request execution.
      */
-    func use(mw: JoyMiddlewareHandler): JoyRouters
     func use(mws: Array<JoyMiddlewareHandler>): JoyRouters
     func use(mw: JoyMiddlewareFunc): JoyRouters {
         use(JoyMiddlewareFuncHandler(mw))
@@ -41,9 +40,8 @@ public interface JoyRouters {
     /**
      * adds inline middlewares for an endpoint handler.
      */
-    func apply(mw: JoyMiddlewareHandler): JoyRouters
     func apply(mws: Array<JoyMiddlewareHandler>): JoyRouters
-    func apply(mw: (ctx: JoyContext, chain: JoyRequestHandlerChain) -> Unit): JoyRouters {
+    func apply(mw: JoyMiddlewareFunc): JoyRouters {
         apply(JoyMiddlewareFuncHandler(mw))
     }
 
@@ -53,8 +51,31 @@ public interface JoyRouters {
      * set of middlewares.
      */
     func group(relativePath: String): JoyRouters
+
+    /**
+     * find group by the full path
+     */
     func findGroup(path: String): JoyRouters
+
+    /**
+     * recursive creates a set of routes split by '/', invoke createGroups("/a/b/c") method is same as
+     * invoke group("/a").group("/b").group("/c")
+     */
     func createGroups(path: String): JoyRouters
+
+    /**
+     * used to define routes with a common prefix inside the supplied function.
+     * it reuses the group method to create a sub-router.
+     */
+    func route(relativePath: String, fn: (router: JoyRouters) -> Unit): JoyRouters {
+        let g = group(relativePath)
+        fn(g)
+        g
+    }
+
+    /**
+     * return the route base prefix path
+     */
     func basePath(): String
 
     /**
@@ -153,6 +174,9 @@ class TreeRouteDistributor <: HttpRequestDistributor & HttpRequestHandler {
         _services = services
     }
 
+    /**
+     * @throws UnsupportedException not supportd register any handler using the func
+     */
     public func register(_: String, _: HttpRequestHandler): Unit {
         throw UnsupportedException("unsupported this method")
     }
@@ -181,7 +205,6 @@ class TreeRouteDistributor <: HttpRequestDistributor & HttpRequestHandler {
         }
 
         let ri: RouteInfo<JoyRequestHandler> = RouteInfo()
-        @LogDebug("finding handler, method=${req.method}, path=${path}")
         var node = _root.findRouteHandler(ri, req.method, path)
         if (node.isNone()) {
             @LogDebug("not found handler, method=${req.method}, path=${path}")
@@ -238,18 +261,8 @@ class JoyRouteGroup <: JoyRouters {
         _distributor._root.dumpTree()
     }
 
-    public func use(mw: JoyMiddlewareHandler): JoyRouters {
-        _middlewares.add(mw)
-        this
-    }
-
     public func use(mws: Array<JoyMiddlewareHandler>): JoyRouters {
         mws |> forEach {mw => _middlewares.add(mw)}
-        this
-    }
-
-    public func apply(mw: JoyMiddlewareHandler): JoyRouters {
-        _applyMWs.add(mw)
         this
     }
 
@@ -258,6 +271,9 @@ class JoyRouteGroup <: JoyRouters {
         this
     }
 
+    /**
+     * @throws IllegalArgumentException if the relative path is empty
+     */
     public func group(relativePath: String): JoyRouters {
         if (relativePath.isEmpty()) {
             throw IllegalArgumentException("group relativePath must not be empty")
@@ -326,12 +342,18 @@ class JoyRouteGroup <: JoyRouters {
         gr
     }
 
+    /**
+     * @throws IllegalArgumentException if the path not is end with slash
+     */
     private static func checkPath(path: String): Unit {
         if (path.size > 1 && path[0] != b'/') {
             throw IllegalArgumentException("path [${path}] must start with slash")
         }
     }
 
+    /**
+     * @throws IllegalArgumentException if the group path has existed
+     */
     private func setGroupDefaultHandler(): Unit {
         if (_distributor._root.findPattern(_path + "*") || _distributor._root.findPattern(_path + "/*")) {
             throw IllegalArgumentException("a handler on an existing path, `${_path}`")
@@ -360,16 +382,19 @@ class JoyRouteGroup <: JoyRouters {
         _distributor._root.addRoute(method, thePath, handler)
     }
 
+    /**
+     * @throws IllegalArgumentException if the path is empty
+     */
     private func addHandler(method: String, path: String, handler: JoyRequestHandler): Unit {
         checkPath(path)
         var thePath = _path + path
         if (thePath.isEmpty()) {
-            throw IllegalArgumentException("cannot map an empty path")
+            throw IllegalArgumentException("cannot add a handle for an empty path")
         }
 
         if (_distributor._config.escapeAddedRoutes) {
             let escapedPath = unescapeSpecial(thePath)
-            if (escapedPath != thePath) {
+            if (thePath != escapedPath) {
                 addOne(method, escapedPath, handler)
             }
         }
@@ -428,14 +453,14 @@ class JoyRouteGroup <: JoyRouters {
         _applyMWs.clear()
         let wrapperHandler = JoyRequestHandlerWrapper(handler, mws)
         methods |> forEach {method => addHandler(method, pattern, wrapperHandler)}
-        @LogInfo("add route handler, pattern=${pattern}, methods=${methods}")
+        @LogInfo("add route handler, path=${_path}${pattern}, methods=${methods}")
         this
     }
 
     private func groupHandle(methods: Array<String>, pattern: String, handler: JoyRequestHandler): JoyRouters {
         let wrapperHandler = JoyRequestHandlerWrapper(handler, _middlewares)
         methods |> forEach {method => addHandler(method, pattern, wrapperHandler)}
-        @LogInfo("add groute route handler, pattern=${pattern}, methods=${methods}")
+        @LogInfo("add route route handler, path=${_path}${pattern}, methods=${methods}")
         this
     }
 

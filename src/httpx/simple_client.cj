@@ -11,11 +11,7 @@
 package cjoy.httpx
 
 import std.collection.HashMap
-import std.net.{SocketAddress, TcpSocket}
-import std.io.StringReader
-import stdx.net.tls.{TlsClientConfig, CertificateVerifyMode}
 import stdx.net.http.*
-import stdx.encoding.url.URL
 import cjoy.framework.JoyHttpConsts
 import cjoy.log.*
 
