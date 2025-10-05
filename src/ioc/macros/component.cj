@@ -1,0 +1,165 @@
+/*
+ * Copyright (c) 2025 lanlingx(xiaotengfei) All rights resvered.
+ * CJoy is licensed under Mulan PSL v2.
+ * You can use this software according to the terms and conditions of the Mulan PSL v2.
+ * You may obtain a copy of Mulan PSL v2 at:
+ *          http://license.coscl.org.cn/MulanPSL2
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
+ * See the Mulan PSL v2 for more details.
+ */
+
+macro package cjoy.ioc.macros
+
+import std.ast.*
+import std.collection.ArrayList
+import cjoy.utils.{ClassGenentor, parserAttrs, joinTokens, converterList, MapToString, MapListGetFunc, TypeNodeInfo}
+import cjoy.ioc.api.IocException
+
+open class ComponentClassInfo {
+    let _classId: Token
+    let _beanType: String
+    let _beanName: String
+    let _beanScope: String
+    let _extends: ArrayList<String>
+    let _ctorFuncDecl: ?FuncDecl
+
+    /**
+     * @throws Exception
+     */
+    init(attr: ?Tokens, classId: Token, initFunc: ?FuncDecl) {
+        _classId = classId
+        _beanType = classId.value
+        _ctorFuncDecl = initFunc
+        if (attr.isSome()) {
+            let map: MapToString = parserAttrs(attr.getOrThrow(), validKeys: ["name", "scope", "extends"],
+                macroName: "Component")
+            _beanName = map.getString("name") ?? toBeanName(_beanType)
+            _beanScope = (map.getString("scope") ?? "Singleton").toAsciiLower()
+            _extends = converterList(map.getList("extends") ?? ArrayList<ToString>())
+        } else {
+            _beanName = toBeanName(_beanType)
+            _beanScope = "singleton"
+            _extends = ArrayList()
+        }
+        if (_beanScope != "singleton" && _beanScope != "prototype") {
+            throw Exception("scope in @Component value `${_beanScope}` must be singleton or prototype")
+        }
+    }
+
+    // 获取@Autowired[name=""]的name值
+    private func getBeanNameOnAutowired(msgs: Collection<MacroMessage>, name: String): String {
+        for (msg in msgs) {
+            let res = msg.getString(name)
+            if (res != "") {
+                return res
+            }
+        }
+        ""
+    }
+
+    /**
+     * @throws IocException
+     */
+    private func getBeanToken(): (Tokens, Tokens) {
+        let msgs = getChildMessages("Autowired")
+        let supportTypes = "interface or bean type"
+        if (let Some(ctor) <- _ctorFuncDecl) {
+            let tokens = ArrayList<Tokens>()
+            let depends = ArrayList<Tokens>()
+            for (fp in ctor.funcParams) {
+                let pid = fp.identifier // 参数类型
+                let typeNode = TypeNodeInfo(supportTypes)
+                typeNode.parse(fp.toTokens(), fp.paramType)
+                if (typeNode.isPrimitive) {
+                    throw IocException("the Autowired type can not is primitive type")
+                }
+                let name = getBeanNameOnAutowired(msgs, pid.value + ".name")
+                let t = if (name != "") { // @Autowired[name=""]
+                    depends.add(quote($(typeNode.vtype.value)))
+                    let msg = "not found bean by name `${name}` for type `${typeNode.vtype.value}`"
+                    quote(ctx.getBean<$(typeNode.vtype)>($name).getOrThrow({=>IocException($msg)}))
+                } else if (typeNode.vtype.value == "Collection") {
+                    depends.add(quote($(typeNode.genericType.value)))
+                    quote(ctx.getBeansByTypeName<$(typeNode.genericType)>($(typeNode.genericType.value)))
+                } else if (typeNode.vtype.value == "Array") {
+                    depends.add(quote($(typeNode.genericType.value)))
+                    quote(ctx.getBeansByTypeName<$(typeNode.genericType)>($(typeNode.genericType.value)).toArray())
+                } else if (typeNode.vtype.value == "ArrayList") {
+                    depends.add(quote($(typeNode.genericType.value)))
+                    quote(ArrayList(ctx.getBeansByTypeName<$(typeNode.genericType)>($(typeNode.genericType.value))))
+                } else if (typeNode.vtype.value == "Option") {
+                    depends.add(quote($(typeNode.genericType.value)))
+                    quote(ctx.getBeanByTypeName<$(typeNode.genericType)>($(typeNode.genericType.value)))
+                } else {
+                    let msg = "not found bean for type `${typeNode.vtype.value}`"
+                    depends.add(quote($(typeNode.vtype.value)))
+                    quote(ctx.getBeanByTypeName<$(typeNode.vtype)>($(typeNode.vtype.value)).getOrThrow({=>IocException($msg)}))
+                }
+                tokens.add(t)
+            }
+            let params: Tokens = joinTokens(tokens, Token(TokenKind.COMMA))
+            let dps = joinTokens(depends, Token(TokenKind.COMMA))
+            (quote(let bean: BeanLifecycle = $_classId($params)
+            ), quote([$dps]))
+        } else { // 无构造函数
+            (quote(let bean: BeanLifecycle = $_classId()
+            ), quote([]))
+        }
+    }
+
+    func getFactoryTokens(): Tokens {
+        let factoryName = Token(TokenKind.IDENTIFIER, _classId.value.toAsciiTitle() + "BeanFactory")
+        let (bean, deps) = getBeanToken()
+        let inferfaces = _extends.toArray()
+        quote(
+            public class $factoryName <: BeanFactory {
+                public static let INSTANE: BeanFactory = $(factoryName)()
+                private init() {
+                    BeanFactoryManager.register($_beanType, $deps, this)
+                    BeanFactoryManager.registerTypes($_beanType, $inferfaces)
+                }
+                public prop beanType: String {
+                    get() { $_beanType }
+                }
+                public prop beanScop: BeanScope {
+                    get() { $_beanScope }
+                }
+                public func create(ctx: ApplicationContext): (String, BeanLifecycle) {
+                    let beanName = $_beanName
+                    $bean
+                    (beanName, bean)
+                }
+            }
+        )
+    }
+}
+
+func toBeanName(str: String): String {
+    let arr = str.toRuneArray()
+    arr[0] = arr[0].toAsciiUpperCase()
+    String(arr)
+}
+
+/**
+ * @throws IocException
+ */
+func parseComponent(attr: ?Tokens, input: Tokens): Tokens {
+    let (decl, pos) = parseDeclFragment(input)
+    let classGen = ClassGenentor("Component", decl)
+    let ctors = classGen.constructors
+    var initFunc: ?FuncDecl = None
+    if (ctors.size == 0) {
+        initFunc = None
+    } else if (ctors.size == 1) {
+        initFunc = ctors[0]
+    } else {
+        throw IocException("only allowed exist zero or one init func")
+    }
+
+    let ident = decl.identifier
+    let classInfo = ComponentClassInfo(attr, ident, initFunc)
+    let supperTokens = quote(BeanLifecycle)
+    let tokens = classGen.genTokens(supperTokens, Tokens(), createCtor: false)
+
+    tokens + Token(TokenKind.NL) + input[pos..] + Token(TokenKind.NL) + classInfo.getFactoryTokens()
+}

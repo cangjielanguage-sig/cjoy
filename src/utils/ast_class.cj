@@ -20,7 +20,11 @@ protected class ClassGenentor {
     public let isClass: Bool
     public let isOpen: Bool
     public let variables: ArrayList<VarDecl>
+    public let constructors: ArrayList<FuncDecl>
 
+    /**
+     * @throws Exception if macro not use for struct or class
+     */
     public init(macroName: String, typeDecl: Decl) {
         this.typeDecl = typeDecl
         this.isOpen = typeDecl.modifiers |> any {t => t.keyword.value == "open"}
@@ -30,11 +34,13 @@ protected class ClassGenentor {
                 superTypes = vd.superTypes
                 body = vd.body
                 this.variables = getMemberVariables(vd.body)
+                this.constructors = getConstructors(typeDecl.identifier.value, body)
             case vd: StructDecl =>
                 isClass = false
                 superTypes = vd.superTypes
                 body = vd.body
                 this.variables = getMemberVariables(vd.body)
+                this.constructors = getConstructors(typeDecl.identifier.value, body)
             case _ => throw Exception("${macroName} macro only using for struct or class")
         }
     }
@@ -44,6 +50,21 @@ protected class ClassGenentor {
         for (decl in body.decls) {
             match (decl) {
                 case vd: VarDecl => result.add(vd)
+                case _ => ()
+            }
+        }
+        return result
+    }
+
+    private static func getConstructors(typeName: String, body: Body): ArrayList<FuncDecl> {
+        let result = ArrayList<FuncDecl>()
+        for (decl in body.decls) {
+            match (decl) {
+                case vd: FuncDecl =>
+                    let isStatic = decl.modifiers |> any {t => t.keyword.kind == TokenKind.STATIC}
+                    if (!isStatic && (vd.identifier.value == "init" || vd.identifier.value == typeName)) {
+                        result.add(vd)
+                    }
                 case _ => ()
             }
         }
@@ -72,7 +93,7 @@ protected class ClassGenentor {
         params.add(all: paramsWithDefVal)
         let comma = Token(TokenKind.COMMA)
 
-        let body: Tokens = joinTokens(
+        let ctorBody: Tokens = joinTokens(
             variables |>
                 map {
                 varDecl: VarDecl =>
@@ -83,13 +104,17 @@ protected class ClassGenentor {
         )
         return quote(
             public init($(joinTokens(params, comma))) {
-                $body
+                $ctorBody
             }
         )
     }
 
-    public func genTokens(newSupper: Tokens, funcs: Tokens): Tokens {
-        let ctor = buildCtorFunc()
+    public func genTokens(newSupper: Tokens, funcs: Tokens, createCtor!: Bool = true): Tokens {
+        let ctor = if (createCtor) {
+            buildCtorFunc()
+        } else {
+            Tokens()
+        }
         let genericTypeParam = getGenericTypeParamsTokens(typeDecl)
         let genericConstraint = getGenericConstraintsTokens(typeDecl)
 
