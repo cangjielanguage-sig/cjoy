@@ -11,8 +11,8 @@
 macro package cjoy.validation.macros
 
 import std.ast.*
-import std.collection.ArrayList
-import cjoy.utils.ClassGenentor
+import std.collection.{ArrayList, map, collectArrayList}
+import cjoy.utils.{ClassGenentor, joinTokens}
 
 class ValidClassInfo {
     let classId: Token
@@ -28,10 +28,8 @@ class ValidClassInfo {
     }
 
     func genVaidateFunc(): Tokens {
-        var tokens = Tokens()
-        for (f in this.fields) {
-            tokens += f.genValidateTokens()
-        }
+        let arr = fields |> map {f => f.genValidateTokens()} |> collectArrayList
+        let tokens = joinTokens(arr, Token(TokenKind.NL))
         quote(
             public func validate(field: String, nestedValid: Bool, constraints: Array<JoyConstraint>): Unit {
                 $(tokens)
@@ -39,6 +37,9 @@ class ValidClassInfo {
         )
     }
 
+    /**
+     * @throws Exception
+     */
     public static func parse(input: Tokens): Tokens {
         let decl: Decl = parseDecl(input)
         let classGen = ClassGenentor("Valid", decl)

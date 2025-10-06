@@ -80,7 +80,7 @@ func test6(@NumberRange[min = 1, max = 100] num: Int): Unit {
 }
 
 @Validated
-func test7(@Patten[regex = "^[0-9]+$"] num: String): Unit {
+func test7(@Pattern[regex = "^[0-9]+$"] num: String): Unit {
 }
 
 @Validated

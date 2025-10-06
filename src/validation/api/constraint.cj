@@ -89,10 +89,10 @@ public class RangeConstraint <: JoyConstraint {
 /**
  * for string
  */
-public class PattenConstraint <: JoyConstraint {
+public class PatternConstraint <: JoyConstraint {
     public let message: String
     public let regex: Regex
-    public PattenConstraint(let regexStr: String, let msg: String) {
+    public PatternConstraint(let regexStr: String, let msg: String) {
         this.regex = Regex(regexStr)
         if (msg.isEmpty()) {
             this.message = "this constraint of value is Pattern[${regexStr}]"

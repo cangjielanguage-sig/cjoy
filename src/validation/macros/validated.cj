@@ -12,6 +12,7 @@ macro package cjoy.validation.macros
 
 import std.ast.*
 import std.collection.ArrayList
+import cjoy.utils.joinTokens
 
 class FuncInfo {
     let decl: FuncDecl
@@ -21,22 +22,26 @@ class FuncInfo {
     }
 
     func addFuncBody(): Unit {
-        var exprs = Tokens()
+        let exprs = ArrayList<Tokens>()
         for (fp in decl.funcParams) {
             let name = fp.identifier.value
             let fieldInfo = FieldInfoCache.findByName(name)
             if (let Some(fi) <- fieldInfo) {
-                exprs += fi.genValidateTokens()
+                exprs.add(fi.genValidateTokens())
             }
         }
+        let exprsTokens = joinTokens(exprs, Token(TokenKind.NL))
         let expr = DoWhileExpr(quote(do {
-            $exprs
+            $exprsTokens
         } while (false)
         ))
         decl.block.nodes.add(expr, at: 0)
     }
 }
 
+/**
+ * @throws Exception
+ */
 func parseValidated(input: Tokens): Tokens {
     let (decl, pos) = parseDeclFragment(input)
     if (!(decl is FuncDecl)) {

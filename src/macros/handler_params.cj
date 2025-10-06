@@ -60,8 +60,7 @@ open class ParamInfo {
             if (pname.value == "ctx") {
                 Tokens()
             } else {
-                quote(let $(pname) = ctx
-                )
+                quote(let $(pname) = ctx)
             }
         } else {
             throw Exception(
@@ -110,9 +109,7 @@ class PathParamVarGenerator <: ParamInfo {
     }
 
     public override func genTokens(): Tokens {
-        return quote(
-            let $(pname) = $(getType()).bind(ctx.params, $(getName()), $(getDefValue()), $(getTimeformat())).getOrThrow() 
-        )
+        quote(let $(pname) = $(getType()).bind(ctx.params, $(getName()), $(getDefValue()), $(getTimeformat())).getOrThrow() )
     }
 }
 
@@ -122,9 +119,7 @@ class QueryParamVarGenerator <: ParamInfo {
     }
 
     public override func genTokens(): Tokens {
-        return quote(
-            let $(pname) = $(getType()).bind(ctx.httpContext.request.url.queryForm, $(getName()), $(getDefValue()), $(getTimeformat())).getOrThrow()
-        )
+        quote(let $(pname) = $(getType()).bind(ctx.httpContext.request.url.queryForm, $(getName()), $(getDefValue()), $(getTimeformat())).getOrThrow())
     }
 }
 
@@ -134,9 +129,7 @@ class PostFormParamVarGenerator <: ParamInfo {
     }
 
     public override func genTokens(): Tokens {
-        return quote(
-            let $(pname) = $(getType()).bind(ctx.httpContext.request.form, $(getName()), $(getDefValue()), $(getTimeformat())).getOrThrow() 
-        )
+        quote(let $(pname) = $(getType()).bind(ctx.httpContext.request.form, $(getName()), $(getDefValue()), $(getTimeformat())).getOrThrow())
     }
 }
 
@@ -146,9 +139,7 @@ class HeaderParamVarGenerator <: ParamInfo {
     }
 
     public override func genTokens(): Tokens {
-        return quote(
-            let $(pname) = $(getType()).bind(ctx.httpContext.request.headers, $(getName()), $(getDefValue()), $(getTimeformat())).getOrThrow()
-        )
+        quote(let $(pname) = $(getType()).bind(ctx.httpContext.request.headers, $(getName()), $(getDefValue()), $(getTimeformat())).getOrThrow())
     }
 }
 
@@ -158,9 +149,7 @@ class CookieParamVarGenerator <: ParamInfo {
     }
 
     public override func genTokens(): Tokens {
-        return quote(
-            let $(pname) = $(getType()).bind(ctx.cookies, $(getName()), $(getDefValue()), $(getTimeformat())).getOrThrow() 
-        )
+        quote(let $(pname) = $(getType()).bind(ctx.cookies, $(getName()), $(getDefValue()), $(getTimeformat())).getOrThrow())
     }
 }
 
@@ -171,13 +160,9 @@ class ContextParamVarGenerator <: ParamInfo {
 
     public override func genTokens(): Tokens {
         if (typeNode.vtype.value == "Option") {
-            return quote(
-                let $(pname): ?$(typeNode.genericType)= ctx.getCtxParam<$(typeNode.genericType)>($(this.getName()))
-            )
+            quote(let $(pname): ?$(typeNode.genericType)= ctx.getCtxParam<$(typeNode.genericType)>($(getName())))
         } else {
-            return quote(
-                let $(pname): $(typeNode.vtype)= ctx.getCtxParam<$(typeNode.vtype)>($(this.getName())).getOrThrow()
-            )
+            quote(let $(pname): $(typeNode.vtype)= ctx.getCtxParam<$(typeNode.vtype)>($(getName())).getOrThrow())
         }
     }
 }
@@ -190,15 +175,12 @@ class BodyParamVarGenerator <: ParamInfo {
     public override func genTokens(): Tokens {
         // body param
         if (typeNode.isStringType() || typeNode.isOptionStringType()) {
-            return quote(let $(pname) = ctx.readString()
-            )
+            return quote(let $(pname) = ctx.readString())
         }
         if (typeNode.vtype.value == "Option") {
-            return quote(let $(pname): ?$(typeNode.genericType) = ctx.readJson<$(typeNode.genericType)>()
-            )
+            quote(let $(pname): ?$(typeNode.genericType) = ctx.readJson<$(typeNode.genericType)>())
         } else {
-            return quote(let $(pname): $(typeNode.vtype) = ctx.readJson<$(typeNode.vtype)>().getOrThrow()
-            )
+            quote(let $(pname): $(typeNode.vtype) = ctx.readJson<$(typeNode.vtype)>().getOrThrow())
         }
     }
 }
@@ -210,11 +192,9 @@ class QueryBindParamVarGenerator <: ParamInfo {
 
     public override func genTokens(): Tokens {
         if (typeNode.vtype.value == "Option") {
-            return quote(let $(pname): ?$(typeNode.genericType) = ctx.bindQuery<$(typeNode.genericType)>()
-            )
+            quote(let $(pname): ?$(typeNode.genericType) = ctx.bindQuery<$(typeNode.genericType)>())
         } else {
-            return quote(let $(pname): $(typeNode.vtype) = ctx.bindQuery<$(typeNode.vtype)>().getOrThrow()
-            )
+            quote(let $(pname): $(typeNode.vtype) = ctx.bindQuery<$(typeNode.vtype)>().getOrThrow())
         }
     }
 }
@@ -226,13 +206,9 @@ class PostFormBindParamVarGenerator <: ParamInfo {
 
     public override func genTokens(): Tokens {
         if (typeNode.vtype.value == "Option") {
-            return quote(
-                let $(pname): ?$(typeNode.genericType) = ctx.bindPostForm<$(typeNode.genericType)>()
-            )
+            quote(let $(pname): ?$(typeNode.genericType) = ctx.bindPostForm<$(typeNode.genericType)>())
         } else {
-            return quote(
-                let $(pname): $(typeNode.vtype) = ctx.bindPostForm<$(typeNode.vtype)>().getOrThrow()
-            )
+            quote(let $(pname): $(typeNode.vtype) = ctx.bindPostForm<$(typeNode.vtype)>().getOrThrow())
         }
     }
 }
@@ -244,11 +220,9 @@ class HeaderBindParamVarGenerator <: ParamInfo {
 
     public override func genTokens(): Tokens {
         if (typeNode.vtype.value == "Option") {
-            return quote(let $(pname): ?$(typeNode.genericType) = ctx.bindHeader<$(typeNode.genericType)>()
-            )
+            quote(let $(pname): ?$(typeNode.genericType) = ctx.bindHeader<$(typeNode.genericType)>())
         } else {
-            return quote(let $(pname): $(typeNode.vtype) = ctx.bindHeader<$(typeNode.vtype)>().getOrThrow()
-            )
+            quote(let $(pname): $(typeNode.vtype) = ctx.bindHeader<$(typeNode.vtype)>().getOrThrow())
         }
     }
 }

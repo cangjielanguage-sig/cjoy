@@ -12,6 +12,9 @@ macro package cjoy.validation.macros
 
 import std.ast.*
 
+/**
+ * @throws Exception
+ */
 func parseNestedValid(input: Tokens): Unit {
     try {
         let varDecl: Decl = parseDecl(input)

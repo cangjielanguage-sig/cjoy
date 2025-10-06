@@ -14,7 +14,7 @@ import cjoy.middleware.*
 @Json // 类实现Jsonable接口
 @Valid // 类实现 JoyValidatable接口
 class UserInfo {
-    @Patten[regex = "^[0-9]{4,8}$", msg = "id要求是4~8个数字"]
+    @Pattern[regex = "^[0-9]{4,8}$", msg = "id要求是4~8个数字"]
     var id: String = ""
 
     @NotBlank

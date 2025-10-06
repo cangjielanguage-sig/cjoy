@@ -35,98 +35,98 @@ public macro Validated(input: Tokens): Tokens {
 }
 
 /**
-* Validate the Size of collection
-*
-* @attribute min: the min size
-* @attribute max: the max size
-* @attribute msg: the verification error tip
-*/
+ * Validate the Size of collection
+ *
+ * @attribute min: the min size
+ * @attribute max: the max size
+ * @attribute msg: the verification error tip
+ */
 public macro Size(attr: Tokens, input: Tokens): Tokens {
-    parseConstraint(ConstraintCatgory.Size, attr, input)
+    parseConstraint(CCSize, attr, input)
     input
 }
 
 /**
-* Validate the Length of string
-*
-* @attribute min: the min size
-* @attribute max: the max size
-* @attribute msg: the verification error tip
-*/
+ * Validate the Length of string
+ *
+ * @attribute min: the min size
+ * @attribute max: the max size
+ * @attribute msg: the verification error tip
+ */
 public macro Length(attr: Tokens, input: Tokens): Tokens {
-    parseConstraint(ConstraintCatgory.Length, attr, input)
+    parseConstraint(CCLength, attr, input)
     input
 }
 
 /**
-* Validate string is Not empty
-*
-* @attribute msg: the verification error tip
-*/
+ * Validate string is Not empty
+ *
+ * @attribute msg: the verification error tip
+ */
 public macro NotEmpty(attr: Tokens, input: Tokens): Tokens {
-    parseConstraint(ConstraintCatgory.NotEmpty, attr, input)
+    parseConstraint(CCNotEmpty, attr, input)
     input
 }
 
 /**
-* Validate string is Not blank
-*
-* @attribute msg: the verification error tip
-*/
+ * Validate string is Not blank
+ *
+ * @attribute msg: the verification error tip
+ */
 public macro NotBlank(attr: Tokens, input: Tokens): Tokens {
-    parseConstraint(ConstraintCatgory.NotBlank, attr, input)
+    parseConstraint(CCNotBlank, attr, input)
     input
 }
 
 /**
-* Validate string is Not empty
-*
-*/
+ * Validate string is Not empty
+ *
+ */
 public macro NotEmpty(input: Tokens): Tokens {
-    parseConstraint(ConstraintCatgory.NotEmpty, input)
+    parseConstraint(CCNotEmpty, input)
     input
 }
 
 /**
-* Validate string is Not blank
-*
-*/
+ * Validate string is Not blank
+ *
+ */
 public macro NotBlank(input: Tokens): Tokens {
-    parseConstraint(ConstraintCatgory.NotBlank, input)
+    parseConstraint(CCNotBlank, input)
     input
 }
 
 /**
-* Validate the range of number like int, float etc.
-*
-* @attribute min: the min value
-* @attribute max: the max value
-* @attribute msg: the verification error tip
-*/
+ * Validate the range of number like int, float etc.
+ *
+ * @attribute min: the min value
+ * @attribute max: the max value
+ * @attribute msg: the verification error tip
+ */
 public macro NumberRange(attr: Tokens, input: Tokens): Tokens {
-    parseConstraint(ConstraintCatgory.NumberRange, attr, input)
+    parseConstraint(CCNumberRange, attr, input)
     input
 }
 
 /**
-* Validate number or string match whether the regex pettern
-*
-* @attribute regex: the regex pettern
-* @attribute msg: the verification error tip
-*/
-public macro Patten(attr: Tokens, input: Tokens): Tokens {
-    parseConstraint(ConstraintCatgory.Pattern, attr, input)
+ * Validate number or string match whether the regex pettern
+ *
+ * @attribute regex: the regex pettern
+ * @attribute msg: the verification error tip
+ */
+public macro Pattern(attr: Tokens, input: Tokens): Tokens {
+    parseConstraint(CCPattern, attr, input)
     input
 }
 
 /**
-* Validate the range of datetime
-*
-* @attribute before: before this time
-* @attribute after: after this time
-* @attribute msg: the verification error tip
-*/
+ * Validate the range of datetime
+ *
+ * @attribute before: before this time
+ * @attribute after: after this time
+ * @attribute msg: the verification error tip
+ */
 public macro DateTimeRange(attr: Tokens, input: Tokens): Tokens {
-    parseConstraint(ConstraintCatgory.DatetimeRange, attr, input)
+    parseConstraint(CCDatetimeRange, attr, input)
     input
 }

@@ -48,7 +48,7 @@ extend String <: JoyValidatable {
                     if (val.isEmpty()) {
                         throw JoyValidationException(c.message, field, c)
                     }
-                case c: PattenConstraint =>
+                case c: PatternConstraint =>
                     if (!c.regex.matches(this)) {
                         throw JoyValidationException(c.message, field, c)
                     }
@@ -74,7 +74,7 @@ func validateNumber<T>(value: T, field: String, constraints: Array<JoyConstraint
                 if (value < T.parse(c.min) || value > T.parse(c.max)) {
                     throw JoyValidationException(c.message, field, c)
                 }
-            case c: PattenConstraint =>
+            case c: PatternConstraint =>
                 if (!c.regex.matches(value.toString())) {
                     throw JoyValidationException(c.message, field, c)
                 }

@@ -23,7 +23,7 @@ public class JsonTool {
      * Deserialize the json string to T
      *
      * @param jsonStr: the json string
-     * @return T the object of T
+     * @return: the object of T
      */
     public static func fromJson<T>(jsonStr: String): T where T <: JsonDeserializable<T> {
         var stream = ByteBuffer()
@@ -44,7 +44,7 @@ public class JsonTool {
      *
      * @param val: the object of T
      * @param indent: output indent using '\t'
-     * @return String the json string
+     * @return: the json string
      */
     public static func toJson<T>(val: T, indent!: Bool = false): String where T <: JsonSerializable {
         String.fromUtf8(toJsonBytes(val, indent: indent))
@@ -72,7 +72,7 @@ public class JsonTool {
      * deserialize json string to object
      *
      * @param jsonStr: the json string
-     * @return ?Any the object
+     * @return: the object
      */
     public static func fromJsonToAny(jsonStr: String): JsonSerializable {
         var buffer = ByteBuffer()
@@ -85,7 +85,8 @@ public class JsonTool {
      * deserialize json string to object
      *
      * @param reader: the json reader
-     * @return JsonSerializable the object
+     * @return: the object
+     * @throws Exception if the token is invalid
      */
     public static func fromJsonToAny(reader: JsonReader): JsonSerializable {
         while (let Some(v) <- reader.peek()) {
@@ -131,7 +132,8 @@ public class JsonTool {
      * deserialize json string feild to rune type
      *
      * @param reader: the json reader
-     * @return rune
+     * @return: rune
+     * @throws Exception if the value is not Rune
      */
     public static func readRune(reader: JsonReader): Rune {
         let str = reader.readValue<String>()
@@ -141,7 +143,10 @@ public class JsonTool {
         Rune(str[0])
     }
 
-    public static func getSchema<T>() where T <: Jsonable {
+    /**
+     * return the json schema type of T
+     */
+    public static func getSchema<T>(): JsonSchemaType where T <: Jsonable {
         T.toSchema()
     }
 }

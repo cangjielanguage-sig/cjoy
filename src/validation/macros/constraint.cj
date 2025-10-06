@@ -15,13 +15,13 @@ import cjoy.utils.{parserAttrs, MapToString, MapListGetFunc, joinTokens}
 import std.ast.*
 
 enum ConstraintCatgory {
-    | Size
-    | Length
-    | NotEmpty
-    | NotBlank
-    | NumberRange
-    | Pattern
-    | DatetimeRange
+    | CCSize
+    | CCLength
+    | CCNotEmpty
+    | CCNotBlank
+    | CCNumberRange
+    | CCPattern
+    | CCDatetimeRange
 }
 
 open class FieldInfo {
@@ -37,6 +37,38 @@ open class FieldInfo {
         identifier
     }
 
+    private func validateInFunc(constraints: Tokens): Tokens {
+        if (constraints.size == 0) {
+            quote($(id()).validate("", $nestedValid) )
+        } else {
+            quote($(id()).validate("", $nestedValid, $constraints))
+        }
+    }
+
+    private func validateInClass(constraints: Tokens): Tokens {
+        let fieldName = Token(TokenKind.IDENTIFIER, "\"\${field}." + name() + "\"")
+        if (constraints.size == 0) {
+            // 如果字段类型为Any，需要判断是JoyValidatable类型才做检查
+            if (name() == "Any") {
+                quote(match($(id())) {
+                    case x: JoyValidatable => x.validate({=> if(field.isEmpty()) {$(name())} else { $fieldName } }(), $nestedValid) 
+                    case _ => ()
+                })
+            } else {
+                quote($(id()).validate({=> if(field.isEmpty()) {$(name())} else { $fieldName } }(), $nestedValid) )
+            }
+        } else {
+            if (name() == "Any") {
+                quote(match($(id())) {
+                    case x: JoyValidatable => x.$(id()).validate({=> if(field.isEmpty()) {$(name())} else { $fieldName } }(), $nestedValid, $constraints) 
+                    case _ => ()
+                })
+            } else {
+                quote($(id()).validate({=> if(field.isEmpty()) {$(name())} else { $fieldName } }(), $nestedValid, $constraints) )
+            }
+        }
+    }
+
     func genValidateTokens(): Tokens {
         if (constraints.isEmpty() && !nestedValid) {
             return Tokens()
@@ -47,38 +79,9 @@ open class FieldInfo {
             tokens += joinTokens(constraints, Token(TokenKind.COMMA))
         }
         if (inFunc) {
-            if (constraints.isEmpty()) {
-                quote($(id()).validate("", $nestedValid) 
-                )
-            } else {
-                quote($(id()).validate("", $nestedValid, $tokens) 
-                )
-            }
+            validateInFunc(tokens)
         } else {
-            let fieldName = Token(TokenKind.IDENTIFIER, "\"\${field}." + name() + "\"")
-            if (constraints.isEmpty()) {
-                if (name() == "Any") {
-                    quote(match($(id())) {
-                            case x: JoyValidatable => x.validate({=> if(field.isEmpty()) {$(name())} else { $fieldName } }(), $nestedValid) 
-                            case _ => ()
-                        }
-                    )
-                } else {
-                    quote($(id()).validate({=> if(field.isEmpty()) {$(name())} else { $fieldName } }(), $nestedValid) 
-                    )
-                }
-            } else {
-                if (name() == "Any") {
-                    quote(match($(id())) {
-                            case x: JoyValidatable => x.$(id()).validate({=> if(field.isEmpty()) {$(name())} else { $fieldName } }(), $nestedValid, $tokens) 
-                            case _ => ()
-                        }
-                    )
-                } else {
-                    quote($(id()).validate({=> if(field.isEmpty()) {$(name())} else { $fieldName } }(), $nestedValid, $tokens) 
-                    )
-                }
-            }
+            validateInClass(tokens)
         }
     }
 }
@@ -228,7 +231,7 @@ class PatternConstraintGenerator <: ConstraintGenerator {
     }
 
     protected func toConstraint(): Tokens {
-        quote(PattenConstraint($regex, $msg))
+        quote(PatternConstraint($regex, $msg))
     }
 }
 
@@ -265,13 +268,13 @@ class DateTimeRangeConstraintGenerator <: ConstraintGenerator {
 
 func createConstraintGenerator(catgory: ConstraintCatgory): ConstraintGenerator {
     match (catgory) {
-        case Size => SizeConstraintGenerator()
-        case Length => LengthConstraintGenerator()
-        case NotEmpty => NotEmptyConstraintGenerator()
-        case NotBlank => NotBlankConstraintGenerator()
-        case NumberRange => RangeConstraintGenerator()
-        case Pattern => PatternConstraintGenerator()
-        case DatetimeRange => DateTimeRangeConstraintGenerator()
+        case CCSize => SizeConstraintGenerator()
+        case CCLength => LengthConstraintGenerator()
+        case CCNotEmpty => NotEmptyConstraintGenerator()
+        case CCNotBlank => NotBlankConstraintGenerator()
+        case CCNumberRange => RangeConstraintGenerator()
+        case CCPattern => PatternConstraintGenerator()
+        case CCDatetimeRange => DateTimeRangeConstraintGenerator()
     }
 }
 
@@ -279,6 +282,9 @@ func parseConstraint(catgory: ConstraintCatgory, input: Tokens): Unit {
     parseConstraint(catgory, None, input)
 }
 
+/**
+ * @throws Exception
+ */
 func parseConstraint(catgory: ConstraintCatgory, attr: ?Tokens, input: Tokens): Unit {
     let JoyConstraint: ConstraintGenerator = createConstraintGenerator(catgory)
     if (let Some(a) <- attr) {

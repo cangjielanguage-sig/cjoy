@@ -12,7 +12,7 @@ macro package cjoy.macros
 
 import std.ast.*
 import std.collection.*
-import cjoy.utils.{parserAttrs, MapToString, MapListGetFunc, randStr}
+import cjoy.utils.{parserAttrs, MapToString, MapListGetFunc, randStr, joinTokens}
 
 class FuncInfo {
     let macroName: String
@@ -52,8 +52,8 @@ class FuncInfo {
     }
 
     private func declVars(): (Tokens, Tokens) {
-        var vars = Tokens()
-        var params = Tokens()
+        let vars = ArrayList<Tokens>()
+        let params = ArrayList<Tokens>()
         for (fp in decl.funcParams) {
             let pid = fp.identifier
             let pname = pid.value
@@ -66,15 +66,11 @@ class FuncInfo {
                     val
             }
 
-            vars += paramInfo.genTokens()
-            if (params.size == 0) {
-                params += quote($(pid))
-            } else {
-                params += quote(, $(pid))
-            }
+            vars.add(paramInfo.genTokens())
+            params.add(quote($(pid)))
         }
 
-        (vars, params)
+        (joinTokens(vars, Token(TokenKind.NL)), joinTokens(params, Token(TokenKind.COMMA)))
     }
     /**
      * @throws Exception
@@ -87,60 +83,73 @@ class FuncInfo {
         } catch (_: Exception) {
             ret += quote(
                 $(funcName)($(params))
-                ctx.ok()
             )
             return ret
         }
 
         let retType = delType.toTokens()[0].value
         if (delType is TupleType) {
-            let tt = (delType as TupleType).getOrThrow()
-            if (tt.types.size != 2) {
-                diagReport(DiagReportLevel.ERROR, decl.toTokens(),
-                    "return type must is tuple with 2 element, first is Uint16, second is String or JsonSerializable",
-                    "(status, body)")
-                throw Exception(
-                    "return must is tuple with 2 element, first is Uint16, second is String or JsonSerializable")
-            }
-            let tfirstType = tt.types[0]
-            if (tfirstType is PrimitiveType) {
-                ret += quote(
-                    let (statusCode, bodyRsp) = $(funcName)($(params))
-                )
-            } else {
-                ret += quote(
-                    let (bodyRsp, statusCode) = $(funcName)($(params))
-                )
-            }
-            if (produce == "json") {
-                ret += quote(
-                    ctx.status(UInt16(statusCode)).json(bodyRsp) 
-                )
-            } else {
-                ret += quote(
-                    ctx.status(UInt16(statusCode)).string(bodyRsp.toString()) 
-                )
-            }
+            ret += handleTupleRet(delType, funcName, params)
         } else if (retType == "UInt16") {
             ret += quote(
                 let statusCode = $(funcName)($(params))
                 ctx.status(UInt16(statusCode))
             )
         } else if (retType != "Unit") {
-            ret += quote(let bodyRsp = $(funcName)($(params)))
-            if (produce == "json") {
-                ret += quote(
-                    ctx.json(bodyRsp) 
-                )
-            } else {
-                ret += quote(
-                    ctx.string(bodyRsp.toString()) 
-                )
-            }
+            ret += handleUInt16(funcName, params)
         } else {
             ret += quote(
                 $(funcName)($(params))
-                ctx.ok()
+            )
+        }
+        ret
+    }
+
+    /**
+     * @throws Exception
+     */
+    private func handleTupleRet(delType: TypeNode, funcName: Token, params: Tokens): Tokens {
+        let tt = (delType as TupleType).getOrThrow()
+        var ret = Tokens()
+        if (tt.types.size != 2) {
+            diagReport(DiagReportLevel.ERROR, decl.toTokens(),
+                "return type must is tuple with 2 element, first is Uint16, second is String or JsonSerializable",
+                "(status, body)")
+            throw Exception(
+                "return must is tuple with 2 element, first is Uint16, second is String or JsonSerializable")
+        }
+        let tfirstType = tt.types[0]
+        if (tfirstType is PrimitiveType) {
+            ret += quote(
+                let (statusCode, bodyRsp) = $(funcName)($(params))
+            )
+        } else {
+            ret += quote(
+                let (bodyRsp, statusCode) = $(funcName)($(params))
+            )
+        }
+        if (produce == "json") {
+            ret += quote(
+                ctx.status(UInt16(statusCode)).json(bodyRsp) 
+            )
+        } else {
+            ret += quote(
+                ctx.status(UInt16(statusCode)).string(bodyRsp.toString()) 
+            )
+        }
+        ret
+    }
+
+    private func handleUInt16(funcName: Token, params: Tokens): Tokens {
+        var ret = Tokens()
+        ret += quote(let bodyRsp = $(funcName)($(params)))
+        if (produce == "json") {
+            ret += quote(
+                ctx.json(bodyRsp) 
+            )
+        } else {
+            ret += quote(
+                ctx.string(bodyRsp.toString()) 
             )
         }
         ret
