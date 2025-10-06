@@ -21,6 +21,7 @@ protected class ClassGenentor {
     public let isOpen: Bool
     public let variables: ArrayList<VarDecl>
     public let constructors: ArrayList<FuncDecl>
+    public let funcs: ArrayList<FuncDecl>
 
     /**
      * @throws Exception if macro not use for struct or class
@@ -34,12 +35,14 @@ protected class ClassGenentor {
                 superTypes = vd.superTypes
                 body = vd.body
                 this.variables = getMemberVariables(vd.body)
+                this.funcs = getMemberFuncs(vd.body)
                 this.constructors = getConstructors(typeDecl.identifier.value, body)
             case vd: StructDecl =>
                 isClass = false
                 superTypes = vd.superTypes
                 body = vd.body
                 this.variables = getMemberVariables(vd.body)
+                this.funcs = getMemberFuncs(vd.body)
                 this.constructors = getConstructors(typeDecl.identifier.value, body)
             case _ => throw Exception("${macroName} macro only using for struct or class")
         }
@@ -49,7 +52,11 @@ protected class ClassGenentor {
         let result = ArrayList<VarDecl>()
         for (decl in body.decls) {
             match (decl) {
-                case vd: VarDecl => result.add(vd)
+                case vd: VarDecl =>
+                    let isStatic = decl.modifiers |> any {t => t.keyword.kind == TokenKind.STATIC}
+                    if (!isStatic) {
+                        result.add(vd)
+                    }
                 case _ => ()
             }
         }
@@ -63,6 +70,21 @@ protected class ClassGenentor {
                 case vd: FuncDecl =>
                     let isStatic = decl.modifiers |> any {t => t.keyword.kind == TokenKind.STATIC}
                     if (!isStatic && (vd.identifier.value == "init" || vd.identifier.value == typeName)) {
+                        result.add(vd)
+                    }
+                case _ => ()
+            }
+        }
+        return result
+    }
+
+    private static func getMemberFuncs(body: Body): ArrayList<FuncDecl> {
+        let result = ArrayList<FuncDecl>()
+        for (decl in body.decls) {
+            match (decl) {
+                case vd: FuncDecl =>
+                    let isStatic = decl.modifiers |> any {t => t.keyword.kind == TokenKind.STATIC}
+                    if (!isStatic) {
                         result.add(vd)
                     }
                 case _ => ()

@@ -10,7 +10,8 @@
 
 package cjoy.test
 
-import cjoy.ioc.*
+import cjoy.*
+import cjoy.macros.*
 import cjoy.validation.*
 
 // -------- @Autowired指定名称注入
@@ -60,12 +61,28 @@ class Bean7 {
     }
 }
 
+@Controller[path = "/test"]
+class BeanController {
+    @Get[path = "/p1"]
+    func get(ctx: JoyContext): Unit {
+    }
+
+    @Post[path = "/p2/{name}"]
+    func post(ctx: JoyContext, @PathParam name: String): Unit {
+    }
+}
+
 @Test
 public class IocTestCaseSuit {
     @TestCase
     public func test(): Unit {
-        let appContext = BeanFactoryManager.getApplicationContext()
-        appContext.createAllBeans()
-        appContext.destroyAllBeans()
+        let joy = Joy.default()
+        JoyMiddlewares.registerTo(joy)
+        JoyHandlers.registerTo(joy)
+        let fut = spawn {
+            joy.run("127.0.0.1", 18882)
+        }
+        sleep(Duration.second)
+        fut.cancel()
     }
 }

@@ -22,28 +22,23 @@ open class ComponentClassInfo {
     let _beanScope: String
     let _extends: ArrayList<String>
     let _ctorFuncDecl: ?FuncDecl
+    var _attrMap: MapToString = MapToString()
 
-    /**
-     * @throws Exception
-     */
-    init(attr: ?Tokens, classId: Token, initFunc: ?FuncDecl) {
+    init(attr: ?Tokens, classId: Token, initFunc: ?FuncDecl, fn: (attr: Tokens) -> MapToString) {
         _classId = classId
         _beanType = classId.value
         _ctorFuncDecl = initFunc
         if (attr.isSome()) {
-            let map: MapToString = parserAttrs(attr.getOrThrow(), validKeys: ["name", "scope", "extends"],
-                macroName: "Component")
-            _beanName = map.getString("name") ?? toBeanName(_beanType)
-            _beanScope = (map.getString("scope") ?? "Singleton").toAsciiLower()
-            _extends = converterList(map.getList("extends") ?? ArrayList<ToString>())
+            _attrMap = fn(attr.getOrThrow())
+            _beanName = _attrMap.getString("name") ?? toBeanName(_beanType)
+            _beanScope = (_attrMap.getString("scope") ?? "Singleton").toAsciiLower()
+            _extends = converterList(_attrMap.getList("extends") ?? ArrayList<ToString>())
         } else {
             _beanName = toBeanName(_beanType)
             _beanScope = "singleton"
             _extends = ArrayList()
         }
-        if (_beanScope != "singleton" && _beanScope != "prototype") {
-            throw Exception("scope in @Component value `${_beanScope}` must be singleton or prototype")
-        }
+        checkBeanSceop(_beanScope)
     }
 
     // 获取@Autowired[name=""]的name值
@@ -134,18 +129,25 @@ open class ComponentClassInfo {
     }
 }
 
+/**
+ * @throws Exception
+ */
+func checkBeanSceop(beanScope: String): Unit {
+    if (beanScope != "singleton" && beanScope != "prototype") {
+        throw Exception("scope in @Component value `${beanScope}` must be singleton or prototype")
+    }
+}
+
 func toBeanName(str: String): String {
     let arr = str.toRuneArray()
-    arr[0] = arr[0].toAsciiUpperCase()
+    arr[0] = arr[0].toAsciiLowerCase()
     String(arr)
 }
 
 /**
  * @throws IocException
  */
-func parseComponent(attr: ?Tokens, input: Tokens): Tokens {
-    let (decl, pos) = parseDeclFragment(input)
-    let classGen = ClassGenentor("Component", decl)
+func getInitFunc(classGen: ClassGenentor) {
     let ctors = classGen.constructors
     var initFunc: ?FuncDecl = None
     if (ctors.size == 0) {
@@ -155,9 +157,16 @@ func parseComponent(attr: ?Tokens, input: Tokens): Tokens {
     } else {
         throw IocException("only allowed exist zero or one init func")
     }
+    initFunc
+}
 
+func parseComponent(attr: ?Tokens, input: Tokens): Tokens {
+    let (decl, pos) = parseDeclFragment(input)
+    let classGen = ClassGenentor("Component", decl)
     let ident = decl.identifier
-    let classInfo = ComponentClassInfo(attr, ident, initFunc)
+    let classInfo = ComponentClassInfo(attr, ident, getInitFunc(classGen)) {
+        attr: Tokens => parserAttrs(attr, validKeys: ["name", "scope", "extends"], macroName: "Component")
+    }
     let supperTokens = quote(BeanLifecycle)
     let tokens = classGen.genTokens(supperTokens, Tokens(), createCtor: false)
 

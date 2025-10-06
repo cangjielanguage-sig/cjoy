@@ -10,11 +10,16 @@
 
 package cjoy.ioc.api
 
+import std.collection.ArrayList
 import std.collection.concurrent.ConcurrentHashMap
+import std.sync.AtomicBool
 import cjoy.log.*
 
 public class BeanFactoryManager {
     private static let CONTEXT: DefaultApplicationContext = DefaultApplicationContext()
+    private static let POST_FUNCS: ArrayList<() -> Unit> = ArrayList()
+
+    static let EXECUTED: AtomicBool = AtomicBool(false)
 
     public static func getApplicationContext(): ApplicationContext {
         CONTEXT
@@ -29,6 +34,20 @@ public class BeanFactoryManager {
     public static func registerTypes(beanType: String, interfaces: Array<String>): Unit {
         @LogInfo("[IOC] register bean types, beanType=${beanType}, interfaces=${interfaces}")
         CONTEXT._beanDependManger.addTypes(beanType, interfaces)
+    }
+
+    public static func registerPostFunc(beanType: String, fn: () -> Unit): Unit {
+         @LogInfo("[IOC] register post func , beanType=${beanType}")
+        POST_FUNCS.add(fn)
+    }
+
+    public static func executePostFuncs(): Unit {
+        @LogInfo("[IOC] exeucte registered post func ")
+        if (EXECUTED.compareAndSwap(false, true)) {
+            for (fn in POST_FUNCS) {
+                fn()
+            }
+        }
     }
 
     public static func get(beanType: String): ?BeanFactory {

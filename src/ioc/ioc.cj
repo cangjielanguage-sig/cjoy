@@ -11,4 +11,4 @@
 macro package cjoy.ioc
 
 public import cjoy.ioc.api.*
-public import cjoy.ioc.macros.{Component, Autowired}
+public import cjoy.ioc.macros.{Component, Autowired, Controller}

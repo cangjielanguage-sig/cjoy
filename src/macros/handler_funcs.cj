@@ -23,7 +23,7 @@ class FuncInfo {
     var produce: String = ""
     var methods: String = ""
 
-    init(macroName: String,  decl: FuncDecl) {
+    init(macroName: String, decl: FuncDecl) {
         this.macroName = macroName
         this.decl = decl
     }
@@ -42,6 +42,13 @@ class FuncInfo {
 
         let array = methods.split(",", removeEmpty: true)
         array |> map {a: String => a.toAsciiUpper().trimAscii()} |> collectArray
+    }
+
+    func getMethodStr(): String {
+        if (methods.isEmpty()) {
+            return macroName.toAsciiUpper()
+        }
+        methods
     }
 
     private func declVars(): (Tokens, Tokens) {
@@ -69,7 +76,9 @@ class FuncInfo {
 
         (vars, params)
     }
-
+    /**
+     * @throws Exception
+     */
     private func callFunc(params: Tokens): Tokens {
         var ret = Tokens()
         let funcName = decl.identifier
@@ -145,11 +154,9 @@ class FuncInfo {
         quote(
             public class $(handlerName) <: JoyRequestHandler {
                 public static let INSTANCE = $(handlerName)()
-                
                 init() {
                     JoyHandlers.addHandler($(path), $(getMethods()), this)
                 }
-
                 public func handle(ctx: JoyContext): Unit {
                     $(vars)
                     $(callfunc)
@@ -157,8 +164,31 @@ class FuncInfo {
             }   
        )
     }
+
+    func sendMessage(): Tokens {
+        let funcName = decl.identifier.value
+        let handlerName = Token(TokenKind.IDENTIFIER, funcName + "Handler" + randStr(2))
+
+        let (vars, params) = declVars()
+        let callfunc = callFunc(params)
+        let funcTokens: Tokens = quote(
+            public func $handlerName(ctx: JoyContext): Unit {
+                $(vars)
+                $(callfunc)
+            }
+        )
+
+        setItem("handler.func", funcTokens)
+        setItem("handler.name", handlerName.value)
+        setItem("handler.path", path)
+        setItem("handler.methods", getMethodStr())
+        Tokens()
+    }
 }
 
+/**
+ * @throws Exception
+ */
 func parseFunc(macroName: String, attr: Tokens, input: Tokens): Tokens {
     let decl = parseDecl(input)
     if (!(decl is FuncDecl)) {
@@ -167,7 +197,13 @@ func parseFunc(macroName: String, attr: Tokens, input: Tokens): Tokens {
 
     let funcInfo = FuncInfo(macroName, (decl as FuncDecl).getOrThrow())
     funcInfo.parseAttr(attr)
-    let tokens = funcInfo.genTokens()
-    ParamInfoCache.clear()
-    tokens
+    if (insideParentContext("Controller")) {
+        let tokens = funcInfo.sendMessage()
+        ParamInfoCache.clear()
+        tokens
+    } else {
+        let tokens = funcInfo.genTokens()
+        ParamInfoCache.clear()
+        tokens
+    }
 }

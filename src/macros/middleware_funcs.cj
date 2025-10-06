@@ -55,6 +55,9 @@ class MiddlewareInfo {
     }
 }
 
+/**
+ * @throws Exception
+ */
 func parseMiddlewareFunc(attr: ?Tokens, input: Tokens): Tokens {
     let decl = parseDecl(input)
     if (!(decl is FuncDecl)) {
