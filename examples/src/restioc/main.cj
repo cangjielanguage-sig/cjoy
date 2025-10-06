@@ -70,6 +70,7 @@ class UserHandler {
 
 main(): Int64 {
     let joy = Joy.default()
+    // 需要调用JoyHandlers.registerTo，让生成Handler自动注册
     JoyHandlers.registerTo(joy)
     joy.run("127.0.0.1", 18881)
     return 0

@@ -197,5 +197,10 @@ class DefaultApplicationContext <: ApplicationContext {
         for (b in beans) {
             b.beforeDestroy()
         }
+
+        let iter = _beans.iterator()
+        while (let Some((k, _)) <- iter.next()) {
+            _beans.remove(k)
+        }
     }
 }

@@ -100,6 +100,9 @@ Handler注册宏，作用在函数上：
 |2|`(UInt16, T where T <: ToString)`|响应为`Content-Type=plain/text`，`StatusCode=${statusCode}`|
 |2|`(T where T <: ToString, UInt16)`|同上|
 
+
+注：Handler宏可以结合IoC框架使用，标在Class或Struct上，参见 [IoC服务](../../doc/usage_guide/ioc.md)
+
 ## Middleware宏
 
 ```

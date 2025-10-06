@@ -37,7 +37,7 @@ public class BeanFactoryManager {
     }
 
     public static func registerPostFunc(beanType: String, fn: () -> Unit): Unit {
-         @LogInfo("[IOC] register post func , beanType=${beanType}")
+        @LogInfo("[IOC] register post func , beanType=${beanType}")
         POST_FUNCS.add(fn)
     }
 

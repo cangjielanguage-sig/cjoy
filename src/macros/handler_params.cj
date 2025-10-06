@@ -193,8 +193,6 @@ class BodyParamVarGenerator <: ParamInfo {
             return quote(let $(pname) = ctx.readString()
             )
         }
-        eprintln("xxxxx")
-        eprintln(typeNode.vtype.value)
         if (typeNode.vtype.value == "Option") {
             return quote(let $(pname): ?$(typeNode.genericType) = ctx.readJson<$(typeNode.genericType)>()
             )

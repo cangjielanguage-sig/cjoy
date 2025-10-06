@@ -230,7 +230,7 @@ public class RouteTestCaseSuit {
     @TestCase
     public func testRouteGroup() {
         let rsp = _client.get("http://127.0.0.1:18881/group")
-        @Assert(rsp.status, 404)
+        @Assert(rsp.status, 200)
     }
 
     @TestCase
