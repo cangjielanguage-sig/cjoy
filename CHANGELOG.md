@@ -1,6 +1,18 @@
 Changelog
 ------
 
+# v0.70.0
+
+- 特性：支持IoC框架
+- 特性：Handler宏支持在Bean中使用
+- 特性：Scheduled宏支持在Bean中使用
+
+# v0.61.0
+
+- 特性：增加downloadAttachment支持单独以附件方式下载文件
+- 优化：清理部分cjlint codecheck告警
+- 修复：增加一些测试用例并修改其中的Bug
+
 # v0.60.0
 
 - 特性：增加日志宏

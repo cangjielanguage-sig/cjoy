@@ -18,7 +18,7 @@ import stdx.net.http.{Server, ServerBuilder}
 import stdx.crypto.x509.{X509Certificate, PrivateKey}
 import cjoy.log.*
 
-public const VERSION: String = "v0.61.0"
+public const VERSION: String = "v0.70.0"
 const LOGO: String = ##"
  ________        ___  ________      ___    ___ 
 |\   ____\      |\  \|\   __  \    |\  \  /  /|
