@@ -12,6 +12,7 @@ package cjoy.test
 
 import cjoy.*
 import cjoy.macros.*
+import cjoy.schedule.*
 import cjoy.validation.*
 
 // -------- @Autowired指定名称注入
@@ -59,6 +60,10 @@ class Bean7 {
     @Validated
     public func validate(@NotEmpty input: String): Unit {
     }
+
+    @Scheduled[cron = "*/20 3-5/2 22 */5 4"]
+    func schuedule(ctx: ScheduleContext): Unit {
+    }
 }
 
 @Controller[path = "/test"]
@@ -69,6 +74,10 @@ class BeanController {
 
     @Post[path = "/p2/{name}"]
     func post(ctx: JoyContext, @PathParam name: String): Unit {
+    }
+
+    @Scheduled[cron = "*/20 3-5/2 22 */5 4"]
+    func schuedule(ctx: ScheduleContext): Unit {
     }
 }
 

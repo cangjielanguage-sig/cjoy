@@ -12,7 +12,8 @@ macro package cjoy.ioc.macros
 
 import std.ast.*
 import std.collection.ArrayList
-import cjoy.utils.{ClassGenentor, parserAttrs, joinTokens, converterList, MapToString, MapListGetFunc, TypeNodeInfo}
+import cjoy.utils.{ClassGenentor, parserAttrs, joinTokens, converterList, MapToString, MapListGetFunc, TypeNodeInfo, 
+    randStr}
 import cjoy.ioc.api.IocException
 
 open class ComponentClassInfo {
@@ -127,6 +128,29 @@ open class ComponentClassInfo {
             }
         )
     }
+
+    func getSchuedleTokens(): Tokens {
+        let msgs = getChildMessages("Scheduled")
+        var register = Tokens()
+        for (msg in msgs) {
+            let name = _beanName + "." + msg.getString("schedule.name")
+            let cron = msg.getString("schedule.cron")
+            let funcName = msg.getTokens("schedule.funcName")
+            let bt = Token(TokenKind.IDENTIFIER, _beanType)
+            let err = "not found bean by name `${_beanName}` for type `${_beanType}`"
+            register += quote(
+                let _: Unit = BeanFactoryManager.registerPostFunc($name) {=>
+                    let bean = BeanFactoryManager.getApplicationContext().getBean<$bt>($_beanName).getOrThrow({=>IocException($err)})
+                        Crontab.INSTANCE.addJob($name, $cron, bean.$funcName)
+                }
+            )
+        }
+        register
+    }
+
+    func getSubMacroTokens(): Tokens {
+        getSchuedleTokens()
+    }
 }
 
 /**
@@ -170,5 +194,6 @@ func parseComponent(attr: ?Tokens, input: Tokens): Tokens {
     let supperTokens = quote(BeanLifecycle)
     let tokens = classGen.genTokens(supperTokens, Tokens(), createCtor: false)
 
-    tokens + Token(TokenKind.NL) + input[pos..] + Token(TokenKind.NL) + classInfo.getFactoryTokens()
+    tokens + Token(TokenKind.NL) + input[pos..] + Token(TokenKind.NL) + classInfo.getFactoryTokens() + Token(
+        TokenKind.NL) + classInfo.getSubMacroTokens()
 }

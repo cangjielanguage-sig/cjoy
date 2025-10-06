@@ -71,7 +71,8 @@ func parseController(attr: ?Tokens, input: Tokens): Tokens {
     }
     let supperTokens = quote(BeanLifecycle)
     let (handlerFuns, register) = classInfo.getHanldersTokens()
+    let otherTokens = register + Token(TokenKind.NL) + classInfo.getSubMacroTokens()
     let tokens = classGen.genTokens(supperTokens, handlerFuns, createCtor: false)
 
-    tokens + Token(TokenKind.NL) + input[pos..] + Token(TokenKind.NL) + classInfo.getFactoryTokens() + register
+    tokens + Token(TokenKind.NL) + input[pos..] + Token(TokenKind.NL) + classInfo.getFactoryTokens() + otherTokens
 }
