@@ -22,12 +22,12 @@ a fast，extensible，lightweight and joy cangjie application framework.<br/>
 
 在仓颉SDK提供的HTTP框架基础上进一步封装以简化后端应用开发：
 
-- 1️⃣ 基于压缩前辍树的路由管理，支持静态Path，参数匹配Path，正则匹配Path，全路径通配符Path的高效注册与查找，支持路由组；
+- 1️⃣ 基于压缩前辍树的路由管理，支持多种Path的高效注册与路由，路由分组；
 - 2️⃣ 基于拦截器的中间件扩展能力，支持Session等多种能力扩展；
 - 3️⃣ 基于Context的上下文管理，支持快速获取请求参数与构建Json/Text响应；
-- 4️⃣ 基于编译宏的Json序列化与反序列，支持对请求与响应消息的Json直接绑定映射;
-- 5️⃣ 基于编译宏支持自动注册与参数注入请求处理函数与中间件函数;
-- 6️⃣ 基于编译宏支持对请求参数校验；
+- 4️⃣ 基于编译宏的轻量级IoC框架，让应用轻易实现依赖倒置与模块间松耦合；
+- 5️⃣ 基于编译宏的Json序列化与反序列，支持对请求与响应消息的Json直接绑定映射;
+- 6️⃣ 基于编译宏支持自动注册与参数注入请求处理函数与中间件函数，请求参数校验;
 - 7️⃣ 基于编译宏支持MCP服务暴露工具等能力给LLM；
 - 8️⃣ 内置文件下载与上传，WebSocket，SSE等能力;
 - 9️⃣ 内置多种中间件，支持Basic，Token，JWT，OAuth2等认证;
@@ -43,8 +43,8 @@ a fast，extensible，lightweight and joy cangjie application framework.<br/>
 
 - 🚀 高性能：零反射，基于编译宏生成代码，前辍树高效路由，运行时高性能；
 - 🧩 轻量化：零第三方库依赖，内置Web应用开发常见能力，模块化按需使用，能灵活组装；
-- 🔌 可扩展：提供中间件与服务扩展机制，支持对请求拦截与服务调用，丰富您的Web应用；
-- 😊 易上手：内置多种能力，提供编译宏，简化Web，MCP应用开发，让您聚焦你的应用逻辑；
+- 🔌 可扩展：提供中间件与服务扩展机制，支持对请求拦截与服务调用，丰富您的应用；
+- 😊 易上手：内置多种能力，提供编译宏，简化Web，MCP应用开发，让您聚焦应用逻辑；
 - 🛠️ 多协议：支持HTTP1，HTTP2，WebSocket, SSE, MCP等协议；
 
 ## ✨ 快速开始
@@ -163,7 +163,7 @@ main(): Int64 {
 
 ## 📎 更多示例
 
-请参见 [examples](examples/README.md) 。
+CJoy内置丰富的示例，请移步 [examples](examples/README.md) 。
 
 ## 📖 使用指导
 
@@ -235,9 +235,9 @@ main(): Int64 {
 
 ## 🏁 版本说明
 
-CJoy目前还在开发阶段，框架主要能力已完成开发，后续重点是提升测试覆盖率，以及扩展各类中间件与服务。
+CJoy目前还在开发阶段，主要能力已完成开发，后续重点是提升测试覆盖率，以及扩展各类中间件与服务。在1.0.0版本发布之后，项目会稳定API与目录结构。
 
-版本发布采用打Tag的方式。您引用Cjoy可以在你的项目cjpm.toml采用如下方式：
+版本发布采用打Tag的方式。获取稳定最新的特性，建议依赖main分支，也可依赖某个tag，您引用 CJoy 可以在你的项目cjpm.toml采用如下方式：
 
 ```
 [dependencies]
@@ -246,14 +246,15 @@ CJoy目前还在开发阶段，框架主要能力已完成开发，后续重点�
 
 ## 🤝 参与贡献
 
-欢迎给我们提交 PR，欢迎给我们提交 Issue，欢迎参与任何形式的贡献。
+邀请您与我们共同打造更优秀的 CJoy。
 
-fork时请保留上游仓库地址 [Cangjie-SIG/cjoy](https://gitcode.com/Cangjie-SIG/cjoy) 或 [lanlingx/cjoy](https://gitcode.com/lanlingx/cjoy) 。
+- **分享使用经验**：如果您觉得 CJoy 很实用，您的**Star**是对我们最大鼓励。欢迎在个人博客撰写评测或教程，您的真知灼见能帮助更多人快速上手！
+- **参与项目开发**：欢迎给我们提交 PR，欢迎给我们提交 Issue，欢迎参与任何形式的贡献。
+- **贡献指南**：[doc/contributing](doc/dev_guide/contributing.md) 。
+- 项目维护者：[@lanlingx](https://gitcode.com/lanlingx) 。
 
-本项目的维护者是 [@lanlingx](https://gitcode.com/lanlingx) 。
-
-开发指导请参见 [doc/dev_guide](doc/dev_guide/README.md) 。
+若您fork时请保留上游仓库地址 [Cangjie-SIG/cjoy](https://gitcode.com/Cangjie-SIG/cjoy) 或 [lanlingx/cjoy](https://gitcode.com/lanlingx/cjoy) ，让 CJoy 变成仓颉生态中最广为人知的应用开发框架 。
 
 ## 🪪 协议
 
-参考 [LICENSE](LICENSE) 文件。
+参见 [LICENSE](LICENSE) 文件。

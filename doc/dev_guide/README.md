@@ -1,4 +1,5 @@
-开发指导
+开发指南
+
 -----
 
 ## 代码结构
@@ -33,14 +34,14 @@
     │   ├── *.cj
     └── test
     │    ├── *_test.cj
-    ├── examples
-    │   ├── README.md
-    │   ├── chuncked
-    │   ├── macros
-    │   ├── rest
-    │   ├── simple
-    │   ├── sse
-    │   └── tls
+├── examples
+│   ├── README.md
+│   ├── chuncked
+│   ├── macros
+│   ├── rest
+│   ├── simple
+│   ├── sse
+│   └── tls
 ├── doc
 │   ├── dev_guide
 │   ├── usage_guide
@@ -53,14 +54,15 @@
  - `src/middleware`：中间件
  - `src/test`：测试
  - `src/json`：json序列化宏实现
- - `src/examples`：样例
+ - `examples`：样例
  - `doc`：文档
   
 原则：
 
- - 大的特性src目录下创建子目录，如`src/macros`
- - `src/test`放全局的测试代码，各目录下`*_test.cj`是内部类测试代码
- - 宏定义与实现分离，如`src/macros/macros.cj`只定义宏，`src/macros/generate/*.cj`为宏的解释与代码生成
+ - 大的特性src目录下创建子目录，如`src/ioc`
+ - 每个特性对外公共的API放API目录下，如`src/ico/api`，若提供宏则放在`src/ico/macros`
+ - `src/test`放全局测试（HLT）代码，各目录下`*_test.cj`是内部类测试（LHT）代码
+ - 宏定义与实现分离，如`src/macros/macros.cj`只定义宏，方便查看些模块有哪些宏，`src/macros/*.cj`为宏的解释与代码生成
  - 尽可能类不要定义public，只对外暴露最小的API，比如一些实现辅助类就没有必要public
  - 没有必要一个cj文件只放一个类或接口，实现一个功能的类与其关联类可以放在一个文件中，但每个类可职责单一
 
@@ -125,33 +127,6 @@ Json的序列化与反序列化基于`encoding.json.stream`接口，提供宏对
 
  - 宏定义文件不要展开宏的解释，保持此文件的整洁
  - 内部提供函数对各个宏解释
-
-
-## Commit Message
-
-目前，社区有多种 Commit Message 的 [写法规范](https://github.com/ajoslin/conventional-changelog/blob/master/conventions)。比较流行的方案是 约定式提交规范（Conventional Commits），它受到了Angular提交准则的启发，并在很大程度上以其为依据。约定式提交规范是一种基于提交消息的轻量级约定。这个约定与SemVer相吻合，在提交信息中描述新特性、bug 修复和破坏性变更。本项目采用此方案。它的 Message 格式如下:
-
-```
-<类型>[可选的作用域]: <描述>
-
-[可选的正文]
-
-[可选的脚注]
-```
-
-类型type(必须) : 用于说明git commit的类别，只允许使用下面的标识：
-
-- feat: 新功能（feature）
-- fix: 修复BUG。
-- docs: 文档（documentation）。
-- style: 格式（不影响代码运行的变动）。
-- refactor: 重构（即不是新增功能，也不是修改bug的代码变动）。
-- upgrade/boost/perform: 升级、优化相关，比如提升性能、体验。
-- test: 测试相关
-- chore: 构建过程或辅助工具的变动
-- revert: 回滚到上一个版本。
-- version: 版本管理、版本发布、源代码相关（含：依赖组件版本管理）
-
 
 ----
 << [返回](../../README.md)
