@@ -12,6 +12,7 @@ package cjoy.framework
 
 import std.collection.{forEach, ArrayList, HashMap}
 import stdx.net.http.{notFound, HttpStatusCode, OptionsHandler}
+import cjoy.ioc.api.{BeanFactoryManager, ApplicationContext}
 
 /**
  * the interface of request handler
@@ -75,12 +76,21 @@ public class JoyHandlers {
         HANDLERS.add((path, methods, handler))
     }
 
+    public static func addHandler(path: String, methods: Array<String>, handler: JoyRequestHandlerFunc): Unit {
+        HANDLERS.add((path, methods, JoyFuncHandler(handler)))
+    }
+
     /**
      * register the handlers to joy instance
      *
      * @param joy: the instance of joy
      */
     public static func registerTo(joy: Joy): Unit {
+        // 依赖注入类需要先初始化
+        BeanFactoryManager.getApplicationContext().createAllBeans()
+        // 注入Bean的Handler
+        BeanFactoryManager.executePostFuncs()
+
         for (it in HANDLERS) {
             let (path, methods, handler) = it
             let rg = joy.router.findGroup(path)

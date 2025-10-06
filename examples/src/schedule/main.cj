@@ -19,10 +19,17 @@ func logMetric(ctx: ScheduleContext): Unit {
 @Post[path = "/crontab"]
 func addCrontab(ctx: JoyContext): Unit {
     let crontab = ctx.getService<Crontab>("crontab").getOrThrow()
-    crontab.addJobIfAbsent("the name", "*/5 * * * * *",
-        {
-            schedCtx: ScheduleContext => @LogInfo("another crontab ...")
-        })
+    crontab.addJobIfAbsent("the name", "*/5 * * * * *", {
+        schedCtx: ScheduleContext => @LogInfo("another crontab ...")
+    })
+}
+
+@Component
+class Bean {
+    @Scheduled[name = "send message job", cron = "*/4 * * * * *"]
+    func sendMessage(ctx: ScheduleContext): Unit {
+        @LogInfo("send message in crontab ...")
+    }
 }
 
 main(): Int64 {

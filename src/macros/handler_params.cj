@@ -52,6 +52,9 @@ open class ParamInfo {
         return pname.value
     }
 
+    /**
+     * @throws Exception if no macro in param
+     */
     public open func genTokens(): Tokens {
         if (typeNode.vtype.value == "JoyContext") {
             if (pname.value == "ctx") {
@@ -61,7 +64,8 @@ open class ParamInfo {
                 )
             }
         } else {
-            throw Exception("not support param type ${typeNode.vtype.value} for no macro")
+            throw Exception(
+                "must using macro for param `${getName()}: ${typeNode.vtype.value}` like @PathParam, @QueryParam")
         }
     }
 

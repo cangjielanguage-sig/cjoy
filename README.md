@@ -196,6 +196,7 @@ main(): Int64 {
   - [JWT认证](doc/usage_guide/authentication.md#JWT认证)
   - [OAuth2认证](doc/usage_guide/authentication.md#OAuth2认证)
 - [服务](doc/usage_guide/service.md)
+  - [IoC服务](doc/usage_guide/ioc.md)
   - [调度任务](doc/usage_guide/schedule.md)
   - [Http服务](doc/usage_guide/httpx.md)
 - [参数绑定](doc/usage_guide/binding.md)

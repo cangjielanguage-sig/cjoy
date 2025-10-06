@@ -45,8 +45,18 @@ class FuncInfo {
             let _: Unit = Crontab.INSTANCE.addJob($(getName()), $cron, $(decl.identifier))
         )
     }
+
+    func sendMessage(): Tokens {
+        setItem("schedule.name", getName())
+        setItem("schedule.cron", cron)
+        setItem("schedule.funcName", decl.identifier.toTokens())
+        Tokens()
+    }
 }
 
+/**
+ * throws Exception
+ */
 func parseFunc(macroName: String, attr: Tokens, input: Tokens): Tokens {
     let decl = parseDecl(input)
     if (!(decl is FuncDecl)) {
@@ -55,6 +65,10 @@ func parseFunc(macroName: String, attr: Tokens, input: Tokens): Tokens {
 
     let funcInfo = FuncInfo(macroName, (decl as FuncDecl).getOrThrow())
     funcInfo.parseAttr(attr)
-    let tokens = funcInfo.genTokens()
+    let tokens = if (insideParentContext("Controller") || insideParentContext("Component")) {
+        funcInfo.sendMessage()
+    } else {
+        funcInfo.genTokens()
+    }
     tokens
 }

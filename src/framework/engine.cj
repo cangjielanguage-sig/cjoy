@@ -17,6 +17,7 @@ import stdx.net.tls.TlsServerConfig
 import stdx.net.http.{Server, ServerBuilder}
 import stdx.crypto.x509.{X509Certificate, PrivateKey}
 import cjoy.log.*
+import cjoy.ioc.api.{BeanFactoryManager, ApplicationContext}
 
 public const VERSION: String = "v0.70.0"
 const LOGO: String = ##"
@@ -118,6 +119,8 @@ public class Joy {
             throw IllegalArgumentException("the instance name is already existing, name=${name}")
         }
         let joy = Joy(config, name)
+        // 默认增加IoC服务
+        joy.addService("ioc", BeanFactoryManager.getApplicationContext())
         _INSTANCES.add(name, joy)
         joy
     }
@@ -164,6 +167,8 @@ public class Joy {
         _server = Some(server)
         @LogInfo("run cjoy app ${name}, bind at ${server.addr}:${server.port}")
         @LogInfo("route tree:\n${router.dump()}")
+        // 在Run之前至少要执行一次
+        BeanFactoryManager.getApplicationContext().createAllBeans()
         server.serve()
     }
 

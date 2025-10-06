@@ -16,6 +16,7 @@ import std.ast.Tokens
 public import std.convert.Parsable
 public import cjoy.{JoyHandlers, JoyRequestHandler, JoyMiddlewares, JoyMiddlewareHandler, JoyRequestHandlerChain}
 public import cjoy.bind.api.{JoyBindable, JoyBindSource}
+public import cjoy.ioc.*
 
 /**
  * PathParam macro is used for annotation at the paramter of function

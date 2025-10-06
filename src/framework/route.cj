@@ -203,6 +203,7 @@ class TreeRouteDistributor <: HttpRequestDistributor & HttpRequestHandler {
         } else {
             req.url.path
         }
+        path = path.removeSuffix("/")
 
         let ri: RouteInfo<JoyRequestHandler> = RouteInfo()
         var node = _root.findRouteHandler(ri, req.method, path)
@@ -282,9 +283,7 @@ class JoyRouteGroup <: JoyRouters {
 
         var path = _path + relativePath
         // don't want trailing slash as all sub-paths start with slash
-        if (path[path.size - 1] == b'/') {
-            path = path[0..path.size - 1]
-        }
+        path = path.removeSuffix("/")
 
         if (let Some(group) <- _distributor._groups.get(path)) {
             return group
@@ -364,7 +363,6 @@ class JoyRouteGroup <: JoyRouters {
             JoyHttpConsts.METHOD_OPTIONS]
         groupHandle(allMethods, "", JoyGroupRouteHandler.INSTANCE)
         var xpattern = "/"
-        groupHandle(allMethods, xpattern, JoyGroupRouteHandler.INSTANCE)
         xpattern = xpattern + "*"
         groupHandle(allMethods, xpattern, JoyGroupRouteHandler.INSTANCE)
     }
@@ -375,9 +373,9 @@ class JoyRouteGroup <: JoyRouters {
 
     private func addOne(method: String, path: String, handler: JoyRequestHandler): Unit {
         let thePath = if (_distributor._config.caseInsensitive) {
-            path.toAsciiLower()
+            path.toAsciiLower().removeSuffix("/")
         } else {
-            path
+            path.removeSuffix("/")
         }
         _distributor._root.addRoute(method, thePath, handler)
     }

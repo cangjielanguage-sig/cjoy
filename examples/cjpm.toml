@@ -23,6 +23,8 @@
       output-type = "executable"
     [package.package-configuration."examples.rest"]
       output-type = "executable"
+    [package.package-configuration."examples.restioc"]
+      output-type = "executable"     
     [package.package-configuration."examples.simple"]
       output-type = "executable"
     [package.package-configuration."examples.sse"]
