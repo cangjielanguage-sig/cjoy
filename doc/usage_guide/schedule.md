@@ -2,7 +2,7 @@
 
 ## Crontab
 
-CJoy提供Linux风格的crontab定时调试任务。
+CJoy提供Linux风格的crontab定时调度任务管理。
 
 支持两种风格：
 
@@ -38,7 +38,7 @@ public type ScheduleFunc = (ctx: ScheduleContext) -> Unit
 
 使用示例：[examples/schedule](../../examples/src/schedule/main.cj) 。
 
-采用宏标注，CJoy框架会自动把回调函数注册给Crontab.INSTANCE。
+采用宏标注，CJoy框架会自动把回调函数注册给全局的Crontab服务。
 
 ```
 @Scheduled[name = "metric job", cron = "*/2 * * * * *"]
@@ -70,7 +70,7 @@ func addCrontab(ctx: JoyContext): Unit {
 }
 ```
 
-注：每个Joy实例会默认注册一个名为`crontab`的Crontab服务。
+注：每个Joy实例会默认存在一个名为`crontab`的Crontab服务。
 
 
 ----

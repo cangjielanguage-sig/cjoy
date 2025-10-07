@@ -13,8 +13,7 @@ package cjoy.eventbus.api
 import std.collection.{ArrayList}
 import std.collection.concurrent.{ArrayBlockingQueue, ConcurrentHashMap}
 import std.sync.{SyncCounter, AtomicBool}
-import cjoy.framework.DEFAULT_SERVICE_CONTAINER
-import cjoy.context.{Context, MapContext}
+import cjoy.context.{Context, MapContext, GLOBAL_SERVICE_CONTAINER}
 import cjoy.log.*
 
 public class LocalEventBus <: EventBus {
@@ -174,4 +173,4 @@ private func matchNode(pattern: String, name: String): Bool {
     true
 }
 
-let _: Unit = DEFAULT_SERVICE_CONTAINER.addService("eventbus", LocalEventBus.INSTANCE)
+private let _: Unit = GLOBAL_SERVICE_CONTAINER.addService("eventbus", LocalEventBus.INSTANCE)

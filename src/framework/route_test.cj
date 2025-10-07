@@ -11,6 +11,7 @@
 package cjoy.framework
 
 import std.unittest.testmacro.*
+import cjoy.context.*
 
 @Test
 public class RouteTestCaseSuit {

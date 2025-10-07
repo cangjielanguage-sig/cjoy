@@ -28,6 +28,18 @@ func addCrontab(ctx: JoyContext): Unit {
 }
 ```
 
+## 服务容器
+
+CJoy存一个全局的服务容器ServiceConainter，一些内置的全局服务会默认填写到些容器内。每个Joy实例也创建独属的服务容器，全局的服务会自动填写到Joy实例的服务容器。
+
+全局的服务实例：
+
+|服务名|类型|说明|
+|----|----|----|
+|ioc|ApplicationService|Bean容器|
+|eventbus|EventBus|事件总线|
+|crontab|Crontab|Crontab任务调度|
+
 # 内置服务
 
  - [IoC服务](../../doc/usage_guide/ioc.md)

@@ -13,7 +13,7 @@ package cjoy.schedule.api
 import std.sync.{Timer}
 import std.collection.concurrent.ConcurrentHashMap
 import std.time.DateTime
-import cjoy.framework.DEFAULT_SERVICE_CONTAINER
+import cjoy.context.GLOBAL_SERVICE_CONTAINER
 import cjoy.log.*
 
 public class Crontab <: Resource {
@@ -88,4 +88,4 @@ public class Crontab <: Resource {
     }
 }
 
-let _: Unit = DEFAULT_SERVICE_CONTAINER.addService("crontab", Crontab.INSTANCE)
+private let _: Unit = GLOBAL_SERVICE_CONTAINER.addService("crontab", Crontab.INSTANCE)

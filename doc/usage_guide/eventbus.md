@@ -8,7 +8,7 @@ CJoy内置轻量级的事件总线，为应用提供基于事件的解耦机制�
 
  - 支持一个事件有多个订阅者
  - 支持多个订阅者优先级，优先级越高越先触发
- - 支持通过通配符 *或** 来订阅一组事件
+ - 支持通过通配符 `*` 或 `**` 来订阅一组事件
  - 支持事件同步，异步(队列与直接线程)发布
 
 事件名称支持以英文点`.`分隔的多级名称，其模式匹配，规则如下
@@ -20,16 +20,16 @@ CJoy内置轻量级的事件总线，为应用提供基于事件的解耦机制�
 
   - "evt.some.*.*"       -> 匹配 "evt.some.thing.run" "evt.some.thing.do"
   - "evt.some.*.run"     -> 匹配 "evt.some.thing.run", 但不能匹配 "evt.some.thing.do"
-  - "evt.some.**"        -> 匹配以"evt.some."结尾的事件. 比如："evt.some.thing.run" "evt.some.thing.do"
-  - "**.thing.run"       -> 匹配以".thing.run"开头的事件. 比如："evt.some.thing.run"
+  - "evt.some.**"        -> 匹配以 "evt.some."结尾的事件， 比如："evt.some.thing.run" "evt.some.thing.do"
+  - "**.thing.run"       -> 匹配以 ".thing.run"开头的事件， 比如："evt.some.thing.run"
 
 同步适合场景：
 
- - 关注事件处理结果，比如写文件，更新到Redis
+ - 关注事件处理结果，比如重要信息写文件，更新到Redis等
 
 异步适合场景：
 
- - 队列方式(发布事件调用fireEventAsync)，订阅者在指定的消费线程中处理，适合事件处理非阻塞式的场景，队列满了会阻塞事件发布者
+ - 队列方式(发布事件调用fireEventAsync)，订阅者在指定的消费线程中处理，适合事件处理非阻塞式的场景，队列满了会阻塞事件发布者。
  - 线程方式(发布事件调用asyncFireEvent)，发布是每次创建新的线程，适合事件处理耗时比较长场景，但并发数并不高。
 
 接口定义请参见 [EventBus](../../src//eventbus/api/api.cj) 。
@@ -38,7 +38,7 @@ CJoy内置轻量级的事件总线，为应用提供基于事件的解耦机制�
 
 使用示例：[examples/eventbus](../../examples/src/eventbus/main.cj) 。
 
-方式1：采用宏标注，CJoy框架会自动把订阅者函数注册给LocalEventBus.INSTANCE。
+方式1：采用宏标注，CJoy框架会自动把订阅者函数注册给全局的EventBus服务。
 
 ```
 @SubscribeEvent[name = "sub1", pattern = "a.b.**"]
@@ -95,7 +95,7 @@ func addCrontab(ctx: JoyContext): Unit {
 
 ## 服务
 
-内建的名为`eventbus`的事件总线服务，通用用于一些低时延的事件处理。如果应用存在一些高并发，长阻塞的事件处理建议创建其它的EventBus实例并注册为服务，可以指定合适队列长度与消费者线程数参数:
+内建的名为`eventbus`的事件EventBus服务，通常用于一些低时延的事件处理。如果应用存在一些高并发，长阻塞的事件处理时，建议创建其它的EventBus实例并注册为服务，可以指定合适的队列长度与消费者线程数参数:
 
 ```
 // 注册独立的事件总线服务
@@ -109,7 +109,7 @@ bus.onEvent("a.b.c.d", "sub", {
 })
 ```
 
-注：自定义EventBus，注册订阅需要调用bus.onEvent函数，采用宏标注的函数只在默认实例上生效。
+注：自定义EventBus实例，注册订阅者需要调用`bus.onEvent`函数，采用宏标注的函数只在全局的实例上生效。
 
 ----
 << [返回](../../README.md#使用指导)

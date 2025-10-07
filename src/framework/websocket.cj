@@ -15,7 +15,7 @@ import std.io.ByteBuffer
 import stdx.net.http.{WebSocket, WebSocketException, WebSocketFrame, WebSocketFrameType, HttpHeaders}
 import stdx.encoding.url.Form
 import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonReader, JsonWriter}
-import cjoy.context.Context
+import cjoy.context.{Context, ServiceConainter}
 import cjoy.log.*
 
 /**

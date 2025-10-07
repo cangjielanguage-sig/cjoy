@@ -8,7 +8,7 @@
  * See the Mulan PSL v2 for more details.
  */
 
-package cjoy.framework
+package cjoy.context
 
 import std.collection.concurrent.ConcurrentHashMap
 
@@ -18,19 +18,34 @@ import std.collection.concurrent.ConcurrentHashMap
 public class ServiceConainter {
     private let _services: ConcurrentHashMap<String, Any> = ConcurrentHashMap()
 
+    /**
+     * add service to container
+     *
+     * @param name: the service name
+     * @param service: the service instance
+     */
     public func addService(name: String, service: Any): Unit {
         _services.add(name, service)
     }
 
+    /**
+     * get service instance
+     *
+     * @param name: the service name
+     * @return: the service of type T
+     */
     public func getService<T>(name: String): ?T {
         (_services.get(name) ?? Option<Any>.None) as T
     }
 
-    func addServicesFrom(sc: ServiceConainter): Unit {
+    protected func addServicesFrom(sc: ServiceConainter): Unit {
         for ((k, v) in sc._services) {
             _services.add(k, v)
         }
     }
 }
 
-public let DEFAULT_SERVICE_CONTAINER: ServiceConainter = ServiceConainter()
+/**
+ * global service contianer
+ */
+public let GLOBAL_SERVICE_CONTAINER: ServiceConainter = ServiceConainter()

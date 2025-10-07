@@ -10,8 +10,7 @@
 
 package cjoy.test
 
-import cjoy.context.{Context, MapContext}
-import cjoy.framework.DEFAULT_SERVICE_CONTAINER
+import cjoy.context.{Context, MapContext, GLOBAL_SERVICE_CONTAINER}
 import cjoy.eventbus.*
 import std.sync.{SyncCounter, AtomicInt64}
 
@@ -31,7 +30,7 @@ func handleEvent2(ctx: Context, evt: Event): Unit {
 public class EventBusServiceTestCaseSuit {
     @TestCase
     public func test(): Unit {
-        let bus = DEFAULT_SERVICE_CONTAINER.getService<EventBus>("eventbus").getOrThrow()
+        let bus = GLOBAL_SERVICE_CONTAINER.getService<EventBus>("eventbus").getOrThrow()
         bus.fireEvent(MapContext(), Event.of("a.b.c.d").addData("k1", "v1"))
         @Assert(counter.load(), 2)
     }

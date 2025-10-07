@@ -18,7 +18,7 @@ import stdx.encoding.url.URL
 import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonReader, JsonWriter}
 import stdx.encoding.base64.fromBase64String
 import cjoy.bind.api.JoyBindable
-import cjoy.context.Context
+import cjoy.context.{Context, ServiceConainter}
 import cjoy.log.*
 
 /**

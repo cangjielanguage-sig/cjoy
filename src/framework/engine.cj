@@ -18,6 +18,7 @@ import stdx.net.http.{Server, ServerBuilder}
 import stdx.crypto.x509.{X509Certificate, PrivateKey}
 import cjoy.log.*
 import cjoy.ioc.api.{BeanFactoryManager, ApplicationContext}
+import cjoy.context.{ServiceConainter, GLOBAL_SERVICE_CONTAINER}
 
 public const VERSION: String = "v0.70.0"
 const LOGO: String = ##"
@@ -120,8 +121,7 @@ public class Joy {
         }
         let joy = Joy(config, name)
         // 默认增加IoC服务
-        joy.addService("ioc", BeanFactoryManager.getApplicationContext())
-        joy._services.addServicesFrom(DEFAULT_SERVICE_CONTAINER)
+        joy._services.addServicesFrom(GLOBAL_SERVICE_CONTAINER)
         _INSTANCES.add(name, joy)
         joy
     }
