@@ -14,6 +14,8 @@ import cjoy.*
 import cjoy.macros.*
 import cjoy.schedule.*
 import cjoy.validation.*
+import cjoy.context.*
+import cjoy.eventbus.*
 
 // -------- @Autowired指定名称注入
 @Component
@@ -78,6 +80,10 @@ class BeanController {
 
     @Scheduled[cron = "*/20 3-5/2 22 */5 4"]
     func schuedule(ctx: ScheduleContext): Unit {
+    }
+
+    @SubscribeEvent[name = "sub2", pattern = "a.b.c.d"]
+    func handleEvent(ctx: Context, evt: Event): Unit {
     }
 }
 

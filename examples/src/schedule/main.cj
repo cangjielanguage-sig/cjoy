@@ -36,9 +36,6 @@ main(): Int64 {
     let joy = Joy.default()
     joy.router.use(ExceptionHandler())
 
-    // 注册Crontab服务，可以在Post, Get等Handler方法中使用
-    joy.addService("crontab", Crontab())
-
     // 注册所有生成的handlers
     JoyMiddlewares.registerTo(joy)
     JoyHandlers.registerTo(joy)

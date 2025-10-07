@@ -121,6 +121,7 @@ public class Joy {
         let joy = Joy(config, name)
         // 默认增加IoC服务
         joy.addService("ioc", BeanFactoryManager.getApplicationContext())
+        joy._services.addServicesFrom(DEFAULT_SERVICE_CONTAINER)
         _INSTANCES.add(name, joy)
         joy
     }

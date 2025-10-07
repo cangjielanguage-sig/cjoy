@@ -36,6 +36,8 @@ public type ScheduleFunc = (ctx: ScheduleContext) -> Unit
 
 ## 使用方式1：
 
+使用示例：[examples/schedule](../../examples/src/schedule/main.cj) 。
+
 采用宏标注，CJoy框架会自动把回调函数注册给Crontab.INSTANCE。
 
 ```
@@ -68,7 +70,7 @@ func addCrontab(ctx: JoyContext): Unit {
 }
 ```
 
-注：在Handler或Midlleware中使用服务需要先注册crontab服务，参见 [服务](../../doc/usage_guide/service.md) 说明。
+注：每个Joy实例会默认注册一个名为`crontab`的Crontab服务。
 
 
 ----

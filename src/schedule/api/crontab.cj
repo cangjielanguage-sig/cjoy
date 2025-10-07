@@ -13,10 +13,11 @@ package cjoy.schedule.api
 import std.sync.{Timer}
 import std.collection.concurrent.ConcurrentHashMap
 import std.time.DateTime
+import cjoy.framework.DEFAULT_SERVICE_CONTAINER
 import cjoy.log.*
 
 public class Crontab <: Resource {
-    public static let INSTANCE = Crontab()
+    public static let INSTANCE: Crontab = Crontab()
 
     private let _jobs: ConcurrentHashMap<String, CronJob>
     private let _timer: Timer
@@ -50,6 +51,9 @@ public class Crontab <: Resource {
         _isClosed
     }
 
+    /**
+     * @throws ScheduleException if the name is existed
+     */
     public func addJob(name: String, cronExp: String, fn: ScheduleFunc): Unit {
         if (exists(name)) {
             throw ScheduleException("the cron job name is existed")
@@ -83,3 +87,5 @@ public class Crontab <: Resource {
         }
     }
 }
+
+let _: Unit = DEFAULT_SERVICE_CONTAINER.addService("crontab", Crontab.INSTANCE)

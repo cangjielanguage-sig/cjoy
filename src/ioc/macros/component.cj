@@ -141,7 +141,27 @@ open class ComponentClassInfo {
             register += quote(
                 let _: Unit = BeanFactoryManager.registerPostFunc($name) {=>
                     let bean = BeanFactoryManager.getApplicationContext().getBean<$bt>($_beanName).getOrThrow({=>IocException($err)})
-                        Crontab.INSTANCE.addJob($name, $cron, bean.$funcName)
+                    Crontab.INSTANCE.addJob($name, $cron, bean.$funcName)
+                }
+            )
+        }
+        register
+    }
+
+    func getEventBusTokens(): Tokens {
+        let msgs = getChildMessages("SubscribeEvent")
+        var register = Tokens()
+        for (msg in msgs) {
+            let name = _beanName + "." + msg.getString("eventbus.name")
+            let pattern = msg.getString("eventbus.pattern")
+            let priority = msg.getInt64("eventbus.priority")
+            let funcName = msg.getTokens("eventbus.funcName")
+            let bt = Token(TokenKind.IDENTIFIER, _beanType)
+            let err = "not found bean by name `${_beanName}` for type `${_beanType}`"
+            register += quote(
+                let _: Unit = BeanFactoryManager.registerPostFunc($name) {=>
+                    let bean = BeanFactoryManager.getApplicationContext().getBean<$bt>($_beanName).getOrThrow({=>IocException($err)})
+                    LocalEventBus.INSTANCE.onEvent($pattern, $name, bean.$funcName, $priority)
                 }
             )
         }
@@ -150,6 +170,7 @@ open class ComponentClassInfo {
 
     func getSubMacroTokens(): Tokens {
         getSchuedleTokens()
+        getEventBusTokens()
     }
 }
 
