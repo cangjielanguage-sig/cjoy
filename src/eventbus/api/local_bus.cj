@@ -15,6 +15,7 @@ import std.collection.concurrent.{ArrayBlockingQueue, ConcurrentHashMap}
 import std.sync.{SyncCounter, AtomicBool}
 import cjoy.framework.DEFAULT_SERVICE_CONTAINER
 import cjoy.context.{Context, MapContext}
+import cjoy.log.*
 
 public class LocalEventBus <: EventBus {
     public static let INSTANCE: EventBus = LocalEventBus()
@@ -68,11 +69,13 @@ public class LocalEventBus <: EventBus {
         if (let Some(group) <- existed) {
             group.add(item)
         }
+        @LogInfo("[EventBus] register subscriber, pattern=${pattern},name=${name},priority=${pr}")
     }
 
     public func removeSubscriber(pattern: String, name: String): Unit {
         if (let Some(sg) <- _subcribers.get(pattern)) {
             sg.del(name)
+            @LogInfo("[EventBus] deregister subscriber, pattern=${pattern},name=${name}")
         }
     }
 
@@ -159,7 +162,7 @@ private func matchNode(pattern: String, name: String): Bool {
     let patArr = pattern.split(".")
 
     // 要匹配的字符串比Pattern还短
-    if (strArr.size < patArr.size) {
+    if (strArr.size != patArr.size) {
         return false
     }
 

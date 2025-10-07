@@ -163,7 +163,7 @@ main(): Int64 {
 
 ## 📎 更多示例
 
-CJoy内置丰富的示例，请移步 [examples](examples/README.md) 。
+CJoy内置丰富的示例与测试用例，请移步 [examples](examples/README.md) ，也可以参考本项目的测试代码。
 
 ## 📖 使用指导
 

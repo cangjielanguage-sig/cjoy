@@ -172,4 +172,37 @@ public class LocalEventBusTestCase {
         counter.waitUntilZero(timeout: Duration.second)
         @Assert(counter.count, 0)
     }
+
+    @TestCase
+    public func testNoMatch1(): Unit {
+        let bs = LocalEventBus()
+        let counter = AtomicInt64(1)
+        bs.onEvent("e2", "test", {
+            _: Context, evt: Event => counter.fetchAdd(-1)
+        })
+        bs.fireEvent(MapContext(), Event.of("e1").addData("k1", "v1"))
+        @Assert(counter.load(), 1)
+    }
+
+    @TestCase
+    public func testNoMatch2(): Unit {
+        let bs = LocalEventBus()
+        let counter = AtomicInt64(1)
+        bs.onEvent("a.b.*.1", "test", {
+            _: Context, evt: Event => counter.fetchAdd(-1)
+        })
+        bs.fireEvent(MapContext(), Event.of("a.b.c.d").addData("k1", "v1"))
+        @Assert(counter.load(), 1)
+    }
+
+    @TestCase
+    public func testNoMatch3(): Unit {
+        let bs = LocalEventBus()
+        let counter = AtomicInt64(1)
+        bs.onEvent("a.b.c", "test", {
+            _: Context, evt: Event => counter.fetchAdd(-1)
+        })
+        bs.fireEvent(MapContext(), Event.of("a.b.c.d").addData("k1", "v1"))
+        @Assert(counter.load(), 1)
+    }
 }

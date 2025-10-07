@@ -10,7 +10,7 @@ import cjoy.eventbus.*
 import cjoy.middleware.ExceptionHandler
 import cjoy.log.*
 
-// 使用方式1： 采用宏标注函数，函数有两个参数
+// 采用宏标注函数，函数有两个参数
 @SubscribeEvent[name = "sub1", pattern = "a.b.**"]
 func handleEvent1(ctx: Context, evt: Event): Unit {
     @LogInfo("handle event ${evt.name} in func")
@@ -25,6 +25,7 @@ func doSomething(ctx: JoyContext): Unit {
 
 @Component
 class Bean {
+    // 在Bean中宏标注函数
     @SubscribeEvent[name = "sub2", pattern = "a.b.c.d"]
     func handleEvent(ctx: Context, evt: Event): Unit {
         @LogInfo("handle event ${evt.name} in bean")

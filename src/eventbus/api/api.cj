@@ -42,7 +42,7 @@ public interface EventBus {
      *  - "evt.some.*.*"       -> match "evt.some.thing.run" "evt.some.thing.do"
      *  - "evt.some.*.run"     -> match "evt.some.thing.run", but not match "evt.some.thing.do"
      *  - "evt.some.**"        -> match any start with "evt.some.". eg: "evt.some.thing.run" "evt.some.thing.do"
-     *  --"**.thing.run"       -> match any ends with ".thing.run". eg: "evt.some.thing.run"
+     *  - "**.thing.run"       -> match any ends with ".thing.run". eg: "evt.some.thing.run"
      * @param name: the sucriber name
      * @param subcriber: the subcriber
      * @param priority: the priority of handle event
