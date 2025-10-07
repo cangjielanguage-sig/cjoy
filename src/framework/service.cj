@@ -15,14 +15,22 @@ import std.collection.concurrent.ConcurrentHashMap
 /**
  * service conainter
  */
-class ServiceConainter {
+public class ServiceConainter {
     private let _services: ConcurrentHashMap<String, Any> = ConcurrentHashMap()
 
-    func addService(name: String, service: Any): Unit {
+    public func addService(name: String, service: Any): Unit {
         _services.add(name, service)
     }
 
-    func getService<T>(name: String): ?T {
+    public func getService<T>(name: String): ?T {
         (_services.get(name) ?? Option<Any>.None) as T
     }
+
+    func addServicesFrom(sc: ServiceConainter): Unit {
+        for ((k, v) in sc._services) {
+            _services.add(k, v)
+        }
+    }
 }
+
+public let DEFAULT_SERVICE_CONTAINER: ServiceConainter = ServiceConainter()

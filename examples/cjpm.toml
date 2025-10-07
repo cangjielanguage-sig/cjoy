@@ -59,6 +59,8 @@
       output-type = "executable"
     [package.package-configuration."examples.httpx"]
       output-type = "executable"
+    [package.package-configuration."examples.eventbus"]
+      output-type = "executable"
 
 [target]
   [target.aarch64-linux-ohos]

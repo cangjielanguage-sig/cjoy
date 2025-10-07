@@ -31,3 +31,4 @@
 
 - [schedule](src/schedule/main.cj): 调度任务
 - [httpx](src/httpx/main.cj): Http服务
+- [eventbus](src/eventbus/main.cj): 事件总线

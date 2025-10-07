@@ -199,6 +199,7 @@ CJoy内置丰富的示例，请移步 [examples](examples/README.md) 。
   - [IoC服务](doc/usage_guide/ioc.md)
   - [调度任务](doc/usage_guide/schedule.md)
   - [Http服务](doc/usage_guide/httpx.md)
+  - [事件总线](doc/usage_guide/eventbus.md)
 - [参数绑定](doc/usage_guide/binding.md)
 - [Json](doc/usage_guide/json.md)
   - [基础用法](doc/usage_guide/json.md#基础用法)
