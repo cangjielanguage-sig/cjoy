@@ -1,0 +1,119 @@
+[
+    {
+        "Name": "Cangjie", 
+        "License": "MIT license",
+        "License File": "LICENSE", 
+        "Version Number": "v1.0.0",     
+        "Owner": "Huawei", 
+        "Upstream URL": "https://gitcode.com/Cangjie/cangjie_runtime", 
+        "Description": "仓颉编程语言运行时与标准库。"    
+    },
+    {
+        "Name": "CangjieMagic", 
+        "License": "MIT license",
+        "License File": "LICENSE", 
+        "Version Number": "",     
+        "Owner": "Huawei", 
+        "Upstream URL": "https://gitcode.com/Cangjie-TPC/CangjieMagic", 
+        "Description": "Cangjie Magic：让应用绽放智能与创造力"    
+    },
+    {
+        "Name": "chi", 
+        "License": " MIT license",
+        "License File": "LICENSE", 
+        "Version Number": "v5.0.12",     
+        "Owner": "Peter Kieltyka", 
+        "Upstream URL": "https://github.com/go-chi/chi", 
+        "Description": "A lightweight, idiomatic and composable router for building Go HTTP services."    
+    },
+    {
+        "Name": "jwt-go", 
+        "License": " MIT license",
+        "License File": "LICENSE", 
+        "Version Number": "v5.3.0",     
+        "Owner": "https://github.com/dgrijalva", 
+        "Upstream URL": "https://github.com/golang-jwt/jwt", 
+        "Description": "A go (or 'golang' for search engine friendliness) implementation of JSON Web Tokens."    
+    },
+    {
+        "Name": "go-oauth2", 
+        "License": "Apache-2.0 license",
+        "License File": "LICENSE", 
+        "Version Number": "v0.1.1",     
+        "Owner": "https://github.com/L2ncE", 
+        "Upstream URL": "https://github.com/go-oauth2/oauth2", 
+        "Description": "requestid middleware for Hertz"    
+    },
+    {
+        "Name": "gofr", 
+        "License": "Apache-2.0 license",
+        "License File": "LICENSE", 
+        "Version Number": "v1.46.0",     
+        "Owner": "https://github.com/gofr-dev/", 
+        "Upstream URL": " https://github.com/gofr-dev/gofr ", 
+        "Description": "An opinionated Go framework for accelerated microservice development"    
+    },
+    {
+        "Name": "Hertz-JWT", 
+        "License": "Apache-2.0 license",
+        "License File": "LICENSE", 
+        "Version Number": "v1.0.4",     
+        "Owner": "https://github.com/justlorain", 
+        "Upstream URL": "https://github.com/hertz-contrib/jwt", 
+        "Description": "JWT middleware for Hertz."    
+    },
+    {
+        "Name": "CORS Hertz's middleware", 
+        "License": " Apache-2.0 license",
+        "License File": "LICENSE", 
+        "Version Number": "first release",     
+        "Owner": "https://github.com/hertz-contrib", 
+        "Upstream URL": "https://github.com/hertz-contrib/cors", 
+        "Description": "Hertz middleware/handler to enable CORS support."    
+    },
+    {
+        "Name": "CSRF", 
+        "License": "Apache-2.0 license",
+        "License File": "LICENSE", 
+        "Version Number": "v0.1.1",     
+        "Owner": "https://github.com/hertz-contrib", 
+        "Upstream URL": "https://github.com/hertz-contrib/csrf", 
+        "Description": "CSRF middleware for hertz framework."    
+    },
+    {
+        "Name": "secure", 
+        "License": "Apache-2.0 license",
+        "License File": "LICENSE", 
+        "Version Number": "v0.1.1",     
+        "Owner": "https://github.com/hertz-contrib", 
+        "Upstream URL": "https://github.com/hertz-contrib/secure", 
+        "Description": "Secure middleware for hertz framework."    
+    },
+    {
+        "Name": "keyauth", 
+        "License": "Apache-2.0 license",
+        "License File": "LICENSE", 
+        "Version Number": "",     
+        "Owner": "https://github.com/hertz-contrib", 
+        "Upstream URL": "https://github.com/hertz-contrib/keyauth", 
+        "Description": "keyauth for hertz"    
+    },
+    {
+        "Name": "requestid", 
+        "License": "Apache-2.0 license",
+        "License File": "LICENSE", 
+        "Version Number": "v0.1.1",     
+        "Owner": "https://github.com/hertz-contrib", 
+        "Upstream URL": "https://github.com/hertz-contrib/requestid", 
+        "Description": "requestid middleware for Hertz"    
+    },
+    {
+        "Name": "go", 
+        "License": "BSD-3-Clause license",
+        "License File": "LICENSE", 
+        "Version Number": "v1.25.0",     
+        "Owner": "google", 
+        "Upstream URL": " https://github.com/golang/go", 
+        "Description": "The Go programming language"    
+    }
+]
