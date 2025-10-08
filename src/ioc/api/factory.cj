@@ -13,6 +13,7 @@ package cjoy.ioc.api
 import std.collection.ArrayList
 import std.collection.concurrent.ConcurrentHashMap
 import std.sync.AtomicBool
+import std.env.atExit
 import cjoy.context.GLOBAL_SERVICE_CONTAINER
 import cjoy.log.*
 
@@ -57,3 +58,5 @@ public class BeanFactoryManager {
 }
 
 private let _: Unit = GLOBAL_SERVICE_CONTAINER.addService("ioc", BeanFactoryManager.getApplicationContext())
+
+private let _: Unit = atExit {BeanFactoryManager.getApplicationContext().destroyAllBeans()}

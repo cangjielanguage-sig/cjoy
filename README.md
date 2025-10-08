@@ -167,6 +167,11 @@ CJoy内置丰富的示例与测试用例，请移步 [examples](examples/README.
 
 ## 📖 使用指导
 
+CJoy架构设计如下：
+
+<img alt="" src="doc/imgs/arch.png" style="display: inline-block;" />
+</div>
+
 - [服务启动](doc/usage_guide/starter.md)
   - [实例](doc/usage_guide/starter.md#实例)
   - [启动](doc/usage_guide/starter.md#启动) 
