@@ -6,7 +6,9 @@ CJoy提供一系列的宏简化Handler的注册与参数展开，业务只需要
 
 使用示例: [test/macro_test.cj](../../src/test/macro_test.cj) 。
 
-```
+```cangjie
+import cjoy.macros.*
+
 @Get[path = "/path/{p}"]
 func pathGet(@PathParam[name = p] a: ?String): String {
     println(a)
@@ -105,7 +107,7 @@ Handler注册宏，作用在函数上：
 
 ## Middleware宏
 
-```
+```cangjie
 @Middleware[groups = "/a/b/c,/a/c"]
 func testMiddleware(ctx: JoyContext, chain: JoyRequestHandlerChain): Unit {
     chain.next(ctx)
@@ -122,7 +124,7 @@ Middleware注册宏，作用在函数上：
 
 所有的 Handler 注册宏生成的类会自动加到JoyHandlers上，Middleware注册宏生成的类会自动加到JoyMiddlewares上，但目前没有自动加到在服务实例Joy上。
 
-```
+```cangjie
 JoyMiddlewares.registerTo(joy)
 JoyHandlers.registerTo(joy)
 joy.run("127.0.0.1", 18881)

@@ -1,7 +1,7 @@
 [
     {
         "Name": "Cangjie", 
-        "License": "MIT license",
+        "License": "Apache-2.0 license",
         "License File": "LICENSE", 
         "Version Number": "v1.0.0",     
         "Owner": "Huawei", 
@@ -115,5 +115,14 @@
         "Owner": "google", 
         "Upstream URL": " https://github.com/golang/go", 
         "Description": "The Go programming language"    
+    }
+    {
+        "Name": "fastmcp", 
+        "License": "Apache-2.0 license",
+        "License File": "LICENSE", 
+        "Version Number": "v2.0",     
+        "Owner": "https://github.com/jlowin", 
+        "Upstream URL": "https://github.com/jlowin/fastmcp", 
+        "Description": "The fast, Pythonic way to build Model Context Protocol servers"    
     }
 ]

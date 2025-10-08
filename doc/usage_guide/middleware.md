@@ -4,7 +4,7 @@ CJoy提供扩展机制支持HTTP请求进行拦截处理，机制类似于Java�
 
 Middleware需要实现JoyMiddlewareHandle接口，其中chain对象为所有MiddlewareHandler链，调用`chain.next(ctx)`执行下一个中间件，最后执行对应Handler。
 
-```
+```cangjie
 public interface JoyMiddlewareHandler {
     func handle(ctx: JoyContext, chain: JoyRequestHandlerChain): Unit
 }
@@ -17,7 +17,7 @@ public interface JoyMiddlewareHandler {
  - use(mw: JoyMiddlewareHandler)：作用于全局或对应的Group下所有请求Handler；
  - apply(mw: JoyMiddlewareHandler)：只作用于对应本次注册请求Handler；
 
-```
+```cangjie
 // 如使用内置的BasicAuth中间件
 // 作用于全局所有请求
 joy.router.use(BasicAuth("test-realm", HashMap<String, String>([("test", "test")])))

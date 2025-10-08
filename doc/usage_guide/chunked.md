@@ -4,7 +4,7 @@ CJoy 提供对Chunked的封装，支持Chunked数据以及SSE(Server-Sent Events
 
 ## Chunked
 
-```
+```cangjie
 router.get("/chuncked", {ctx: JoyContext =>
     let writer = ctx.chunkedWriter()
     for (num in 1..10) {
@@ -21,7 +21,7 @@ router.get("/chuncked", {ctx: JoyContext =>
 
 ## SSE
 
-```
+```cangjie
 router.get("/sse", {ctx: JoyContext =>
     let emitter = ctx.eventEmitter()
     for (num in 1..10) {
@@ -31,6 +31,7 @@ router.get("/sse", {ctx: JoyContext =>
     emitter.end()
 })
 ```
+
  - 调用`JoyContext.eventEmitter()` 创建 JoySseEmitter
  - 使用`JobServerEventBuilder` 构建 SSE 数据，调用`JoySseEmitter.sendEvent(...)`，每调用一次发送一次Event
  - 调用`JoySseEmitter.end` 写结束块

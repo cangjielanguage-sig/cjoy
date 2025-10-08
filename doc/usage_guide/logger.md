@@ -11,7 +11,7 @@ CJoy内置一个日志工具类LogTool，默认日志输出到Console。
  - 修改日志输出方式：在main方法最开始的地方，设置 LogTool.logger = Logger对象
  - 关闭日志调试： 指定enableDebugLog: false
 
-```
+```cangjie
 let cfg = JoyConfig(enableDebugLog: false)
 let joy = Joy.create(cfg)
 ```
@@ -20,7 +20,7 @@ let joy = Joy.create(cfg)
 
 CJoy内置请求访问日志AccessLog中间件，您可以指定如下：
 
-```
+```cangjie
 // 方式1：使用LogTool.logger输出访问日志
 joy.router.use(AccessLog())
 

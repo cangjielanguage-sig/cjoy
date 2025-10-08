@@ -38,7 +38,7 @@
 
 可以同时存在`/users/`开头的多个Path，路由匹配优先级与注册的顺序无关。
 
-```
+```cangjie
 router.get("/users/{name}", {ctx: JoyContext => })
 router.get("/users/abc", {ctx: JoyContext => })
 router.get("/users/{name:[a-z]{3,4}}", {ctx: JoyContext => })
@@ -52,7 +52,7 @@ router.get("/users/*", {ctx: JoyContext => })
 
 其它的示例:
 
-```
+```cangjie
 router.get("/{page}", {ctx: JoyContext => })
 router.get("/{year}/{month}/{post}", {ctx: JoyContext => })
 router.get("/{year}/{month}", {ctx: JoyContext => })
@@ -69,7 +69,7 @@ router.get("/favicon.ico", {ctx: JoyContext => })
 
 ## 分组
 
-```
+```cangjie
 let router = joy.router
 // group
 let v1 = router.group("/v1")

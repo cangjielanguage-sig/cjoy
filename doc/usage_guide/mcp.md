@@ -27,7 +27,7 @@ Tool可以执行查询数据库、调用API、进行计算或访问文件等任�
 
 CJoy提供宏`@Tool`标注函数，`@ToolParam`标注函数参数，发布其为MCP的Tool。
 
-```
+```cangjie
 @Tool[name = "add", description = "add two number"]
 public func add(@ToolParam[description = "number a"] a: Int, @ToolParam[description = "number b"] b: Int): Int {
     a + b
@@ -78,7 +78,7 @@ public func multiply(a: Int, b: Int): Int {
 
 当工具的输入参数较多时，可以把多个参数聚合在一个类型和，如下所示：
 
-```
+```cangjie
 @Json
 public class Params {
     @JsonField[description = "number a"]
@@ -121,7 +121,7 @@ Resource为LLM或客户端应用程序提供对数据的只读访问，Resource�
 
 Cjoy提供`@Resource`宏标注函数，发布为MCP中静态与动态Resource。
 
-```
+```cangjie
 @Resource[uri = "data://secret"]
 public func secretData(): String {
     "secret data"
@@ -157,7 +157,7 @@ public func systemStatus(ctx: JoyContext, name: String): HashMap<String, String>
  - 可以是JoyContext类型，用于获取HTTP上下文信息
  - 当是动态Resource，绑定URI中参数，参数名为URL中变量，入参为基础类型，String
   
-```
+```cangjie
 @Resource[uri = "resource://{name}/detail"]
 public func systemStatus(ctx: JoyContext, name: String): HashMap<String, String> {
     // name参数是URI中的{name}
@@ -189,7 +189,7 @@ Prompt是可重用的消息模板，可帮助LLM生成结构化、有目的的�
 
 CJoy提供`@Prompt`宏标注函数，发布为MCP中Prompt。
 
-```
+```cangjie
 @Prompt[name = askUserTopic]
 public func askUserTopic(topic: String): String {
     "Can you please explain the concept of ${topic}"
@@ -245,8 +245,7 @@ public func dataAnalysisPrompt(
 
 目前传输层支持SSE与StreamableHttp协议，如下示例为把MCP注册到HTTP服务实例接口上：
 
-```
-...
+```cangjie
 let joy = Joy.create(cfg)
 // 注册到Http实例上
 McpServer.registerSseTo(joy)
@@ -272,7 +271,7 @@ StreamableHttp方式，`McpServer.registerStreamableTo`支持把MCP的函数自�
 
 客户端仅仅用于测试，示例如下：
 
-```
+```cangjie
 main(): Int64 {
     // 创建McpSseClient
     try(client = createMcpSseClient("http://127.0.0.1:18881/sse")) {

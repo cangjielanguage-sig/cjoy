@@ -6,17 +6,17 @@ CJoy提供服务注册与使用能力。
 
 ## 注册
 
-```
+```cangjie
 let joy = Joy.default()
 // 注册服务给Joy实例，指定服务名，与服务实例
-joy.addService("crontab", Crontab())
+joy.addService("cron", Crontab())
 ```
 
 ## 使用
 
 可以在Handler与Middleware中使用注册的服务，如下所示：
 
-```
+```cangjie
 @Post[path = "/crontab"]
 func addCrontab(ctx: JoyContext): Unit {
     // 先根据服务名获取服务

@@ -17,7 +17,7 @@ CJoy内置两个简易Session存储实现：
 
 1. 注册SessionManager中间件
 
-```
+```cangjie
 // 给所有Path注册SessionManager，采用MemorySessionStorage
 let memorySessionManager = SessionManager(MemorySessionStorage())
 joy.router.use(memorySessionManager)
@@ -30,7 +30,7 @@ group.use(fileSessionManager)
 
 在注册SessionManager时，可能指定JoySessionConfig:
 
-```
+```cangjie
 SessionManager(storage, config: JoySessionConfig(cookieName: "sid" ...))
 ```
 
@@ -43,7 +43,7 @@ SessionManager(storage, config: JoySessionConfig(cookieName: "sid" ...))
 
 2. 使用Session
 
-```
+```cangjie
 // 先获取Session对象
 let session = getSession(ctx).getOrThrow()
 ```

@@ -40,7 +40,7 @@ CJoy内置轻量级的事件总线，为应用提供基于事件的解耦机制�
 
 方式1：采用宏标注，CJoy框架会自动把订阅者函数注册给全局的EventBus服务。
 
-```
+```cangjie
 @SubscribeEvent[name = "sub1", pattern = "a.b.**"]
 func handleEvent1(ctx: Context, evt: Event): Unit {
 }
@@ -56,8 +56,8 @@ func handleEvent1(ctx: Context, evt: Event): Unit {
 
 方式2： 调用接口注册订阅者
 
- - bus.onEvent(...): 处理多次事件
- - bus.onceEvent(...): 处理一次事件即注销
+ - `bus.onEvent(...)`: 处理多次事件
+ - `bus.onceEvent(...)`: 处理一次事件即注销
 
 事件处理优先级，在注册订阅者，可以指定优先级，数字越高优先级越高
 
@@ -68,7 +68,7 @@ func handleEvent1(ctx: Context, evt: Event): Unit {
 
 回调函数原型：
 
-```
+```cangjie
 public type EventSubscriberFunc = (ctx: Context, evt: Event) -> Unit
 ```
 
@@ -79,7 +79,7 @@ public type EventSubscriberFunc = (ctx: Context, evt: Event) -> Unit
 
 在Http Handler或Midlleware中使用，适合于收到Http请求时发布事件。
 
-```
+```cangjie
 @Post[path = "/crontab"]
 func addCrontab(ctx: JoyContext): Unit {
     // 先根据服务名获取服务
@@ -97,7 +97,7 @@ func addCrontab(ctx: JoyContext): Unit {
 
 内建的名为`eventbus`的事件EventBus服务，通常用于一些低时延的事件处理。如果应用存在一些高并发，长阻塞的事件处理时，建议创建其它的EventBus实例并注册为服务，可以指定合适的队列长度与消费者线程数参数:
 
-```
+```cangjie
 // 注册独立的事件总线服务
 let bus = LocalEventBus(queueSize: 200, consumerNum: 10)
 joy.addService("xx_eventbus", bus)

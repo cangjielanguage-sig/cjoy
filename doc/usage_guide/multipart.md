@@ -8,7 +8,7 @@ CJoy 提供对 `multipart` 的解释、数据缓存，提供API简化使用。
 
 框架内置缓存支持文本的内存与文件磁盘缓存，通过API直接获取缓存内容。
 
-```
+```cangjie
 import cjoy.*
 import cjoy.multipart.*
 
@@ -47,7 +47,7 @@ router.post("/saveUserInfo1", {ctx: JoyContext =>
 
 框架支持对每个Part注册处理类，可在边解释Http Body时边回调，减少对内存与文件复制，适合于上传的文件直接存储到第三方的文件系统。
 
-```
+```cangjie
 router.post("/saveUserInfo2", {ctx: JoyContext =>
     var config = JoyMultiPartConfig()
     try (form = JoyMultiPartForm.create(ctx, config)) {

@@ -26,7 +26,7 @@ CJoy 提供文件服务器的封装，提供两个API：`staticFile` 与 `static
 
 提供API支持以附件方式下载指定的文件。
 
-```
+```cangjie
 import cjoy.fs.downloadAttachment
 
 @Get[path = "/xxx"]

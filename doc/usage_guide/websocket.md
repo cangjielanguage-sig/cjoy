@@ -4,7 +4,11 @@ CJoy 提供WebSocket的封装，简化WebSocket消息接收与响应。
 
 ## 路由注册
 
-示例：`router.websocket("/ws/chat/{name}", TextEchoJoyWebSocketHandler())`
+示例：
+
+```cangjie
+router.websocket("/ws/chat/{name}", TextEchoJoyWebSocketHandler())
+```
 
 调用`JoyRouters.websocket`注册路由，与调用`get`函数类似，也支持中间件拦截WebSocket握手时的请求消息。
 
@@ -12,7 +16,7 @@ CJoy 提供WebSocket的封装，简化WebSocket消息接收与响应。
 
 接收消息需要实现接口`JoyWebSocketHandler`，回调函数说明：
 
- - `supportedSubProtocols`：设置支持的SubProtocols，默认为空
+ - `supportedSubProtocols`：设置支持的SubProtocols，默认为空，表示接受所有
  - `supportedOrigins`：设置接受Origins的白名单，默认为空，表示接受所有
  - `mergeFrames`：当分Frame传输时，是否合并Frame一个消息回调onMessage函数，默认合并
  - `onOpen`：Webscoket握手成功之后回调

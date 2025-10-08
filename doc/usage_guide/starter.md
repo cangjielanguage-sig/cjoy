@@ -2,7 +2,7 @@
 
 启动服务实例，如下所示：
 
-```
+```cangjie
 main(): Int64 {
     // 创建joy实例
     let joy = Joy.default()
@@ -16,7 +16,7 @@ main(): Int64 {
 
 `JoyConfig`结构体提供对服务实例一些个性化配置参数：
 
-```
+```cangjie
 let cfg = JoyConfig(enableDebugLog: false)
 let joy = Joy.create(cfg)
 ```
@@ -34,7 +34,7 @@ let joy = Joy.create(cfg)
 
 `Joy类`提供`create`方法，支持创建多个不同配置的实例，启动绑定在不同的IP与Port。
 
-```
+```cangjie
 // 采用默认配置，创建名为inst1的实例
 let joy1 = Joy.create("inst1")
 
@@ -47,7 +47,7 @@ let joy2 = Joy.create(cfg, "inst2")
 
 `Joy类`提供`run`方法支持不同的启动方法，一旦调用`run`方法会阻塞当前线程：
 
-```
+```cangjie
 // http，绑定在127.0.0.1:18881
 joy.run("127.0.0.1", 18881)
 
@@ -66,7 +66,7 @@ joy.run(serverBuidler)
 
 也可以在其它线程中异步启动实例，在另一个线程主动关闭实例：
 
-```
+```cangjie
 let joy = Joy.default()
 spawn { =>
     joy.run("127.0.0.1", 18881)

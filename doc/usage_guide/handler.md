@@ -8,7 +8,7 @@ CJoy支持两种请求处理Handler实现。
 
 JoyRequestHandler定义参见  [handler.cj](../../src/framework/handler.cj) 。
 
-```
+```cangjie
 // 实现JoyRequestHandler
 class UserHandler <: JoyRequestHandler {
     public func handle(ctx: JoyContext): Unit {
@@ -20,7 +20,7 @@ router.get("/{name}", UserHandler())
 
 ### Lambda表达式函数
 
-```
+```cangjie
 // 直接采用Lambda表达式函数
 router.get("/{name}", {ctx: JoyContext => 
     let name = ctx.getParam("name") ?? "no name"

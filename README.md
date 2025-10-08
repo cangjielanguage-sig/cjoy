@@ -96,7 +96,7 @@ cjpm run --name examples.tls
 
 ### 使用API
 
-```
+```cangjie
 import cjoy.*
 
 main(): Int64 {
@@ -119,7 +119,7 @@ main(): Int64 {
 
 ### 使用宏
 
-```
+```cangjie
 import cjoy.*
 import cjoy.macros.*
 import cjoy.json.*
@@ -180,8 +180,6 @@ CJoy内置丰富的示例与测试用例，请移步 [examples](examples/README.
   - [分组](doc/usage_guide/routing.md#分组)
 - [请求处理](doc/usage_guide/handler.md)
   - [Handler](doc/usage_guide/handler.md#handler)
-    - [实现接口](doc/usage_guide/handler.md#实现接口)
-    - [Lambda表达式函数](doc/usage_guide/handler.md#Lambda表达式函数)
   - [处理上下文](doc/usage_guide/handler.md#处理上下文)
 - [Middleware](doc/usage_guide/middleware.md)
   - [使用方式](doc/usage_guide/middleware.md#使用方式)
@@ -190,18 +188,18 @@ CJoy内置丰富的示例与测试用例，请移步 [examples](examples/README.
   - [Handler宏](doc/usage_guide/macro.md#handler宏)
   - [Middleware宏](doc/usage_guide/macro.md#Middleware宏)
   - [注册](doc/usage_guide/macro.md#注册)
-- [认证](doc/usage_guide/authentication.md)
-  - [Basic认证](doc/usage_guide/authentication.md#Basic认证) 
-  - [Token认证](doc/usage_guide/authentication.md#Token认证)
-  - [JWT认证](doc/usage_guide/authentication.md#JWT认证)
-  - [OAuth2认证](doc/usage_guide/authentication.md#OAuth2认证)
 - [服务](doc/usage_guide/service.md)
   - [IoC服务](doc/usage_guide/ioc.md)
   - [调度任务](doc/usage_guide/schedule.md)
   - [Http服务](doc/usage_guide/httpx.md)
   - [事件总线](doc/usage_guide/eventbus.md)
+- [认证](doc/usage_guide/authentication.md)
+  - [Basic认证](doc/usage_guide/authentication.md#Basic认证) 
+  - [Token认证](doc/usage_guide/authentication.md#Token认证)
+  - [JWT认证](doc/usage_guide/authentication.md#JWT认证)
+  - [OAuth2认证](doc/usage_guide/authentication.md#OAuth2认证)
 - [参数绑定](doc/usage_guide/binding.md)
-- [Json](doc/usage_guide/json.md)
+- [JSON](doc/usage_guide/json.md)
   - [基础用法](doc/usage_guide/json.md#基础用法)
   - [高级用法](doc/usage_guide/json.md#高级用法)
     - [多态](doc/usage_guide/json.md#多态)
@@ -219,7 +217,6 @@ CJoy内置丰富的示例与测试用例，请移步 [examples](examples/README.
     - [Resource](doc/usage_guide/mcp.md#Resource) 
     - [Prompt](doc/usage_guide/mcp.md#Prompt)    
     - [注册](doc/usage_guide/mcp.md#注册) 
-  - [客户端](doc/usage_guide/mcp.md#客户端)  
 - [分块传输](doc/usage_guide/mcp.md)
   - [Chunked](doc/usage_guide/chunked.md#Chunked) 
   - [SSE](doc/usage_guide/chunked.md#SSE) 

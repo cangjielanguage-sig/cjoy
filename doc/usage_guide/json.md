@@ -1,10 +1,10 @@
-# Json
+# JSON
 
-CJoy内置支持采用宏对类与结构体标注，简化对HTTP Body的Json序列化与反序列化绑定与映射。
+CJoy内置支持采用宏对类与结构体标注，简化对HTTP Body的JSON序列化与反序列化绑定与映射。
 
 ## 基础用法
 
-```
+```cangjie
 import cjoy.json.*
 
 @Json
@@ -72,7 +72,7 @@ CJoy提供下面方式支持序列化和反序列化时的多态：
 
 #### 按字段值来确定子类
 
-```
+```cangjie
 @Json[subTypeField = "mimeType", subTypes = {"text": "TextResourceContents", "blob": "BlobResourceContents"}]
 public open class ResourceContents {
     public var mimeType: String = ""
@@ -103,7 +103,7 @@ public class ReadResourceResult {
 
 #### 按是否存在字段来确定子类
 
-```
+```cangjie
 @Json[subTypeAs = true, subTypes = {"text": "TextResourceContents", "blob": "BlobResourceContents"}]
 public open class ResourceContents {
    
@@ -134,7 +134,7 @@ public class BlobResourceContents <: ResourceContents {
 
 假定字符串为：
 
-```
+```cangjie
 {
   "a": 1, 
   "b": 1.1, 
@@ -157,7 +157,7 @@ public class BlobResourceContents <: ResourceContents {
 
 可以指定如下类来接收绑定：
 
-```
+```cangjie
 @Json
 public class DataAny {
     var a: Any = 1 // 实际反序列化之后类型为Int64
@@ -182,7 +182,7 @@ public class DataAny {
 
 当一个字段反序列化时，不展开解释只获取原始字节，可以指定`@JsonField[raw=true]`：
 
-```
+```cangjie
 @Json
 public class DataAny {
     var a: Any = 1 
@@ -195,7 +195,7 @@ public class DataAny {
 
 上述`d`的实际值为下面的字符串对应的`Array<Byte>`类型：
 
-```
+```cangjie
 [
   {
     "d1": true, 
@@ -212,7 +212,7 @@ public class DataAny {
 
 宏`@ToJson`用于快速原生Json格式风格的对象，如下所示：
 
-```
+```cangjie
 let x = "xyz"
 let d = @ToJson(
     {
@@ -243,7 +243,7 @@ println(str) // 输出 {"a":{"a1":1,"a2":"xyz","a3":{"a3a":1,"a3b":"xyz","a3c":t
 
 搭配在请求处理Handler中使用示例：
 
-```
+```cangjie
 @Get[path = "/json"]
 func pathGet(): JsonSerializable {
   let x = "xyz"
@@ -263,7 +263,7 @@ func pathGet(): JsonSerializable {
  - 指定属性`description`与`required`
  - 指定属性`schema`设置完整的Json Schema，当属性`schema`存在时，忽略属性`description`与`required`
 
-```
+```cangjie
 @Json[description: "user info"]
 class UserInfo {
     @JsonField[description: "the user name"]

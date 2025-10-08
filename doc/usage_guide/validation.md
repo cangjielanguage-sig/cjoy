@@ -4,7 +4,7 @@ CJoy 内置校验框架，支持通过宏对类，结构，函数参数进行校
 
 ## 类与结构体
 
-```
+```cangjie
 import cjoy.validation.*
 import cjoy.json.*
 
@@ -37,7 +37,7 @@ public struct Data {
 
 ## 函数参数
 
-```
+```cangjie
 @Validated
 func test(@Size[max = 6] arrparam: Array<Int32>): Unit {
 }
@@ -45,14 +45,14 @@ func test(@Size[max = 6] arrparam: Array<Int32>): Unit {
 
 宏展开之后会修改函数的实现，在最前面对宏标注的参数进行检查。
 
-```
+```cangjie
 func test( arrparam: Array<Int32>): Unit {
     // 自动插入代码
     arrparam.validate("", false, SizeConstraint(0, 6, ""))
 }
 ```
 
-**注：** 目前受仓颉宏限制，不支持一个函数参数使用多个宏标注。函数参数校验 **仅为实验性探索**。参见Issue：[【需求】函数的参数支持多个宏标注](https://gitcode.com/Cangjie/UsersForum/issues/1924)
+**注：** 函数参数校验 **仅为实验性探索**。参见Issue：[【需求】函数的参数支持多个宏标注](https://gitcode.com/Cangjie/UsersForum/issues/1924)
 
 ## 宏说明
 

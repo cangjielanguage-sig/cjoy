@@ -1,8 +1,10 @@
 # 参数绑定
 
-CJoy提供宏与API支持对Query，PostForm，Header多个参数绑定到一个对象上。
+CJoy提供宏与API支持对HTTP请求的Query，PostForm，Header多个参数绑定到一个对象上。
 
-```
+示例一：
+
+```cangjie
 import cjoy.bind.*
 
 @Bind
@@ -24,6 +26,17 @@ router.get("/bind", {ctx: JoyContext =>
 })
 ```
 
+示例二：
+
+```cangjie
+import cjoy.bind.*
+
+@Get[path = "/bind"]
+func handleBing(ctx: JoyContext, @QueryBindParam params BindParam): Unit {
+
+}
+```
+
 |宏|属性参数|说明|
 |---|---|---|
 |`@Bind`||作用于类与结构体上，支持对参数的绑定映射。|
@@ -37,7 +50,7 @@ router.get("/bind", {ctx: JoyContext =>
 |`default`||是|当参数不存在时的默认值|
 |`timeformat`|DateTime.toString/parse方法默认格式|是|指定DateTime字段序列化的格式|
 
-宏展开编译之后，此类与结构体会：
+宏展开编译之后，此类与结构体：
 
  - 并自动生成所有成员变量带命名参数的构造方法。因此let成员变量未指定默认值时，会在构造方法采用系统默认值，如Int为`0`， String为`""`。
  - 实现`cjoy.JoyBindable`接口，
@@ -49,11 +62,17 @@ router.get("/bind", {ctx: JoyContext =>
   - `Array<String>`, `ArryList<Strng>`
   - `DateTime`, `?DateTime`
 
-JoyContext提供三个方法
+JoyContext提供三个方法：
 
  - `bindQuery`：把Query参数绑定到对象上；
  - `bindPostForm`：把PostForm参数绑定到对象上；
  - `bindHeader`：把Header参数绑定到对象上；
+
+另外提供三个宏，用在方法参数上：
+
+ - `QueryBindParam`：URL Query多个参数绑定到对象
+ - `PostFormBindParam`：PostForm多个参数绑定到对象
+ - `HeaderBindParam`：Header多个参数绑定到对象。
 
 ----
 << [返回](../../README.md#使用指导)

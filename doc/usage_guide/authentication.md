@@ -16,7 +16,7 @@ CJoy提供了两种实现Basic认证的方式：
 
 ### 预定义认证凭证
 
-```
+```cangjie
 let joy = Joy.default()
 let router = joy.router
 
@@ -29,7 +29,7 @@ router.use(basicAuth)
 
 实现BasicAuthValidationFunc函数，创建BasicAuth中间件对象时，指定validateFunc，此函数将用户名和密码作为参数，如果有效则返回true，否则返回false。
 
-```
+```cangjie
 let joy = Joy.default()
 let router = joy.router
 
@@ -66,7 +66,7 @@ CJoy提供了两种实现Token认证的方式：
 
 ### 预定义认证凭证
 
-```
+```cangjie
 let joy = Joy.default()
 let router = joy.router
 // 指定预定义的Token列表
@@ -78,7 +78,7 @@ router.use(tokenAuth)
 
 实现TokenAuthValidatorFunc函数，创建TokenAuth中间件对象时，指定validator，此函数将token作为参数，如果有效则返回true，否则返回false。
 
-```
+```cangjie
 let joy = Joy.default()
 let router = joy.router
 
@@ -155,7 +155,7 @@ CJoy内置了JWT的实现，支持如下签名算法：
 
 HS256 示例：
 
-```
+```cangjie
 let jwt = Jwt.create()
 // 指定算法
 jwt.alg("HS256")
@@ -176,7 +176,8 @@ let token = jwt.signWith(key)
 ```
 
 RS256 示例：
-```
+
+```cangjie
 let jwt = Jwt.create()
 // 指定算法
 jwt.alg("RS256")
@@ -199,7 +200,8 @@ let token = jwt.signWith(priv)
 #### 解释Token
 
 HS256 示例：
-```
+
+```cangjie
 let key = "abcd".toArray()
 let jwt = Jwt.pasrse(token).verifyWith(key)
 // parse函数还可以指定ParserConfig参数，用于检查指定的信息，具体配置项请参见ParserConfig定义
@@ -208,7 +210,7 @@ let jwt2 = Jwt.pasrse(token, config: ParserConfig(expectedAud:["aud"])).verifyWi
 
 RS256 示例：
 
-```
+```cangjie
 let pub = loadRSAPublicKey("./testdata/rsa_public.pem")
 let jwt = Jwt.pasrse(token).verifyWith(pub)
 ```
@@ -219,7 +221,7 @@ let jwt = Jwt.pasrse(token).verifyWith(pub)
 
 设置中间件：
 
-```
+```cangjie
 let jwtAuth = JwtAuth(
     realm: "test jwt",
     signingAlg: "HS256",
@@ -249,7 +251,7 @@ JWT中间件会内置三个主要Handler，实现用户登录获取Token，刷�
 
 在其它的接口获取JWT：
 
-```
+```cangjie
 @Get[path = "/auth/biz", produce = "json"]
 func someBizHandle(): JsonSerializable {
     // 此函数已会检查JWT是否通过
@@ -296,7 +298,7 @@ JwtAuth提供一系列的命名参数，非必选参数提供默认实现，用�
 
 示例：
 
-```
+```cangjie
 // 登录认证回调
 func authenticator(ctx: JoyContext): Unit {
     // 读取Body
@@ -343,7 +345,7 @@ func authorizator(ctx: JoyContext, identity: String): Bool {
 
 示例:
 
-```
+```cangjie
 func setJwtPayload(ctx: JoyContext, jwt: Jwt): Unit {
     let user = ctx.getCtxParam<User>("user_info")
     // 从认证通过User取信息塞到JWT的claims中
@@ -427,7 +429,7 @@ CJoy内置了Oauth2的实现，关键设计如下：
 
 授权服务器服务端：
 
-```
+```cangjie
 // 创建Client信息存储器
 let clientStore = MemoryClientStore()
 
@@ -461,7 +463,7 @@ router.post("/token", server.tokenRequestHandleFunc)
 
 资源服务器实现授权回调接口，并调用授权服务器的 `/token` 接口获取Token
 
-```
+```cangjie
 let joy = Joy.default()
 let router = joy.router
 let handler2 = {
@@ -495,7 +497,7 @@ router.get("/oauth2_cb_2", handler2)
 
 Client向授权服务器`/authorize`发送请求：
 
-```
+```cangjie
 let clientId: String = "abcdef"
 let plainChallenge = "axxdafafdddaafdadadfdsafadfdafdada"
 

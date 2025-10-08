@@ -1,6 +1,4 @@
-开发指南
-
------
+# 开发指南
 
 ## 代码结构
 
@@ -59,12 +57,12 @@
   
 原则：
 
- - 大的特性src目录下创建子目录，如`src/ioc`
- - 每个特性对外公共的API放API目录下，如`src/ico/api`，若提供宏则放在`src/ico/macros`
+ - 大的特性src目录下创建子目录，如`src/json`
+ - 每个特性对外公共的API放API目录下，如`src/json/api`，若提供宏则放在`src/json/macros`
  - `src/test`放全局测试（HLT）代码，各目录下`*_test.cj`是内部类测试（LHT）代码
- - 宏定义与实现分离，如`src/macros/macros.cj`只定义宏，方便查看些模块有哪些宏，`src/macros/*.cj`为宏的解释与代码生成
- - 尽可能类不要定义public，只对外暴露最小的API，比如一些实现辅助类就没有必要public
- - 没有必要一个cj文件只放一个类或接口，实现一个功能的类与其关联类可以放在一个文件中，但每个类可职责单一
+ - 宏定义与实现分离，如`src/json/macros/macros.cj`只定义宏，方便查看些模块有哪些宏，`src/json/macros/*.cj`为宏的解释与代码生成
+ - 类尽可能不要定义为public，只对外暴露最小的API，比如一些实现辅助类就没有必要public
+ - 没有必要一个cj文件只放一个类或接口，实现一个功能的类与其关联类可以放在一个文件中，但每个类要职责单一
 
 ## 主要类与接口
 
@@ -100,10 +98,9 @@
  - 宏定义
    - macros.cj
  - 宏解释与代码生成
-   - generate
-     - ParamInfo：参数宏的解释与代码生成
-     - FuncInfo：函数宏的解释与代码生成
-     - MiddlewareInfo：中间件宏的解释与代码生成
+    - ParamInfo：参数宏的解释与代码生成
+    - FuncInfo：函数宏的解释与代码生成
+    - MiddlewareInfo：中间件宏的解释与代码生成
   
 原则：
 
@@ -117,16 +114,11 @@ Json的序列化与反序列化基于`encoding.json.stream`接口，提供宏对
  - 宏定义
    - jsonm.cj
  - 宏解释与代码生成
-   - generate
+   - macros
      - JsonClassInfo：Json类宏的解释与代码生成
      - JsonFieldInfo：JsonField宏的解释与代码生成
    - api
      - JsonTool：对象<->String互转辅助类
-
-原则：
-
- - 宏定义文件不要展开宏的解释，保持此文件的整洁
- - 内部提供函数对各个宏解释
 
 ----
 << [返回](../../README.md)

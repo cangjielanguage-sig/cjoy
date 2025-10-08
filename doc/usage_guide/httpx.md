@@ -8,7 +8,7 @@ CJoy提供调用Http服务能力，支持多种认证，自定义扩展认证。
 
 1. 注册Http服务
 
-```
+```cangjie
 // 注册Http服务，配置地址，ClienBudiler配置，你可以定制budilerFn，默认是对https证书全信任
 var client: JoyHttpClient = JoyHttpClientService("https://cangjie-lang.cn/")
 // 配置Basic认证
@@ -43,7 +43,7 @@ RetryClient有二个构造参数
 
 2. 其次在某处理Http请求函数中，根据名称获取Http服务，发送请求给服务端
 
-```
+```cangjie
 // 使用Http服务
 let client = ctx.getService<JoyHttpClient>("cj").getOrThrow()
 let rsp = client.get(ctx, "/docs")
@@ -79,11 +79,11 @@ ctx.string(rsp.text)
 
 ## 自定义扩展
 
-框架当前提供基础实现JoyHttpClientService，以及如下扩展实现
+框架当前提供基础实现`JoyHttpClientService`，以及如下扩展实现：
 
- - BasicAuthClient： Basic认证
- - TokanAuthClien： Token认证
- - RetryClient： 重试
+ - `BasicAuthClient`： Basic认证
+ - `TokanAuthClien`： Token认证
+ - `RetryClient`： 重试
   
 你可以参考上述实现，定制自己的HttpClient，实现 [JoyHttpClient](../../src/httpx/api.cj) 接口，对默认实现能力扩展增强。
 

@@ -28,7 +28,7 @@ CJoy提供Linux风格的crontab定时调度任务管理。
 
 任务回调函数原型：
 
-```
+```cangjie
 public type ScheduleFunc = (ctx: ScheduleContext) -> Unit
 ```
 
@@ -40,7 +40,7 @@ public type ScheduleFunc = (ctx: ScheduleContext) -> Unit
 
 采用宏标注，CJoy框架会自动把回调函数注册给全局的Crontab服务。
 
-```
+```cangjie
 @Scheduled[name = "metric job", cron = "*/2 * * * * *"]
 func logMetric(ctx: ScheduleContext): Unit {
     LogTool.info("log metric in crontab ...")
@@ -52,13 +52,13 @@ func logMetric(ctx: ScheduleContext): Unit {
 |`name`|函数名|是|Job名称，要求全局唯一|
 |`cron`||否|crontab表达式|
 
-注：宏@Scheduled也可以配合IoC框架，在Bean上的函数上使用。
+注：宏`@Scheduled`也可以配合IoC框架，在Bean上的函数上使用。
 
 ## 使用方式2：
 
 在Http Handler或Midlleware中使用，适合于收到Http请求时再创建调度任务
 
-```
+```cangjie
 @Post[path = "/crontab"]
 func addCrontab(ctx: JoyContext): Unit {
     // 先根据服务名获取服务
