@@ -86,16 +86,6 @@ public interface ApplicationContext {
      * @param bean: the bean object
      */
     func addBean(name: String, beanType: String, bean: BeanLifecycle): Unit
-
-    /**
-     * create all beans and init them
-     */
-    func createAllBeans(): Unit
-
-    /**
-     * destory all existed beans
-     */
-    func destroyAllBeans(): Unit
 }
 
 public type BeanScope = String

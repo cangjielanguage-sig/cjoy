@@ -74,6 +74,7 @@ public class Joy {
         this.name = name
         router = JoyRouteGroup(config, _services)
         LogTool.info(LOGO.replace("VERSION", VERSION))
+        LogTool.info("create joy app ${name}")
     }
 
     /**
@@ -166,10 +167,10 @@ public class Joy {
             LogTool.enableDebugLog()
         }
         _server = Some(server)
+        // 在Run之前至少要执行一次
+        BeanFactoryManager.initAllBeans()
         @LogInfo("run cjoy app ${name}, bind at ${server.addr}:${server.port}")
         @LogInfo("route tree:\n${router.dump()}")
-        // 在Run之前至少要执行一次
-        BeanFactoryManager.getApplicationContext().createAllBeans()
         server.serve()
     }
 

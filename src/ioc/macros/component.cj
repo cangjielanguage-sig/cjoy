@@ -133,7 +133,7 @@ open class ComponentClassInfo {
         let msgs = getChildMessages("Scheduled")
         var register = Tokens()
         for (msg in msgs) {
-            let name = _beanName + "." + msg.getString("schedule.name")
+            let name = "schedule." + _beanName + "." + msg.getString("schedule.name")
             let cron = msg.getString("schedule.cron")
             let funcName = msg.getTokens("schedule.funcName")
             let bt = Token(TokenKind.IDENTIFIER, _beanType)
@@ -152,7 +152,7 @@ open class ComponentClassInfo {
         let msgs = getChildMessages("SubscribeEvent")
         var register = Tokens()
         for (msg in msgs) {
-            let name = _beanName + "." + msg.getString("eventbus.name")
+            let name = "eventbus." + _beanName + "." + msg.getString("eventbus.name")
             let pattern = msg.getString("eventbus.pattern")
             let priority = msg.getInt64("eventbus.priority")
             let funcName = msg.getTokens("eventbus.funcName")

@@ -1,5 +1,14 @@
 [
     {
+        "Name": "cjoy", 
+        "License": "Mulan PSL v2",
+        "License File": "LICENSE", 
+        "Version Number": "v1.0.0",     
+        "Owner": "tengfei68@yeah.net", 
+        "Upstream URL": "https://gitcode.com/Cangjie-SIG/cjoy", 
+        "Description": "a fast，extensible，lightweight and joy cangjie application framework."    
+    },
+    {
         "Name": "Cangjie", 
         "License": "Apache-2.0 license",
         "License File": "LICENSE", 

@@ -17,23 +17,22 @@ IoC框架关键接口设计:
 
  - BeanFactoryManager.getApplicationContext(): 获取全局的ApplicationContext
  - BeanFactoryManager.registerPostFunc(): 注册一些全局的后处理函数
- - BeanFactoryManager.executePostFuncs(): 执行注册的后处理函数
- 
+ - BeanFactoryManager.initAllBeans(): 创建所有Bean对象并初始化，注册的后处理函数
+ - BeanFactoryManager.destroyAllBeans(): 销毁所有Bean对象
+
 ApplicationContext:
 
  - getXXX(): 根据类型，名称获取对应的Bean对象
- - createAllBeans(): 创建所有Bean对象
- - destroyAllBeans(): 销毁所有Bean对象
 
-单独使用IoC框架时，用户需要按如下使用流程操作：
+单独使用IoC框架时，使用流程如下：
 
  - 采用宏@Component标注一些类型，支持Class或Struct
- - 初始化所有Bean对象，调用ApplicationContext.createAllBeans()
+ - 初始化所有Bean对象，调用ApplicationContext.initAllBeans()
     - 根据依赖关系逐一创建Bean
     - 调用Bean的afterInit()方法，用户可以自已重载此函数
- - 调用BeanFactoryManager.executePostFuncs()
+    - 调用BeanFactoryManager.executePostFuncs()
  - ApplicationContext.getBean(): 按需获取Bean
- - 程序退出时之前，调用ApplicationContext.destroyAllBeans()
+ - 程序退出时之前，调用BeanFactoryManager.destroyAllBeans()
 
 ### 宏
 
@@ -125,10 +124,13 @@ CJoy提供宏`@Controller`，用于标注在Http请求处理Bean，配合@Get, @
  - 采用宏@Controller标注某类型，支持Class或Struct
  - 调用JoyHandlers.registerTo，让生成Handler自动注册到Joy实例了
 
- 每个Joy实例会在JoyHandlers.registerTo或joy.run函数调用时，会自动调用如下函数
+每个Joy实例会在JoyHandlers.registerTo或joy.run函数调用时，会自动调用如下函数
 
- - BeanFactoryManager.getApplicationContext().createAllBeans()
- - BeanFactoryManager.executePostFuncs()
+ - BeanFactoryManager.initAllBean()
+
+当进程退出时，会自动调用如下函数
+
+ - BeanFactoryManager.destroyAllBeans()
 
 `@Controller`有一个属性path，@Get等标注的函数生成Handler会拼接成完整的path。
 

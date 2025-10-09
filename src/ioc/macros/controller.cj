@@ -40,9 +40,10 @@ class ControllerClassInfo <: ComponentClassInfo {
                 let methods = getMethods(msg.getString("handler.methods"))
                 let bt = Token(TokenKind.IDENTIFIER, _beanType)
                 let hn = Token(TokenKind.IDENTIFIER, name)
+                let pfName = m + "." + _beanName + "." + name
                 let err = "not found bean by name `${_beanName}` for type `${_beanType}`"
                 register += quote(
-                        let _: Unit = BeanFactoryManager.registerPostFunc($_beanType) {=>
+                        let _: Unit = BeanFactoryManager.registerPostFunc($pfName) {=>
                             let bean = BeanFactoryManager.getApplicationContext().getBean<$bt>($_beanName).getOrThrow({=>IocException($err)})
                             JoyHandlers.addHandler($(path), $methods, bean.$hn)
                         }

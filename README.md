@@ -47,6 +47,14 @@ a fast，extensible，lightweight and joy cangjie application framework.<br/>
 - 😊 易上手：内置多种能力，提供编译宏，简化Web，MCP应用开发，让您聚焦应用逻辑；
 - 🛠️ 多协议：支持HTTP1，HTTP2，WebSocket, SSE, MCP等协议；
 
+### 应用架构
+
+<img alt="" src="doc/imgs/arch.png" style="display: inline-block;" />
+</div>
+
+ - CJoy提供Server框架，中间件，Service，通用能力
+ - 开箱即用，应用只须实现业务逻辑的Handler
+
 ## ✨ 快速开始
 
 **⚠️ 注意**
@@ -166,11 +174,6 @@ main(): Int64 {
 CJoy内置丰富的示例与测试用例，请移步 [examples](examples/README.md) ，也可以参考本项目的测试代码。
 
 ## 📖 使用指导
-
-CJoy架构设计如下：
-
-<img alt="" src="doc/imgs/arch.png" style="display: inline-block;" />
-</div>
 
 - [服务启动](doc/usage_guide/starter.md)
   - [实例](doc/usage_guide/starter.md#实例)

@@ -39,17 +39,26 @@ public class BeanFactoryManager {
     }
 
     public static func registerPostFunc(name: String, fn: () -> Unit): Unit {
-        @LogInfo("[IOC] register post func , name=${name}")
+        @LogInfo("[IOC] register post func, name=${name}")
         POST_FUNCS.add(fn)
     }
 
-    public static func executePostFuncs(): Unit {
-        @LogInfo("[IOC] exeucte registered post func ")
+    private static func executePostFuncs(): Unit {
         if (EXECUTED.compareAndSwap(false, true)) {
+            @LogInfo("[IOC] exeucte registered post func")
             for (fn in POST_FUNCS) {
                 fn()
             }
         }
+    }
+
+    public static func initAllBeans(): Unit {
+        CONTEXT.createAllBeans()
+        executePostFuncs()
+    }
+
+    public static func destroyAllBeans(): Unit {
+        CONTEXT.destroyAllBeans()
     }
 
     public static func get(beanType: String): ?BeanFactory {
@@ -59,4 +68,4 @@ public class BeanFactoryManager {
 
 private let _: Unit = GLOBAL_SERVICE_CONTAINER.addService("ioc", BeanFactoryManager.getApplicationContext())
 
-private let _: Unit = atExit {BeanFactoryManager.getApplicationContext().destroyAllBeans()}
+private let _: Unit = atExit {BeanFactoryManager.destroyAllBeans()}

@@ -87,10 +87,8 @@ public class JoyHandlers {
      */
     public static func registerTo(joy: Joy): Unit {
         // 依赖注入类需要先初始化
-        BeanFactoryManager.getApplicationContext().createAllBeans()
-        // 注入Bean的Handler
-        BeanFactoryManager.executePostFuncs()
-
+        BeanFactoryManager.initAllBeans()
+        
         for (it in HANDLERS) {
             let (path, methods, handler) = it
             let rg = joy.router.findGroup(path)
