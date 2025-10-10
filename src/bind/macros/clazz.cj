@@ -12,7 +12,7 @@ macro package cjoy.bind.macros
 
 import std.ast.*
 import std.collection.{ArrayList, map, collectArrayList}
-import cjoy.utils.{ClassGenentor, joinTokens}
+import cjoy.utils.ast.{ClassGenentor, joinTokens}
 
 class BindClassInfo {
     let classId: Token

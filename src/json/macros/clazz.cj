@@ -12,7 +12,8 @@ macro package cjoy.json.macros
 
 import std.ast.*
 import std.collection.ArrayList
-import cjoy.utils.{ClassGenentor, parserAttrs, MapToString, MapListGetFunc}
+import cjoy.utils.ast.{ClassGenentor, parserAttrs}
+import cjoy.utils.{MapToString, MapListGetFunc}
 
 class JsonClassInfo {
     let classId: Token

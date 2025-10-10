@@ -12,7 +12,8 @@ macro package cjoy.mcp.macros
 
 import std.ast.*
 import std.collection.*
-import cjoy.utils.{parserAttrs, MapToString, MapListGetFunc, TypeNodeInfo}
+import cjoy.utils.{MapToString, MapListGetFunc}
+import cjoy.utils.ast.{parserAttrs, TypeNodeInfo}
 
 open class ParamInfo {
     let marcroName: String

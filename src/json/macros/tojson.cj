@@ -11,7 +11,7 @@
 macro package cjoy.json.macros
 
 import std.ast.*
-import cjoy.utils.*
+import cjoy.utils.ast.*
 
 class JsonTokenVisitor <: TokenVisitor<Tokens> {
     public func onArrayBegin(): Tokens {

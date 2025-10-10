@@ -10,7 +10,7 @@
 
 macro package cjoy.schedule.macros
 
-import std.ast.*
+import std.ast.Tokens
 
 /**
  * register a schedule job

@@ -12,9 +12,10 @@ macro package cjoy.json.macros
 
 import std.ast.*
 import std.collection.HashMap
-import cjoy.utils.{parserAttrs, MapToString, MapListGetFunc, converterMap}
 import std.io.ByteBuffer
 import stdx.encoding.json.stream.{JsonSerializable, JsonWriter}
+import cjoy.utils.{MapToString, MapListGetFunc, converterMap}
+import cjoy.utils.ast.parserAttrs
 
 class JsonFieldInfo {
     let originName: String

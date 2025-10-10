@@ -12,7 +12,8 @@ macro package cjoy.bind.macros
 
 import std.ast.*
 import std.collection.{HashMap}
-import cjoy.utils.{parserAttrs, MapToString, MapListGetFunc, getDefValueOfType}
+import cjoy.utils.ast.{parserAttrs, getDefValueOfType}
+import cjoy.utils.{MapToString, MapListGetFunc}
 
 class BindFieldInfo {
     let filedName: String

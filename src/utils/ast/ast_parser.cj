@@ -8,11 +8,12 @@
  * See the Mulan PSL v2 for more details.
  */
 
-package cjoy.utils
+package cjoy.utils.ast
 
 import std.ast.*
 import std.collection.{ArrayList, HashMap}
 import std.convert.Parsable
+import cjoy.utils.{ListToString, MapToString}
 
 protected interface TokenVisitor<T> {
     func onArrayBegin(): T

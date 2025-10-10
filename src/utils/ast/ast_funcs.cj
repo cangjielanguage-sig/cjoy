@@ -8,10 +8,11 @@
  * See the Mulan PSL v2 for more details.
  */
 
-package cjoy.utils
+package cjoy.utils.ast
 
 import std.ast.*
 import std.collection.{ArrayList, HashSet}
+import cjoy.utils.{MapToString, MapListGetFunc}
 
 func checkAttr(attrNames: Array<String>, validAttrNames: Array<String>): (Bool, String) {
     let names = HashSet(attrNames)

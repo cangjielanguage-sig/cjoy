@@ -10,7 +10,7 @@
 
 macro package cjoy.log.macros
 
-import std.ast.*
+import std.ast.Tokens
 
 public macro LogDebug(input: Tokens): Tokens {
     quote(LogTool.debug($input, @sourceFile(), @sourceLine()))

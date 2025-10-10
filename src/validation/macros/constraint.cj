@@ -11,7 +11,8 @@
 macro package cjoy.validation.macros
 
 import std.collection.{ArrayList, filter, first}
-import cjoy.utils.{parserAttrs, MapToString, MapListGetFunc, joinTokens}
+import cjoy.utils.{MapToString, MapListGetFunc}
+import cjoy.utils.ast.{parserAttrs, joinTokens}
 import std.ast.*
 
 enum ConstraintCatgory {

@@ -8,10 +8,11 @@
  * See the Mulan PSL v2 for more details.
  */
 
-package cjoy.utils
+package cjoy.utils.ast
 
 import std.ast.*
 import std.unittest.testmacro.*
+import cjoy.utils.{ListToString, MapListGetFunc, MapToString}
 
 @Test
 public class TokenParserTestCaseSuit {
@@ -134,7 +135,6 @@ public class TokenParserTestCaseSuit {
         @Assert(resust.getMap("a")?.getMap("a2")?.getInt("a3a").getOrThrow(), 1)
     }
 
-    
     @TestCase
     public func testComplex2() {
         let tokens = quote(
@@ -152,7 +152,7 @@ public class TokenParserTestCaseSuit {
         @Assert(resust.getList("a")?.getList(1)?.getInt(0).getOrThrow(), 3)
     }
 
-     @TestCase
+    @TestCase
     public func testComplex3() {
         let tokens = quote(
         [
@@ -167,7 +167,7 @@ public class TokenParserTestCaseSuit {
         @Assert(resust.getList(0)?.getInt(0).getOrThrow(), 1)
         @Assert(resust.getList(1)?.getInt(0).getOrThrow(), 3)
     }
-    
+
     @TestCase
     public func testComplex4() {
         let tokens = quote(

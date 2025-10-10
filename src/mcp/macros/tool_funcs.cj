@@ -12,7 +12,8 @@ macro package cjoy.mcp.macros
 
 import std.ast.*
 import std.collection.*
-import cjoy.utils.{parserAttrs, MapToString, MapListGetFunc, randStr}
+import cjoy.utils.{MapToString, MapListGetFunc, randStr}
+import cjoy.utils.ast.parserAttrs
 
 open class FuncInfo {
     let macroName: String

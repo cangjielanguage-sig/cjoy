@@ -12,7 +12,7 @@ macro package cjoy.validation.macros
 
 import std.ast.*
 import std.collection.ArrayList
-import cjoy.utils.joinTokens
+import cjoy.utils.ast.joinTokens
 
 class FuncInfo {
     let decl: FuncDecl

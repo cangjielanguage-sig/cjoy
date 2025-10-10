@@ -12,9 +12,8 @@ macro package cjoy.ioc.macros
 
 import std.ast.*
 import std.collection.ArrayList
-import cjoy.utils.{ClassGenentor, parserAttrs, joinTokens, converterList, MapToString, MapListGetFunc, TypeNodeInfo, 
-    randStr}
-import cjoy.ioc.api.IocException
+import cjoy.utils.ast.{ClassGenentor, parserAttrs, joinTokens, TypeNodeInfo}
+import cjoy.utils.{converterList, MapToString, MapListGetFunc, randStr}
 
 open class ComponentClassInfo {
     let _classId: Token
@@ -54,7 +53,7 @@ open class ComponentClassInfo {
     }
 
     /**
-     * @throws IocException
+     * @throws Exception
      */
     private func getBeanToken(): (Tokens, Tokens) {
         let msgs = getChildMessages("Autowired")
@@ -67,7 +66,7 @@ open class ComponentClassInfo {
                 let typeNode = TypeNodeInfo(supportTypes)
                 typeNode.parse(fp.toTokens(), fp.paramType)
                 if (typeNode.isPrimitive) {
-                    throw IocException("the Autowired type can not is primitive type")
+                    throw Exception("the Autowired type can not is primitive type")
                 }
                 let name = getBeanNameOnAutowired(msgs, pid.value + ".name")
                 let t = if (name != "") { // @Autowired[name=""]
@@ -190,7 +189,7 @@ func toBeanName(str: String): String {
 }
 
 /**
- * @throws IocException
+ * @throws Exception
  */
 func getInitFunc(classGen: ClassGenentor) {
     let ctors = classGen.constructors
@@ -200,7 +199,7 @@ func getInitFunc(classGen: ClassGenentor) {
     } else if (ctors.size == 1) {
         initFunc = ctors[0]
     } else {
-        throw IocException("only allowed exist zero or one init func")
+        throw Exception("only allowed exist zero or one init func")
     }
     initFunc
 }

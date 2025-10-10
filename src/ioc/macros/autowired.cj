@@ -11,7 +11,8 @@
 macro package cjoy.ioc.macros
 
 import std.ast.*
-import cjoy.utils.{parserAttrs, MapToString, MapListGetFunc}
+import cjoy.utils.{MapToString, MapListGetFunc}
+import cjoy.utils.ast.parserAttrs
 
 /**
  * @throws Exception
