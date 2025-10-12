@@ -26,7 +26,7 @@ public class JsonSchemaInfo {
 
     public func toJson(): JsonSerializable {
         if (schema != "") {
-            return JsonTool.fromJsonToAny(schema)
+            return JsonTool.fromJsonToSerializable(schema)
         }
         schemaType.toJson(description: description)
     }

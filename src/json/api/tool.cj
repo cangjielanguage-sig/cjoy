@@ -61,11 +61,11 @@ public class JsonTool {
         stream.bytes()
     }
 
-    public static func fromJsonToAny(bs: Array<Byte>): JsonSerializable {
+    public static func fromJsonToSerializable(bs: Array<Byte>): JsonSerializable {
         var buffer = ByteBuffer()
         buffer.write(bs)
         let reader = JsonReader(buffer)
-        return fromJsonToAny(reader)
+        return fromJsonToSerializable(reader)
     }
 
     /**
@@ -74,11 +74,11 @@ public class JsonTool {
      * @param jsonStr: the json string
      * @return: the object
      */
-    public static func fromJsonToAny(jsonStr: String): JsonSerializable {
+    public static func fromJsonToSerializable(jsonStr: String): JsonSerializable {
         var buffer = ByteBuffer()
         unsafe { buffer.write(jsonStr.rawData()) }
         let reader = JsonReader(buffer)
-        return fromJsonToAny(reader)
+        return fromJsonToSerializable(reader)
     }
 
     /**
@@ -88,12 +88,59 @@ public class JsonTool {
      * @return: the object
      * @throws Exception if the token is invalid
      */
-    public static func fromJsonToAny(reader: JsonReader): JsonSerializable {
+    public static func fromJsonToSerializable(reader: JsonReader): JsonSerializable {
         while (let Some(v) <- reader.peek()) {
             match (v) {
                 case BeginObject =>
                     reader.startObject()
                     let map: HashMap<String, JsonSerializable> = HashMap()
+                    while (reader.peek() != EndObject) {
+                        let name = reader.readName()
+                        let value = JsonTool.fromJsonToSerializable(reader)
+                        map.add(name, value)
+                    }
+                    reader.endObject()
+                    return map
+                case BeginArray =>
+                    reader.startArray()
+                    let list: ArrayList<JsonSerializable> = ArrayList()
+                    while (reader.peek() != EndArray) {
+                        let value = JsonTool.fromJsonToSerializable(reader)
+                        list.add(value)
+                    }
+                    reader.endArray()
+                    return list
+                case JsonBool => return reader.readValue<Bool>()
+                case JsonString => return reader.readValue<String>()
+                case JsonNumber =>
+                    let value = reader.readValue<String>()
+                    if (value.indexOf(b'.').isSome()) {
+                        return Float64.parse(value)
+                    } else {
+                        return Int64.parse(value)
+                    }
+                case JsonNull =>
+                    reader.readValue<String>()
+                    return Option<String>.None
+                case _ => throw Exception("the token is invalid")
+            }
+        }
+        throw Exception("unreable")
+    }
+
+    /**
+     * deserialize json string to object
+     *
+     * @param reader: the json reader
+     * @return: the object
+     * @throws Exception if the token is invalid
+     */
+    public static func fromJsonToAny(reader: JsonReader): Any {
+        while (let Some(v) <- reader.peek()) {
+            match (v) {
+                case BeginObject =>
+                    reader.startObject()
+                    let map: HashMap<String, Any> = HashMap()
                     while (reader.peek() != EndObject) {
                         let name = reader.readName()
                         let value = JsonTool.fromJsonToAny(reader)
@@ -103,7 +150,7 @@ public class JsonTool {
                     return map
                 case BeginArray =>
                     reader.startArray()
-                    let list: ArrayList<JsonSerializable> = ArrayList()
+                    let list: ArrayList<Any> = ArrayList()
                     while (reader.peek() != EndArray) {
                         let value = JsonTool.fromJsonToAny(reader)
                         list.add(value)

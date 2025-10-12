@@ -12,7 +12,7 @@ macro package cjoy.bind.macros
 
 import std.ast.*
 import std.collection.{HashMap}
-import cjoy.utils.ast.{parserAttrs, getDefValueOfType}
+import cjoy.utils.ast.{parserAttrs, getDefValueOfType, TypeNodeInfo}
 import cjoy.utils.{MapToString, MapListGetFunc}
 
 class BindFieldInfo {
@@ -97,6 +97,7 @@ class BindFieldGenerator {
             case x: PrefixType => quote(Option<$(x.baseType)>)
             case _ => info.declType.toTokens()
         }
+
         if (let Some(dv) <- getDefValueOfType(info.declType)) {
             return quote(
                 $(varId): $(vType).bind(source, $(info.keyName()), $(info.getDefValue()), $(info.getTimeformat())).getOrDefault({=>$dv}))

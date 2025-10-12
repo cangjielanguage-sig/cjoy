@@ -11,7 +11,7 @@
 package cjoy.bind.api
 
 import std.convert.Parsable
-import std.collection.{HashMap, ArrayList}
+import std.collection.{Map, HashMap, ArrayList, map, filter, collectArray, collectArrayList}
 import std.time.DateTime
 import stdx.encoding.url.Form
 import stdx.net.http.HttpHeaders
@@ -37,6 +37,15 @@ public interface JoyBindable<T> {
     static func bind(source: JoyBindSource, name: String): ?T {
         bind(source, name, None, None)
     }
+    static func bindField(source: JoyBindSource, name: String): ?T {
+        let map = source.getOne<HashMap<String, Any>>(name)
+        match (map) {
+            case Some(data) =>
+                let container = MapContainer(data)
+                bind(container, "")
+            case _ => None
+        }
+    }
 }
 
 /**
@@ -46,45 +55,110 @@ public interface JoyBindSource {
     /**
      * get one value by name from source
      */
-    func getOne(name: String): ?String
+    func getOne<T>(name: String): ?T
 
     /**
      * get all values by name from source
      */
-    func getAll(name: String): Collection<String>
+    func getList<T>(name: String): Collection<T>
+}
+
+public class MapContainer <: JoyBindSource {
+    public MapContainer(let data: HashMap<String, Any>) {}
+    public func getOne<T>(name: String): ?T {
+        let v = data.get(name)
+        getValue<Any, T>(v)
+    }
+
+    public func getList<T>(name: String): Collection<T> {
+        let list = data.get(name)
+        let res = ArrayList<T>()
+        match (list) {
+            case xl: Collection<Any> => for (x in xl) {
+                match (x) {
+                    case x: T => res.add(x)
+                    case _ => ()
+                }
+            }
+            case _ => ()
+        }
+        res
+    }
 }
 
 extend Form <: JoyBindSource {
-    public func getOne(name: String): ?String {
-        this.get(name)
+    public func getOne<T>(name: String): ?T {
+        let v = this.get(name)
+        getValue<String, T>(v)
+    }
+
+    public func getList<T>(name: String): Collection<T> {
+        let list = this.getAll(name)
+        let res = ArrayList<T>()
+        for (x in list) {
+            match (x) {
+                case x: T => res.add(x)
+                case _ => ()
+            }
+        }
+        res
     }
 }
 
 extend HttpHeaders <: JoyBindSource {
-    public func getOne(name: String): ?String {
-        this.getFirst(name)
+    public func getOne<T>(name: String): ?T {
+        let v = this.getFirst(name)
+        getValue<String, T>(v)
     }
-    public func getAll(name: String): Collection<String> {
-        this.get(name)
+
+    public func getList<T>(name: String): Collection<T> {
+        let list = this.get(name)
+        let res = ArrayList<T>()
+        for (x in list) {
+            match (x) {
+                case x: T => res.add(x)
+                case _ => ()
+            }
+        }
+        res
     }
 }
 
 extend HashMap<String, String> <: JoyBindSource {
-    public func getOne(name: String): ?String {
-        this.get(name)
+    public func getOne<T>(name: String): ?T {
+        let v = this.get(name)
+        getValue<String, T>(v)
     }
-    public func getAll(_: String): Collection<String> {
-        ArrayList<String>()
+
+    public func getList<T>(_: String): Collection<T> {
+        ArrayList<T>()
+    }
+}
+
+private func getValue<V, T>(v: ?V): ?T {
+    match (v) {
+        case Some(x) => match (x) {
+            case y: T => y
+            case _ => None
+        }
+        case _ => None
+    }
+}
+
+private func getString(a: ?ToString, b: ?String): ?String {
+    match (a) {
+        case Some(x) => x.toString()
+        case _ => match (b) {
+            case Some(v) => v
+            case _ => None
+        }
     }
 }
 
 extend String <: JoyBindable<String> {
     public static func bind(source: JoyBindSource, name: String, defaultValue: ?String, _: ?String): ?String {
-        if (let Some(dv) <- defaultValue) {
-            source.getOne(name) ?? dv
-        } else {
-            source.getOne(name)
-        }
+        let val = source.getOne<ToString>(name)
+        getString(val, defaultValue)
     }
 }
 
@@ -94,15 +168,19 @@ extend<T> Option<T> <: JoyBindable<Option<T>> where T <: JoyBindable<T> {
     }
 }
 
-func bindParsable<T>(source: JoyBindSource, name: String, defaultValue: ?String): ?T where T <: Parsable<T> {
-    if (let Some(dv) <- defaultValue) {
-        T.tryParse(source.getOne(name) ?? dv)
-    } else {
-        if (let Some(v) <- source.getOne(name)) {
-            T.tryParse(v)
-        } else {
-            None
-        }
+private func bindParsable<T>(source: JoyBindSource, name: String, defaultValue: ?String): ?T where T <: Parsable<T> {
+    let val = source.getOne<T>(name)
+    match (val) {
+        case Some(x) => x
+        case _ => bindParsable(source.getOne<ToString>(name), defaultValue)
+    }
+}
+
+private func bindParsable<T>(val: ?ToString, defaultValue: ?String): ?T where T <: Parsable<T> {
+    let v = getString(val, defaultValue)
+    match (v) {
+        case Some(x) => T.tryParse(x)
+        case _ => None
     }
 }
 
@@ -178,50 +256,68 @@ extend Bool <: JoyBindable<Bool> {
     }
 }
 
-extend Array<String> <: JoyBindable<Array<String>> {
-    public static func bind(source: JoyBindSource, name: String, _: ?String, _: ?String): ?Array<String> {
-        source.getAll(name).toArray()
+// T当前不考虑是Option
+extend<T> Array<T> <: JoyBindable<Array<T>> where T <: JoyBindable<T> {
+    public static func bind(source: JoyBindSource, name: String, _: ?String, _: ?String): ?Array<T> {
+        // 先尝试按同类型获取，如Array<String>
+        let arr: Collection<T> = source.getList<T>(name)
+        if (!arr.isEmpty()) {
+            return arr.toArray()
+        }
+
+        let col: Collection<Any> = source.getList<Any>(name)
+        bindCollection<T>(col, name).toArray()
     }
 }
 
-extend ArrayList<String> <: JoyBindable<ArrayList<String>> {
-    public static func bind(source: JoyBindSource, name: String, _: ?String, _: ?String): ?ArrayList<String> {
-        ArrayList(source.getAll(name))
+private func bindCollection<T>(col: Collection<Any>, name: String): ArrayList<T> where T <: JoyBindable<T> {
+    // 按任一类型获取，则需要调用T.bind转换对应的类型
+    // 如Array<Int>， 则先生成临时的map
+    let map = HashMap<String, Any>()
+    let container = MapContainer(map)
+    let res = ArrayList<T>()
+    for (a in col) {
+        map[name] = a
+        let val = T.bind(container, name)
+        if (let Some(v) <- val) {
+            res.add(v)
+        }
     }
+    res
 }
 
-// extend<T> Array<T> <: JoyBindable<Array<T>> where T <: Parsable<T> {
-//     public static func bind(source: JoyBindSource, name: String, defaultValue: ?String, timeformat: ?String): ?Array<T> {
-//         let array = source.getAll(name)
-//         array |> map {x: String => T.parse(x)} |> collectArray
-//     }
-// }
+// T当前不考虑是Option
+extend<T> ArrayList<T> <: JoyBindable<ArrayList<T>> where T <: JoyBindable<T> {
+    public static func bind(source: JoyBindSource, name: String, _: ?String, _: ?String): ?ArrayList<T> {
+        let arr: Collection<T> = source.getList<T>(name)
+        if (!arr.isEmpty()) {
+            return ArrayList(arr)
+        }
 
-// extend<T> ArrayList<T> <: JoyBindable<ArrayList<T>> where T <: Parsable<T> {
-//     public static func bind(source: JoyBindSource, name: String, defaultValue: ?String, timeformat: ?String): ?ArrayList<T> {
-//         let array = source.getAll(name)
-//         array |> map {x: String => T.parse(x)} |> collectArrayList
-//     }
-// }
+        let col: Collection<Any> = source.getList<Any>(name)
+        bindCollection<T>(col, name)
+    }
+}
 
 extend DateTime <: JoyBindable<DateTime> {
     public static func bind(source: JoyBindSource, name: String, defaultValue: ?String, timeformat: ?String): ?DateTime {
-        if (let Some(dv) <- defaultValue) {
-            if (let Some(f) <- timeformat) {
-                DateTime.parse(source.getOne(name) ?? dv, f)
-            } else {
-                DateTime.parse(source.getOne(name) ?? dv)
-            }
-        } else {
-            if (let Some(v) <- source.getOne(name)) {
-                if (let Some(f) <- timeformat) {
-                    DateTime.parse(v, f)
-                } else {
-                    DateTime.parse(v)
+        func parse(str: ?ToString): ?DateTime {
+            match (str) {
+                case Some(v) => match (timeformat) {
+                    case Some(f) => DateTime.parse(v.toString(), f)
+                    case _ => DateTime.parse(v.toString())
                 }
-            } else {
-                None
+                case _ => None
             }
+        }
+        match (defaultValue) {
+            case Some(dv) =>
+                let str = getString(source.getOne<ToString>(name), dv)
+                match (str) {
+                    case Some(v) => parse(v)
+                    case _ => None
+                }
+            case _ => parse(source.getOne<ToString>(name))
         }
     }
 }

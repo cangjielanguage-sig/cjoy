@@ -28,59 +28,67 @@ protected class TypeNodeInfo {
         this.supportTypes = supportTypes
     }
 
+    /**
+     * @throws Exception
+     */
     protected func parse(input: Tokens, varType: TypeNode): Unit {
         match (varType) {
             case x: PrimitiveType =>
                 vtype = x.keyword
                 isPrimitive = true
-            case x: PrefixType =>
-                vtype = Token(TokenKind.IDENTIFIER, "Option")
-                let gType = x.baseType
-                if (gType is RefType) {
-                    genericType = (gType as RefType).getOrThrow().identifier
-                    if (genericType.value == "Int" || genericType.value == "UInt") {
-                        genericIsPrimitive = true
-                    }
-                } else if (gType is PrimitiveType) {
-                    genericType = (gType as PrimitiveType).getOrThrow().keyword
-                    genericIsPrimitive = true
-                } else {
-                    diagReport(DiagReportLevel.ERROR, input, "unsuported type", "param ref type must be ${supportTypes}"
-                    )
-                    throw Exception("unsuported type")
-                }
-            case x: RefType =>
-                if (x.typeArguments.size != 1 && x.typeArguments.size != 0) {
-                    diagReport(DiagReportLevel.ERROR, input, "unsuported type", "param ref type must be ${supportTypes}"
-                    )
-                    throw Exception("unsuported type")
-                }
-
-                vtype = x.identifier
-                if (vtype.value == "Int" || vtype.value == "UInt") {
-                    isPrimitive = true
-                    return
-                }
-
-                if (x.typeArguments.size == 1) {
-                    let gType = x.typeArguments[0]
-                    if (gType is RefType) {
-                        genericType = (gType as RefType).getOrThrow().identifier
-                        if (genericType.value == "Int" || genericType.value == "UInt") {
-                            genericIsPrimitive = true
-                        }
-                    } else if (gType is PrimitiveType) {
-                        genericType = (gType as PrimitiveType).getOrThrow().keyword
-                        genericIsPrimitive = true
-                    } else {
-                        diagReport(DiagReportLevel.ERROR, input, "unsuported type",
-                            "param ref type must be ${supportTypes}")
-                        throw Exception("unsuported type")
-                    }
-                }
+            case x: PrefixType => parsePrefixType(input, x)
+            case x: RefType => parseRefType(input, x)
             case _ =>
                 diagReport(DiagReportLevel.ERROR, input, "unsuported type", "param ref type must be ${supportTypes}")
                 throw Exception("unsuported type")
+        }
+    }
+
+    /**
+     * @throws Exception
+     */
+    private func parsePrefixType(input: Tokens, x: PrefixType): Unit {
+        // Option类型
+        vtype = Token(TokenKind.IDENTIFIER, "Option")
+        parseBaseType(input, x.baseType)
+    }
+
+    /**
+     * @throws Exception
+     */
+    private func parseBaseType(input: Tokens, gType: TypeNode): Unit {
+        match (gType) {
+            case t: RefType =>
+                genericType = t.identifier
+                if (genericType.value == "Int" || genericType.value == "UInt") {
+                    genericIsPrimitive = true
+                }
+            case t: PrimitiveType =>
+                genericType = t.keyword
+                genericIsPrimitive = true
+            case _ =>
+                diagReport(DiagReportLevel.ERROR, input, "unsuported type", "param ref type must be ${supportTypes}")
+                throw Exception("unsuported type")
+        }
+    }
+
+    /**
+     * @throws Exception
+     */
+    private func parseRefType(input: Tokens, x: RefType): Unit {
+        if (x.typeArguments.size != 1 && x.typeArguments.size != 0) {
+            diagReport(DiagReportLevel.ERROR, input, "unsuported type", "param ref type must be ${supportTypes}")
+            throw Exception("unsuported type")
+        }
+
+        vtype = x.identifier
+        if (vtype.value == "Int" || vtype.value == "UInt") {
+            isPrimitive = true
+            return
+        }
+
+        if (x.typeArguments.size == 1) {
+            parseBaseType(input, x.typeArguments[0])
         }
     }
 

@@ -331,7 +331,7 @@ public class JsonTestCaseSuit {
     @TestCase
     public func testToAny1(): Unit {
         let str = ###"{"a": 1, "b": 2, "c": {"c1": "c1v", "c2": 1.1}, "d":[{"d1": true, "d2": null},{"d1": false, "d2": "d2v"}]}"###
-        let ts = JsonTool.fromJsonToAny(str)
+        let ts = JsonTool.fromJsonToSerializable(str)
         match (ts) {
             case m: HashMap<String, JsonSerializable> => @Assert(4, m.size )
             case _ => @Fail("deserialize failed")

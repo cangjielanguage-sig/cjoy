@@ -37,8 +37,12 @@ class BindClassInfo {
         )
 
         quote(
-            public static func bind(source: JoyBindSource, _: String, _: ?String, _: ?String): ?$(classId) {
-                $classId($params)
+            public static func bind(source: JoyBindSource, name: String, _: ?String, _: ?String): ?$(classId) {
+                if (name.isEmpty()) {
+                    $classId($params)
+                } else {
+                    bindField(source, name)
+                }
             }
         )
     }
@@ -46,12 +50,12 @@ class BindClassInfo {
     public static func parse(marcroName: String, input: Tokens): Tokens {
         let (decl, pos) = parseDeclFragment(input)
         let classGen = ClassGenentor("Bind", decl)
-        
+
         let ident = decl.identifier
         let classInfo = BindClassInfo(marcroName, ident, classGen.variables)
         let bindTokens = classInfo.genBindFunc()
         let supperTokens = quote(JoyBindable<$(classInfo.classId)>)
-        let tokens =  classGen.genTokens(supperTokens, bindTokens)
+        let tokens = classGen.genTokens(supperTokens, bindTokens)
 
         BindInfoCache.clear()
         tokens + Token(TokenKind.NL) + input[pos..]

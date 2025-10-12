@@ -245,14 +245,14 @@ public class Jwt {
 
         var bs: Array<Byte> = decodeSegemnt(header)
         try {
-            _headers = (JsonTool.fromJsonToAny(bs) as MapHeaders).getOrThrow()
+            _headers = (JsonTool.fromJsonToSerializable(bs) as MapHeaders).getOrThrow()
         } catch (ex: Exception) {
             throw JwtException("token is malformed, could not JSON decode header")
         }
 
         bs = decodeSegemnt(claims)
         try {
-            _claims = (JsonTool.fromJsonToAny(bs) as MapClaims).getOrThrow()
+            _claims = (JsonTool.fromJsonToSerializable(bs) as MapClaims).getOrThrow()
         } catch (ex: Exception) {
             throw JwtException("token is malformed, could not JSON decode claim")
         }

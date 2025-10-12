@@ -30,7 +30,7 @@ class AnyJsonFieldGenerator <: JsonFieldGenerator {
             quote(case $(info.jsonKeyName()) => obj.$(varId) = reader.readValueBytes()
             )
         } else {
-            quote(case $(info.jsonKeyName()) => obj.$(varId) = JsonTool.fromJsonToAny(reader)
+            quote(case $(info.jsonKeyName()) => obj.$(varId) = JsonTool.fromJsonToSerializable(reader)
             )
         }
     }

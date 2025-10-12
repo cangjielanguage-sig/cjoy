@@ -32,6 +32,20 @@ public struct SQueryBind {
 }
 
 @Bind
+public struct SQueryBind2 {
+    let str: String
+    let str2: ?String
+    let i64: Int64
+
+    @BindField[name = int]
+    let i2_64: Int
+
+    let i3_64: ?Int
+    let arr: Array<Int>
+    let list: ArrayList<Int>
+}
+
+@Bind
 public struct SPostBind {
     var str: String = ""
     var str2: ?String = None
@@ -75,6 +89,23 @@ public struct SHeaderBind {
     let t2: ?DateTime
 }
 
+@Bind
+public class Bind1 {
+    var str: String = ""
+    let bind2: Bind2
+}
+
+@Bind
+public class Bind2 {
+    var str: String = ""
+    let bind3: ?Bind3
+}
+
+@Bind
+public class Bind3 {
+    var str: String = ""
+}
+
 @Test
 public class BindTestCaseSuit {
     @TestCase
@@ -89,6 +120,20 @@ public class BindTestCaseSuit {
         @Assert(obj.i3_64, 3)
         @Assert(obj.arr, ["1", "2"])
         @Assert(obj.list, ArrayList(["1", "2"]))
+    }
+
+    @TestCase
+    public func testQueryBind2() {
+        let u = "http://127.0.0.1:18881/test?str=1&str2=2&i64=1&int=2&i3_64=3&arr=1&arr=2&list=1&list=2"
+        let r = HttpRequestBuilder().get().url(URL.parse(u)).build()
+        let obj = SQueryBind2.bind(r.url.queryForm, "", None, None).getOrThrow()
+        @Assert(obj.str, "1")
+        @Assert(obj.str2, "2")
+        @Assert(obj.i64, 1)
+        @Assert(obj.i2_64, 2)
+        @Assert(obj.i3_64, 3)
+        @Assert(obj.arr, [1, 2])
+        @Assert(obj.list, ArrayList([1, 2]))
     }
 
     @TestCase
@@ -138,5 +183,22 @@ public class BindTestCaseSuit {
         @Assert(obj.list, ArrayList(["1", "2"]))
         @Assert(obj.t1, DateTime.parse(ts, "HH:mm:ss MM/dd/yyyy OO"))
         @Assert(obj.t2, DateTime.parse(ts, "HH:mm:ss MM/dd/yyyy OO"))
+    }
+
+    @TestCase
+    public func testNestedBind() {
+        let map1 = HashMap<String, Any>()
+        let map2 = HashMap<String, Any>()
+        let map3 = HashMap<String, Any>()
+        map1.add("str", "1")
+        map1.add("bind2", map2)
+        map2.add("str", "2")
+        map2.add("bind3", map3)
+        map3.add("str", "3")
+        let container = MapContainer(map1)
+        let obj = Bind1.bind(container, "").getOrThrow()
+        @Assert(obj.str, "1")
+        @Assert(obj.bind2.str, "2")
+        @Assert(obj.bind2.bind3?.str ?? "", "3")
     }
 }
