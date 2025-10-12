@@ -11,28 +11,61 @@
 package cjoy.config
 
 import std.collection.{Map, ArrayList}
-import std.convert.Parsable
+import cjoy.bind.JoyBindable
 
+/*
+ * the config manger api
+ *
+ * the key of config support env variable and a multi level key separated with `.`, e.g:
+ * - single level key:
+ *   - abc, cdf
+ * - multi level key:
+ *   - a.b.c
+ * - array key:
+ *   - a[0], a[1]
+ *   - a.b[0].c, a.b[1].c
+ * - env variable:
+ *  - HOME, USER
+ *
+ * if the key exists in uppercase, it will be converted to underline+lowercase, e.g:
+ *   - aBc -> a_bc
+ *   - aBC -> a_bc
+ */
 public interface Config {
-    func allData(): Map<String, Any>
-
+    /**
+     * return true if the key is existed
+     */
     func hashKey(key: String): Bool
+
+    /**
+     * get value by key
+     */
     func getValue(key: String): ?String
+
+    /**
+     * get value by key with default value
+     */
     func getValue(key: String, defaultValue: String): String
 
-    func getValueAs<T>(key: String): ?T where T <: Parsable<T>
-    func getValueAs<T>(key: String, defaultValue: T): ?T where T <: Parsable<T>
-    func getListValueAs<T>(key: String): ArrayList<T> where T <: Parsable<T>
+    /**
+     * bind config to object
+     */
+    func bind<T>(key: String): ?T where T <: JoyBindable<T>
 
     /**
      * resolves config values into a string, eg: ${host}:${port} -> 127.0.0.1:18881
      */
     func resolve(exp: String): String
+
+    /**
+     * add config loader
+     */
+    func addLoader(loader: ConfigLoader): Unit
 }
 
 public interface ConfigLoader {
     /**
-     * load confs to map
+     * load configs to map
      */
     func load(): Map<String, Any>
 
