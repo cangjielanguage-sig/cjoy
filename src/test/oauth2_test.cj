@@ -60,97 +60,97 @@ public class OAuth2ServerTestCaseSuit {
 
             let handler1 = {
                 ctx: JoyContext =>
-                    let code = ctx.getForm("code").getOrThrow()
-                    let state = ctx.getForm("state").getOrThrow()
-                    if (state != "123") {
-                        @Fail("unrecognized state: ${state}")
-                        return
-                    }
+                let code = ctx.getForm("code").getOrThrow()
+                let state = ctx.getForm("state").getOrThrow()
+                if (state != "123") {
+                    @Fail("unrecognized state: ${state}")
+                    return
+                }
 
-                    let c = BasicAuthClient(_client, username: _clientId, password: _clientSecret)
-                    let form = Form()
-                    form.add("redirect_uri", "http://127.0.0.1:28882/oauth2_cb_1")
-                    form.add("code", code)
-                    form.add("grant_type", "authorization_code")
-                    form.add("client_id", _clientId)
-                    let rsp = c.postform(ctx, "/token", form)
-                    let token = rsp.json<TokenBody>().getOrThrow()
-                    validateAccessToken(ctx, token.accessToken)
+                let c = BasicAuthClient(_client, username: _clientId, password: _clientSecret)
+                let form = Form()
+                form.add("redirect_uri", "http://127.0.0.1:28882/oauth2_cb_1")
+                form.add("code", code)
+                form.add("grant_type", "authorization_code")
+                form.add("client_id", _clientId)
+                let rsp = c.postform(ctx, "/token", form)
+                let token = rsp.json<TokenBody>().getOrThrow()
+                validateAccessToken(ctx, token.accessToken)
             }
             router.post("/oauth2_cb_1", handler1)
             router.get("/oauth2_cb_1", handler1)
 
             let handler2 = {
                 ctx: JoyContext =>
-                    let code = ctx.getForm("code").getOrThrow()
-                    let state = ctx.getForm("state").getOrThrow()
-                    if (state != "123") {
-                        @Fail("unrecognized state: ${state}")
-                        return
-                    }
+                let code = ctx.getForm("code").getOrThrow()
+                let state = ctx.getForm("state").getOrThrow()
+                if (state != "123") {
+                    @Fail("unrecognized state: ${state}")
+                    return
+                }
 
-                    let form = Form()
-                    form.add("redirect_uri", "http://127.0.0.1:28882/oauth2_cb_2")
-                    form.add("code", code)
-                    form.add("grant_type", "authorization_code")
-                    form.add("client_id", _clientId)
-                    form.add("code_verifier", _plainChallenge)
-                    let rsp = _client.postform(ctx, "/token", form)
-                    let token = rsp.json<TokenBody>().getOrThrow()
-                    validateAccessToken(ctx, token.accessToken)
+                let form = Form()
+                form.add("redirect_uri", "http://127.0.0.1:28882/oauth2_cb_2")
+                form.add("code", code)
+                form.add("grant_type", "authorization_code")
+                form.add("client_id", _clientId)
+                form.add("code_verifier", _plainChallenge)
+                let rsp = _client.postform(ctx, "/token", form)
+                let token = rsp.json<TokenBody>().getOrThrow()
+                validateAccessToken(ctx, token.accessToken)
             }
             router.post("/oauth2_cb_2", handler2)
             router.get("/oauth2_cb_2", handler2)
 
             let handler3 = {
                 ctx: JoyContext =>
-                    let code = ctx.getForm("code").getOrThrow()
-                    let state = ctx.getForm("state").getOrThrow()
-                    if (state != "123") {
-                        @Fail("unrecognized state: ${state}")
-                        return
-                    }
+                let code = ctx.getForm("code").getOrThrow()
+                let state = ctx.getForm("state").getOrThrow()
+                if (state != "123") {
+                    @Fail("unrecognized state: ${state}")
+                    return
+                }
 
-                    let form = Form()
-                    form.add("redirect_uri", "http://127.0.0.1:28882/oauth2_cb_3")
-                    form.add("code", code)
-                    form.add("grant_type", "authorization_code")
-                    form.add("client_id", _clientId)
-                    form.add("code_verifier", _s256Challenge)
-                    let rsp = _client.postform(ctx, "/token", form)
-                    let token = rsp.json<TokenBody>().getOrThrow()
-                    validateAccessToken(ctx, token.accessToken)
+                let form = Form()
+                form.add("redirect_uri", "http://127.0.0.1:28882/oauth2_cb_3")
+                form.add("code", code)
+                form.add("grant_type", "authorization_code")
+                form.add("client_id", _clientId)
+                form.add("code_verifier", _s256Challenge)
+                let rsp = _client.postform(ctx, "/token", form)
+                let token = rsp.json<TokenBody>().getOrThrow()
+                validateAccessToken(ctx, token.accessToken)
             }
             router.post("/oauth2_cb_3", handler3)
             router.get("/oauth2_cb_3", handler3)
 
             let handler4 = {
                 ctx: JoyContext =>
-                    let code = ctx.getForm("code").getOrThrow()
-                    let state = ctx.getForm("state").getOrThrow()
-                    if (state != "123") {
-                        @Fail("unrecognized state: ${state}")
-                        return
-                    }
+                let code = ctx.getForm("code").getOrThrow()
+                let state = ctx.getForm("state").getOrThrow()
+                if (state != "123") {
+                    @Fail("unrecognized state: ${state}")
+                    return
+                }
 
-                    let c = BasicAuthClient(_client, username: _clientId, password: _clientSecret)
-                    var form = Form()
-                    form.add("redirect_uri", "http://127.0.0.1:28882/oauth2_cb_4")
-                    form.add("code", code)
-                    form.add("grant_type", "authorization_code")
-                    form.add("client_id", _clientId)
-                    var rsp = c.postform(ctx, "/token", form)
-                    var token = rsp.json<TokenBody>().getOrThrow()
-                    validateAccessToken(ctx, token.accessToken)
+                let c = BasicAuthClient(_client, username: _clientId, password: _clientSecret)
+                var form = Form()
+                form.add("redirect_uri", "http://127.0.0.1:28882/oauth2_cb_4")
+                form.add("code", code)
+                form.add("grant_type", "authorization_code")
+                form.add("client_id", _clientId)
+                var rsp = c.postform(ctx, "/token", form)
+                var token = rsp.json<TokenBody>().getOrThrow()
+                validateAccessToken(ctx, token.accessToken)
 
-                    // refresh_token
-                    form = Form()
-                    form.add("scope", "one")
-                    form.add("grant_type", "refresh_token")
-                    form.add("refresh_token", token.refreshToken)
-                    rsp = c.postform(ctx, "/token", form)
-                    token = rsp.json<TokenBody>().getOrThrow()
-                    validateAccessToken(ctx, token.accessToken)
+                // refresh_token
+                form = Form()
+                form.add("scope", "one")
+                form.add("grant_type", "refresh_token")
+                form.add("refresh_token", token.refreshToken)
+                rsp = c.postform(ctx, "/token", form)
+                token = rsp.json<TokenBody>().getOrThrow()
+                validateAccessToken(ctx, token.accessToken)
             }
             router.post("/oauth2_cb_4", handler4)
             router.get("/oauth2_cb_4", handler4)
@@ -178,18 +178,22 @@ public class OAuth2ServerTestCaseSuit {
         _clientStore.add(cli)
 
         let ctx = mock<JoyContext>()
-        let rsp = _client.get(
+        let rsp = _client.send(
             ctx,
-            "/authorize",
-            HashMap<String, ToString>(
-                [
-                    ("response_type", "code"),
-                    ("client_id", _clientId),
-                    ("scope", "all"),
-                    ("state", "123"),
-                    ("redirect_uri", "http://127.0.0.1:28882/oauth2_cb_1")
-                ]
-            )
+            JoyHttpRequest
+                .of("/authorize")
+                .get()
+                .queries(
+                    HashMap<String, ToString>(
+                        [
+                            ("response_type", "code"),
+                            ("client_id", _clientId),
+                            ("scope", "all"),
+                            ("state", "123"),
+                            ("redirect_uri", "http://127.0.0.1:28882/oauth2_cb_1")
+                        ]
+                    )
+                )
         )
         @Assert(rsp.status, 200)
     }
@@ -205,19 +209,23 @@ public class OAuth2ServerTestCaseSuit {
         _clientStore.add(cli)
 
         let ctx = mock<JoyContext>()
-        let rsp = _client.get(
+        let rsp = _client.send(
             ctx,
-            "/authorize",
-            HashMap<String, ToString>(
-                [
-                    ("response_type", "code"),
-                    ("client_id", _clientId),
-                    ("scope", "all"),
-                    ("state", "123"),
-                    ("redirect_uri", "http://127.0.0.1:28882/oauth2_cb_2"),
-                    ("code_challenge", _plainChallenge)
-                ]
-            )
+            JoyHttpRequest
+                .of("/authorize")
+                .get()
+                .queries(
+                    HashMap<String, ToString>(
+                        [
+                            ("response_type", "code"),
+                            ("client_id", _clientId),
+                            ("scope", "all"),
+                            ("state", "123"),
+                            ("redirect_uri", "http://127.0.0.1:28882/oauth2_cb_2"),
+                            ("code_challenge", _plainChallenge)
+                        ]
+                    )
+                )
         )
         @Assert(rsp.status, 200)
     }
@@ -233,20 +241,24 @@ public class OAuth2ServerTestCaseSuit {
         _clientStore.add(cli)
 
         let ctx = mock<JoyContext>()
-        let rsp = _client.get(
+        let rsp = _client.send(
             ctx,
-            "/authorize",
-            HashMap<String, ToString>(
-                [
-                    ("response_type", "code"),
-                    ("client_id", _clientId),
-                    ("scope", "all"),
-                    ("state", "123"),
-                    ("redirect_uri", "http://127.0.0.1:28882/oauth2_cb_3"),
-                    ("code_challenge", _s256ChallengeHash),
-                    ("code_challenge_method", "S256")
-                ]
-            )
+            JoyHttpRequest
+                .of("/authorize")
+                .get()
+                .queries(
+                    HashMap<String, ToString>(
+                        [
+                            ("response_type", "code"),
+                            ("client_id", _clientId),
+                            ("scope", "all"),
+                            ("state", "123"),
+                            ("redirect_uri", "http://127.0.0.1:28882/oauth2_cb_3"),
+                            ("code_challenge", _s256ChallengeHash),
+                            ("code_challenge_method", "S256")
+                        ]
+                    )
+                )
         )
         @Assert(rsp.status, 200)
     }
@@ -266,18 +278,22 @@ public class OAuth2ServerTestCaseSuit {
         _clientStore.add(cli)
 
         let ctx = mock<JoyContext>()
-        let rsp = _client.get(
+        let rsp = _client.send(
             ctx,
-            "/authorize",
-            HashMap<String, ToString>(
-                [
-                    ("response_type", "token"),
-                    ("client_id", _clientId),
-                    ("scope", "all"),
-                    ("state", "123"),
-                    ("redirect_uri", "http://127.0.0.1:28882/oauth2")
-                ]
-            )
+            JoyHttpRequest
+                .of("/authorize")
+                .get()
+                .queries(
+                    HashMap<String, ToString>(
+                        [
+                            ("response_type", "token"),
+                            ("client_id", _clientId),
+                            ("scope", "all"),
+                            ("state", "123"),
+                            ("redirect_uri", "http://127.0.0.1:28882/oauth2")
+                        ]
+                    )
+                )
         )
         @Assert(rsp.status, 200)
     }
@@ -285,14 +301,15 @@ public class OAuth2ServerTestCaseSuit {
     @TestCase
     public func testPasswordCredentials() {
         _server.setClientInfoHandleFunc(clientBasicHandleFunc)
-        _server.setPasswordAuthorizationHanleFunc({
-            ctx: JoyContext, clientId: String, username: String, password: String => if (username == "admin" &&
-                password == "123456") {
-                _clientId
-            } else {
-                "user not found"
-            }
-        })
+        _server.setPasswordAuthorizationHanleFunc(
+            {
+                ctx: JoyContext, clientId: String, username: String, password: String => if (username == "admin" &&
+                    password == "123456") {
+                    _clientId
+                } else {
+                    "user not found"
+                }
+            })
 
         let cli = ClientInfo(id: _clientId, secret: _clientSecret, domain: "http://127.0.0.1:28882", isPublic: false)
         _clientStore.add(cli)
@@ -346,18 +363,22 @@ public class OAuth2ServerTestCaseSuit {
         _clientStore.add(cli)
 
         let ctx = mock<JoyContext>()
-        let rsp = _client.get(
+        let rsp = _client.send(
             ctx,
-            "/authorize",
-            HashMap<String, ToString>(
-                [
-                    ("response_type", "code"),
-                    ("client_id", _clientId),
-                    ("scope", "all"),
-                    ("state", "123"),
-                    ("redirect_uri", "http://127.0.0.1:28882/oauth2_cb_4")
-                ]
-            )
+            JoyHttpRequest
+                .of("/authorize")
+                .get()
+                .queries(
+                    HashMap<String, ToString>(
+                        [
+                            ("response_type", "code"),
+                            ("client_id", _clientId),
+                            ("scope", "all"),
+                            ("state", "123"),
+                            ("redirect_uri", "http://127.0.0.1:28882/oauth2_cb_4")
+                        ]
+                    )
+                )
         )
         @Assert(rsp.status, 200)
     }

@@ -27,7 +27,7 @@ import cjoy.bind.JoyBindable
  * - env variable:
  *  - HOME, USER
  *
- * if the key exists in uppercase, it will be converted to underline+lowercase, e.g:
+ * if the key contains uppercase letter, it will be converted to underline+lowercase, e.g:
  *   - aBc -> a_bc
  *   - aBC -> a_bc
  */

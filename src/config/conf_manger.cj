@@ -21,7 +21,7 @@ class ConfigData {
     }
 }
 
-public class ClassManager <: Config {
+public class ConfigManager <: Config {
     private let envData = HashMap<String, String>()
     private let data = ArrayList<ConfigData>()
 
