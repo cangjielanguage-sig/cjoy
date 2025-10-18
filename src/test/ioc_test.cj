@@ -68,6 +68,7 @@ class Bean7 {
     }
 }
 
+// -------- @Controller + @Get等方法
 @Controller[path = "/test"]
 class BeanController {
     @Get[path = "/p1"]
@@ -85,6 +86,22 @@ class BeanController {
     @SubscribeEvent[name = "sub2", pattern = "a.b.c.d"]
     func handleEvent(ctx: Context, evt: Event): Unit {
     }
+}
+
+// -------- 配置注入
+@Component
+class Bean8 {
+    @Value[#"${a.b.c:1}"#]
+    let v1: Int // @Value会自动赋值
+
+    @Value[#"${a.b.d:abc}"#]
+    let v2: String
+
+    @Value[#"${a.b.d:abc}"#]
+    let v3: ?Int
+
+    @Value[#"${a.b.d:abc}"#]
+    let v4: ?String
 }
 
 @Test

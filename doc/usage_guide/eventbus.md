@@ -80,8 +80,8 @@ public type EventSubscriberFunc = (ctx: Context, evt: Event) -> Unit
 在Http Handler或Midlleware中使用，适合于收到Http请求时发布事件。
 
 ```cangjie
-@Post[path = "/crontab"]
-func addCrontab(ctx: JoyContext): Unit {
+@Post[path = "/event"]
+func handle(ctx: JoyContext): Unit {
     // 先根据服务名获取服务
     let bus = ctx.getService<EventBus>("eventbus").getOrThrow()
     bus.fireEvent(ctx, Event.of("e1").addData("k1", "v1"))

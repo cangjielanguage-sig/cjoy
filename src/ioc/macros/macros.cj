@@ -70,3 +70,12 @@ public macro Controller(attr: Tokens, input: Tokens): Tokens {
 public macro Controller(input: Tokens): Tokens {
     parseController(None, input)
 }
+
+/**
+ * This macro applies to the field of struct of class for referring to config value,
+ *
+ * @attribute value: the express of config
+ */
+public macro Value(attr: Tokens, input: Tokens): Tokens {
+    parseVaue(attr, input)
+}

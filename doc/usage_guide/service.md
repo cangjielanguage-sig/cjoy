@@ -43,9 +43,10 @@ CJoy存一个全局的服务容器ServiceConainter，一些内置的全局服务
 # 内置服务
 
  - [IoC服务](../../doc/usage_guide/ioc.md)
+ - [配置服务](../../doc/usage_guide/config.md)
  - [调度任务](../../doc/usage_guide/schedule.md)
- - [Http服务](../../doc/usage_guide/httpx.md)
  - [事件总线](../../doc/usage_guide/eventbus.md)
+ - [Http服务](../../doc/usage_guide/httpx.md)
 
 ----
 << [返回](../../README.md#使用指导)

@@ -15,6 +15,7 @@ import std.sync.Mutex
 import std.sort.sort
 import std.env.getVariables
 import cjoy.bind.{JoyBindable, MapContainer}
+import cjoy.context.GLOBAL_SERVICE_CONTAINER
 import cjoy.log.*
 
 class ConfigData <: ToString {
@@ -27,6 +28,8 @@ class ConfigData <: ToString {
 }
 
 public class ConfigManager <: Config {
+    public static let INSTANCE: Config = ConfigManager()
+
     private let envData = HashMap<String, String>()
     private let data = ArrayList<ConfigData>()
 
@@ -113,7 +116,7 @@ public class ConfigManager <: Config {
     }
 
     public func resolve(exp: String): String {
-        resolveString(this, exp)
+        ResolveHelp(this).resolveString(exp)
     }
 
     public func addLoader(loader: ConfigLoader): Unit {
@@ -133,3 +136,5 @@ public class ConfigManager <: Config {
             }, stable: true)
     }
 }
+
+let _: Unit = GLOBAL_SERVICE_CONTAINER.addService("config", ConfigManager.INSTANCE)

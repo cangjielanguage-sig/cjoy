@@ -89,6 +89,20 @@ public class ArgConfigTestCaseSuit {
         }
     }
 
+    @TestCase
+    public func testErrSelfRef(): Unit {
+        let args = [["-Da=1", #"-Db=${b}"#]]
+        for (x in args) {
+            try {
+                let loader = ArgConfigLoader(x)
+                loader.load()
+                @Fail("should throw exception")
+            } catch (ex: ConfigException) {
+                @Assert(ex.message.contains("the config express is invalid"))
+            }
+        }
+    }
+
     private func cm(a: Any) {
         (a as HashMap<String, Any>).getOrThrow()
     }

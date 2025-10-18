@@ -14,7 +14,7 @@ import std.collection.{Map, List, HashMap, ArrayList, map, collectArray}
 import std.convert.Parsable
 
 /**
- * @throws IllegalArgumentException
+ * add key and value to data
  */
 func addToData(data: Map<String, Any>, key: String, cfgKey: ConfigKey, value: String): Unit {
     // 有子节点
@@ -30,7 +30,7 @@ func addToData(data: Map<String, Any>, key: String, cfgKey: ConfigKey, value: St
 }
 
 /**
- * @throws ConfigException
+ * @throws ConfigException if the key or value is invalid
  */
 private func addSubToDataExist(sm: Any, key: String, cfgKey: ConfigKey, subKey: ConfigKey, value: String): Unit {
     // 不是数组配置
@@ -76,7 +76,7 @@ private func addSubToDataFirst(data: Map<String, Any>, key: String, cfgKey: Conf
 }
 
 /**
- * @throws ConfigException
+ * @throws ConfigException if the key or value is invalid
  */
 private func addLastToData(data: Map<String, Any>, key: String, cfgKey: ConfigKey, value: String): Unit {
     // 不是数组配置，后面的覆盖前面的
@@ -191,57 +191,76 @@ func getStringValue(val: ?Any): ?String {
     }
 }
 
-/**
- * 解释配置表达式，如${a.b.c:default}，或者${HOME:/home/xiao}，HOME从环境变量获取
- *
- * @throws ConfigException
- */
-func resolveString(cfg: Config, str: String): String {
-    let start = str.indexOf(#"${"#) ?? -1
-    if (start < 0) {
-        return cfg.getValue(str) ?? throw ConfigException("not found key ${str}")
-    }
+class ResolveHelp {
+    private var num = 0
+    ResolveHelp(let cfg: Config) {}
 
-    var level = 1
-    var end = -1
-    let arr = str.toRuneArray()
-    for (idx in (start + 2)..arr.size) {
-        if (arr[idx] == Rune(b'$')) {
-            if (idx + 1 < arr.size && arr[idx + 1] == Rune(b'{')) {
-                level += 1
-            }
-        } else if (arr[idx] == Rune(b'}')) {
-            level -= 1
-            if (level == 0) {
-                end = idx
-                break
+    /**
+     * 解释配置表达式，如${a.b.c:default}，或者${HOME:/home/xiao}，HOME从环境变量获取
+     *
+     * @throws ConfigException the config express is invalid
+     */
+    func resolveString(str: String): String {
+        if (num > 10) {
+            // 循环引用或者变量太多
+            throw ConfigException("the config express is invalid, reference num is over 10, ${str}")
+        }
+        if (str.isEmpty()) {
+            return str
+        }
+        let start = str.indexOf(#"${"#) ?? -1
+        if (start < 0) {
+            return str
+        }
+
+        var level = 1
+        var end = -1
+        for (idx in (start + 2)..str.size) {
+            if (str[idx] == b'$') {
+                if (idx + 1 < str.size && str[idx + 1] == b'{') {
+                    level += 1
+                }
+            } else if (str[idx] == b'}') {
+                level -= 1
+                if (level == 0) {
+                    end = idx
+                    break
+                }
             }
         }
+
+        if (end < 0) {
+            throw ConfigException("the config express is invalid, ${str}")
+        }
+
+        num++
+
+        let resolved = resolveToValue(str[(start + 2)..end])
+        let suffix = resolveString(str[end + 1..])
+        str[..start] + resolved + suffix
     }
 
-    if (end < 0) {
-        throw ConfigException("the config express is invalid, ${str}")
+    /**
+     * @throws ConfigException if the config express is invalid
+     */
+    private func resolveToValue(key: String): String {
+        let start = key.indexOf(":") ?? -1
+        var rk = key
+        var defVal = "//@@//"
+
+        if (start > 0) {
+            rk = key[0..start]
+            defVal = key[start + 1..]
+        }
+
+        let val = cfg.getValue(rk, defVal)
+        if (val == "\${${rk}}" || val.startsWith("\${${rk}:")) {
+            // 循环引用
+            throw ConfigException("the config express is invalid, circular reference, ${key}")
+        }
+        if (val != "//@@//") {
+            return resolveString(val)
+        }
+        ""
     }
-
-    let resolved = resolveToValue(cfg, String(arr[start..(end + 1)]))
-    let suffix = resolveString(cfg, String(arr[end + 1..]))
-    String(arr[..start]) + resolved + suffix
-}
-
-private func resolveToValue(cfg: Config, key: String): String {
-    let start = key.indexOf(":") ?? -1
-    var rk = key
-    var defVal = "//@@//"
-
-    if (start > 0) {
-        let arr = key.toRuneArray()
-        rk = String(arr[0..start])
-        defVal = String(arr[start + 1..])
-    }
-
-    let val = cfg.getValue(key, defVal)
-    if (val != defVal) {
-        return resolveString(cfg, val)
-    }
-    ""
 }

@@ -37,7 +37,7 @@ open class ParamInfo {
 
     init(marcroName: String) {
         this.marcroName = marcroName
-        let supportTypes = "String, PrimitiveType, T <: JsonDeserializable, Opition<T <: JsonDeserializable>, Opition<String>, ArrayList<String>, Array<Strng>"
+        let supportTypes = "String, PrimitiveType, T <: JsonDeserializable, Opition<T> where T <: JsonDeserializable>, Opition<String>, ArrayList<String>, Array<Strng>"
         this.typeNode = TypeNodeInfo(supportTypes)
     }
 

@@ -19,6 +19,9 @@ import std.env.getVariables
 public class ArgConfigLoader <: ConfigLoader {
     public ArgConfigLoader(let args: Array<String>) {}
 
+    /**
+     * @throws ConfigException if the config express is invalid
+     */
     public func load(): Map<String, Any> {
         let data = HashMap<String, Any>()
         for (arg in args) {
@@ -26,7 +29,12 @@ public class ArgConfigLoader <: ConfigLoader {
                 // 需要考虑value中存在=
                 var key = arg[2..pos]
                 key = transferKey(key)
+
                 let value = arg[(pos + 1)..]
+                if (value == "\${${key}}" || value.startsWith("\${${key}:")) {
+                    // 循环引用
+                    throw ConfigException("the config express is invalid, circular reference, ${key}")
+                }
                 let cfgKey = splitKey(key)
                 addToData(data, arg, cfgKey, value)
             }

@@ -18,7 +18,9 @@ import cjoy.utils.ast.parserAttrs
  * @throws Exception
  */
 func parseAutowired(attr: ?Tokens, input: Tokens): Unit {
-    assertParentContext("Component")
+    if (!insideParentContext("Controller") && !insideParentContext("Component")) {
+        throw Exception("@Value macro must in @Controller or @Component")
+    }
     try {
         let funcParam = FuncParam(input)
         let paramName = funcParam.identifier

@@ -67,7 +67,7 @@ router.get("/favicon.ico", {ctx: JoyContext => })
 - `/images/2014/05/image.jpg` 匹配到 `/images/*`
 - `/favicon.ico` 匹配到 `/favicon.ico`
 
-## 分组
+## 路由分组
 
 ```cangjie
 let router = joy.router

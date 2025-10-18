@@ -11,6 +11,7 @@
 package cjoy.config
 
 import std.collection.{HashMap, ArrayList}
+import std.env.getVariable
 import cjoy.bind.*
 
 @Test
@@ -89,6 +90,105 @@ public class ConfigManagerTestCaseSuit {
         manager.addLoader(loader)
         let res = manager.bind<TestData1>("a").getOrThrow()
         @Assert(res.b.c, 1)
+    }
+
+    @TestCase
+    public func testResolve1(): Unit {
+        let loader = ArgConfigLoader(["-Da=1"])
+        let manager = ConfigManager()
+        manager.addLoader(loader)
+        let res = manager.resolve(#"${a}"#)
+        @Assert(res, "1")
+    }
+
+    @TestCase
+    public func testResolve2(): Unit {
+        let loader = ArgConfigLoader(["-Da[0]=1"])
+        let manager = ConfigManager()
+        manager.addLoader(loader)
+        let res = manager.resolve(#"${a[0]}"#)
+        @Assert(res, "1")
+    }
+
+    @TestCase
+    public func testResolve3(): Unit {
+        let loader = ArgConfigLoader(["-Da.b.c=1"])
+        let manager = ConfigManager()
+        manager.addLoader(loader)
+        let res = manager.resolve(#"${a.b.c}"#)
+        @Assert(res, "1")
+    }
+
+    @TestCase
+    public func testResolve4(): Unit {
+        let loader = ArgConfigLoader(["-Da.b[0].c=1"])
+        let manager = ConfigManager()
+        manager.addLoader(loader)
+        let res = manager.resolve(#"${a.b[0].c}"#)
+        @Assert(res, "1")
+    }
+
+    @TestCase
+    public func testResolveDefault1(): Unit {
+        let loader = ArgConfigLoader(["-Db=1"])
+        let manager = ConfigManager()
+        manager.addLoader(loader)
+        let res = manager.resolve(#"${a:2}"#)
+        @Assert(res, "2")
+    }
+
+    @TestCase
+    public func testResolveDefault2(): Unit {
+        let loader = ArgConfigLoader(["-Da[0]=1"])
+        let manager = ConfigManager()
+        manager.addLoader(loader)
+        let res = manager.resolve(#"${b[0]:2}"#)
+        @Assert(res, "2")
+    }
+
+    @TestCase
+    public func testResolveTwo1(): Unit {
+        let loader = ArgConfigLoader(["-Da=1", "-Db=2"])
+        let manager = ConfigManager()
+        manager.addLoader(loader)
+        let res = manager.resolve(#"${a}-${b}"#)
+        @Assert(res, "1-2")
+    }
+
+    @TestCase
+    public func testResolveTwo2(): Unit {
+        let loader = ArgConfigLoader(["-Da=1", "-Db=2"])
+        let manager = ConfigManager()
+        manager.addLoader(loader)
+        let res = manager.resolve(#"${a}:${b}"#)
+        @Assert(res, "1:2")
+    }
+
+    @TestCase
+    public func testResolveReferOther1(): Unit {
+        let loader = ArgConfigLoader(["-Da=1", #"-Db=${a}"#])
+        let manager = ConfigManager()
+        manager.addLoader(loader)
+        let res = manager.resolve(#"${b:2}"#)
+        @Assert(res, "1")
+    }
+
+    @TestCase
+    public func testResolveReferEnv(): Unit {
+        let loader = ArgConfigLoader([#"-Da=${HOME}"#])
+        let manager = ConfigManager()
+        manager.addLoader(loader)
+        let res = manager.resolve(#"${a}"#)
+        @Assert(res, "${getVariable("HOME") ?? ""}")
+    }
+
+    @TestCase
+    public func testEqualSign(): Unit {
+        let loader = ArgConfigLoader(["-Da==1", #"-Db=2="#])
+        let manager = ConfigManager()
+        manager.addLoader(loader)
+        let res = manager.resolve(#"${a}-${b}"#)
+        @Assert(res, "=1-2=")
     }
 }
 

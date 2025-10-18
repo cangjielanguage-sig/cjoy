@@ -43,6 +43,7 @@ IoC框架提供如下宏，用于生成BeanFactory实现，以及注释Bean信�
 |`@Component`|name="",scope=singleton,extends=[]|Bean组件|
 |`@Autowired`|name=""|依赖注入|
 |`@Controller`|path="/abc/def",name="",scope=singleton,extends=[]|Bean组件，可以配合@Get，@Put HttpHandler宏使用|
+|`@Value`|#"${configName:defaultvalue}"#|配置注入|
 
 以上宏属性参数说明： 
 
@@ -112,6 +113,29 @@ class Bean7 {
     }
 }
 ```
+
+示例5：配置注入
+
+```cangjie
+@Component
+class Bean8 {
+    @Value[#"${a.b.c:1}"#]
+    let v1: Int // @Value会自动赋值
+
+    @Value[#"${a.b.d:abc}"#]
+    let v2: String
+
+    @Value[#"${a.b.d:abc}"#]
+    let v3: ?Int
+
+    @Value[#"${a.b.d:abc}"#]
+    let v4: ?String
+}
+```
+- @Value中只一个字符串属性
+- 字符串指定引用的配置项值，格式为`#"${configName:defaultValue}"#`, 注意需要`#"`开头与`"#`结尾或者其它的单行字符串字面量表示法，因为`${var}`与字符串插值相同。
+- 请参见配置服务说明
+
 
 ## @Controller
 

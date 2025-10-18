@@ -19,7 +19,7 @@ class ConfigKey <: ToString {
     }
 
     public func toString(): String {
-        var str = "(${key}, ${arrIdx})"
+        var str = "(${key},${arrIdx})"
         if (let Some(ck) <- sub) {
             str += ck.toString()
         }
@@ -47,7 +47,7 @@ func transferKey(key: String): String {
 }
 
 /**
- * @throws ConfigException
+ * @throws ConfigException if the index is out range
  */
 private func oneKeySeg(str: String): (String, Int) {
     let start = str.indexOf("[") ?? -1
@@ -66,7 +66,9 @@ private func oneKeySeg(str: String): (String, Int) {
 }
 
 /**
- * @throws ConfigException
+ * split key to ConfigKey
+ *
+ * @throws ConfigException if the key is invalid
  */
 func splitKey(key: String): ConfigKey {
     let exist = key.indexOf(".") ?? -1
@@ -74,7 +76,7 @@ func splitKey(key: String): ConfigKey {
         let (seg, arrIdx) = oneKeySeg(key)
         return ConfigKey(seg, arrIdx, None)
     } else if (exist == 0) {
-        throw ConfigException("key can not start with `.`")
+        throw ConfigException("key key is invalid, can not start with `.`")
     }
 
     let arr = key.split(".")
@@ -87,7 +89,7 @@ func splitKey(key: String): ConfigKey {
         temp.sub = sub
         temp = sub
     }
-    
+
     @LogDebug("[Config] split ${key} to ${cfgKey}")
     cfgKey
 }
