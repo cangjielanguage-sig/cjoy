@@ -35,4 +35,10 @@ public class ConfigKeyTestCaseSuit {
         let key = transferKey("abc-def")
         @Assert(key, "abc-def")
     }
+
+    @TestCase
+    public func testTransferKey5() {
+        let key = transferKey("AbcDEf-g")
+        @Assert(key, "abc-def-g")
+    }
 }

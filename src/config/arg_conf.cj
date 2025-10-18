@@ -14,7 +14,7 @@ import std.collection.{HashMap, ArrayList, Map}
 import std.env.getVariables
 
 /**
- * cli arguments config
+ * application program cli arguments config
  */
 public class ArgConfigLoader <: ConfigLoader {
     public ArgConfigLoader(let args: Array<String>) {}
@@ -27,9 +27,7 @@ public class ArgConfigLoader <: ConfigLoader {
         for (arg in args) {
             if (arg.startsWith("-D") && let Some(pos) <- arg.indexOf("=") && pos > 1) {
                 // 需要考虑value中存在=
-                var key = arg[2..pos]
-                key = transferKey(key)
-
+                let key = arg[2..pos]
                 let value = arg[(pos + 1)..]
                 if (value == "\${${key}}" || value.startsWith("\${${key}:")) {
                     // 循环引用
@@ -39,6 +37,7 @@ public class ArgConfigLoader <: ConfigLoader {
                 addToData(data, arg, cfgKey, value)
             }
         }
+        transferKeys(data)
         data
     }
 

@@ -68,6 +68,24 @@ public class ArgConfigTestCaseSuit {
     }
 
     @TestCase
+    public func testTansferKeys1(): Unit {
+        let loader = ArgConfigLoader(["-Djoy.abCd[0]=1", "-Djoy.abCd[1]=2"])
+        let data = loader.load()
+        let x = ca(cm(data["joy"])["ab-cd"])
+        @Assert(cs(x[0]), "1")
+        @Assert(cs(x[1]), "2")
+    }
+
+    @TestCase
+    public func testTansferKeys2(): Unit {
+        let loader = ArgConfigLoader(["-Djoy.AbCd[0]=1", "-Djoy.AbCd[1]=2"])
+        let data = loader.load()
+        let x = ca(cm(data["joy"])["ab-cd"])
+        @Assert(cs(x[0]), "1")
+        @Assert(cs(x[1]), "2")
+    }
+
+    @TestCase
     public func testErrOverwrite1(): Unit {
         let args = [
             ["-Da.b=1", "-Da=2"],
@@ -102,16 +120,16 @@ public class ArgConfigTestCaseSuit {
             }
         }
     }
+}
 
-    private func cm(a: Any) {
-        (a as HashMap<String, Any>).getOrThrow()
-    }
+func cm(a: Any) {
+    (a as HashMap<String, Any>).getOrThrow()
+}
 
-    private func cs(a: Any) {
-        (a as String).getOrThrow()
-    }
+func cs(a: Any) {
+    (a as String).getOrThrow()
+}
 
-    private func ca(a: Any) {
-        (a as ArrayList<Any>).getOrThrow()
-    }
+func ca(a: Any) {
+    (a as ArrayList<Any>).getOrThrow()
 }

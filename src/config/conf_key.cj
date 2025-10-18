@@ -10,7 +10,7 @@
 
 package cjoy.config
 
-import std.collection.{HashMap, ArrayList, map, collectArray}
+import std.collection.{Map, HashMap, ArrayList, map, collectArray}
 import std.convert.Parsable
 import cjoy.log.*
 
@@ -33,7 +33,7 @@ func transferKey(key: String): String {
     var upper = false
     for (a in arr) {
         if (a.isAsciiUpperCase()) {
-            if (!upper) {
+            if (!upper && builder.size > 1) {
                 builder.append("-")
             }
             builder.append(a.toAsciiLowerCase())
@@ -44,6 +44,22 @@ func transferKey(key: String): String {
         }
     }
     builder.toString()
+}
+
+func transferKeys(data: Map<String, Any>): Unit {
+    let iter = data.iterator()
+    let map = HashMap<String, Any>()
+    while (let Some((k, v)) <- iter.next()) {
+        let tk = transferKey(k)
+        if (k != tk) {
+            map.add(tk, data[k])
+        }
+        match (v) {
+            case x: Map<String, Any> => transferKeys(x)
+            case _ => ()
+        }
+    }
+    data.add(all: map)
 }
 
 /**
