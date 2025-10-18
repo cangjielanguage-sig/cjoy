@@ -15,9 +15,14 @@ import std.sync.Mutex
 import std.sort.sort
 import std.env.getVariables
 import cjoy.bind.{JoyBindable, MapContainer}
+import cjoy.log.*
 
-class ConfigData {
+class ConfigData <: ToString {
     ConfigData(let data: Map<String, Any>, let priority: Int) {
+    }
+
+    public func toString(): String {
+        "{data:${MapContainer.mapToString(data)},priority:${priority}}"
     }
 }
 
@@ -49,6 +54,22 @@ public class ConfigManager <: Config {
     }
 
     public func getValue(key: String): ?String {
+        match (getValueInner(key)) {
+            case Some(val) =>
+                if (val.startsWith(#"${"#)) {
+                    resolve(val)
+                } else {
+                    val
+                }
+            case _ => None
+        }
+    }
+
+    public func getValue(key: String, defaultValue: String): String {
+        getValue(key) ?? defaultValue
+    }
+
+    private func getValueInner(key: String): ?String {
         let v = envData.get(key)
         match (v) {
             case Some(x) => x
@@ -64,27 +85,31 @@ public class ConfigManager <: Config {
         }
     }
 
-    public func getValue(key: String, defaultValue: String): String {
-        getValue(key) ?? defaultValue
-    }
-
     public func bind<T>(key: String): ?T where T <: JoyBindable<T> {
         let v = envData.get(key)
         match (v) {
-            case Some(x) => T.bind(envData, key)
-            case _ =>
-                let cfgKey = splitKey(transferKey(key))
-                for (d in data) {
-                    let val = getDataValue(d.data, cfgKey)
-                    match (val) {
-                        case Some(v) =>
-                            let container = MapContainer(HashMap<String, Any>([("", v)]))
-                            return T.bind(container, "")
-                        case _ => ()
-                    }
-                }
-                None
+            case Some(x) => T.bind(envData, key, None, None)
+            case _ => bindInner<T>(key)
         }
+    }
+
+    private func bindInner<T>(key: String): Option<T> where T <: JoyBindable<T> {
+        let cfgKey = splitKey(transferKey(key))
+        let map = HashMap<String, Any>()
+        let container = MapContainer(map)
+        for (d in data) {
+            match (getDataValue(d.data, cfgKey)) {
+                case Some(val) =>
+                    map["obj"] = val
+                    @LogDebug("[Config] bind data is ${container}")
+                    let obj = T.bind(container, "obj", None, None)
+                    if (let Some(y) <- obj) {
+                        return y
+                    }
+                case _ => ()
+            }
+        }
+        None
     }
 
     public func resolve(exp: String): String {
@@ -93,7 +118,9 @@ public class ConfigManager <: Config {
 
     public func addLoader(loader: ConfigLoader): Unit {
         let ld = loader.load()
-        data.add(ConfigData(ld, loader.priority))
+        let cd = ConfigData(ld, loader.priority)
+        @LogDebug("[Config] load data ${cd}")
+        data.add(cd)
         sort(data,
             by: {
                 a, b => if (a.priority < b.priority) {

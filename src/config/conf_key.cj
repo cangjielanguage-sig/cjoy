@@ -12,6 +12,7 @@ package cjoy.config
 
 import std.collection.{HashMap, ArrayList, map, collectArray}
 import std.convert.Parsable
+import cjoy.log.*
 
 class ConfigKey <: ToString {
     ConfigKey(let key: String, let arrIdx: Int, var sub: ?ConfigKey) {
@@ -86,5 +87,7 @@ func splitKey(key: String): ConfigKey {
         temp.sub = sub
         temp = sub
     }
+    
+    @LogDebug("[Config] split ${key} to ${cfgKey}")
     cfgKey
 }

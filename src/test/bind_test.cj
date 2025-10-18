@@ -201,4 +201,70 @@ public class BindTestCaseSuit {
         @Assert(obj.bind2.str, "2")
         @Assert(obj.bind2.bind3?.str ?? "", "3")
     }
+
+    @TestCase
+    public func testIntBind() {
+        let map1 = HashMap<String, Any>()
+        map1.add("A", 1)
+        let container = MapContainer(map1)
+        let arr = Int.bind(container, "A").getOrThrow()
+        @Assert(arr, 1)
+    }
+
+    @TestCase
+    public func testArrayBind() {
+        let map1 = HashMap<String, Any>()
+        map1.add("A", [1, 2])
+        let container = MapContainer(map1)
+        // 调用4个参数的bind方法
+        let arr = Array<Int>.bind(container, "A", None, None).getOrThrow()
+        @Assert(arr, [1, 2])
+    }
+
+    @TestCase
+    @Skip
+    public func testArrayBind2Param() {
+        let map1 = HashMap<String, Any>()
+        map1.add("A", [1, 2])
+        let container = MapContainer(map1)
+        // 调用两个参数的bind方法
+        let arr = Array<Int>.bind(container, "A").getOrThrow()
+        @Assert(arr, [1, 2])
+    }
+
+    @TestCase
+    public func testArrayBind2() {
+        let map1 = HashMap<String, Any>()
+        map1.add("A", ArrayList<Any>([1, 2]))
+        let container = MapContainer(map1)
+        let arr = Array<Int>.bind(container, "A", None, None).getOrThrow()
+        @Assert(arr, [1, 2])
+    }
+
+    @TestCase
+    public func testArrayBind3() {
+        let map1 = HashMap<String, Any>()
+        map1.add("", [1, 2])
+        let container = MapContainer(map1)
+        let arr = Array<Int>.bind(container, "", None, None).getOrThrow()
+        @Assert(arr, [1, 2])
+    }
+
+    @TestCase
+    public func testArrayListBind() {
+        let map1 = HashMap<String, Any>()
+        map1.add("A", [1, 2])
+        let container = MapContainer(map1)
+        let arr = ArrayList<Int>.bind(container, "A", None, None).getOrThrow()
+        @Assert(arr.toArray(), [1, 2])
+    }
+
+    @TestCase
+    public func testArrayListBind2() {
+        let map1 = HashMap<String, Any>()
+        map1.add("A", ArrayList<Any>([1, 2]))
+        let container = MapContainer(map1)
+        let arr = ArrayList<Int>.bind(container, "A", None, None).getOrThrow()
+        @Assert(arr.toArray(), [1, 2])
+    }
 }

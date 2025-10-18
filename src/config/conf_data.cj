@@ -10,13 +10,13 @@
 
 package cjoy.config
 
-import std.collection.{Map, HashMap, ArrayList, map, collectArray}
+import std.collection.{Map, List, HashMap, ArrayList, map, collectArray}
 import std.convert.Parsable
 
 /**
  * @throws IllegalArgumentException
  */
-func addToData(data: HashMap<String, Any>, key: String, cfgKey: ConfigKey, value: String): Unit {
+func addToData(data: Map<String, Any>, key: String, cfgKey: ConfigKey, value: String): Unit {
     // 有子节点
     if (let Some(subKey) <- cfgKey.sub) {
         return match (data.get(cfgKey.key)) {
@@ -36,7 +36,7 @@ private func addSubToDataExist(sm: Any, key: String, cfgKey: ConfigKey, subKey: 
     // 不是数组配置
     if (cfgKey.arrIdx == -1) {
         match (sm) {
-            case x: HashMap<String, Any> => addToData(x, key, subKey, value)
+            case x: Map<String, Any> => addToData(x, key, subKey, value)
             case _ => throw ConfigException("invalid config, the key `${key}` is conflict")
         }
         return
@@ -44,22 +44,21 @@ private func addSubToDataExist(sm: Any, key: String, cfgKey: ConfigKey, subKey: 
 
     // 数组配置
     match (sm) {
-        case x: ArrayList<Any> =>
+        case x: List<Any> =>
             if (cfgKey.arrIdx >= x.size) {
                 // 扩充
                 for (_ in x.size..(cfgKey.arrIdx + 1)) {
                     x.add(HashMap<String, Any>())
                 }
             }
-            let map = (x[cfgKey.arrIdx] as HashMap<String, Any>) ?? throw ConfigException(
+            let map = (x[cfgKey.arrIdx] as Map<String, Any>) ?? throw ConfigException(
                 "invalid config, the key `${key}` is conflict")
             addToData(map, key, subKey, value)
         case _ => throw ConfigException("invalid config, the key `${key}` is conflict")
     }
 }
 
-private func addSubToDataFirst(data: HashMap<String, Any>, key: String, cfgKey: ConfigKey, subKey: ConfigKey,
-    value: String): Unit {
+private func addSubToDataFirst(data: Map<String, Any>, key: String, cfgKey: ConfigKey, subKey: ConfigKey, value: String): Unit {
     // 不是数组配置
     if (cfgKey.arrIdx == -1) {
         let map = HashMap<String, Any>()
@@ -79,7 +78,7 @@ private func addSubToDataFirst(data: HashMap<String, Any>, key: String, cfgKey: 
 /**
  * @throws ConfigException
  */
-private func addLastToData(data: HashMap<String, Any>, key: String, cfgKey: ConfigKey, value: String): Unit {
+private func addLastToData(data: Map<String, Any>, key: String, cfgKey: ConfigKey, value: String): Unit {
     // 不是数组配置，后面的覆盖前面的
     if (cfgKey.arrIdx == -1) {
         if (data.addIfAbsent(cfgKey.key, value).isSome()) {
@@ -92,7 +91,7 @@ private func addLastToData(data: HashMap<String, Any>, key: String, cfgKey: Conf
     let val = data.get(cfgKey.key)
     match (val) {
         case Some(v) => match (v) {
-            case arr: ArrayList<Any> =>
+            case arr: List<Any> =>
                 if (cfgKey.arrIdx < arr.size && !(arr[cfgKey.arrIdx] is Option<Any>)) {
                     throw ConfigException("invalid config, the key `${key}` is overwrite")
                 }
@@ -138,21 +137,23 @@ private func getSubDataValue(data: Map<String, Any>, cfgKey: ConfigKey, sub: Con
 
 private func getSubDataValueFromMap(val: Any, sub: ConfigKey): ?Any {
     match (val) {
-        case x: HashMap<String, Any> => getDataValue(x, sub)
+        case x: Map<String, Any> => getDataValue(x, sub)
         case _ => None
     }
 }
 
 private func getSubDataValueFromArray(val: Any, cfgKey: ConfigKey, sub: ConfigKey): ?Any {
     match (val) {
-        case x: ArrayList<Any> =>
-            if (cfgKey.arrIdx < x.size) {
-                match (x.get(cfgKey.arrIdx)) {
-                    case x: HashMap<String, Any> => getDataValue(x, sub)
+        case x: List<Any> =>
+            if (cfgKey.arrIdx >= x.size) {
+                return None
+            }
+            match (x.get(cfgKey.arrIdx)) {
+                case Some(v) => match (v) {
+                    case x: Map<String, Any> => getDataValue(x, sub)
                     case _ => None
                 }
-            } else {
-                None
+                case _ => None
             }
         case _ => None
     }
@@ -169,7 +170,7 @@ private func getLastDataValue(data: Map<String, Any>, cfgKey: ConfigKey): ?Any {
 private func getLastDataValueFromArray(val: ?Any, cfgKey: ConfigKey): ?Any {
     match (val) {
         case Some(v) => match (v) {
-            case x: ArrayList<Any> =>
+            case x: List<Any> =>
                 if (cfgKey.arrIdx < x.size) {
                     return x.get(cfgKey.arrIdx)
                 }
