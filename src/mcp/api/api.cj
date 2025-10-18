@@ -17,6 +17,7 @@ import std.io.{readToEnd}
 import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable}
 import stdx.encoding.base64.toBase64String
 import cjoy.framework.{JoyContext, JoyRequestHandler, JoyHttpConsts}
+import cjoy.jsonrpc.*
 import cjoy.multipart.getMimeTypeByExt
 
 public interface McpSession <: Resource {

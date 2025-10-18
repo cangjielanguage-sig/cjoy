@@ -12,6 +12,7 @@ public package cjoy.mcp.client
 
 import std.sync.AtomicBool
 import cjoy.mcp.api.*
+import cjoy.jsonrpc.*
 import cjoy.utils.TimeoutCache
 import cjoy.log.*
 
@@ -65,14 +66,15 @@ class DefaultMcpClient <: McpClient {
 
     private func checkInitialized() {
         if (!_initialized.load()) {
-            throw McpException(JSONRPCError(code: McpConsts.ERR_INTERNAL_ERROR, message: "server is not initialized"))
+            throw JSONRPCException(
+                JSONRPCError(code: JSONRPCConsts.ERR_INTERNAL_ERROR, message: "server is not initialized"))
         }
     }
 
     private func checkToolCapbilities() {
         if (_serverCapabilities.isSome() && _serverCapabilities.getOrThrow().tools.isNone()) {
-            throw McpException(
-                JSONRPCError(code: McpConsts.ERR_INTERNAL_ERROR, message: "server not provide tool capbilities"))
+            throw JSONRPCException(
+                JSONRPCError(code: JSONRPCConsts.ERR_INTERNAL_ERROR, message: "server not provide tool capbilities"))
         }
     }
 
@@ -99,7 +101,7 @@ class DefaultMcpClient <: McpClient {
         if (!_features.protocolVesions.contains(result.protocolVersion)) {
             let msg = "[MCP]unsupported protocal version[${result.protocolVersion}] from server"
             @LogInfo(msg)
-            throw McpException(JSONRPCError(code: McpConsts.ERR_INVALID_PARAMS, message: msg))
+            throw JSONRPCException(JSONRPCError(code: JSONRPCConsts.ERR_INVALID_PARAMS, message: msg))
         }
 
         _session.sendNotification(McpConsts.METHOD_NOTIFICATION_INITIALIZED)

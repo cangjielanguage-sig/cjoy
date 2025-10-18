@@ -198,8 +198,8 @@ class ToolFuncInfo <: FuncInfo {
                                 }
                                 reader_.endObject()
                                 break
-                            case _ => throw McpException(
-                                JSONRPCError(code: McpConsts.ERR_PARSE_ERROR, message: "not start json object"))
+                            case _ => throw JSONRPCException(
+                                JSONRPCError(code: JSONRPCConsts.ERR_PARSE_ERROR, message: "not start json object"))
                         }
                     }
 

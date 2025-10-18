@@ -14,6 +14,8 @@ import std.collection.concurrent.ConcurrentHashMap
 import std.sync.SyncCounter
 import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable}
 import cjoy.mcp.api.*
+import cjoy.jsonrpc.{JSONRPCRequest, JSONRPCResponse, JSONRPCMessage, JSONRPCTool, JSONRPCError, JSONRPCConsts, 
+    JSONRPCException, JSONRPCNotification}
 import cjoy.log.*
 import cjoy.json.JsonTool
 import cjoy.framework.{JoyContext, JoySseEmitter}
@@ -23,7 +25,7 @@ class McpServerSessionState {
 
     public McpServerSessionState(let sessionId: String, let sseEmitter: JoySseEmitter) {}
 
-    public func waitEnd() {
+    public func waitEnd(): Unit {
         @LogInfo("[MCP] waiting sse transport end, sessionId=${sessionId}")
         _counter.waitUntilZero()
         @LogInfo("[MCP] server SSE transport is end, sessionId: ${sessionId}")
@@ -70,7 +72,7 @@ class DefaultMcpServerSession <: McpServerSession & McpRequestHandler & McpRespo
         }
     }
 
-    public func sendRequest<T>(method: String, requestParams: JsonSerializable): T where T <: JsonDeserializable<T> {
+    public func sendRequest<T>(_: String, _: JsonSerializable): T where T <: JsonDeserializable<T> {
         throw UnsupportedException("unsupported this method")
     }
 
@@ -80,7 +82,7 @@ class DefaultMcpServerSession <: McpServerSession & McpRequestHandler & McpRespo
         } else {
             JSONRPCNotification(method: method)
         }
-        _transport.send(RPCJsonTool.serialize(message))
+        _transport.send(JSONRPCTool.serialize(message))
         @LogInfo("[MCP] send notification, method: ${method}, sessionId: ${_sessionId}")
     }
 
@@ -96,7 +98,7 @@ class DefaultMcpServerSession <: McpServerSession & McpRequestHandler & McpRespo
             })
     }
 
-    public func onResponse(message: JSONRPCResponse): Unit {
+    public func onResponse(_: JSONRPCResponse): Unit {
     }
 
     public func onRequest(ctx: JoyContext, message: JSONRPCRequest): Unit {
@@ -106,41 +108,41 @@ class DefaultMcpServerSession <: McpServerSession & McpRequestHandler & McpRespo
                 @LogInfo("[MCP] recv `ping` request")
                 message.params
             case "initialize" =>
-                let request: InitializeRequest = RPCJsonTool.deserializeParams(message.params)
+                let request: InitializeRequest = JSONRPCTool.deserializeParams(message.params)
                 @LogInfo("[MCP] recv `initialize` request: ${request}, sessionId: ${_sessionId}")
                 jsonResp = _streamable
                 onRecvInitRequest(request)
             case "tools/list" =>
-                let page: PaginatedRequest = RPCJsonTool.deserializeParams(message.params)
+                let page: PaginatedRequest = JSONRPCTool.deserializeParams(message.params)
                 @LogInfo("[MCP] recv `tools/list` request: ${page}, sessionId: ${_sessionId}")
                 McpServer.tools.listTools(page)
             case "tools/call" =>
-                let req: CallToolRequest = RPCJsonTool.deserializeParams(message.params)
+                let req: CallToolRequest = JSONRPCTool.deserializeParams(message.params)
                 @LogDebug("[MCP] recv `tools/call` request: ${req}, sessionId: ${_sessionId}")
                 McpServer.tools.callTool(ctx, req)
             case "resources/list" =>
-                let page: PaginatedRequest = RPCJsonTool.deserializeParams(message.params)
+                let page: PaginatedRequest = JSONRPCTool.deserializeParams(message.params)
                 @LogInfo("[MCP] recv `resources/list` request: ${page}, sessionId: ${_sessionId}")
                 McpServer.resources.listResources(page)
             case "resources/templates/list" =>
-                let page: PaginatedRequest = RPCJsonTool.deserializeParams(message.params)
+                let page: PaginatedRequest = JSONRPCTool.deserializeParams(message.params)
                 @LogInfo("[MCP] recv `resources/templates/list` request: ${page}, sessionId: ${_sessionId}")
                 McpServer.resources.listResourceTemplates(page)
             case "resources/read" =>
-                let req: ReadResourceRequest = RPCJsonTool.deserializeParams(message.params)
+                let req: ReadResourceRequest = JSONRPCTool.deserializeParams(message.params)
                 @LogDebug("[MCP] recv `resources/read` request: ${req}, sessionId: ${_sessionId}")
                 McpServer.resources.readResource(ctx, req)
             case "prompts/list" =>
-                let page: PaginatedRequest = RPCJsonTool.deserializeParams(message.params)
+                let page: PaginatedRequest = JSONRPCTool.deserializeParams(message.params)
                 @LogInfo("[MCP] recv `prompts/list` request: ${page}, sessionId: ${_sessionId}")
                 McpServer.prompts.listPrompt(page)
             case "prompts/get" =>
-                let req: GetPromptRequest = RPCJsonTool.deserializeParams(message.params)
+                let req: GetPromptRequest = JSONRPCTool.deserializeParams(message.params)
                 @LogDebug("[MCP] recv `prompts/get` request: ${req}, sessionId: ${_sessionId}")
                 McpServer.prompts.getPrompt(ctx, req)
             case _ =>
                 @LogError("[MCP] recv unknown `${message.method}` request, sessionId: ${_sessionId}")
-                let error = JSONRPCError(code: McpConsts.ERR_METHOD_NOT_FOUND, message: "not found method")
+                let error = JSONRPCError(code: JSONRPCConsts.ERR_METHOD_NOT_FOUND, message: "not found method")
                 let resp = JSONRPCResponse(id: message.id, error: error)
                 return sendResp(ctx, resp, false)
         }
@@ -153,7 +155,7 @@ class DefaultMcpServerSession <: McpServerSession & McpRequestHandler & McpRespo
             ctx.header(McpConsts.HEADER_MCP_SESSION_ID, _sessionId).json(resp)
             @LogDebug("[MCP] send json reponse: ${JsonTool.toJson(resp)}, sessionId: ${_sessionId}")
         } else {
-            let data = RPCJsonTool.serialize(resp)
+            let data = JSONRPCTool.serialize(resp)
             _transport.send(data)
         }
     }

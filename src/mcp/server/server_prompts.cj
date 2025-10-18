@@ -30,7 +30,7 @@ public class McpPrompts {
         prompts.add(prompt.name, prompt)
     }
 
-    public func addGetPromptHandler(name: String, handler: McpGetPromptHandler) {
+    public func addGetPromptHandler(name: String, handler: McpGetPromptHandler): Unit {
         getPromptHandlers.add(name, handler)
     }
 

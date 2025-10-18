@@ -13,198 +13,11 @@ package cjoy.bind.api
 import std.convert.Parsable
 import std.collection.{Map, HashMap, ArrayList, map, filter, collectArray, collectArrayList}
 import std.time.DateTime
-import stdx.encoding.url.Form
-import stdx.net.http.HttpHeaders
-import cjoy.log.*
 
-/**
- * the interface of binding
- */
-public interface JoyBindable<T> {
-    /**
-     *
-     * bind http request query, postform or header params to object
-     *
-     * @param source: the bind source object
-     * @param name: the name of bind field
-     * @param defaultValue: the default value of field
-     * @param timeformat: the datetime field format
-     * @return the object
-     */
-    static func bind(source: JoyBindSource, name: String, defaultValue: ?String, timeformat: ?String): ?T
-    static func bind(source: JoyBindSource, name: String, defaultValue: ?String): ?T {
-        bind(source, name, defaultValue, None)
-    }
-    static func bind(source: JoyBindSource, name: String): ?T {
-        bind(source, name, None, None)
-    }
-    static func bindField(source: JoyBindSource, name: String): ?T {
-        let map = source.getOne<HashMap<String, Any>>(name)
-        match (map) {
-            case Some(data) =>
-                let container = MapContainer(data)
-                bind(container, "", None, None)
-            case _ =>
-                // 这里后续得优化
-                let col = source.getOne<Collection<Any>>(name)
-                match (col) {
-                    case Some(data) =>
-                        let container = MapContainer(HashMap<String, Any>([("", data)]))
-                        bind(container, "", None, None)
-                    case _ =>
-                        @LogDebug("not found bind source data for ${name}")
-                        None
-                }
-        }
-    }
-}
-
-/**
- * the interface of bind source, JoyBindable can get value from the source
- */
-public interface JoyBindSource {
-    /**
-     * get one value by name from source
-     */
-    func getOne<T>(name: String): ?T
-
-    /**
-     * get all values by name from source
-     */
-    func getList<T>(name: String): Collection<T>
-}
-
-public class MapContainer <: JoyBindSource & ToString {
-    public MapContainer(let data: HashMap<String, Any>) {}
-    public func getOne<T>(name: String): ?T {
-        let v = data.get(name)
-        getValue<Any, T>(v, name)
-    }
-
-    public func getList<T>(name: String): Collection<T> {
-        let res = ArrayList<T>()
-        if (let Some(val) <- data.get(name)) {
-            match (val) {
-                case xl: Collection<Any> => for (x in xl) {
-                    match (x) {
-                        case x: T => res.add(x)
-                        case _ => ()
-                    }
-                }
-                case xl: Collection<T> => return xl
-                case _ =>
-                    @LogDebug("bind source data for ${name} is not collection")
-                    ()
-            }
-        } else {
-            @LogDebug("not found bind source data for ${name}")
-        }
-        res
-    }
-
-    public func toString(): String {
-        mapToString(data)
-    }
-
-    public static func mapToString(data: Map<String, Any>): String {
-        let builder = StringBuilder()
-        builder.append("{")
-        let iter = data.iterator()
-        while (let Some((k, v)) <- iter.next()) {
-            match (v) {
-                case x: Map<String, Any> =>
-                    if (builder.size > 1) {
-                        builder.append(",")
-                    }
-                    builder.append("${k}:${mapToString(x)}")
-                case x: Collection<Any> =>
-                    if (builder.size > 1) {
-                        builder.append(",")
-                    }
-                    builder.append("${k}:${colToString(x)}")
-                case x: ToString => builder.append("${k}:${x.toString()}")
-                case _ => ()
-            }
-        }
-        builder.append("}")
-        builder.toString()
-    }
-
-    public static func colToString(data: Collection<Any>): String {
-        let builder = StringBuilder()
-        builder.append("[")
-        for (x in data) {
-            match (x) {
-                case v: ToString =>
-                    if (builder.size > 1) {
-                        builder.append(",")
-                    }
-                    builder.append(v.toString())
-                case _ => ()
-            }
-        }
-        builder.append("]")
-        builder.toString()
-    }
-}
-
-extend Form <: JoyBindSource {
-    public func getOne<T>(name: String): ?T {
-        let v = this.get(name)
-        getValue<String, T>(v, name)
-    }
-
-    public func getList<T>(name: String): Collection<T> {
-        let list = this.getAll(name)
-        let res = ArrayList<T>()
-        for (x in list) {
-            match (x) {
-                case x: T => res.add(x)
-                case _ => ()
-            }
-        }
-        res
-    }
-}
-
-extend HttpHeaders <: JoyBindSource {
-    public func getOne<T>(name: String): ?T {
-        let v = this.getFirst(name)
-        getValue<String, T>(v, name)
-    }
-
-    public func getList<T>(name: String): Collection<T> {
-        let list = this.get(name)
-        let res = ArrayList<T>()
-        for (x in list) {
-            match (x) {
-                case x: T => res.add(x)
-                case _ => ()
-            }
-        }
-        res
-    }
-}
-
-extend HashMap<String, String> <: JoyBindSource {
-    public func getOne<T>(name: String): ?T {
-        let v = this.get(name)
-        getValue<String, T>(v, name)
-    }
-
-    public func getList<T>(_: String): Collection<T> {
-        @LogWarn("get list from HashMap<String, String> return empty")
-        ArrayList<T>()
-    }
-}
-
-private func getValue<V, T>(v: ?V, name: String): ?T {
-    match (v) {
-        case Some(x) => match (x) {
-            case y: T => y
-            case _ => None
-        }
-        case _ => None
+extend String <: JoyBindable<String> {
+    public static func bind(source: JoyBindSource, name: String, defaultValue: ?String, _: ?String): ?String {
+        let val = source.getOne<ToString>(name)
+        getString(val, defaultValue)
     }
 }
 
@@ -215,13 +28,6 @@ private func getString(a: ?ToString, b: ?String): ?String {
             case Some(v) => v
             case _ => None
         }
-    }
-}
-
-extend String <: JoyBindable<String> {
-    public static func bind(source: JoyBindSource, name: String, defaultValue: ?String, _: ?String): ?String {
-        let val = source.getOne<ToString>(name)
-        getString(val, defaultValue)
     }
 }
 
@@ -319,7 +125,7 @@ extend Bool <: JoyBindable<Bool> {
     }
 }
 
-// T当前不考虑是Option
+// 当前不考虑T是Option
 extend<T> Array<T> <: JoyBindable<Array<T>> where T <: JoyBindable<T> {
     public static func bind(source: JoyBindSource, name: String, _: ?String, _: ?String): ?Array<T> {
         // 先尝试按同类型获取，如Array<String>
@@ -349,7 +155,7 @@ private func bindCollection<T>(col: Collection<Any>): ArrayList<T> where T <: Jo
     res
 }
 
-// T当前不考虑是Option
+// 当前不考虑T是Option
 extend<T> ArrayList<T> <: JoyBindable<ArrayList<T>> where T <: JoyBindable<T> {
     public static func bind(source: JoyBindSource, name: String, _: ?String, _: ?String): ?ArrayList<T> {
         let arr: Collection<T> = source.getList<T>(name)

@@ -16,6 +16,7 @@ import std.collection.HashMap
 import std.sync.AtomicBool
 import stdx.encoding.url.URL
 import cjoy.mcp.api.*
+import cjoy.jsonrpc.*
 import cjoy.log.*
 import cjoy.httpx.{JoySSEventStream, JoySimpleHttpClient}
 
@@ -64,8 +65,8 @@ class McpSseClientTransport <: McpClientTransport {
         let seeStream_ = this.seeStream
         if (let Some(evt) <- seeStream_.next()) {
             if (evt.event != McpConsts.EVENT_ENDPOINT) {
-                throw McpException(
-                    JSONRPCError(code: McpConsts.ERR_INTERNAL_ERROR, message: "invliad endpoint event ${evt}"))
+                throw JSONRPCException(
+                    JSONRPCError(code: JSONRPCConsts.ERR_INTERNAL_ERROR, message: "invliad endpoint event ${evt}"))
             }
             _endpoint = evt.data
         }
@@ -77,7 +78,7 @@ class McpSseClientTransport <: McpClientTransport {
         spawn {
             while (let Some(evt) <- seeStream_.next()) {
                 if (evt.event != McpConsts.EVENT_MESSAGE) {
-                    @LogError("invliad message event ${evt}")
+                    @LogError("[MCP]invliad message event ${evt}")
                     break
                 }
                 let buffer = ByteBuffer()

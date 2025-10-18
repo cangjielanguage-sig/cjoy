@@ -8,13 +8,13 @@
  * See the Mulan PSL v2 for more details.
  */
 
-package cjoy.mcp.api
+package cjoy.jsonrpc.api
 
 import std.io.ByteBuffer
 import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonReader, JsonWriter, JsonToken}
 import cjoy.log.*
 
-protected class RPCJsonTool {
+public class JSONRPCTool {
     public static func serialize(obj: JsonSerializable): ByteBuffer {
         let buffer = ByteBuffer()
         let writer = JsonWriter(buffer)
@@ -36,9 +36,12 @@ protected class RPCJsonTool {
         deserialize(buffer)
     }
 
+    /**
+     * @throws JSONRPCException
+     */
     public static func deserialize(buffer: ByteBuffer): JSONRPCMessage {
         let reader = JsonReader(buffer)
-        @LogDebug("[MCP] deserializing json: ${String.fromUtf8(buffer.bytes())}")
+        @LogDebug("[JSONRPC] deserializing json: ${String.fromUtf8(buffer.bytes())}")
 
         var id: ?JsonSerializable = None
         var method: String = ""
@@ -53,26 +56,8 @@ protected class RPCJsonTool {
                     while (reader.peek() != EndObject) {
                         let name = reader.readName()
                         match (name) {
-                            case "jsonrpc" =>
-                                let jsonrpc = reader.readValue<String>()
-                                if (jsonrpc != McpConsts.JSON_RPC_VERSION) {
-                                    throw McpException(
-                                        JSONRPCError(code: McpConsts.ERR_INVALID_PARAMS,
-                                            message: "rpc version is invalid"))
-                                }
-                            case "id" =>
-                                if (let Some(next) <- reader.peek()) {
-                                    match (next) {
-                                        case JsonString => id = reader.readValue<String>()
-                                        case JsonNumber => id = reader.readValue<Int64>()
-                                        case _ => throw McpException(
-                                            JSONRPCError(code: McpConsts.ERR_INVALID_PARAMS,
-                                                message: "id type is invalid"))
-                                    }
-                                } else {
-                                    throw McpException(
-                                        JSONRPCError(code: McpConsts.ERR_PARSE_ERROR, message: "id type is invalid"))
-                                }
+                            case "jsonrpc" => checkVersion(reader)
+                            case "id" => id = readId(reader)
                             case "method" => method = reader.readValue<String>()
                             case "params" => params = reader.readValueBytes()
                             case "result" => result = reader.readValueBytes()
@@ -82,8 +67,8 @@ protected class RPCJsonTool {
                     }
                     reader.endObject()
                     break
-                case _ => throw McpException(
-                    JSONRPCError(code: McpConsts.ERR_PARSE_ERROR, message: "not start json object"))
+                case _ => throw JSONRPCException(
+                    JSONRPCError(code: JSONRPCConsts.ERR_PARSE_ERROR, message: "not start json object"))
             }
         }
 
@@ -95,6 +80,32 @@ protected class RPCJsonTool {
             return JSONRPCNotification(method: method, params: params)
         }
 
-        throw McpException(JSONRPCError(code: McpConsts.ERR_PARSE_ERROR, message: "invalid JSON RPC message"))
+        throw JSONRPCException(JSONRPCError(code: JSONRPCConsts.ERR_PARSE_ERROR, message: "invalid JSON RPC message"))
+    }
+}
+
+/**
+ * @throws JSONRPCException
+ */
+private func checkVersion(reader: JsonReader): Unit {
+    let jsonrpc = reader.readValue<String>()
+    if (jsonrpc != JSONRPCConsts.JSON_RPC_VERSION) {
+        throw JSONRPCException(JSONRPCError(code: JSONRPCConsts.ERR_INVALID_PARAMS, message: "rpc version is invalid"))
+    }
+}
+
+/**
+ * @throws JSONRPCException
+ */
+private func readId(reader: JsonReader): JsonSerializable {
+    if (let Some(next) <- reader.peek()) {
+        return match (next) {
+            case JsonString => reader.readValue<String>()
+            case JsonNumber => reader.readValue<Int64>()
+            case _ => throw JSONRPCException(
+                JSONRPCError(code: JSONRPCConsts.ERR_INVALID_PARAMS, message: "id type is invalid"))
+        }
+    } else {
+        throw JSONRPCException(JSONRPCError(code: JSONRPCConsts.ERR_PARSE_ERROR, message: "id type is invalid"))
     }
 }

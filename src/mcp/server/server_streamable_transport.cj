@@ -17,6 +17,7 @@ import stdx.net.http.HttpStatusCode
 import cjoy.framework.{JoyContext, JoyHttpConsts}
 import cjoy.utils.secureRandStr
 import cjoy.mcp.api.*
+import cjoy.jsonrpc.{JSONRPCRequest, JSONRPCResponse, JSONRPCMessage, JSONRPCTool, JSONRPCError, JSONRPCConsts, JSONRPCException}
 import cjoy.log.*
 
 class McpStreamableServerTransport <: McpServerTransport {
@@ -77,9 +78,9 @@ class McpStreamableServerTransport <: McpServerTransport {
         // read body
         let data = ctx.readRawData()
         try {
-            let message = RPCJsonTool.deserialize(data)
+            let message = JSONRPCTool.deserialize(data)
             handleMessage(ctx, message)
-        } catch (ex: McpException) {
+        } catch (ex: JSONRPCException) {
             @LogError("[MCP] handle post request faild, error: ${ex.message}")
             let resp = JSONRPCResponse(id: "server-error", error: ex.error)
             ctx.status(HttpStatusCode.STATUS_BAD_REQUEST).json(resp)
@@ -125,7 +126,7 @@ class McpStreamableServerTransport <: McpServerTransport {
         session.close()
     }
 
-    private func createErrorMsg(msg: String, code!: Int = McpConsts.ERR_INVALID_REQUEST): JSONRPCResponse {
+    private func createErrorMsg(msg: String, code!: Int = JSONRPCConsts.ERR_INVALID_REQUEST): JSONRPCResponse {
         let err = JSONRPCError(code: code, message: msg)
         JSONRPCResponse(id: "server-error", error: err)
     }

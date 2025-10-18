@@ -25,7 +25,7 @@ public class McpResources {
     private let _root: TreeNode<McpReadResourceHandler> = TreeNode()
 
     //-----Resource -----
-    public func addReadResourceHandler(uri: String, handler: McpReadResourceHandler) {
+    public func addReadResourceHandler(uri: String, handler: McpReadResourceHandler): Unit {
         _root.addRoute("GET", normUrl(uri), handler)
     }
 
@@ -97,8 +97,7 @@ public class McpResources {
                     } |> collectArray
                     case x: Collection<String> => x |>
                         map {
-                        it => createTextResourceContents(request.uri, it,
-                            getMimeType(ctx, JoyHttpConsts.MIME_TEXT_PLAIN))
+                        it => createTextResourceContents(request.uri, it, getMimeType(ctx, JoyHttpConsts.MIME_TEXT_PLAIN))
                     } |> collectArray
                     case x: Collection<JsonSerializable> => x |>
                         map {

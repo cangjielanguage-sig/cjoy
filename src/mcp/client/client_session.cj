@@ -15,6 +15,7 @@ import std.sync.{AtomicUInt64, SyncCounter}
 import std.io.ByteBuffer
 import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonReader}
 import cjoy.mcp.api.*
+import cjoy.jsonrpc.*
 import cjoy.utils.{TimeoutCache, randStr}
 import cjoy.log.*
 
@@ -47,7 +48,7 @@ class DefaultMcpClientSession <: McpClientSession & McpResponseHandler & McpNoti
         _transport.connect(
             {
                 buffer: ByteBuffer =>
-                let message = RPCJsonTool.deserialize(buffer)
+                let message = JSONRPCTool.deserialize(buffer)
                 match (message) {
                     case m: JSONRPCResponse => onResponse(m)
                     case m: JSONRPCNotification => onNotification(m)
@@ -62,21 +63,21 @@ class DefaultMcpClientSession <: McpClientSession & McpResponseHandler & McpNoti
         let request = JSONRPCRequest(id: id, method: method, params: requestParams)
         let waiter = ResponseWaiter()
         _respWaiters.add(id, waiter)
-        _transport.send(RPCJsonTool.serialize(request))
+        _transport.send(JSONRPCTool.serialize(request))
         @LogDebug("[MCP]sent request, method: ${method}, id: ${id}")
 
         waiter.counter.waitUntilZero(timeout: _requestTimeout)
         match (waiter.response) {
             case Some(r) =>
                 if (let Some(err) <- r.error) {
-                    throw McpException(err)
+                    throw JSONRPCException(err)
                 }
                 let buffer = ByteBuffer()
                 buffer.write((r.result as Array<Byte>).getOrThrow())
                 let reader = JsonReader(buffer)
                 T.fromJson(reader)
-            case _ => throw McpException(
-                JSONRPCError(code: McpConsts.ERR_INTERNAL_ERROR, message: "wait reponse timeout"))
+            case _ => throw JSONRPCException(
+                JSONRPCError(code: JSONRPCConsts.ERR_INTERNAL_ERROR, message: "wait reponse timeout"))
         }
     }
 
@@ -86,7 +87,7 @@ class DefaultMcpClientSession <: McpClientSession & McpResponseHandler & McpNoti
         } else {
             JSONRPCNotification(method: method)
         }
-        _transport.send(RPCJsonTool.serialize(message))
+        _transport.send(JSONRPCTool.serialize(message))
         @LogInfo("[MCP]send notification, method:${method}")
     }
 

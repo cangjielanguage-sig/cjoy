@@ -15,6 +15,7 @@ public import std.collection.{HashMap, ArrayList}
 public import cjoy.mcp.server.McpServer
 public import cjoy.bind.api.{JoyBindable, JoyBindSource}
 public import cjoy.json.*
-public import cjoy.mcp.api.{McpCallToolHandler, McpReadResourceHandler, McpGetPromptHandler, McpException, JSONRPCError, 
-    McpConsts, McpTool, Audio, Image, McpResource, McpPrompt, PromptArgument, PromptMessage, Message}
+public import cjoy.jsonrpc.{JSONRPCException, JSONRPCError, JSONRPCConsts}
+public import cjoy.mcp.api.{McpCallToolHandler, McpReadResourceHandler, McpGetPromptHandler, McpConsts, McpTool, Audio, 
+    Image, McpResource, McpPrompt, PromptArgument, PromptMessage, Message}
 public import cjoy.mcp.macros.{Tool, ToolParam, Resource, ResourceParam, Prompt, PromptParam}
