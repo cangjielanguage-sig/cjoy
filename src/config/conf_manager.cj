@@ -121,7 +121,7 @@ public class ConfigManager <: Config {
         let cd = ConfigData(ld, loader.priority)
         @LogDebug("[Config] load data ${cd}")
         data.add(cd)
-        sort(data, by: {a, b => a.priority.compare(b.priority)}, stable: true)
+        sort(data, by: {a, b => b.priority.compare(a.priority)}, stable: true)
     }
 }
 
