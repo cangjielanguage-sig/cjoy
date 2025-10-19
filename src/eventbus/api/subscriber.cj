@@ -10,7 +10,7 @@
 
 package cjoy.eventbus.api
 
-import std.collection.{ArrayList}
+import std.collection.{ArrayList, map, collectArrayList}
 import std.sort.sort
 import std.sync.Mutex
 
@@ -43,25 +43,17 @@ class EventSubscriberGroup {
         }
     }
 
-    func sortItems(): Unit {
-        sort(_items,
-            by: {
-                a: EventSubscriberItem, b: EventSubscriberItem => if (a.priority < b.priority) {
-                    Ordering.GT
-                } else if (a.priority > b.priority) {
-                    Ordering.LT
-                } else {
-                    Ordering.EQ
-                }
-            }, stable: true)
+    private func sortItems(): Unit {
+        sort(_items, by: {a, b => b.priority.compare(a.priority)}, stable: true)
     }
 
     func forEach(fn: (subcriber: EventSubscriber) -> Bool): Unit {
-        synchronized(_mutex) {
-            for (it in _items) {
-                if (fn(it.subcriber)) {
-                    return
-                }
+        let subscribers = synchronized(_mutex) {
+            _items |> map {it => it.subcriber} |> collectArrayList
+        }
+        for (it in subscribers) {
+            if (fn(it)) {
+                return
             }
         }
     }

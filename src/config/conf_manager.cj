@@ -48,8 +48,7 @@ public class ConfigManager <: Config {
 
         let cfgKey = splitKey(transferKey(key))
         for (d in data) {
-            let val = getDataValue(d.data, cfgKey)
-            if (let Some(v) <- val) {
+            if (let Some(v) <- getDataValue(d.data, cfgKey)) {
                 return true
             }
         }
@@ -101,15 +100,13 @@ public class ConfigManager <: Config {
         let map = HashMap<String, Any>()
         let container = MapContainer(map)
         for (d in data) {
-            match (getDataValue(d.data, cfgKey)) {
-                case Some(val) =>
-                    map["obj"] = val
-                    @LogDebug("[Config] bind data is ${container}")
-                    let obj = T.bind(container, "obj", None, None)
-                    if (let Some(y) <- obj) {
-                        return y
-                    }
-                case _ => ()
+            if (let Some(val) <- getDataValue(d.data, cfgKey)) {
+                map["obj"] = val
+                @LogDebug("[Config] bind data is ${container}")
+                let obj = T.bind(container, "obj", None, None)
+                if (let Some(y) <- obj) {
+                    return y
+                }
             }
         }
         None
@@ -124,16 +121,7 @@ public class ConfigManager <: Config {
         let cd = ConfigData(ld, loader.priority)
         @LogDebug("[Config] load data ${cd}")
         data.add(cd)
-        sort(data,
-            by: {
-                a, b => if (a.priority < b.priority) {
-                    Ordering.LT
-                } else if (a.priority > b.priority) {
-                    Ordering.GT
-                } else {
-                    Ordering.EQ
-                }
-            }, stable: true)
+        sort(data, by: {a, b => a.priority.compare(b.priority)}, stable: true)
     }
 }
 

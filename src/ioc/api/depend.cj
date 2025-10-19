@@ -93,16 +93,8 @@ class BeanDependManager {
 
         let list = ArrayList<BeanDepend>()
         list.add(all: _beanTypes.values())
-        sort(list,
-            by: { // 按深度排序，最底层排在最前面
-                a: BeanDepend, b: BeanDepend => if (a.depth < b.depth) {
-                    Ordering.LT
-                } else if (a.depth > b.depth) {
-                    Ordering.GT
-                } else {
-                    Ordering.EQ
-                }
-            }, stable: true)
+        // 按深度排序，最底层排在最前面
+        sort(list, by: {a, b => a.depth.compare(b.depth)}, stable: true)
 
         if (onlyClass) {
             list |> filter {it => it.isClass} |> collectArray
