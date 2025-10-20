@@ -58,9 +58,9 @@ public interface Config {
     func resolve(exp: String): String
 
     /**
-     * add config loader
+     * add config loaders
      */
-    func addLoader(loader: ConfigLoader): Unit
+    func addLoader(loaders: Array<ConfigLoader>): Unit
 }
 
 public interface ConfigLoader {

@@ -30,5 +30,6 @@
 ## 服务
 
 - [schedule](src/schedule/main.cj): 调度任务
-- [httpx](src/httpx/main.cj): Http服务
+- [config](src/config/main.cj): 配置服务
 - [eventbus](src/eventbus/main.cj): 事件总线
+- [httpx](src/httpx/main.cj): Http服务

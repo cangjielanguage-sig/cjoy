@@ -116,11 +116,13 @@ public class ConfigManager <: Config {
         ResolveHelp(this).resolveString(exp)
     }
 
-    public func addLoader(loader: ConfigLoader): Unit {
-        let ld = loader.load()
-        let cd = ConfigData(ld, loader.priority)
-        @LogDebug("[Config] load data ${cd}")
-        data.add(cd)
+    public func addLoader(loaders: Array<ConfigLoader>): Unit {
+        for (loader in loaders) {
+            let ld = loader.load()
+            let cd = ConfigData(ld, loader.priority)
+            @LogDebug("[Config] load data ${cd}")
+            data.add(cd)
+        }
         sort(data, by: {a, b => b.priority.compare(a.priority)}, stable: true)
     }
 }

@@ -20,7 +20,7 @@ public class JsonConfigTestCaseSuit {
         let data = loader.load()
         let manager = ConfigManager()
         manager.addLoader(loader)
-        @Assert(manager.getValue("joy.server.address", ""), "127.0.0.1")
-        @Assert(manager.getValue("joy.server.port", ""), "18881")
+        @Assert(manager.getValue("joy.server.address", ""), "0.0.0.0")
+        @Assert(manager.getValue("joy.server.port", ""), "18882")
     }
 }

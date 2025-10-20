@@ -190,6 +190,18 @@ public class ConfigManagerTestCaseSuit {
         let res = manager.resolve(#"${a}-${b}"#)
         @Assert(res, "=1-2=")
     }
+
+    @TestCase
+    public func testPriority(): Unit {
+        let loader1 = PropertiesConfigLoader("./testdata/joy.properties")
+        let loader2 = JsonConfigLoader("./testdata/joy.json")
+        let manager = ConfigManager()
+        manager.addLoader(loader1)
+        manager.addLoader(loader2)
+        @Assert(manager.getValue("joy.server.address", ""), "0.0.0.0")
+        @Assert(manager.getValue("joy.server.port", ""), "18882")
+        @Assert(manager.getValue("joy.server.http.remote-ip-header", ""), "X-FORWARDED-FOR")
+    }
 }
 
 @Bind
