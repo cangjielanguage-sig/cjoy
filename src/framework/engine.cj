@@ -20,7 +20,7 @@ import cjoy.log.*
 import cjoy.ioc.api.{BeanFactoryManager, ApplicationContext}
 import cjoy.context.{ServiceConainter, GLOBAL_SERVICE_CONTAINER}
 
-public const VERSION: String = "v0.70.0"
+public const VERSION: String = "v0.80.0"
 const LOGO: String = ##"
  ________        ___  ________      ___    ___ 
 |\   ____\      |\  \|\   __  \    |\  \  /  /|
