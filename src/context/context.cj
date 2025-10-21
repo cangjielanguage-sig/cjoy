@@ -47,6 +47,10 @@ public interface Context {
      * @return the service instance
      */
     func getService<T>(name: String): ?T
+
+    func mustService<T>(name: String): T {
+        getService<T>(name).getOrThrow()
+    }
 }
 
 public open class MapContext <: Context {
@@ -64,7 +68,7 @@ public open class MapContext <: Context {
         _data.remove(key)
     }
 
-    public open func getService<T>(_: String): ?T {
-        None
+    public open func getService<T>(name: String): ?T {
+        GLOBAL_SERVICE_CONTAINER.getService<T>(name)
     }
 }

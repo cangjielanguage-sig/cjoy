@@ -59,6 +59,8 @@ CJoy内置轻量配置服务，支持读取环境变量，命令行参数，属�
 
 ## 使用
 
+使用示例：[examples/config](../../examples/src/config/main.cj) 。
+
 需要调用Joy实例run之前，需要先把配置加载好，如下所示：
 
 ```cangjie

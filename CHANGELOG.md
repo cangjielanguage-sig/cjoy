@@ -6,6 +6,8 @@ Changelog
 - 特性：支持IoC框架
 - 特性：Handler宏支持在Bean中使用
 - 特性：Scheduled宏支持在Bean中使用
+- 特性：EventBus服务
+- 特性：配置服务
 
 # v0.61.0
 

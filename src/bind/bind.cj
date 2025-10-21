@@ -11,6 +11,5 @@
 macro package cjoy.bind
 
 // reimport the dependent
-public import stdx.net.http.HttpRequest
 public import cjoy.bind.api.{JoyBindable, JoyBindSource, MapContainer}
 public import cjoy.bind.macros.{Bind, BindField}
