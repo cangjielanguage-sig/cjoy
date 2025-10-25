@@ -16,7 +16,7 @@ import std.convert.Parsable
 /**
  * add key and value to data
  */
-func addToData(data: Map<String, Any>, key: String, cfgKey: ConfigKey, value: String): Unit {
+public func addToData(data: Map<String, Any>, key: String, cfgKey: ConfigKey, value: String): Unit {
     // 有子节点
     if (let Some(subKey) <- cfgKey.sub) {
         return match (data.get(cfgKey.key)) {

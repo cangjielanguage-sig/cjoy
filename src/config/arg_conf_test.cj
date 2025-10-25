@@ -120,6 +120,14 @@ public class ArgConfigTestCaseSuit {
             }
         }
     }
+
+    @TestCase
+    public func testCh1(): Unit {
+        let loader = ArgConfigLoader(["-Da=中国", "-Db=仓颉"])
+        let data = loader.load()
+        @Assert(cs(data["a"]), "中国")
+        @Assert(cs(data["b"]), "仓颉")
+    }
 }
 
 func cm(a: Any) {

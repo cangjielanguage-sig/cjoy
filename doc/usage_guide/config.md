@@ -37,19 +37,19 @@ CJoy内置轻量配置服务，支持读取环境变量，命令行参数，属�
 
 ### 配置规则
 
-配置名称规则，配置存储到内置中，会统一按如下规则转换
+**配置名称规则**：配置存储到内存中，会统一按如下规则转换：
 
   - 遇到大写字母转成下划线与小写字，连续的大写只加一个下划线前缀
     - abCde --> ab_cde
     - abCDe --> ab_cde
     - AbCde --> ab_cde
 
-配置存储规则，配置通过ConfigLoader加载之后，生成`Map<String, Any>`
+**配置存储规则**：配置通过ConfigLoader加载之后，生成`Map<String, Any>`对象：
 
    - `a.b.c.d` 按`.`分割，每一级创建一个`Map<String, Any>`存储
    - `a[0]` 遇到`[]`表示数组，`a`为Map的Key，`0`为下标，会创建一个`List<Any>`存储数组的值，即`Map<String, Any>`的Value Any实际类型为`List<Any>`
 
-配置引用表达式，格式为`#"${configName:default}"#`, 调用Config.resolve解释并获取值, 不存在插值返回为空字符串。注意需要`#"`开头与`"#`结尾或者其它的单行字符串字面量表示法，因为`${var}`与字符串插值相同。示例如下:
+**配置引用表达式**：格式为`#"${configName:default}"#`, 调用Config.resolve解释并获取值, 不存在插值返回为空字符串。注意需要`#"`开头与`"#`结尾或者其它的单行字符串字面量表示法，因为`${var}`与字符串插值相同。示例如下:
 
  - 单个配置引用：`#"${a.b.c.d}"#`
  - 多个配置引用：`#"${app.address}:${app.port}"#`
@@ -58,8 +58,6 @@ CJoy内置轻量配置服务，支持读取环境变量，命令行参数，属�
  - 引用环境变量：`#"${HOME}"#`
 
 ## 使用
-
-使用示例：[examples/config](../../examples/src/config/main.cj) 。
 
 需要调用Joy实例run之前，需要先把配置加载好，如下所示：
 
@@ -78,7 +76,7 @@ func main(args: Array<String>): Unit {
 }
 ```
 
-方式1：结合IoC框架，采用@Value宏自动为Bean的成员变量注入
+**方式1**：结合IoC框架，采用@Value宏自动为Bean的成员变量注入对应的配置项值。
 
 ```cangjie
 @Component
@@ -89,7 +87,7 @@ class Bean8 {
     @Value[#"${a.b.d:abc}"#]
     let v2: String
 
-    @Value[#"${a.b.d:abc}"#]
+    @Value[#"${a.b.c:1}"#]
     let v3: ?Int
 
     @Value[#"${a.b.d:abc}"#]
@@ -97,9 +95,9 @@ class Bean8 {
 }
 ```
 
-方式2：使用API调用
+**方式2**：使用API获取配置项的值
 
-每个Joy实例会自动注册一个名为`config`的Config服务，用户可以在任一Handler中使用
+每个Joy实例会自动注册一个名为`config`的Config服务，用户可以在任一Handler中使用API获取配置项值。
 
 ```cangjie
 @Post[path = "/config"]

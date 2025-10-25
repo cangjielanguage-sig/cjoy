@@ -14,8 +14,8 @@ import std.collection.{Map, HashMap, ArrayList, map, collectArray}
 import std.convert.Parsable
 import cjoy.log.*
 
-class ConfigKey <: ToString {
-    ConfigKey(let key: String, let arrIdx: Int, var sub: ?ConfigKey) {
+public class ConfigKey <: ToString {
+    ConfigKey(public let key: String, public let arrIdx: Int, public var sub: ?ConfigKey) {
     }
 
     public func toString(): String {
@@ -46,7 +46,7 @@ func transferKey(key: String): String {
     builder.toString()
 }
 
-func transferKeys(data: Map<String, Any>): Unit {
+public func transferKeys(data: Map<String, Any>): Unit {
     let iter = data.iterator()
     let map = HashMap<String, Any>()
     while (let Some((k, v)) <- iter.next()) {
@@ -86,7 +86,7 @@ private func oneKeySeg(str: String): (String, Int) {
  *
  * @throws ConfigException if the key is invalid
  */
-func splitKey(key: String): ConfigKey {
+public func splitKey(key: String): ConfigKey {
     let exist = key.indexOf(".") ?? -1
     if (exist < 0) {
         let (seg, arrIdx) = oneKeySeg(key)
