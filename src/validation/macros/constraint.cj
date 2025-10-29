@@ -283,32 +283,26 @@ func parseConstraint(catgory: ConstraintCatgory, input: Tokens): Unit {
     parseConstraint(catgory, None, input)
 }
 
-/**
- * @throws Exception
- */
 func parseConstraint(catgory: ConstraintCatgory, attr: ?Tokens, input: Tokens): Unit {
-    let JoyConstraint: ConstraintGenerator = createConstraintGenerator(catgory)
+    let constraint: ConstraintGenerator = createConstraintGenerator(catgory)
     if (let Some(a) <- attr) {
-        JoyConstraint.parseAttr(a)
+        constraint.parseAttr(a)
     }
 
     try {
         let varDecl: Decl = parseDecl(input)
         match (varDecl) {
-            case vd: VarDecl => FieldInfoCache.addCache(vd.identifier, false, JoyConstraint.toConstraint())
-            case _ =>
-                diagReport(DiagReportLevel.ERROR, input,
-                    "${JoyConstraint.marcroName} macro only using for the var field of struct or class", "")
-                throw Exception("${JoyConstraint.marcroName} macro only using for the var field of struct or class")
+            case vd: VarDecl => FieldInfoCache.addCache(vd.identifier, false, constraint.toConstraint())
+            case _ => diagReport(DiagReportLevel.ERROR, input,
+                "@${constraint.marcroName} macro only using for the var field of struct or class", "")
         }
     } catch (_: Exception) {
         try {
             let funcParam = FuncParam(input)
-            FieldInfoCache.addCache(funcParam.identifier, true, JoyConstraint.toConstraint())
+            FieldInfoCache.addCache(funcParam.identifier, true, constraint.toConstraint())
         } catch (_: Exception) {
-            diagReport(DiagReportLevel.ERROR, input,
-                "${JoyConstraint.marcroName} macro only using for the func paramter", "")
-            throw Exception("${JoyConstraint.marcroName} macro only using for the func paramter")
+            diagReport(DiagReportLevel.ERROR, input, "@${constraint.marcroName} macro only using for the func paramter",
+                "")
         }
     }
 }

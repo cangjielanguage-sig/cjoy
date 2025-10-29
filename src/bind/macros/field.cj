@@ -51,8 +51,8 @@ class BindFieldInfo {
                 BindInfoCache.addCache(info.filedName, info)
             case _ =>
                 diagReport(DiagReportLevel.ERROR, input,
-                    "BindField macro only using for the var field of struct or class", "")
-                throw Exception("BindField macro only using for the var field of struct or class")
+                    "@BindField macro only using for the var field of struct or class", "")
+                return
         }
     }
 

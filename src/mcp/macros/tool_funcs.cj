@@ -225,7 +225,8 @@ class ToolFuncInfo <: FuncInfo {
 func parseFunc(macroName: String, attr: Tokens, input: Tokens): Tokens {
     let decl = parseDecl(input)
     if (!(decl is FuncDecl)) {
-        throw Exception("${macroName} macro only using for func")
+        diagReport(DiagReportLevel.ERROR, attr, "@${macroName} macro only using for func", "")
+        return Tokens()
     }
 
     let funcInfo = match (macroName) {

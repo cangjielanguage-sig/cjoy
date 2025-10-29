@@ -60,7 +60,7 @@ IoC框架提供如下宏，用于生成BeanFactory实现，以及注释Bean信�
  - Bean类型**只能存在一个**构造init方法
 
 示例1：@Autowired指定名称注入
-```
+```cangjie
 @Component
 class Bean1 {
     private let _bean2: Bean2
@@ -74,7 +74,7 @@ class Bean2 {}
 ```
 
 示例2：可选注入接口，接口未实现
-```
+```cangjie
 interface Inter1 {}
 
 @Component
@@ -85,7 +85,7 @@ class Bean3 {
 ```
 
 示例3：Array注入接口多个实现
-```
+```cangjie
 interface Inter2 {}
 
 @Component[extends = ["Inter2"]]
@@ -102,7 +102,7 @@ class Bean6 {
 ```
 
 示例4：注入多个Bean，方法支持@Validated
-```
+```cangjie
 @Component
 class Bean7 {
     init(b6: Bean6, b1: Bean1) {

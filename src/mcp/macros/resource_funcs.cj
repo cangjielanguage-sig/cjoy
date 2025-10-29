@@ -33,7 +33,7 @@ class ResoureFuncInfo <: FuncInfo {
         this.mimeType = map.getString("mimeType") ?? ""
         this.isTemplate = map.getBool("template") ?? false
         if (this.uri.indexOf("://").isNone()) {
-            throw Exception("${uri} is invalid, should like resource://path, data://path")
+            diagReport(DiagReportLevel.ERROR, attr, "${uri} is invalid", "should like resource://path, data://path")
         }
     }
 

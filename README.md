@@ -257,7 +257,7 @@ CJoy目前还在开发阶段，主要能力已完成开发，后续重点是提�
 
 - **分享使用经验**：如果您觉得 CJoy 很实用，您的**Star**是对我们最大鼓励。欢迎在个人博客撰写评测或教程，您的真知灼见能帮助更多人快速上手！
 - **参与项目开发**：欢迎给我们提交 PR，欢迎给我们提交 Issue，欢迎参与任何形式的贡献。
-- **贡献指南**：[doc/contributing](doc/dev_guide/contributing.md) 。
+- **贡献指南**：[contributing](doc/dev_guide/contributing.md) 。
 - 项目维护者：[@lanlingx](https://gitcode.com/lanlingx) 。
 
 若您fork时请保留上游仓库地址 [Cangjie-SIG/cjoy](https://gitcode.com/Cangjie-SIG/cjoy) 或 [lanlingx/cjoy](https://gitcode.com/lanlingx/cjoy) ，让 CJoy 变成仓颉生态中最广为人知的应用开发框架 。

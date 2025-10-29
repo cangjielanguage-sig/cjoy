@@ -32,7 +32,7 @@ router.get("/bind", {ctx: JoyContext =>
 import cjoy.bind.*
 
 @Get[path = "/bind"]
-func handleBing(ctx: JoyContext, @QueryBindParam params BindParam): Unit {
+func handleBind(ctx: JoyContext, @QueryBindParam params BindParam): Unit {
 
 }
 ```

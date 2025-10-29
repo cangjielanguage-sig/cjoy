@@ -33,12 +33,12 @@ open class ComponentClassInfo {
             _beanName = _attrMap.getString("name") ?? toBeanName(_beanType)
             _beanScope = (_attrMap.getString("scope") ?? "Singleton").toAsciiLower()
             _extends = converterList(_attrMap.getList("extends") ?? ArrayList<ToString>())
+            checkBeanSceop(attr.getOrThrow(), _beanScope)
         } else {
             _beanName = toBeanName(_beanType)
             _beanScope = "singleton"
             _extends = ArrayList()
         }
-        checkBeanSceop(_beanScope)
     }
 
     // 获取@Autowired[name=""]的name值
@@ -52,9 +52,6 @@ open class ComponentClassInfo {
         ""
     }
 
-    /**
-     * @throws Exception
-     */
     private func getBeanToken(): (Tokens, Tokens) {
         let msgs = getChildMessages("Autowired")
         let supportTypes = "interface or bean type"
@@ -66,7 +63,9 @@ open class ComponentClassInfo {
                 let typeNode = TypeNodeInfo(supportTypes)
                 typeNode.parse(fp.toTokens(), fp.paramType)
                 if (typeNode.isPrimitive) {
-                    throw Exception("the Autowired type can not is primitive type")
+                    diagReport(DiagReportLevel.ERROR, fp.toTokens(), "the Autowired type can not is primitive type",
+                        "the type should be ${supportTypes}")
+                    return (Tokens(), Tokens())
                 }
                 let name = getBeanNameOnAutowired(msgs, pid.value + ".name")
                 let t = if (name != "") { // @Autowired[name=""]
@@ -116,7 +115,7 @@ open class ComponentClassInfo {
                 public prop beanType: String {
                     get() { $_beanType }
                 }
-                public prop beanScop: BeanScope {
+                public prop beanScope: BeanScope {
                     get() { $_beanScope }
                 }
                 public func create(ctx: ApplicationContext): (String, BeanLifecycle) {
@@ -176,9 +175,10 @@ open class ComponentClassInfo {
 /**
  * @throws Exception
  */
-func checkBeanSceop(beanScope: String): Unit {
+func checkBeanSceop(attr: Tokens, beanScope: String): Unit {
     if (beanScope != "singleton" && beanScope != "prototype") {
-        throw Exception("scope in @Component value `${beanScope}` must be singleton or prototype")
+        diagReport(DiagReportLevel.ERROR, attr,
+            "scope in @Component value `${beanScope}` must be singleton or prototype", "")
     }
 }
 

@@ -39,13 +39,11 @@ class FuncInfo {
     }
 }
 
-/**
- * @throws Exception
- */
 func parseValidated(input: Tokens): Tokens {
     let (decl, pos) = parseDeclFragment(input)
     if (!(decl is FuncDecl)) {
-        throw Exception("Validated macro only using for func")
+        diagReport(DiagReportLevel.ERROR, input, "@Validated macro only using for func", "")
+        return Tokens()
     }
 
     let funcInfo = FuncInfo((decl as FuncDecl).getOrThrow())

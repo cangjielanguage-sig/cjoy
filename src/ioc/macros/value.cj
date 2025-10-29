@@ -14,30 +14,27 @@ import std.ast.*
 import cjoy.utils.{MapToString, MapListGetFunc}
 import cjoy.utils.ast.TypeNodeInfo
 
-/**
- * @throws Exception
- */
 func parseVaue(attr: Tokens, input: Tokens): Tokens {
     if (!insideParentContext("Controller") && !insideParentContext("Component")) {
-        throw Exception("@Value macro must in @Controller or @Component")
+        diagReport(DiagReportLevel.ERROR, attr, "@Value macro must be wrappered by @Controller or @Component", "")
+        return Tokens()
     }
 
     let (decl, pos) = parseDeclFragment(input)
     let tokens = match (decl) {
         case vd: VarDecl => processVarDecl(vd, attr, input)
         case _ =>
-            diagReport(DiagReportLevel.ERROR, input, "@Value macro only using for the var field of struct or class", "")
-            throw Exception("@Value macro only using for the var field of struct or class")
+            diagReport(DiagReportLevel.ERROR, attr, "@Value macro only using for the var field of struct or class", "")
+            Tokens()
     }
     tokens + input[pos..]
 }
 
-/**
- * @throws Exception
- */
 private func processVarDecl(vd: VarDecl, attr: Tokens, input: Tokens): Tokens {
     if (attr.size == 0) {
-        throw Exception("@Value macro should container one string attribute")
+        diagReport(DiagReportLevel.ERROR, attr, "@Value macro should container one string attribute",
+            ##"should like @Value[#"${configName:defaultValue}"#]"##)
+        return Tokens()
     }
 
     let supportTypes = "String, PrimitiveType, Opition<String>, Opition<PrimitiveType>"
@@ -45,11 +42,13 @@ private func processVarDecl(vd: VarDecl, attr: Tokens, input: Tokens): Tokens {
     typeNode.parse(input, vd.declType)
     if (typeNode.genericType != Token()) {
         if (typeNode.vtype.value != "Option" && !(typeNode.genericIsPrimitive || typeNode.genericType.value == "String")) {
-            throw Exception("@Value macro only suport types ${supportTypes} ")
+            diagReport(DiagReportLevel.ERROR, input, "@Value macro only suport types ${supportTypes}", "")
+            return Tokens()
         }
     } else {
         if (!(typeNode.isPrimitive || typeNode.vtype.value == "String")) {
-            throw Exception("@Value macro only suport types ${supportTypes} ")
+            diagReport(DiagReportLevel.ERROR, input, "@Value macro only suport types ${supportTypes}", "")
+            return Tokens()
         }
     }
 

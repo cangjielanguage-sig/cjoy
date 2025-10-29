@@ -95,7 +95,7 @@ class DefaultApplicationContext <: ApplicationContext {
      * @throws IocException if exist multiple candidate
      */
     private func getBeanByTypeNameInner(f: BeanFactory, bt: String, classTypeSize: Int): ?BeanLifecycle {
-        if (f.beanScop == SINGLETON) {
+        if (f.beanScope == SINGLETON) {
             let bean = _beansByTypes.get(bt)
             match (bean) {
                 case Some(b) => return b
@@ -176,7 +176,7 @@ class DefaultApplicationContext <: ApplicationContext {
                 match (_factories.get(b.beanType)) {
                     case Some(factory) =>
                         // Prototype Bean 每次getBeanByTypeName都创建，不存储避免太多导致内存泄露
-                        if (factory.beanScop == SINGLETON) {
+                        if (factory.beanScope == SINGLETON) {
                             let (name, bean) = factory.create(this)
                             @LogInfo("[IOC] created bean, name=${name}, beanType=${b.beanType}")
                             addBean(name, b.beanType, bean)

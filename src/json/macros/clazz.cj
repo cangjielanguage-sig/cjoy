@@ -47,6 +47,7 @@ class JsonClassInfo {
             this.subTypeField = map.getString("subTypeField") ?? ""
             this.subTypes = map.getMap("subTypes")
             this.subTypeAs = map.getBool("subTypeAs")
+            checkAttrs(attr.getOrThrow())
         } else {
             this.description = ""
             this.superClass = ""
@@ -54,19 +55,19 @@ class JsonClassInfo {
             this.subTypes = None
             this.subTypeAs = None
         }
+    }
 
+    private func checkAttrs(attr: Tokens): Unit {
         if (this.subTypeField != "") {
             if (this.subTypes.isNone()) {
-                diagReport(DiagReportLevel.ERROR, Tokens(), "miss subTypes attribute",
+                diagReport(DiagReportLevel.ERROR, attr, "miss subTypes attribute",
                     "attribute subTypes and subTypeField must exist simultaneously")
-                throw Exception("miss subTypes attribute in Json macro")
             }
         }
         if (this.subTypes.isSome()) {
             if (this.subTypeField == "" && this.subTypeAs.isNone()) {
-                diagReport(DiagReportLevel.ERROR, Tokens(), "miss subTypeField attribute",
+                diagReport(DiagReportLevel.ERROR, attr, "miss subTypeField attribute",
                     "attribute subTypes and subTypeField/subTypeAs must exist simultaneously")
-                throw Exception("miss subTypeField or subTypeAs attribute in Json macro")
             }
         }
     }

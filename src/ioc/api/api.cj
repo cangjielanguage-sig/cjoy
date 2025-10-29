@@ -95,7 +95,7 @@ const PROTOTYPE: BeanScope = "prototype"
 
 public interface BeanFactory {
     prop beanType: String
-    prop beanScop: BeanScope
+    prop beanScope: BeanScope
 
     /**
      * create a bean return the bean name and instance

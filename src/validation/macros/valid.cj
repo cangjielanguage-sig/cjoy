@@ -37,14 +37,12 @@ class ValidClassInfo {
         )
     }
 
-    /**
-     * @throws Exception
-     */
     public static func parse(input: Tokens): Tokens {
         let decl: Decl = parseDecl(input)
         let classGen = ClassGenentor("Valid", decl)
         if (!(decl is StructDecl) && !(decl is ClassDecl)) {
-            throw Exception("Valid macro only using for struct or class")
+            diagReport(DiagReportLevel.ERROR, input, "@Valid macro only using for struct or class", "")
+            return Tokens()
         }
 
         let ident = decl.identifier

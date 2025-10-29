@@ -23,9 +23,6 @@ protected class ClassGenentor {
     public let constructors: ArrayList<FuncDecl>
     public let funcs: ArrayList<FuncDecl>
 
-    /**
-     * @throws Exception if macro not use for struct or class
-     */
     public init(macroName: String, typeDecl: Decl) {
         this.typeDecl = typeDecl
         this.isOpen = typeDecl.modifiers |> any {t => t.keyword.value == "open"}
@@ -44,7 +41,10 @@ protected class ClassGenentor {
                 this.variables = getMemberVariables(vd.body)
                 this.funcs = getMemberFuncs(vd.body)
                 this.constructors = getConstructors(typeDecl.identifier.value, body)
-            case _ => throw Exception("${macroName} macro only using for struct or class")
+            case _ =>
+                diagReport(DiagReportLevel.ERROR, typeDecl.toTokens(),
+                    "@${macroName} macro only using for struct or class", "")
+                throw Exception("${macroName} macro only using for struct or class")
         }
     }
 

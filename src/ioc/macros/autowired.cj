@@ -14,12 +14,10 @@ import std.ast.*
 import cjoy.utils.{MapToString, MapListGetFunc}
 import cjoy.utils.ast.parserAttrs
 
-/**
- * @throws Exception
- */
 func parseAutowired(attr: ?Tokens, input: Tokens): Unit {
     if (!insideParentContext("Controller") && !insideParentContext("Component")) {
-        throw Exception("@Value macro must in @Controller or @Component")
+        diagReport(DiagReportLevel.ERROR, input, "@Autowired macro must be wrappered by @Controller or @Component", "")
+        return
     }
     try {
         let funcParam = FuncParam(input)
@@ -29,6 +27,6 @@ func parseAutowired(attr: ?Tokens, input: Tokens): Unit {
             setItem(paramName.value + ".name", map.getString("name") ?? "")
         }
     } catch (ex: Exception) {
-        throw Exception("@Autowired macro only using for init function parameter")
+        diagReport(DiagReportLevel.ERROR, input, "@Autowired macro only using for init function parameter", "")
     }
 }

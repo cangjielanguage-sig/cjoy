@@ -58,13 +58,11 @@ private class FuncInfo {
     }
 }
 
-/**
- * throws Exception
- */
 func parseFunc(macroName: String, attr: Tokens, input: Tokens): Tokens {
     let decl = parseDecl(input)
     if (!(decl is FuncDecl)) {
-        throw Exception("${macroName} macro only using for func")
+        diagReport(DiagReportLevel.ERROR, input, "@${macroName} macro only using for func", "")
+        return Tokens()
     }
 
     let funcInfo = FuncInfo(macroName, (decl as FuncDecl).getOrThrow())

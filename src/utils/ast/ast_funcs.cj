@@ -32,7 +32,8 @@ protected func parserAttrs(tokens: Tokens, validKeys!: Array<String>, macroName!
     let resust = (parser.parse() as MapToString).getOrThrow()
     let (status, info) = checkAttr(resust.keys().toArray(), validKeys)
     if (!status) {
-        throw Exception("@${macroName} has invalid attributes. ${info}")
+        diagReport(DiagReportLevel.ERROR, tokens, "@${macroName} has invalid attributes. ${info}",
+            "valid attribue list: ${validKeys}")
     }
     resust
 }

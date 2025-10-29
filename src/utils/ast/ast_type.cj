@@ -28,9 +28,6 @@ protected class TypeNodeInfo {
         this.supportTypes = supportTypes
     }
 
-    /**
-     * @throws Exception
-     */
     protected func parse(input: Tokens, varType: TypeNode): Unit {
         match (varType) {
             case x: PrimitiveType =>
@@ -38,24 +35,17 @@ protected class TypeNodeInfo {
                 isPrimitive = true
             case x: PrefixType => parsePrefixType(input, x)
             case x: RefType => parseRefType(input, x)
-            case _ =>
-                diagReport(DiagReportLevel.ERROR, input, "unsuported type", "param ref type must be ${supportTypes}")
-                throw Exception("unsuported type")
+            case _ => diagReport(DiagReportLevel.ERROR, input, "unsuported type",
+                "param ref type must be ${supportTypes}")
         }
     }
 
-    /**
-     * @throws Exception
-     */
     private func parsePrefixType(input: Tokens, x: PrefixType): Unit {
         // Option类型
         vtype = Token(TokenKind.IDENTIFIER, "Option")
         parseBaseType(input, x.baseType)
     }
 
-    /**
-     * @throws Exception
-     */
     private func parseBaseType(input: Tokens, gType: TypeNode): Unit {
         match (gType) {
             case t: RefType =>
@@ -66,19 +56,15 @@ protected class TypeNodeInfo {
             case t: PrimitiveType =>
                 genericType = t.keyword
                 genericIsPrimitive = true
-            case _ =>
-                diagReport(DiagReportLevel.ERROR, input, "unsuported type", "param ref type must be ${supportTypes}")
-                throw Exception("unsuported type")
+            case _ => diagReport(DiagReportLevel.ERROR, input, "unsuported type",
+                "param ref type must be ${supportTypes}")
         }
     }
 
-    /**
-     * @throws Exception
-     */
     private func parseRefType(input: Tokens, x: RefType): Unit {
         if (x.typeArguments.size != 1 && x.typeArguments.size != 0) {
             diagReport(DiagReportLevel.ERROR, input, "unsuported type", "param ref type must be ${supportTypes}")
-            throw Exception("unsuported type")
+            return
         }
 
         vtype = x.identifier
