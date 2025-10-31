@@ -14,4 +14,4 @@ macro package cjoy.validation
 public import std.convert.Parsable
 public import cjoy.validation.api.*
 public import cjoy.validation.macros.{Valid, NestedValid, Validated, Size, Length, NotEmpty, NotBlank, NumberRange, 
-    Pattern, DateTimeRange}
+    Pattern, DateTimeRange, ChMobileNumber, Email, IPV4}

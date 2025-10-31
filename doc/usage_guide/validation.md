@@ -65,6 +65,9 @@ func test( arrparam: Array<Int32>): Unit {
 |`@NotBlank`|msg="..."|对字符串对象非空白进行校验，先trim再检查|
 |`@Pattern`|regex="...", msg="..."|对字符串，数字正则检查|
 |`@DateTimeRange`|before="...", after="...", msg="..."|对DateTime范围进行校验，before与before支持写表达式，要求值为DateTime|
+|`@ChMobileNumber`|msg="..."|对字符串对象是否为中国手机号码|
+|`@Email`|msg="..."|对字符串对象是否为Email格式|
+|`@IPV4`|msg="..."|对字符串对象是否为IPV4格式|
 |`@Valid`||作用于类或结构体，生成代码实现`JoyValidatable`接口|
 |`@NestedValid`||作用于类或结构体的成员变量，表示对此成员类与结构嵌套校验，如果是HashMap，Array, ArrayList，则会对其容器内元素校验，校验规则共用此成员变量的宏标注|
 |`@Validated`||作用于函数上，生成代码会修改函数体增加调用参数的`validate`方法|

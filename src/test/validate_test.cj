@@ -88,7 +88,21 @@ func test8(@DateTimeRange[after = "DateTime.now().addMinutes(-1)", before = "Dat
 }
 
 @Validated
-func test9(@DateTimeRange[after = "{=>DateTime.now().addMinutes(-1)}()", before = "{=>let x=DateTime.now().addDays(1);x}()"] dt: DateTime): Unit {
+func test9(
+    @DateTimeRange[after = "{=>DateTime.now().addMinutes(-1)}()", before = "{=>let x=DateTime.now().addDays(1);x}()"]
+    dt: DateTime): Unit {
+}
+
+@Validated
+func test10(@ChMobileNumber num: String): Unit {
+}
+
+@Validated
+func test11(@Email email: String): Unit {
+}
+
+@Validated
+func test12(@IPV4 ip: String): Unit {
 }
 
 @Test
@@ -169,12 +183,12 @@ public class ValidateTestCaseSuit {
     }
 
     @TestCase
-    public func testPattenOk() {
+    public func testPatternOk() {
         test7("10")
     }
 
     @TestCase
-    public func testPattenFaild() {
+    public func testPatternFaild() {
         try {
             test7("-1")
             @Fail("shoud throw a validate exception")
@@ -195,6 +209,56 @@ public class ValidateTestCaseSuit {
             @Fail("shoud throw a validate exception")
         } catch (ex: JoyValidationException) {
             @Assert(ex.message.startsWith("this constraint of value is DateTimeRange["), true)
+        }
+    }
+
+    @TestCase
+    public func testChMobileNumberOk() {
+        test10("18812341234")
+        test10("+86 18812341234")
+        test10("+86-18812341234")
+        test10("+8618812341234")
+    }
+
+    @TestCase
+    public func testChMobileNumberFaild() {
+        try {
+            test10("12345")
+            @Fail("shoud throw a validate exception")
+        } catch (ex: JoyValidationException) {
+            @Assert(ex.message.startsWith("this constraint of value is chinese mobile phone number"), true)
+        }
+    }
+
+    @TestCase
+    public func testEmailOk() {
+        test11("12@163.com")
+        test11("xiao@163.com")
+    }
+
+    @TestCase
+    public func testEmailFaild() {
+        try {
+            test11("@163.com")
+            @Fail("shoud throw a validate exception")
+        } catch (ex: JoyValidationException) {
+            @Assert(ex.message.startsWith("this constraint of value is email"), true)
+        }
+    }
+
+    @TestCase
+    public func testIPV4Ok() {
+        test12("127.0.0.1")
+        test12("255.255.255.255")
+    }
+
+    @TestCase
+    public func testIPV4Faild() {
+        try {
+            test12("1.2.3.4.5")
+            @Fail("shoud throw a validate exception")
+        } catch (ex: JoyValidationException) {
+            @Assert(ex.message.startsWith("this constraint of value is IP V4"), true)
         }
     }
 }

@@ -20,7 +20,7 @@ public macro Valid(input: Tokens): Tokens {
 }
 
 /**
- * indicating nested validation of this member class or structure
+ * indicating nested validation of this member class or struct
  */
 public macro NestedValid(input: Tokens): Tokens {
     parseNestedValid(input)
@@ -128,5 +128,62 @@ public macro Pattern(attr: Tokens, input: Tokens): Tokens {
  */
 public macro DateTimeRange(attr: Tokens, input: Tokens): Tokens {
     parseConstraint(CCDatetimeRange, attr, input)
+    input
+}
+
+/**
+ * Validate string match whether is a chinese mobile phone number
+ *
+ * @attribute msg: the verification error tip
+ */
+public macro ChMobileNumber(attr: Tokens, input: Tokens): Tokens {
+    parseConstraint(CCChMobilePhone, attr, input)
+    input
+}
+
+/**
+ * Validate string match whether is a chinese mobile phone number
+ *
+ */
+public macro ChMobileNumber(input: Tokens): Tokens {
+    parseConstraint(CCChMobilePhone, input)
+    input
+}
+
+/**
+ * Validate string match whether is a email
+ *
+ * @attribute msg: the verification error tip
+ */
+public macro Email(attr: Tokens, input: Tokens): Tokens {
+    parseConstraint(CCEmail, attr, input)
+    input
+}
+
+/**
+ * Validate string match whether is a email
+ *
+ */
+public macro Email(input: Tokens): Tokens {
+    parseConstraint(CCEmail, input)
+    input
+}
+
+/**
+ * Validate string match whether is a IP V4
+ *
+ * @attribute msg: the verification error tip
+ */
+public macro IPV4(attr: Tokens, input: Tokens): Tokens {
+    parseConstraint(CCIPV4, attr, input)
+    input
+}
+
+/**
+ * Validate string match whether is a IP V4
+ *
+ */
+public macro IPV4(input: Tokens): Tokens {
+    parseConstraint(CCIPV4, input)
     input
 }

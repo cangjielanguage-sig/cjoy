@@ -116,6 +116,52 @@ public class DateTimeRangeConstraint <: JoyConstraint {
     }
 }
 
+/**
+ * for string
+ */
+public class ChMobilePhoneConstraint <: JoyConstraint {
+    public let message: String
+    public static let REGEX: Regex = Regex(#"^(?:\+86[\s-]?)?1[3456789]\d{9}$"#)
+    public ChMobilePhoneConstraint(let msg: String) {
+        if (msg.isEmpty()) {
+            this.message = "this constraint of value is chinese mobile phone number"
+        } else {
+            this.message = msg
+        }
+    }
+}
+
+/**
+ * for string
+ */
+public class EmailConstraint <: JoyConstraint {
+    public let message: String
+    public static let REGEX: Regex = Regex(#"^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$"#)
+    public EmailConstraint(let msg: String) {
+        if (msg.isEmpty()) {
+            this.message = "this constraint of value is email"
+        } else {
+            this.message = msg
+        }
+    }
+}
+
+/**
+ * for string
+ */
+public class IPV4Constraint <: JoyConstraint {
+    public let message: String
+    public static let REGEX: Regex = Regex(
+        #"^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"#)
+    public IPV4Constraint(let msg: String) {
+        if (msg.isEmpty()) {
+            this.message = "this constraint of value is IP V4"
+        } else {
+            this.message = msg
+        }
+    }
+}
+
 public class JoyValidationException <: Exception {
     public let field: String
     public let constraint: JoyConstraint

@@ -10,6 +10,7 @@
 
 macro package cjoy.validation.macros
 
+import std.convert.Parsable
 import std.collection.{ArrayList, filter, first}
 import cjoy.utils.{MapToString, MapListGetFunc}
 import cjoy.utils.ast.{parserAttrs, joinTokens}
@@ -23,6 +24,9 @@ enum ConstraintCatgory {
     | CCNumberRange
     | CCPattern
     | CCDatetimeRange
+    | CCChMobilePhone
+    | CCEmail
+    | CCIPV4
 }
 
 open class FieldInfo {
@@ -175,7 +179,9 @@ class SizeConstraintGenerator <: MinMaxBaseConstraintGenerator {
     }
 
     protected func toConstraint(): Tokens {
-        quote(SizeConstraint(Int.tryParse($(min)).getOrDefault({=> 0}), Int.tryParse($(max)).getOrDefault({=> 100}), $msg))
+        let min_ = Int.tryParse(min).getOrDefault({=> 0})
+        let max_ = Int.tryParse(max).getOrDefault({=> 100})
+        quote(SizeConstraint($min_, $max_, $msg))
     }
 }
 
@@ -185,7 +191,9 @@ class LengthConstraintGenerator <: MinMaxBaseConstraintGenerator {
     }
 
     protected func toConstraint(): Tokens {
-        quote(LengthConstraint(Int.tryParse($(min)).getOrDefault({=> 0}), Int.tryParse($(max)).getOrDefault({=> 100}), $msg))
+        let min_ = Int.tryParse(min).getOrDefault({=> 0})
+        let max_ = Int.tryParse(max).getOrDefault({=> 100})
+        quote(LengthConstraint($min_, $max_, $msg))
     }
 }
 
@@ -267,6 +275,33 @@ class DateTimeRangeConstraintGenerator <: ConstraintGenerator {
     }
 }
 
+class ChMobilePhoneConstraintGenerator <: MsgBaseConstraintGenerator {
+    init() {
+        super("ChMobilePhone")
+    }
+    protected func toConstraint(): Tokens {
+        quote(ChMobilePhoneConstraint($msg))
+    }
+}
+
+class EmailConstraintGenerator <: MsgBaseConstraintGenerator {
+    init() {
+        super("Email")
+    }
+    protected func toConstraint(): Tokens {
+        quote(EmailConstraint($msg))
+    }
+}
+
+class IPV4ConstraintGenerator <: MsgBaseConstraintGenerator {
+    init() {
+        super("IPV4")
+    }
+    protected func toConstraint(): Tokens {
+        quote(IPV4Constraint($msg))
+    }
+}
+
 func createConstraintGenerator(catgory: ConstraintCatgory): ConstraintGenerator {
     match (catgory) {
         case CCSize => SizeConstraintGenerator()
@@ -276,6 +311,9 @@ func createConstraintGenerator(catgory: ConstraintCatgory): ConstraintGenerator 
         case CCNumberRange => RangeConstraintGenerator()
         case CCPattern => PatternConstraintGenerator()
         case CCDatetimeRange => DateTimeRangeConstraintGenerator()
+        case CCChMobilePhone => ChMobilePhoneConstraintGenerator()
+        case CCEmail => EmailConstraintGenerator()
+        case CCIPV4 => IPV4ConstraintGenerator()
     }
 }
 

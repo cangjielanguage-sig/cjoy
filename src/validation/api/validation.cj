@@ -32,6 +32,9 @@ public interface JoyValidatable {
 }
 
 extend String <: JoyValidatable {
+    /**
+     * @throws JoyValidationException
+     */
     public func validate(field: String, _: Bool, constraints: Array<JoyConstraint>): Unit {
         for (condition in constraints) {
             match (condition) {
@@ -52,6 +55,22 @@ extend String <: JoyValidatable {
                     if (!c.regex.matches(this)) {
                         throw JoyValidationException(c.message, field, c)
                     }
+                case c: ChMobilePhoneConstraint =>
+                    if (!ChMobilePhoneConstraint.REGEX.matches(this)) {
+                        throw JoyValidationException(c.message, field, c)
+                    }
+                case c: EmailConstraint =>
+                    if (!EmailConstraint.REGEX.matches(this)) {
+                        throw JoyValidationException(c.message, field, c)
+                    }
+                    let arr = this.split("@")
+                    if (arr.size != 2 || arr[0].size > 64 || arr[1].size > 256) {
+                        throw JoyValidationException(c.message, field, c)
+                    }
+                case c: IPV4Constraint =>
+                    if (!IPV4Constraint.REGEX.matches(this)) {
+                        throw JoyValidationException(c.message, field, c)
+                    }
                 case _ => ()
             }
         }
@@ -67,6 +86,9 @@ extend<T> Option<T> <: JoyValidatable where T <: JoyValidatable {
     }
 }
 
+/**
+ * @throws JoyValidationException
+ */
 func validateNumber<T>(value: T, field: String, constraints: Array<JoyConstraint>): Unit where T <: Parsable<T> & Comparable<T> & ToString {
     for (condition in constraints) {
         match (condition) {
@@ -149,6 +171,9 @@ extend Float64 <: JoyValidatable {
     }
 }
 
+/**
+ * @throws JoyValidationException
+ */
 func validateCollection<T>(col: Collection<T>, field: String, nestedValid: Bool, constraints: Array<JoyConstraint>): Unit {
     for (condition in constraints) {
         match (condition) {
@@ -192,6 +217,9 @@ extend<K, V> HashMap<K, V> <: JoyValidatable {
 }
 
 extend DateTime <: JoyValidatable {
+    /**
+     * @throws JoyValidationException
+     */
     public func validate(field: String, _: Bool, constraints: Array<JoyConstraint>): Unit {
         for (condition in constraints) {
             match (condition) {

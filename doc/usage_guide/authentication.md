@@ -25,7 +25,7 @@ let basicAuth = BasicAuth("test", HashMap<String, String>([("xiao", "xiao"), ("l
 router.use(basicAuth)
 ```
 
-### 自定义校对函数
+### 自定义校验函数
 
 实现BasicAuthValidationFunc函数，创建BasicAuth中间件对象时，指定validateFunc，此函数将用户名和密码作为参数，如果有效则返回true，否则返回false。
 
@@ -33,7 +33,7 @@ router.use(basicAuth)
 let joy = Joy.default()
 let router = joy.router
 
-// 创建BasicAuth中间件对象，指定认证校对函数
+// 创建BasicAuth中间件对象，指定认证校验函数
 let basicAuth =  BasicAuth("test", HashMap<String, String>(), validateFunc: {
     ctx: JoyContext, username: String, password: String => username == "xiao" && password == "abcdef"
 })
@@ -74,7 +74,7 @@ let tokenAuth = TokenAuth(["abc"])
 router.use(tokenAuth)
 ```
 
-### 自定义校对函数
+### 自定义校验函数
 
 实现TokenAuthValidatorFunc函数，创建TokenAuth中间件对象时，指定validator，此函数将token作为参数，如果有效则返回true，否则返回false。
 
@@ -82,7 +82,7 @@ router.use(tokenAuth)
 let joy = Joy.default()
 let router = joy.router
 
-// 创建TokenAuth中间件对象，指定认证校对函数
+// 创建TokenAuth中间件对象，指定认证校验函数
 let tokenAuth =  TokenAuth({
     ctx: JoyContext, token: String => token == "abcd"
 })
