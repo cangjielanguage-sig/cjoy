@@ -17,7 +17,7 @@ import stdx.net.tls.TlsServerConfig
 import stdx.net.http.{Server, ServerBuilder}
 import stdx.crypto.x509.{X509Certificate, PrivateKey}
 import cjoy.log.*
-import cjoy.ioc.api.{BeanFactoryManager, ApplicationContext}
+import cjoy.ioc.BeanFactoryManager
 import cjoy.context.{ServiceConainter, GLOBAL_SERVICE_CONTAINER}
 
 public const VERSION: String = "v0.80.0"

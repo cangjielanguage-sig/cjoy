@@ -10,7 +10,6 @@
 
 package cjoy.jsonrpc.api
 
-import std.collection.{HashMap, ArrayList}
 import cjoy.json.*
 
 public abstract class BaseMessage <: ToString & JsonSerializable {

@@ -10,8 +10,7 @@
 
 package cjoy.config
 
-import std.collection.{HashMap, ArrayList, Map}
-import std.env.getVariables
+import std.collection.{HashMap, Map}
 
 /**
  * application program cli arguments config

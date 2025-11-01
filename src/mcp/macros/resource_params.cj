@@ -11,14 +11,13 @@
 macro package cjoy.mcp.macros
 
 import std.ast.*
-import std.collection.*
 
 class ResourceParamInfo <: ParamInfo {
     init(marcroName: String) {
         super(marcroName)
     }
 
-     func genBindVarTokens(): Tokens {
+    func genBindVarTokens(): Tokens {
         if (isJoyContext()) {
             if (pid.value == "ctx") {
                 Tokens()

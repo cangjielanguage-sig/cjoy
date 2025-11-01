@@ -10,8 +10,6 @@
 
 package cjoy.httpx
 
-import std.collection.{Map}
-import stdx.net.http.{HttpHeaders}
 import stdx.encoding.base64.toBase64String
 import cjoy.context.Context
 import cjoy.framework.{JoyHttpConsts}

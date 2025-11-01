@@ -10,7 +10,7 @@
 
 package cjoy.httpx
 
-import std.collection.{Map, HashMap}
+import std.collection.{Map}
 import stdx.net.http.{HttpHeaders}
 import stdx.encoding.url.Form
 import cjoy.context.Context

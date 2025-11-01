@@ -10,8 +10,6 @@
 
 package cjoy.httpx
 
-import std.collection.{Map}
-import stdx.net.http.{HttpHeaders}
 import cjoy.context.Context
 
 public class TokenAuthClient <: JoyHttpClient {
@@ -24,6 +22,9 @@ public class TokenAuthClient <: JoyHttpClient {
         http.send(ctx, request)
     }
 
+    /**
+     * @throws IllegalArgumentException
+     */
     private func createFunc(token: String, position: String, authSchema: String): (request: JoyHttpRequest) -> Unit {
         let sn = position.split(":")
         if (sn.size != 2) {

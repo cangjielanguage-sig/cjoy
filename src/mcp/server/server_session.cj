@@ -115,31 +115,31 @@ class DefaultMcpServerSession <: McpServerSession & McpRequestHandler & McpRespo
             case "tools/list" =>
                 let page: PaginatedRequest = JSONRPCTool.deserializeParams(message.params)
                 @LogInfo("[MCP] recv `tools/list` request: ${page}, sessionId: ${_sessionId}")
-                McpServer.tools.listTools(page)
+                McpServer.TOOLS.listTools(page)
             case "tools/call" =>
                 let req: CallToolRequest = JSONRPCTool.deserializeParams(message.params)
                 @LogDebug("[MCP] recv `tools/call` request: ${req}, sessionId: ${_sessionId}")
-                McpServer.tools.callTool(ctx, req)
+                McpServer.TOOLS.callTool(ctx, req)
             case "resources/list" =>
                 let page: PaginatedRequest = JSONRPCTool.deserializeParams(message.params)
                 @LogInfo("[MCP] recv `resources/list` request: ${page}, sessionId: ${_sessionId}")
-                McpServer.resources.listResources(page)
+                McpServer.RESOURCES.listResources(page)
             case "resources/templates/list" =>
                 let page: PaginatedRequest = JSONRPCTool.deserializeParams(message.params)
                 @LogInfo("[MCP] recv `resources/templates/list` request: ${page}, sessionId: ${_sessionId}")
-                McpServer.resources.listResourceTemplates(page)
+                McpServer.RESOURCES.listResourceTemplates(page)
             case "resources/read" =>
                 let req: ReadResourceRequest = JSONRPCTool.deserializeParams(message.params)
                 @LogDebug("[MCP] recv `resources/read` request: ${req}, sessionId: ${_sessionId}")
-                McpServer.resources.readResource(ctx, req)
+                McpServer.RESOURCES.readResource(ctx, req)
             case "prompts/list" =>
                 let page: PaginatedRequest = JSONRPCTool.deserializeParams(message.params)
                 @LogInfo("[MCP] recv `prompts/list` request: ${page}, sessionId: ${_sessionId}")
-                McpServer.prompts.listPrompt(page)
+                McpServer.PROMPTS.listPrompt(page)
             case "prompts/get" =>
                 let req: GetPromptRequest = JSONRPCTool.deserializeParams(message.params)
                 @LogDebug("[MCP] recv `prompts/get` request: ${req}, sessionId: ${_sessionId}")
-                McpServer.prompts.getPrompt(ctx, req)
+                McpServer.PROMPTS.getPrompt(ctx, req)
             case _ =>
                 @LogError("[MCP] recv unknown `${message.method}` request, sessionId: ${_sessionId}")
                 let error = JSONRPCError(code: JSONRPCConsts.ERR_METHOD_NOT_FOUND, message: "not found method")

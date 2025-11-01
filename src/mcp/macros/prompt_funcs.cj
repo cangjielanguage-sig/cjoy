@@ -68,8 +68,8 @@ class PromptFuncInfo <: FuncInfo {
             private init() {
                 let arguments = ArrayList<PromptArgument>([$args])
                 let prompt = McpPrompt(name: $name, description: $description, arguments: arguments)
-                McpServer.prompts.addPrompt(prompt)
-                McpServer.prompts.addGetPromptHandler($name, this)
+                McpServer.PROMPTS.addPrompt(prompt)
+                McpServer.PROMPTS.addGetPromptHandler($name, this)
             }
         )
         let callfunc = callFunc(params)

@@ -10,7 +10,6 @@
 
 package cjoy.mcp.server
 
-import std.collection.concurrent.ConcurrentHashMap
 import cjoy.mcp.api.*
 import cjoy.framework.{Joy, VERSION}
 import cjoy.log.*
@@ -23,9 +22,9 @@ public class McpServerFeatures {
 }
 
 public class McpServer {
-    public static let tools = McpTools()
-    public static let resources = McpResources()
-    public static let prompts = McpPrompts()
+    public static let TOOLS: McpTools = McpTools()
+    public static let RESOURCES: McpResources = McpResources()
+    public static let PROMPTS: McpPrompts = McpPrompts()
     private static var serverFeatures: ?McpServerFeatures = None
 
     private static var dump = false
@@ -72,20 +71,20 @@ public class McpServer {
 
     private static func updateFeatures(serverFeatures: McpServerFeatures) {
         McpServer.serverFeatures = serverFeatures
-        if (!tools.tools.isEmpty()) {
+        if (!TOOLS.tools.isEmpty()) {
             serverFeatures.capabilities.tools = ToolCapability()
         }
-        if (!resources.resources.isEmpty() || !resources.resourceTempls.isEmpty()) {
+        if (!RESOURCES.resources.isEmpty() || !RESOURCES.resourceTempls.isEmpty()) {
             serverFeatures.capabilities.resources = ResourceCapability()
         }
-        if (!prompts.prompts.isEmpty()) {
+        if (!PROMPTS.prompts.isEmpty()) {
             serverFeatures.capabilities.prompts = PromptsCapability()
         }
     }
 
     private static func dumpResources(): Unit {
         if (!dump) {
-            resources.dump()
+            RESOURCES.dump()
             dump = true
         }
     }

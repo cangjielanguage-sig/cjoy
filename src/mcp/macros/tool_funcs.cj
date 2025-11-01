@@ -142,71 +142,87 @@ class ToolFuncInfo <: FuncInfo {
         (vars, params, schame)
     }
 
+    private func getInitFuncForOneComplex(schame: Tokens): Tokens {
+        quote(
+            private init() {
+                $schame
+                let tool = McpTool(name: $name, description: $description, inputSchema: inputSchema)
+                McpServer.TOOLS.addTool(tool)
+                McpServer.TOOLS.addCallToolHandler($name, this)
+            }
+        )
+    }
+
+    private func getInitFunc(schame: Tokens): Tokens {
+        quote(
+            private init() {
+                let inputSchema = HashMap<String, JsonSerializable>()
+                let properties = HashMap<String, JsonSerializable>()
+                let required = ArrayList<String>()
+                $schame
+                inputSchema.add("type", "object")
+                inputSchema.add("properties", properties)
+                inputSchema.add("required", required)
+
+                let tool = McpTool(name: $name, description: $description, inputSchema: inputSchema)
+                McpServer.TOOLS.addTool(tool)
+                McpServer.TOOLS.addCallToolHandler($name, this)
+            }
+        )
+    }
+
+    private func genFuncsBody1(): Tokens {
+        let (vars, params, schame) = declVarsForOneComplex()
+        let callfunc = callFunc(params)
+        let initFunc = getInitFuncForOneComplex(schame)
+        let handleFunc = quote(
+            public func handle(ctx: JoyContext, arguments_: Array<Byte>): Any {
+                $(vars)
+                $(callfunc)
+            }
+        )
+        initFunc + handleFunc
+    }
+
+    private func genFuncsBody2(): Tokens {
+        let (vars, rjson, params, schame) = declVars()
+        let callfunc = callFunc(params)
+        let initFunc = getInitFunc(schame)
+        let handleFunc = quote(
+            public func handle(ctx: JoyContext, arguments_: Array<Byte>): Any {
+                let buffer_ = ByteBuffer()
+                buffer_.write(arguments_)
+                let reader_ = JsonReader(buffer_)
+                $(vars)
+                while (let Some(v) <- reader_.peek()) {
+                    match (v) {
+                        case BeginObject =>
+                            reader_.startObject()
+                            while (reader_.peek() != EndObject) {
+                                let name = reader_.readName()
+                                match (name) {
+                                    $(rjson)
+                                    case _ => reader_.skip()
+                                }
+                            }
+                            reader_.endObject()
+                            break
+                        case _ => throw JSONRPCException(
+                            JSONRPCError(code: JSONRPCConsts.ERR_PARSE_ERROR, message: "not start json object"))
+                    }
+                }
+
+                $(callfunc)
+            }
+        )
+        initFunc + handleFunc
+    }
+
     private func genFuncsBody(): Tokens {
         if (isOnlyOneComplex()) {
-            let (vars, params, schame) = declVarsForOneComplex()
-            let callfunc = callFunc(params)
-            let initFunc = quote(
-                private init() {
-                    $schame
-                    let tool = McpTool(name: $name, description: $description, inputSchema: inputSchema)
-                    McpServer.tools.addTool(tool)
-                    McpServer.tools.addCallToolHandler($name, this)
-                }
-            )
-            let handleFunc = quote(
-                public func handle(ctx: JoyContext, arguments_: Array<Byte>): Any {
-                    $(vars)
-                    $(callfunc)
-                }
-            )
-            initFunc + handleFunc
+            genFuncsBody1()
         } else {
-            let (vars, rjson, params, schame) = declVars()
-            let callfunc = callFunc(params)
-            let initFunc = quote(
-                private init() {
-                    let inputSchema = HashMap<String, JsonSerializable>()
-                    let properties = HashMap<String, JsonSerializable>()
-                    let required = ArrayList<String>()
-                    $schame
-                    inputSchema.add("type", "object")
-                    inputSchema.add("properties", properties)
-                    inputSchema.add("required", required)
-
-                    let tool = McpTool(name: $name, description: $description, inputSchema: inputSchema)
-                    McpServer.tools.addTool(tool)
-                    McpServer.tools.addCallToolHandler($name, this)
-                }
-            )
-            let handleFunc = quote(
-                public func handle(ctx: JoyContext, arguments_: Array<Byte>): Any {
-                    let buffer_ = ByteBuffer()
-                    buffer_.write(arguments_)
-                    let reader_ = JsonReader(buffer_)
-                    $(vars)
-                    while (let Some(v) <- reader_.peek()) {
-                        match (v) {
-                            case BeginObject =>
-                                reader_.startObject()
-                                while (reader_.peek() != EndObject) {
-                                    let name = reader_.readName()
-                                    match (name) {
-                                        $(rjson)
-                                        case _ => reader_.skip()
-                                    }
-                                }
-                                reader_.endObject()
-                                break
-                            case _ => throw JSONRPCException(
-                                JSONRPCError(code: JSONRPCConsts.ERR_PARSE_ERROR, message: "not start json object"))
-                        }
-                    }
-
-                    $(callfunc)
-                }
-            )
-            initFunc + handleFunc
+            genFuncsBody2()
         }
     }
 

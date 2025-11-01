@@ -10,7 +10,6 @@
 
 package cjoy.httpx
 
-import std.collection.{Map}
 import std.io.{InputStream, ByteBuffer}
 import std.net.{SocketAddress, TcpSocket}
 import stdx.net.http.{ClientBuilder, Client, HttpRequestBuilder, HttpHeaders}
@@ -32,11 +31,11 @@ func defaultNoVerifyHttpCert(url: String, verify: Bool): ClientBuilder {
     }
     let socketConnector = {
         sa: SocketAddress =>
-        let socket = TcpSocket(sa)
-        socket.readTimeout = Duration.minute
-        socket.writeTimeout = Duration.minute
-        socket.connect(timeout: Duration.minute)
-        return socket
+            let socket = TcpSocket(sa)
+            socket.readTimeout = Duration.minute
+            socket.writeTimeout = Duration.minute
+            socket.connect(timeout: Duration.minute)
+            return socket
     }
     cb.readTimeout(Duration.minute)
     cb.connector(socketConnector)

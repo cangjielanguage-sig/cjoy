@@ -10,8 +10,7 @@
 
 package cjoy.httpx
 
-import std.collection.{Map}
-import stdx.net.http.{HttpHeaders, HttpStatusCode}
+import stdx.net.http.{HttpStatusCode}
 import cjoy.context.Context
 
 public class RetryClient <: JoyHttpClient {

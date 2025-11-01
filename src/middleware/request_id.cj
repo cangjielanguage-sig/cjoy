@@ -15,13 +15,13 @@ import std.sync.AtomicUInt64
 import cjoy.{JoyMiddlewareHandler, JoyRequestHandlerChain, JoyContext}
 import cjoy.utils.secureRandStr
 
-const requestIdCtxKey = "__request_id__"
+private const REQ_ID_CTX_KEY: String = "__request_id__"
 
 /**
  * get request id from context
  */
 public func getRequestId(ctx: JoyContext): ?String {
-    ctx.getCtxParam(requestIdCtxKey)
+    ctx.getCtxParam(REQ_ID_CTX_KEY)
 }
 
 /**
@@ -44,10 +44,10 @@ public class RequestId <: JoyMiddlewareHandler {
     public func handle(ctx: JoyContext, chain: JoyRequestHandlerChain): Unit {
         let reqId = ctx.getHeader(_headerName)
         if (let Some(id) <- reqId) {
-            ctx.setCtxParam(requestIdCtxKey, id)
+            ctx.setCtxParam(REQ_ID_CTX_KEY, id)
         } else {
             let id = "${_prefix}-${_id.fetchAdd(1).format("010")}"
-            ctx.setCtxParam(requestIdCtxKey, id)
+            ctx.setCtxParam(REQ_ID_CTX_KEY, id)
             ctx.header(_headerName, id)
         }
 

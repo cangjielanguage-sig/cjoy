@@ -10,7 +10,6 @@
 
 package cjoy.eventbus.api
 
-import std.collection.{HashMap}
 import cjoy.context.{Context, MapContext}
 
 /**

@@ -10,7 +10,7 @@
 
 package cjoy.config
 
-import std.collection.{Map, ArrayList}
+import std.collection.{Map}
 import cjoy.bind.JoyBindable
 
 /*

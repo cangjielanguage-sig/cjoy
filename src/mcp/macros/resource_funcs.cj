@@ -66,8 +66,8 @@ class ResoureFuncInfo <: FuncInfo {
         let initFunc = quote(
             private init() {
                 let resource = McpResource(uri: $uri, name: $name, description: $description, mimeType: $mimeType)
-                McpServer.resources.addResource(resource)
-                McpServer.resources.addReadResourceHandler($uri, this)
+                McpServer.RESOURCES.addResource(resource)
+                McpServer.RESOURCES.addReadResourceHandler($uri, this)
             }
         )
         let (vars, params) = declVars()

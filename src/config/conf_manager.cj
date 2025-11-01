@@ -11,7 +11,6 @@
 package cjoy.config
 
 import std.collection.{ArrayList, HashMap, Map}
-import std.sync.Mutex
 import std.sort.sort
 import std.env.getVariables
 import cjoy.bind.{JoyBindable, MapContainer}

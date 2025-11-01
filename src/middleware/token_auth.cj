@@ -10,7 +10,6 @@
 
 package cjoy.middleware
 
-import std.collection.HashMap
 import stdx.net.http.HttpStatusCode
 import cjoy.{JoyMiddlewareHandler, JoyRequestHandlerChain, JoyContext, JoyHttpConsts, JoyRequestHandler, 
     JoyRequestHandlerFunc, JoyFuncHandler, JoyRequestFilterFunc}
@@ -27,7 +26,7 @@ class PredefinedTokenAuthValidator {
     public PredefinedTokenAuthValidator(let tokens: Array<String>) {
     }
 
-    public func validate(ctx: JoyContext, token: String): Bool {
+    public func validate(_: JoyContext, token: String): Bool {
         this.tokens.contains(token)
     }
 }
@@ -108,6 +107,9 @@ public class TokenAuth <: JoyMiddlewareHandler {
         }
     }
 
+    /**
+     * @throws IllegalArgumentException
+     */
     private static func createAuthFunc(validator: TokenAuthValidatorFunc, lookupKey: String, authSchema: String): AuthFunc {
         let sn = lookupKey.split(":")
         if (sn.size != 2) {
@@ -116,49 +118,25 @@ public class TokenAuth <: JoyMiddlewareHandler {
         match (sn[0]) {
             case "header" => {
                 ctx: JoyContext =>
-                let value = ctx.getHeader(sn[1])
-                if (let Some(v) <- value) {
-                    if (!authSchema.isEmpty()) {
-                        if (!v.startsWith("${authSchema} ")) {
-                            return false
+                    let value = ctx.getHeader(sn[1])
+                    if (let Some(v) <- value) {
+                        if (!authSchema.isEmpty()) {
+                            if (!v.startsWith("${authSchema} ")) {
+                                return false
+                            }
+                            return validator(ctx, v[(authSchema.size + 1)..])
                         }
-                        return validator(ctx, v[(authSchema.size + 1)..])
+                        return validator(ctx, v)
                     }
-                    return validator(ctx, v)
-                }
-                return false
+                    return false
             }
-            case "query" => {
+            case "query" | "param" | "form" | "cookie" => {
                 ctx: JoyContext =>
-                let value = ctx.getQuery(sn[1])
-                if (let Some(v) <- value) {
-                    return validator(ctx, v)
-                }
-                return false
-            }
-            case "param" => {
-                ctx: JoyContext =>
-                let value = ctx.getParam(sn[1])
-                if (let Some(v) <- value) {
-                    return validator(ctx, v)
-                }
-                return false
-            }
-            case "form" => {
-                ctx: JoyContext =>
-                let value = ctx.getPostForm(sn[1])
-                if (let Some(v) <- value) {
-                    return validator(ctx, v)
-                }
-                return false
-            }
-            case "cookie" => {
-                ctx: JoyContext =>
-                let value = ctx.getCookie(sn[1])
-                if (let Some(v) <- value) {
-                    return validator(ctx, v)
-                }
-                return false
+                    let value = ctx.getRequestParam(sn[0], sn[1])
+                    if (let Some(v) <- value) {
+                        return validator(ctx, v)
+                    }
+                    return false
             }
             case _ => throw IllegalArgumentException(
                 "lookupKey format must be <source>:<name>, source must be one of [header, query, form, param, cookie]")

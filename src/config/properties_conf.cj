@@ -10,7 +10,7 @@
 
 package cjoy.config
 
-import std.collection.{HashMap, ArrayList, Map}
+import std.collection.{HashMap, Map}
 import std.fs.{File, OpenMode}
 import std.io.StringReader
 

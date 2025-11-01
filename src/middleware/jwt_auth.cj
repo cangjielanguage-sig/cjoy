@@ -18,14 +18,14 @@ import cjoy.log.*
 import cjoy.jwt.*
 import cjoy.json.*
 
-const jwtCtxKey = "__jwt__"
-const jwtPayloadCtxKey = "__jwt_payload__"
+private const JWT_CTX_KEY: String = "__jwt__"
+private const JWT_PAYLOAD_CTX_KEY: String = "__jwt_payload__"
 
 /**
  * return the jwt token form context
  */
 public func getJwt(ctx: JoyContext): ?String {
-    ctx.getCtxParam(jwtCtxKey)
+    ctx.getCtxParam(JWT_CTX_KEY)
 }
 
 public interface Jwtkey {
@@ -129,12 +129,15 @@ public class JwtAuth <: JoyMiddlewareHandler {
         if (this.identityHandler.isNone()) {
             this.identityHandler = {
                 ctx: JoyContext =>
-                    let claims = ctx.getCtxParam<Claims>(jwtPayloadCtxKey)
+                    let claims = ctx.getCtxParam<Claims>(JWT_PAYLOAD_CTX_KEY)
                     claims.getOrThrow().getClaimString(identityKey) ?? ""
             }
         }
     }
 
+    /**
+     * @throws IllegalArgumentException
+     */
     private static func createGetTokenFunc(tokenLookup: String, tokenHeadName: String): (ctx: JoyContext) -> ?String {
         let sn = tokenLookup.split(":")
         if (sn.size != 2) {
@@ -279,7 +282,7 @@ public class JwtAuth <: JoyMiddlewareHandler {
 
         jwt.verifyWith(keyProvider.getKeys(jwt)[1])
         // save token string if valid
-        ctx.setCtxParam(jwtCtxKey, token)
+        ctx.setCtxParam(JWT_CTX_KEY, token)
         jwt
     }
 
@@ -291,7 +294,7 @@ public class JwtAuth <: JoyMiddlewareHandler {
             }
         }
 
-        ctx.setCtxParam(jwtPayloadCtxKey, jwt.claims)
+        ctx.setCtxParam(JWT_PAYLOAD_CTX_KEY, jwt.claims)
     }
 
     private func checkIfTokenExpire(ctx: JoyContext): Jwt {

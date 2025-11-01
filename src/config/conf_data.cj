@@ -10,8 +10,7 @@
 
 package cjoy.config
 
-import std.collection.{Map, List, HashMap, ArrayList, map, collectArray}
-import std.convert.Parsable
+import std.collection.{Map, List, HashMap, ArrayList}
 
 /**
  * add key and value to data

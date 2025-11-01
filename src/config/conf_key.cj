@@ -10,7 +10,7 @@
 
 package cjoy.config
 
-import std.collection.{Map, HashMap, ArrayList, map, collectArray}
+import std.collection.{Map, HashMap}
 import std.convert.Parsable
 import cjoy.utils.snakeCase
 import cjoy.log.*

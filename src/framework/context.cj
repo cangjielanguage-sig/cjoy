@@ -323,6 +323,7 @@ public interface JoyContext <: Context {
      * @return the content type
      */
     func getContentType(): String
+
     /**
      * get the header first value
      *
@@ -404,10 +405,47 @@ public interface JoyContext <: Context {
 
     /**
      * get basic auth info
-     * 
+     *
      * return the username and password
      */
     func basicAuth(): ?(String, String)
+
+    /**
+     * get the request param by type and name
+     *
+     * @param type: the param type
+     * @param name: the param name
+     * @return: the param value
+     */
+    func getRequestParam(typ: String, name: String): ?String {
+        match (typ) {
+            case "param" => getParam(name)
+            case "path" => getParam(name)
+            case "query" => getQuery(name)
+            case "form" => getForm(name)
+            case "cookie" => getCookie(name)
+            case "header" => getHeader(name)
+            case _ => None
+        }
+    }
+    /**
+     * get the request param by type and name
+     *
+     * @param type: the param type
+     * @param name: the param name
+     * @return: the param value
+     */
+    func getRequestParam(typ: String, name: String, defaultValue: String): String {
+        match (typ) {
+            case "param" => getParam(name) ?? defaultValue
+            case "path" => getParam(name) ?? defaultValue
+            case "query" => getQuery(name, defaultValue)
+            case "form" => getForm(name, defaultValue)
+            case "cookie" => getCookie(name) ?? defaultValue
+            case "header" => getHeader(name) ?? defaultValue
+            case _ => defaultValue
+        }
+    }
 }
 
 class JoyHttpContext <: JoyContext {

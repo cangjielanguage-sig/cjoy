@@ -12,13 +12,11 @@ package cjoy.middleware
 
 import std.sync.Mutex
 import std.time.DateTime
-import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable}
 import stdx.net.http.Cookie
 import cjoy.{JoyMiddlewareHandler, JoyRequestHandlerChain, JoyContext}
 import cjoy.session.*
-import cjoy.utils.secureRandStr
 
-const sessionCtxKey = "__session__"
+private const SESSION_CTX_KEY: String = "__session__"
 
 /**
  * the sssion config
@@ -46,7 +44,7 @@ public struct JoySessionConfig {
  * Get session from context
  */
 public func getSession(ctx: JoyContext): ?JoySession {
-    ctx.getCtxParam(sessionCtxKey)
+    ctx.getCtxParam(SESSION_CTX_KEY)
 }
 
 /**
@@ -79,14 +77,14 @@ public class SessionManager <: JoyMiddlewareHandler {
         var newCookie = false
         let session = if (let Some(id) <- sid) {
             let sess = _storage.getOrCreate(id, Int32(_config.idLength / 2))
-            ctx.setCtxParam(sessionCtxKey, sess)
+            ctx.setCtxParam(SESSION_CTX_KEY, sess)
             if (sess.id != id) {
                 newCookie = true
             }
             sess
         } else {
             synchronized(_lock) {
-                let existed = ctx.getCtxParam<JoySession>(sessionCtxKey)
+                let existed = ctx.getCtxParam<JoySession>(SESSION_CTX_KEY)
                 if (let Some(s) <- existed) {
                     if (!_storage.exists(s.id)) {
                         s.invalidate()
@@ -131,7 +129,7 @@ public class SessionManager <: JoyMiddlewareHandler {
 
     private func createNewSessoin(ctx: JoyContext): JoySession {
         let sess = _storage.getOrCreate("", Int32(_config.idLength / 2))
-        ctx.setCtxParam(sessionCtxKey, sess)
+        ctx.setCtxParam(SESSION_CTX_KEY, sess)
         sess
     }
 }

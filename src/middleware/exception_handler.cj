@@ -10,7 +10,6 @@
 
 package cjoy.middleware
 
-import std.collection.HashMap
 import stdx.net.http.HttpStatusCode
 import cjoy.{JoyMiddlewareHandler, JoyRequestHandlerChain, JoyContext}
 import cjoy.validation.JoyValidationException

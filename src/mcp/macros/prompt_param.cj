@@ -11,7 +11,6 @@
 macro package cjoy.mcp.macros
 
 import std.ast.*
-import std.collection.*
 
 class PromptParamInfo <: ParamInfo {
     init(marcroName: String) {

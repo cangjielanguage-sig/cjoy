@@ -12,7 +12,6 @@ package cjoy.middleware
 
 import std.collection.HashMap
 import stdx.net.http.HttpStatusCode
-import stdx.encoding.base64.fromBase64String
 import cjoy.{JoyMiddlewareHandler, JoyRequestHandlerChain, JoyContext, JoyHttpConsts}
 import cjoy.log.*
 

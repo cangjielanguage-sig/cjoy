@@ -56,6 +56,10 @@ public struct JoySSEvent {
 public class JoySSEventStream <: Iterator<JoySSEvent> {
     JoySSEventStream(private let httpStream: JoyHttpStream) {}
 
+    /**
+     * @throws IllegalArgumentException
+     * @throws IllegalStateException
+     */
     public func next(): Option<JoySSEvent> {
         var data = JoySSEvent()
         while (true) {

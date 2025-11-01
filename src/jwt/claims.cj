@@ -10,7 +10,7 @@
 
 package cjoy.jwt
 
-import std.collection.{HashMap, map, collectArray, ArrayList}
+import std.collection.{HashMap, map, collectArray}
 import std.time.DateTime
 import std.math.trunc
 import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonWriter, JsonReader, JsonToken}
@@ -196,7 +196,7 @@ extend MapClaims <: Claims {
             return match (v) {
                 case x: String => ClaimStrings([x])
                 case x: Array<String> => ClaimStrings(x)
-                case x: Collection<JsonSerializable> => 
+                case x: Collection<JsonSerializable> =>
                     let arr = x |> map {it => (it as String).getOrThrow()} |> collectArray
                     ClaimStrings(arr)
                 case x: ClaimStrings => x
