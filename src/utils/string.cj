@@ -10,17 +10,13 @@
 
 package cjoy.utils
 
-protected interface StrFunc {
+protected interface StrExt {
     func cut(b: Byte): (String, String, Bool)
 
     func indexFunc(f: (x: Byte) -> Bool): Int
-
-    static func repeat(b: Byte, num: Int): String 
-
-    static func repeat(str: String, num: Int): String 
 }
 
-extend String <: StrFunc {
+extend String <: StrExt {
     public func cut(b: Byte): (String, String, Bool) {
         if (let Some(i) <- this.indexOf(b)) {
             return (this[0..i], this[i + 1..this.size], true)
@@ -36,44 +32,41 @@ extend String <: StrFunc {
         }
         -1
     }
+}
 
-    public  static func repeat(b: Byte, num: Int): String {
-        let buidler = StringBuilder()
-        var idx = 0
-        while(idx < num) {
-            buidler.append(b)
-            idx++
-        }
-        buidler.toString()
-    }
-
-    public  static func repeat(str: String, num: Int): String {
-        let buidler = StringBuilder()
-        var idx = 0
-        while(idx < num) {
-            buidler.append(str)
-            idx++
-        }
-        buidler.toString()
+protected func ishex(c: Byte): Bool {
+    match {
+        case b'0' <= c && c <= b'9' => true
+        case b'a' <= c && c <= b'f' => true
+        case b'A' <= c && c <= b'F' => true
+        case _ => false
     }
 }
 
-protected class HexUtils {
-    public static func ishex(c: Byte): Bool {
-        match {
-            case b'0' <= c && c <= b'9' => true
-            case b'a' <= c && c <= b'f' => true
-            case b'A' <= c && c <= b'F' => true
-            case _ => false
-        }
+protected func unhex(c: Byte): Byte {
+    match {
+        case b'0' <= c && c <= b'9' => c - b'0'
+        case b'a' <= c && c <= b'f' => c - b'a' + 10
+        case b'A' <= c && c <= b'F' => c - b'A' + 10
+        case _ => b'\0'
     }
+}
 
-    public static func unhex(c: Byte): Byte {
-        match {
-            case b'0' <= c && c <= b'9' => c - b'0'
-            case b'a' <= c && c <= b'f' => c - b'a' + 10
-            case b'A' <= c && c <= b'F' => c - b'A' + 10
-            case _ => b'\0'
+protected func snakeCase(str: String): String {
+    let arr = str.toRuneArray()
+    let builder = StringBuilder()
+    var upper = false
+    for (a in arr) {
+        if (a.isAsciiUpperCase()) {
+            if (!upper && builder.size > 1) {
+                builder.append("-")
+            }
+            builder.append(a.toAsciiLowerCase())
+            upper = true
+        } else {
+            upper = false
+            builder.append(a)
         }
     }
+    builder.toString()
 }

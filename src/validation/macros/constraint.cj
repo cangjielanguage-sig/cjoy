@@ -11,8 +11,8 @@
 macro package cjoy.validation.macros
 
 import std.convert.Parsable
-import std.collection.{ArrayList, filter, first}
-import cjoy.utils.{MapToString, MapListGetFunc}
+import std.collection.{ArrayList, filter, first, map, collectArrayList}
+import cjoy.utils.{MapToString, MapListGetFunc, converterList}
 import cjoy.utils.ast.{parserAttrs, joinTokens}
 import std.ast.*
 
@@ -27,6 +27,8 @@ enum ConstraintCatgory {
     | CCChMobilePhone
     | CCEmail
     | CCIPV4
+    | CCEnumStr
+    | CCEnumInt
 }
 
 open class FieldInfo {
@@ -102,24 +104,22 @@ class FieldInfoCache {
         PARAMS.add(info)
     }
 
-    static func addCache(identifier: Token, inFunc: Bool, JoyConstraint: Tokens): Unit {
-        let name = identifier.value
+    static func addCache(identifier: Token, inFunc: Bool, constraint: Tokens): Unit {
         for (fd in PARAMS) {
-            if (fd.name() == name) {
-                fd.constraints.add(JoyConstraint)
+            if (fd.name() == identifier.value) {
+                fd.constraints.add(constraint)
                 return
             }
         }
 
         let info: FieldInfo = FieldInfo(identifier, inFunc)
-        info.constraints.add(JoyConstraint)
+        info.constraints.add(constraint)
         addCache(info)
     }
 
     static func setNestedValid(identifier: Token, inFunc: Bool): Unit {
-        let name = identifier.value
         for (fd in PARAMS) {
-            if (fd.name() == name) {
+            if (fd.name() == identifier.value) {
                 fd.nestedValid = true
                 return
             }
@@ -302,6 +302,50 @@ class IPV4ConstraintGenerator <: MsgBaseConstraintGenerator {
     }
 }
 
+class EnumStrConstraintGenerator <: ConstraintGenerator {
+    var msg: String = ""
+    var values: ArrayList<ToString> = ArrayList()
+
+    init() {
+        super("EnumStr")
+    }
+
+    protected func parseAttr(attr: Tokens): Unit {
+        let map: MapToString = parserAttrs(attr, validKeys: ["values", "msg"], macroName: marcroName)
+        this.values = map.getList("values") ?? ArrayList<ToString>()
+        this.msg = map.getString("msg") ?? ""
+    }
+
+    protected func toConstraint(): Tokens {
+        let v = converterList<ToString, String>(values)
+        let tokens = v |> map {it => quote($it)} |> collectArrayList
+        let vs = Token(TokenKind.LSQUARE) + joinTokens(tokens, Token(TokenKind.COMMA)) + Token(TokenKind.RSQUARE)
+        quote(EnumStrConstraint($vs, $msg))
+    }
+}
+
+class EnumIntConstraintGenerator <: ConstraintGenerator {
+    var msg: String = ""
+    var values: ArrayList<ToString> = ArrayList()
+
+    init() {
+        super("EnumInt")
+    }
+
+    protected func parseAttr(attr: Tokens): Unit {
+        let map: MapToString = parserAttrs(attr, validKeys: ["values", "msg"], macroName: marcroName)
+        this.values = map.getList("values") ?? ArrayList<ToString>()
+        this.msg = map.getString("msg") ?? ""
+    }
+
+    protected func toConstraint(): Tokens {
+        let v = converterList<ToString, Int>(values)
+        let tokens = v |> map {it => quote($it)} |> collectArrayList
+        let vs = Token(TokenKind.LSQUARE) + joinTokens(tokens, Token(TokenKind.COMMA)) + Token(TokenKind.RSQUARE)
+        quote(EnumIntConstraint($vs, $msg))
+    }
+}
+
 func createConstraintGenerator(catgory: ConstraintCatgory): ConstraintGenerator {
     match (catgory) {
         case CCSize => SizeConstraintGenerator()
@@ -314,6 +358,8 @@ func createConstraintGenerator(catgory: ConstraintCatgory): ConstraintGenerator 
         case CCChMobilePhone => ChMobilePhoneConstraintGenerator()
         case CCEmail => EmailConstraintGenerator()
         case CCIPV4 => IPV4ConstraintGenerator()
+        case CCEnumStr => EnumStrConstraintGenerator()
+        case CCEnumInt => EnumIntConstraintGenerator()
     }
 }
 
@@ -327,20 +373,20 @@ func parseConstraint(catgory: ConstraintCatgory, attr: ?Tokens, input: Tokens): 
         constraint.parseAttr(a)
     }
 
+    let errMsg = "@${constraint.marcroName} macro only using for the func paramter or the var field of struct or class"
     try {
         let varDecl: Decl = parseDecl(input)
         match (varDecl) {
             case vd: VarDecl => FieldInfoCache.addCache(vd.identifier, false, constraint.toConstraint())
-            case _ => diagReport(DiagReportLevel.ERROR, input,
-                "@${constraint.marcroName} macro only using for the var field of struct or class", "")
+            case _ => diagReport(DiagReportLevel.ERROR, input, errMsg, "")
         }
     } catch (_: Exception) {
         try {
             let funcParam = FuncParam(input)
             FieldInfoCache.addCache(funcParam.identifier, true, constraint.toConstraint())
-        } catch (_: Exception) {
-            diagReport(DiagReportLevel.ERROR, input, "@${constraint.marcroName} macro only using for the func paramter",
-                "")
+        } catch (ex: Exception) {
+            ex.printStackTrace()
+            diagReport(DiagReportLevel.ERROR, input, errMsg, "")
         }
     }
 }

@@ -13,20 +13,22 @@ macro package cjoy.validation.macros
 import std.ast.*
 
 func parseNestedValid(input: Tokens): Unit {
+    let errMsg = "@NestedValid macro only using for the func paramter or the var field of struct or class"
     try {
         let varDecl: Decl = parseDecl(input)
         assertParentContext("Valid")
         match (varDecl) {
             case vd: VarDecl => FieldInfoCache.setNestedValid(vd.identifier, false)
-            case _ => diagReport(DiagReportLevel.ERROR, input,
-                "@NestedValid macro only using for the var field of struct or class", "")
+            case _ => diagReport(DiagReportLevel.ERROR, input, errMsg, "")
         }
     } catch (_: Exception) {
         try {
             let funcParam = FuncParam(input)
+            assertParentContext("Validated")
             FieldInfoCache.setNestedValid(funcParam.identifier, true)
         } catch (ex: Exception) {
-            diagReport(DiagReportLevel.ERROR, input, "@NestedValid macro only using for the func paramter", "")
+            ex.printStackTrace()
+            diagReport(DiagReportLevel.ERROR, input, errMsg, "")
         }
     }
 }

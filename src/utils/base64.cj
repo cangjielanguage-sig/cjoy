@@ -24,7 +24,7 @@ protected func rawBase64URLDecode(str: String): ?Array<Byte> {
     var v = str
     let len = str.size % 4
     if (len > 0) {
-        v += String.repeat("=", 4 - len)
+        v += "=" * (4 - len)
     }
     v = v.replace("-", "+")
     v = v.replace("_", "/")

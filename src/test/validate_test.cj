@@ -105,6 +105,14 @@ func test11(@Email email: String): Unit {
 func test12(@IPV4 ip: String): Unit {
 }
 
+@Validated
+func test13(@EnumStr[values = ["a", "b", "c"]] str: String): Unit {
+}
+
+@Validated
+func test14(@EnumInt[values = [2, 4, 6]] number: Int): Unit {
+}
+
 @Test
 public class ValidateTestCaseSuit {
     @TestCase
@@ -259,6 +267,40 @@ public class ValidateTestCaseSuit {
             @Fail("shoud throw a validate exception")
         } catch (ex: JoyValidationException) {
             @Assert(ex.message.startsWith("this constraint of value is IP V4"), true)
+        }
+    }
+
+    @TestCase
+    public func testEnumStrOk() {
+        test13("a")
+        test13("b")
+        test13("c")
+    }
+
+    @TestCase
+    public func testEnumStrFaild() {
+        try {
+            test13("d")
+            @Fail("shoud throw a validate exception")
+        } catch (ex: JoyValidationException) {
+            @Assert(ex.message.startsWith("this constraint of value is ["), true)
+        }
+    }
+
+    @TestCase
+    public func testEnumIntOk() {
+        test14(2)
+        test14(4)
+        test14(6)
+    }
+
+    @TestCase
+    public func testEnumIntFaild() {
+        try {
+            test14(10)
+            @Fail("shoud throw a validate exception")
+        } catch (ex: JoyValidationException) {
+            @Assert(ex.message.startsWith("this constraint of value is ["), true)
         }
     }
 }

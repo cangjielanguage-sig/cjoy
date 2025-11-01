@@ -12,6 +12,7 @@ package cjoy.config
 
 import std.collection.{Map, HashMap, ArrayList, map, collectArray}
 import std.convert.Parsable
+import cjoy.utils.snakeCase
 import cjoy.log.*
 
 public class ConfigKey <: ToString {
@@ -28,22 +29,7 @@ public class ConfigKey <: ToString {
 }
 
 func transferKey(key: String): String {
-    let arr = key.toRuneArray()
-    let builder = StringBuilder()
-    var upper = false
-    for (a in arr) {
-        if (a.isAsciiUpperCase()) {
-            if (!upper && builder.size > 1) {
-                builder.append("-")
-            }
-            builder.append(a.toAsciiLowerCase())
-            upper = true
-        } else {
-            upper = false
-            builder.append(a)
-        }
-    }
-    builder.toString()
+    snakeCase(key)
 }
 
 public func transferKeys(data: Map<String, Any>): Unit {

@@ -14,7 +14,7 @@ package cjoy.multipart
 
 import std.collection.{HashMap}
 import std.io.ByteBuffer
-import cjoy.utils.{StrFunc, HexUtils}
+import cjoy.utils.{StrExt, ishex, unhex}
 
 public class JoyMediaType {
     private static let ERR = JoyMediaType("")
@@ -257,7 +257,7 @@ protected func percentHexUnescape(str: String): String {
         }
 
         percents++
-        if (i + 2 >= str.size || !HexUtils.ishex(str[i + 1]) || !HexUtils.ishex(str[i + 2])) {
+        if (i + 2 >= str.size || !ishex(str[i + 1]) || !ishex(str[i + 2])) {
             val = str[i..str.size]
             if (str.size > 3) {
                 val = str[0..3]
@@ -278,7 +278,7 @@ protected func percentHexUnescape(str: String): String {
     while (i < val.size) {
         match (val[i]) {
             case b'%' =>
-                bs[j] = HexUtils.unhex(val[i + 1]) << 4 | HexUtils.unhex(val[i + 2])
+                bs[j] = unhex(val[i + 1]) << 4 | unhex(val[i + 2])
                 j += 1
                 i += 3
             case _ =>

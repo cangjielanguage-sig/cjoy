@@ -14,6 +14,10 @@ import std.collection.{ArrayList, HashMap}
 import std.collection.concurrent.ConcurrentHashMap
 import std.time.DateTime
 
+protected func cast<R>(t: Any): R {
+    (t as R).getOrThrow()
+}
+
 protected func converterList<T, R>(list: ArrayList<T>): ArrayList<R> {
     let res = ArrayList<R>()
     for (it in list) {
@@ -21,10 +25,10 @@ protected func converterList<T, R>(list: ArrayList<T>): ArrayList<R> {
             case x: R => res.add(x)
             case x: HashMap<String, T> =>
                 let r: HashMap<String, R> = converterMap(x)
-                res.add((r as R).getOrThrow())
+                res.add(cast<R>(r))
             case x: ArrayList<T> =>
                 let r: ArrayList<R> = converterList(x)
-                res.add((r as R).getOrThrow())
+                res.add(cast<R>(r))
             case _ => ()
         }
     }
@@ -38,10 +42,10 @@ protected func converterMap<T, R>(map: HashMap<String, T>): HashMap<String, R> {
             case x: R => res.add(k, x)
             case x: HashMap<String, T> =>
                 let r: HashMap<String, R> = converterMap(x)
-                res.add(k, (r as R).getOrThrow())
+                res.add(k, cast<R>(r))
             case x: ArrayList<T> =>
                 let r: ArrayList<R> = converterList(x)
-                res.add(k, (r as R).getOrThrow())
+                res.add(k, cast<R>(r))
             case _ => ()
         }
     }
@@ -136,7 +140,7 @@ protected class TimeoutCache<K, V> where K <: Hashable & Equatable<K> {
                 let iter = tmap.iterator()
                 let now = DateTime.now()
                 while (let Some((k, v)) <- iter.next()) {
-                    if (v.addTime.addNanoseconds(expireTime.toNanoseconds()) > now) {
+                    if (v.addTime + expireTime > now) {
                         tmap.remove(k)
                     }
                 }

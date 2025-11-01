@@ -13,7 +13,7 @@ package cjoy.fs
 import std.collection.ArrayList
 import std.convert.Parsable
 import stdx.net.http.HttpHeaders
-import cjoy.utils.StrFunc
+import cjoy.utils.StrExt
 import cjoy.framework.JoyHttpConsts
 
 class JoyHttpRange {
@@ -30,6 +30,9 @@ class JoyHttpRange {
         headers.add(JoyHttpConsts.HEADER_CONTENT_TYPE, contentType)
     }
 
+    /**
+     * @throws IllegalArgumentException
+     */
     public static func parse(str: String, size: Int): JoyHttpRangs {
         let res: JoyHttpRangs = ArrayList()
         if (str.isEmpty()) {

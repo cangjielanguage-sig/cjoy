@@ -68,6 +68,8 @@ func test( arrparam: Array<Int32>): Unit {
 |`@ChMobileNumber`|msg="..."|校验字符串为中国手机号码|
 |`@Email`|msg="..."|校验字符串为Email格式|
 |`@IPV4`|msg="..."|校验字符串为IPV4格式|
+|`@EnumInt`|values=[1,3,5], msg="..."|校验数字是枚举值|
+|`@EnumStr`|values=["a","b"], msg="..."|校验字符串是为枚举值|
 |`@Valid`||作用于类或结构体，生成代码实现`JoyValidatable`接口|
 |`@NestedValid`||作用于类或结构体的成员变量，表示对此成员类与结构嵌套校验，如果是HashMap，Array, ArrayList，则会对其容器内元素校验，校验规则共用此成员变量的宏标注|
 |`@Validated`||作用于函数上，生成代码会修改函数体增加调用参数的`validate`方法|

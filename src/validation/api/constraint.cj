@@ -162,6 +162,28 @@ public class IPV4Constraint <: JoyConstraint {
     }
 }
 
+public class EnumStrConstraint <: JoyConstraint {
+    public let message: String
+    public EnumStrConstraint(public let values: Array<String>, let msg: String) {
+        if (msg.isEmpty()) {
+            this.message = "this constraint of value is ${values}"
+        } else {
+            this.message = msg
+        }
+    }
+}
+
+public class EnumIntConstraint <: JoyConstraint {
+    public let message: String
+    public EnumIntConstraint(public let values: Array<Int>, let msg: String) {
+        if (msg.isEmpty()) {
+            this.message = "this constraint of value is ${values}"
+        } else {
+            this.message = msg
+        }
+    }
+}
+
 public class JoyValidationException <: Exception {
     public let field: String
     public let constraint: JoyConstraint

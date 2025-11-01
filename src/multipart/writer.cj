@@ -12,7 +12,7 @@ package cjoy.multipart
 
 import std.io.{OutputStream, BufferedOutputStream}
 import stdx.net.http.HttpHeaders
-import cjoy.utils.{StrFunc, secureRandStr}
+import cjoy.utils.{StrExt, secureRandStr}
 import cjoy.framework.{JoyHttpConsts}
 
 /**
@@ -86,7 +86,8 @@ public class JoyMultiPartWriter <: Resource {
         this
     }
 
-    public func createFromFile(fieldname: String, filename: String, contentType!: String = "application/octet-stream"): JoyMultiPartWriter {
+    public func createFromFile(fieldname: String, filename: String,
+        contentType!: String = JoyHttpConsts.MIME_APP_OCTET_STREAM): JoyMultiPartWriter {
         let headers = HttpHeaders()
         headers.add(JoyHttpConsts.HEADER_CONTENT_DISPOSITION,
             "form-data; name=\"${escapeQuotes(fieldname)}\"; filename=\"${escapeQuotes(filename)}\"")
@@ -101,7 +102,7 @@ public class JoyMultiPartWriter <: Resource {
     }
 
     public func writeFile(fieldname: String, filename: String, fileContent: Array<Byte>,
-        contentType!: String = "application/octet-stream"): JoyMultiPartWriter {
+        contentType!: String = JoyHttpConsts.MIME_APP_OCTET_STREAM): JoyMultiPartWriter {
         createFromFile(fieldname, filename, contentType: contentType)
         writePartData(fileContent)
     }

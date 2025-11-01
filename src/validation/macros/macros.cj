@@ -187,3 +187,25 @@ public macro IPV4(input: Tokens): Tokens {
     parseConstraint(CCIPV4, input)
     input
 }
+
+/**
+ * Validate string match whether is enum
+ *
+ * @atrribute values: the enum values
+ * @attribute msg: the verification error tip
+ */
+public macro EnumStr(attr: Tokens, input: Tokens): Tokens {
+    parseConstraint(CCEnumStr, attr, input)
+    input
+}
+
+/**
+ * Validate number match whether is enum
+ *
+ * @atrribute values: the enum values
+ * @attribute msg: the verification error tip
+ */
+public macro EnumInt(attr: Tokens, input: Tokens): Tokens {
+    parseConstraint(CCEnumInt, attr, input)
+    input
+}

@@ -71,6 +71,10 @@ extend String <: JoyValidatable {
                     if (!IPV4Constraint.REGEX.matches(this)) {
                         throw JoyValidationException(c.message, field, c)
                     }
+                case c: EnumStrConstraint =>
+                    if (!c.values.contains(this)) {
+                        throw JoyValidationException(c.message, field, c)
+                    }
                 case _ => ()
             }
         }
@@ -89,7 +93,7 @@ extend<T> Option<T> <: JoyValidatable where T <: JoyValidatable {
 /**
  * @throws JoyValidationException
  */
-func validateNumber<T>(value: T, field: String, constraints: Array<JoyConstraint>): Unit where T <: Parsable<T> & Comparable<T> & ToString {
+func validateNumber<T>(value: T, field: String, constraints: Array<JoyConstraint>, toFn: ?() -> Int): Unit where T <: Parsable<T> & Comparable<T> & ToString {
     for (condition in constraints) {
         match (condition) {
             case c: RangeConstraint =>
@@ -100,6 +104,14 @@ func validateNumber<T>(value: T, field: String, constraints: Array<JoyConstraint
                 if (!c.regex.matches(value.toString())) {
                     throw JoyValidationException(c.message, field, c)
                 }
+            case c: EnumIntConstraint =>
+                if (let Some(f) <- toFn && !c.values.contains(f())) {
+                    throw JoyValidationException(c.message, field, c)
+                }
+            case c: EnumStrConstraint =>
+                if (!c.values.contains(value.toString())) {
+                    throw JoyValidationException(c.message, field, c)
+                }
             case _ => ()
         }
     }
@@ -107,67 +119,67 @@ func validateNumber<T>(value: T, field: String, constraints: Array<JoyConstraint
 
 extend Int8 <: JoyValidatable {
     public func validate(field: String, _: Bool, constraints: Array<JoyConstraint>): Unit {
-        validateNumber(this, field, constraints)
+        validateNumber(this, field, constraints, {=> Int64(this)})
     }
 }
 
 extend Int16 <: JoyValidatable {
     public func validate(field: String, _: Bool, constraints: Array<JoyConstraint>): Unit {
-        validateNumber(this, field, constraints)
+        validateNumber(this, field, constraints, {=> Int64(this)})
     }
 }
 
 extend Int32 <: JoyValidatable {
     public func validate(field: String, _: Bool, constraints: Array<JoyConstraint>): Unit {
-        validateNumber(this, field, constraints)
+        validateNumber(this, field, constraints, {=> Int64(this)})
     }
 }
 
 extend Int64 <: JoyValidatable {
     public func validate(field: String, _: Bool, constraints: Array<JoyConstraint>): Unit {
-        validateNumber(this, field, constraints)
+        validateNumber(this, field, constraints, {=> this})
     }
 }
 
 extend UInt8 <: JoyValidatable {
     public func validate(field: String, _: Bool, constraints: Array<JoyConstraint>): Unit {
-        validateNumber(this, field, constraints)
+        validateNumber(this, field, constraints, {=> Int64(this)})
     }
 }
 
 extend UInt16 <: JoyValidatable {
     public func validate(field: String, _: Bool, constraints: Array<JoyConstraint>): Unit {
-        validateNumber(this, field, constraints)
+        validateNumber(this, field, constraints, {=> Int64(this)})
     }
 }
 
 extend UInt32 <: JoyValidatable {
     public func validate(field: String, _: Bool, constraints: Array<JoyConstraint>): Unit {
-        validateNumber(this, field, constraints)
+        validateNumber(this, field, constraints, {=> Int64(this)})
     }
 }
 
 extend UInt64 <: JoyValidatable {
     public func validate(field: String, _: Bool, constraints: Array<JoyConstraint>): Unit {
-        validateNumber(this, field, constraints)
+        validateNumber(this, field, constraints, {=> Int64(this)})
     }
 }
 
 extend Float16 <: JoyValidatable {
     public func validate(field: String, _: Bool, constraints: Array<JoyConstraint>): Unit {
-        validateNumber(this, field, constraints)
+        validateNumber(this, field, constraints, None)
     }
 }
 
 extend Float32 <: JoyValidatable {
     public func validate(field: String, _: Bool, constraints: Array<JoyConstraint>): Unit {
-        validateNumber(this, field, constraints)
+        validateNumber(this, field, constraints, None)
     }
 }
 
 extend Float64 <: JoyValidatable {
     public func validate(field: String, _: Bool, constraints: Array<JoyConstraint>): Unit {
-        validateNumber(this, field, constraints)
+        validateNumber(this, field, constraints, None)
     }
 }
 

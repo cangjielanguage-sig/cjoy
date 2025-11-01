@@ -12,7 +12,7 @@ package cjoy.jwt
 
 import std.time.DateTime
 import cjoy.json.JsonTool
-import cjoy.utils.{StrFunc, rawBase64URLEncode, rawBase64URLDecode}
+import cjoy.utils.{StrExt, rawBase64URLEncode, rawBase64URLDecode}
 
 public class Jwt {
     private var _headers: MapHeaders = MapHeaders()
@@ -145,6 +145,9 @@ public class Jwt {
         this
     }
 
+    /**
+     * @throws JwtException
+     */
     private func validateMethod(cfg: ParserConfig): Unit {
         if (!cfg.validMethods.isEmpty()) {
             let alg = _method?.alg ?? ""
@@ -154,6 +157,9 @@ public class Jwt {
         }
     }
 
+    /**
+     * @throws JwtException
+     */
     private func validateExpirationTime(cfg: ParserConfig, now: DateTime): Unit {
         if (let Some(v) <- _claims.getExpirationTime()) {
             if ((v.value + cfg.leeway) < now) {
@@ -166,6 +172,9 @@ public class Jwt {
         }
     }
 
+    /**
+     * @throws JwtException
+     */
     private func validateNotBefore(cfg: ParserConfig, now: DateTime): Unit {
         if (let Some(v) <- _claims.getNotBefore()) {
             if ((v.value - cfg.leeway) < now) {
@@ -178,6 +187,9 @@ public class Jwt {
         }
     }
 
+    /**
+     * @throws JwtException
+     */
     private func validateIssuedAt(cfg: ParserConfig, now: DateTime): Unit {
         if (let Some(v) <- _claims.getIssuedAt()) {
             if ((v.value - cfg.leeway) > now) {
@@ -190,6 +202,9 @@ public class Jwt {
         }
     }
 
+    /**
+     * @throws JwtException
+     */
     private func validateAudience(cfg: ParserConfig): Unit {
         let aud = _claims.getAudience()
         if (!cfg.expectedAud.isEmpty()) {
@@ -232,6 +247,9 @@ public class Jwt {
         encodeSegemnt(h) + "." + encodeSegemnt(c)
     }
 
+    /**
+     * @throws JwtException
+     */
     private func parseToken(token: String): Unit {
         if (token.isEmpty()) {
             throw JwtException("token is malformed, token is empty")
