@@ -4,6 +4,14 @@ CJoy内置轻量配置服务，支持读取环境变量，命令行参数，属�
 
 ## 框架
 
+### 特性
+
+ - 统一配置管理
+ - 配置项支持单值，数组，多级
+ - 支持多种配置源，不同的优先级
+ - 支持配置项绑到到对象上
+ - 支持配置引用
+
 ### 接口设计
 
 配置访问Config接口
@@ -57,20 +65,23 @@ CJoy内置轻量配置服务，支持读取环境变量，命令行参数，属�
  - 带默认值引用：`#"${app.address:127.0.0.1}:${app.port:18881}"#`
  - 引用环境变量：`#"${HOME}"#`
 
+某一配置项的值，可以引用另一配置项的值。
+
 ## 使用
 
 需要调用Joy实例run之前，需要先把配置加载好，如下所示：
 
 ```cangjie
 func main(args: Array<String>): Unit {
+    let manager = ConfigManger.INSTANCE
     // 加载命令行参数
-    ConfigManger.INSTANCE.addLoder(ArgConfigLoader(args))
+    manager.addLoder(ArgConfigLoader(args))
     // 加载属性配置
-    ConfigManger.INSTANCE.addLoder(PropertiesConfigLoader("./config/joy.properties"))
+    manager.addLoder(PropertiesConfigLoader("./config/joy.properties"))
     // 加载Json配置
-    ConfigManger.INSTANCE.addLoder(JsonConfigLoader("./config/joy.properites"))
+    manager.addLoder(JsonConfigLoader("./config/joy.properites"))
     // 加载自已扩展的配置加载器
-    // ConfigManger.INSTANCE.addLoder(YamlConfigLoader("./config/joy.yaml"))
+    // manager.addLoder(YamlConfigLoader("./config/joy.yaml"))
     //....
     joy.run("127.0.0.1", 18881)
 }

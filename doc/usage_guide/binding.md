@@ -53,7 +53,7 @@ func handleBind(ctx: JoyContext, @QueryBindParam params BindParam): Unit {
 宏展开编译之后，此类与结构体：
 
  - 并自动生成所有成员变量带命名参数的构造方法。因此let成员变量未指定默认值时，会在构造方法采用系统默认值，如Int为`0`， String为`""`。
- - 实现`cjoy.JoyBindable`接口，
+ - 实现`cjoy.JoyBindable`接口
 
 字段类型支持：
 

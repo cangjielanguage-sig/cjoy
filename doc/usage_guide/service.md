@@ -1,8 +1,6 @@
 # 服务框架
 
-服务指为应用开发提供一些功能的实例，如调试任务服务，Cache服务等。
-
-CJoy提供服务注册与使用能力。
+服务指为应用开发提供一些内聚功能的实例，如调度任务服务，Cache服务等。CJoy提供服务注册与使用能力。
 
 ## 注册
 
@@ -20,7 +18,7 @@ joy.addService("cron", Crontab())
 @Post[path = "/crontab"]
 func addCrontab(ctx: JoyContext): Unit {
     // 先根据服务名获取服务
-    let crontab = ctx.getService<Crontab>("crontab").getOrThrow()
+    let crontab = ctx.mustService<Crontab>("crontab")
     crontab.addJobIfAbsent("the name", "*/5 * * * * *",
         {
             schedCtx: ScheduleContext => LogTool.info("another crontab ...")
@@ -30,7 +28,7 @@ func addCrontab(ctx: JoyContext): Unit {
 
 ## 服务容器
 
-CJoy存一个全局的服务容器ServiceConainter，一些内置的全局服务会默认填写到些容器内。每个Joy实例也创建独属的服务容器，全局的服务会自动填写到Joy实例的服务容器。
+CJoy存在一个全局的服务容器ServiceConainter，一些内置的服务会默认加到此容器内。每个Joy实例也创建独属的服务容器，内置服务会自动加到Joy实例的服务容器中。
 
 全局的服务实例：
 
@@ -39,6 +37,7 @@ CJoy存一个全局的服务容器ServiceConainter，一些内置的全局服务
 |ioc|ApplicationService|Bean容器|
 |eventbus|EventBus|事件总线|
 |crontab|Crontab|Crontab任务调度|
+|config|Config|配置服务|
 
 # 内置服务
 
