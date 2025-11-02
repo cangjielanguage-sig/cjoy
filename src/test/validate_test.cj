@@ -12,8 +12,8 @@ package cjoy.test
 
 import cjoy.json.*
 import cjoy.validation.*
+import cjoy.macros.*
 import std.time.*
-import std.convert.*
 
 @Valid
 @Json

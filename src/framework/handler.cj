@@ -12,7 +12,7 @@ package cjoy.framework
 
 import std.collection.{forEach, ArrayList, HashMap}
 import stdx.net.http.{notFound, HttpStatusCode, OptionsHandler}
-import cjoy.ioc.api.{BeanFactoryManager, ApplicationContext}
+import cjoy.ioc.{BeanFactoryManager, ApplicationContext}
 
 /**
  * the interface of request handler

@@ -13,6 +13,7 @@ package cjoy.mcp.api
 import std.collection.{HashMap, ArrayList}
 import cjoy.jsonrpc.*
 import cjoy.json.*
+import cjoy.json.macros.*
 
 // ---------------------------------------------------------------------------------------
 

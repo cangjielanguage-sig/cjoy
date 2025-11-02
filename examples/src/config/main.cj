@@ -8,7 +8,7 @@ import cjoy.*
 import cjoy.macros.*
 import cjoy.config.*
 import cjoy.ioc.*
-import cjoy.log.*
+import cjoy.log.macros.*
 
 @Get[path = "/config"]
 func config(ctx: JoyContext): String {

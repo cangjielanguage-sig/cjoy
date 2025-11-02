@@ -18,7 +18,7 @@ import cjoy.framework.{JoyContext, JoySseEmitter, JoyServerEventBuilder}
 import cjoy.utils.secureRandStr
 import cjoy.mcp.api.*
 import cjoy.jsonrpc.{JSONRPCError, JSONRPCConsts, JSONRPCTool}
-import cjoy.log.*
+import cjoy.log.macros.*
 
 class McpSseServerTransport <: McpServerTransport {
     private let _sessions: ConcurrentHashMap<String, McpServerSession> = ConcurrentHashMap()

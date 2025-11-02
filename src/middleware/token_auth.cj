@@ -13,7 +13,7 @@ package cjoy.middleware
 import stdx.net.http.HttpStatusCode
 import cjoy.{JoyMiddlewareHandler, JoyRequestHandlerChain, JoyContext, JoyHttpConsts, JoyRequestHandler, 
     JoyRequestHandlerFunc, JoyFuncHandler, JoyRequestFilterFunc}
-import cjoy.log.*
+import cjoy.log.macros.*
 
 // the validate function 
 public type TokenAuthValidatorFunc = (ctx: JoyContext, token: String) -> Bool

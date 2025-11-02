@@ -13,7 +13,7 @@ package cjoy.httpx
 import std.collection.HashMap
 import stdx.net.http.*
 import cjoy.framework.JoyHttpConsts
-import cjoy.log.*
+import cjoy.log.macros.*
 
 /**
  * This is a simple HTTP client that closes the connection directly after each request response,

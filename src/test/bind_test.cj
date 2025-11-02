@@ -11,11 +11,11 @@
 package cjoy.test
 
 import cjoy.bind.*
+import cjoy.macros.*
 import std.collection.*
 import std.time.*
 import stdx.net.http.*
 import stdx.encoding.url.URL
-import std.unittest.testmacro.*
 
 @Bind
 public struct SQueryBind {

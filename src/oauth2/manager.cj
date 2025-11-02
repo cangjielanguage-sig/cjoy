@@ -12,7 +12,7 @@ package cjoy.oauth2
 
 import std.collection.HashMap
 import std.time.DateTime
-import cjoy.log.*
+import cjoy.log.macros.*
 
 /**
  * authorization management

@@ -15,7 +15,7 @@ import std.collection.concurrent.ConcurrentHashMap
 import stdx.encoding.json.stream.JsonSerializable
 import cjoy.mcp.api.*
 import cjoy.framework.{JoyContext}
-import cjoy.log.*
+import cjoy.log.macros.*
 import cjoy.json.JsonTool
 
 public class McpTools {

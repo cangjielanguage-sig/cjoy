@@ -11,8 +11,8 @@
 package cjoy.test
 
 import cjoy.*
+import cjoy.macros.*
 import cjoy.mcp.*
-import cjoy.mcp.api.*
 import cjoy.mcp.client.createMcpSseClient
 import stdx.encoding.base64.toBase64String
 

@@ -16,7 +16,7 @@ import stdx.net.http.{WebSocket, WebSocketException, WebSocketFrame, WebSocketFr
 import stdx.encoding.url.Form
 import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonReader, JsonWriter}
 import cjoy.context.{Context, ServiceConainter}
-import cjoy.log.*
+import cjoy.log.macros.*
 
 /**
  * the websocket message type.

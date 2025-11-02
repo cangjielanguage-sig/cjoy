@@ -69,6 +69,6 @@ public open class MapContext <: Context {
     }
 
     public open func getService<T>(name: String): ?T {
-        GLOBAL_SERVICE_CONTAINER.getService<T>(name)
+        ServiceConainter.GLOBAL.getService<T>(name)
     }
 }

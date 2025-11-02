@@ -11,6 +11,7 @@
 package cjoy.jsonrpc.api
 
 import cjoy.json.*
+import cjoy.json.macros.*
 
 public abstract class BaseMessage <: ToString & JsonSerializable {
     public func toString(): String {

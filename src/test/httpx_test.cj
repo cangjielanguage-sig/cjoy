@@ -11,7 +11,6 @@
 package cjoy.test
 
 import std.collection.*
-import std.unittest.mock.*
 import stdx.net.http.*
 import stdx.encoding.url.*
 import cjoy.*
@@ -32,7 +31,7 @@ class TestJsonData {
 private func handler(ctx: JoyContext): Unit {
     var content = "httpx_handler"
     content += ctx.getQuery("q1", "")
-    content += ctx.getHeader("h1").getOrDefault({=> ""})
+    content += ctx.getHeader("h1") ?? ""
     content += ctx.getPostForm("p1", "")
     if (let Some(u) <- ctx.readJson<TestJsonData>()) {
         content += u.a
@@ -170,15 +169,13 @@ public class JoyHttpClientServiceTestCaseSuit {
     public func testPostMultiPart() {
         let rsp = _client.send(
             _ctx,
-            JoyHttpRequest
-                .of("/multpart")
-                .multiPart(
-                    {
-                        writer: JoyMultiPartWriter =>
+            JoyHttpRequest.of("/multpart").multiPart(
+                {
+                    writer: JoyMultiPartWriter =>
                         writer.writeField("f1", "text")
                         writer.writeFile("f2", 'file.txt', "file contents".toArray())
-                    }
-                )
+                }
+            )
         )
         assertReponse(rsp, "textfile.txt")
     }

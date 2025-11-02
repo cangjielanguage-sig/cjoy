@@ -14,8 +14,8 @@ import std.collection.{ArrayList, HashMap, Map}
 import std.sort.sort
 import std.env.getVariables
 import cjoy.bind.{JoyBindable, MapContainer}
-import cjoy.context.GLOBAL_SERVICE_CONTAINER
-import cjoy.log.*
+import cjoy.context.ServiceConainter
+import cjoy.log.macros.*
 
 class ConfigData <: ToString {
     ConfigData(let data: Map<String, Any>, let priority: Int) {
@@ -126,4 +126,4 @@ public class ConfigManager <: Config {
     }
 }
 
-let _: Unit = GLOBAL_SERVICE_CONTAINER.addService("config", ConfigManager.INSTANCE)
+private let _: Unit = ServiceConainter.GLOBAL.addService("config", ConfigManager.INSTANCE)

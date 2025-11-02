@@ -15,7 +15,7 @@ import stdx.crypto.digest.SHA256
 import stdx.net.http.HttpStatusCode
 import cjoy.{JoyMiddlewareHandler, JoyRequestHandlerChain, JoyContext, JoyHttpConsts, JoyRequestHandler, 
     JoyRequestHandlerFunc, JoyFuncHandler, JoyRequestFilterFunc}
-import cjoy.log.*
+import cjoy.log.macros.*
 import cjoy.utils.{secureRandStr, rawBase64URLEncode}
 
 const csrfSecretCtxKey = "__csrf_secret__"

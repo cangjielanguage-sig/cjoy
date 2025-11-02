@@ -17,9 +17,9 @@ import stdx.net.http.{HttpContext, RedirectHandler, HttpStatusCode, HttpResponse
 import stdx.encoding.url.URL
 import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonReader, JsonWriter}
 import stdx.encoding.base64.fromBase64String
-import cjoy.bind.api.JoyBindable
+import cjoy.bind.JoyBindable
 import cjoy.context.{Context, ServiceConainter}
-import cjoy.log.*
+import cjoy.log.macros.*
 
 /**
  * the context which holds the engine config, params, context params and any you need.

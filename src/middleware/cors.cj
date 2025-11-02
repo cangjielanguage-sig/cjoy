@@ -12,7 +12,7 @@ package cjoy.middleware
 
 import std.collection.{ArrayList, any, filter, count}
 import cjoy.{JoyMiddlewareHandler, JoyRequestHandlerChain, JoyContext, JoyHttpConsts}
-import cjoy.log.*
+import cjoy.log.macros.*
 
 public type AllowOriginFunc = (ctx: JoyContext, origin: String) -> Bool
 

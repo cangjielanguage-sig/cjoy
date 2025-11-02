@@ -18,7 +18,7 @@ import cjoy.framework.{JoyContext, JoyHttpConsts}
 import cjoy.utils.secureRandStr
 import cjoy.mcp.api.*
 import cjoy.jsonrpc.{JSONRPCRequest, JSONRPCResponse, JSONRPCMessage, JSONRPCTool, JSONRPCError, JSONRPCConsts, JSONRPCException}
-import cjoy.log.*
+import cjoy.log.macros.*
 
 class McpStreamableServerTransport <: McpServerTransport {
     private let _sessions: ConcurrentHashMap<String, McpServerSession> = ConcurrentHashMap()

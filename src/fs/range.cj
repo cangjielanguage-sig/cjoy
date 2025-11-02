@@ -25,7 +25,7 @@ class JoyHttpRange {
         "bytes ${start}-${start + length - 1}/${size}"
     }
 
-    public func addToHeaders(headers: HttpHeaders, contentType: String, size: Int) {
+    public func addToHeaders(headers: HttpHeaders, contentType: String, size: Int): Unit {
         headers.add(JoyHttpConsts.HEADER_RANGE, contentRange(size))
         headers.add(JoyHttpConsts.HEADER_CONTENT_TYPE, contentType)
     }

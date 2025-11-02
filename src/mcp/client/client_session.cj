@@ -17,7 +17,7 @@ import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonRead
 import cjoy.mcp.api.*
 import cjoy.jsonrpc.*
 import cjoy.utils.{TimeoutCache, randStr}
-import cjoy.log.*
+import cjoy.log.macros.*
 
 class ResponseWaiter {
     ResponseWaiter(var response!: ?JSONRPCResponse = None, let counter!: SyncCounter = SyncCounter(1)) {}

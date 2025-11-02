@@ -8,6 +8,6 @@
  * See the Mulan PSL v2 for more details.
  */
 
-macro package cjoy.jsonrpc
+package cjoy.jsonrpc
 
 public import cjoy.jsonrpc.api.*

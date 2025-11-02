@@ -5,6 +5,7 @@
 package examples.mcpserver
 
 import cjoy.*
+import cjoy.macros.*
 import cjoy.mcp.*
 import cjoy.middleware.ExceptionHandler
 

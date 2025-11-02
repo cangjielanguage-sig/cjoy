@@ -11,6 +11,7 @@
 package cjoy.test
 
 import cjoy.json.*
+import cjoy.json.macros.*
 import std.collection.*
 import std.unittest.testmacro.*
 

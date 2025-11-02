@@ -15,7 +15,7 @@ import std.fs.{canonicalize, FSException, exists, FileInfo}
 import stdx.encoding.url.URL
 import stdx.net.http.{HttpRequestDistributor, HttpRequestHandler, HttpRequest, HttpContext}
 import cjoy.context.ServiceConainter
-import cjoy.log.*
+import cjoy.log.macros.*
 
 /**
  * the inferface of router

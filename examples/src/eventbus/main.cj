@@ -7,8 +7,8 @@ package examples.eventbus
 import cjoy.*
 import cjoy.macros.*
 import cjoy.eventbus.*
+import cjoy.ioc.*
 import cjoy.middleware.ExceptionHandler
-import cjoy.log.*
 
 // 采用宏标注函数，函数有两个参数
 @SubscribeEvent[name = "sub1", pattern = "a.b.**"]

@@ -14,7 +14,7 @@ import std.sync.AtomicBool
 import cjoy.mcp.api.*
 import cjoy.jsonrpc.*
 import cjoy.utils.TimeoutCache
-import cjoy.log.*
+import cjoy.log.macros.*
 
 public func createMcpSseClient(url: String, features!: McpClientFeatures = McpClientFeatures()): McpClient {
     let transport = McpSseClientTransport(url)

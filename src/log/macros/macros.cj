@@ -12,6 +12,8 @@ macro package cjoy.log.macros
 
 import std.ast.Tokens
 
+public import cjoy.log.LogTool
+
 public macro LogDebug(input: Tokens): Tokens {
     quote(LogTool.debug($input, @sourceFile(), @sourceLine()))
 }

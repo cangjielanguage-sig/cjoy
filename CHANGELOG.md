@@ -2,6 +2,7 @@ Changelog
 ------
 # v0.80.0
 
+ - 变更：宏统一由cjoy.macros重新导出
 
 # v0.70.0
 

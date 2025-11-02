@@ -15,7 +15,7 @@ import stdx.encoding.url.{URL, Form}
 import stdx.net.http.HttpStatusCode
 import cjoy.framework.{JoyContext, JoyHttpConsts}
 import cjoy.json.*
-import cjoy.log.*
+import cjoy.log.macros.*
 
 public class OAuth2Server {
     private let _cfg: ServerConfig
@@ -278,21 +278,18 @@ public class OAuth2Server {
             @LogError("[OAuth2] invalid request, method(${ctx.method}) is invalid")
             throw OAuthException(OAuthErrors.INVALID_REQ)
         }
-        let redirectURI = ctx
-            .getForm("redirect_uri")
-            .getOrThrow(
-                {
-                    =>
-                    @LogError("[OAuth2] invalid request, redirectURI is not existed")
-                    OAuthException(OAuthErrors.INVALID_REQ)
-                }
-            )
+        let redirectURI = ctx.getForm("redirect_uri").getOrThrow {
+            =>
+                @LogError("[OAuth2] invalid request, redirectURI is not existed")
+                OAuthException(OAuthErrors.INVALID_REQ)
+        }
+
         let clientId = validateClientId(ctx)
         let respType = validateResponeType(ctx)
         let cc = validateCodeChange(ctx)
         var ccm = validateCodeChangeMethod(ctx)
-        let scope = ctx.getForm("scope").getOrDefault({=> ""})
-        let state = ctx.getForm("state").getOrDefault({=> ""})
+        let scope = ctx.getForm("scope") ?? ""
+        let state = ctx.getForm("state") ?? ""
 
         AuthorizeRequest(responseType: respType, clientId: clientId, scope: scope, redirectURI: redirectURI,
             state: state, codeChallenge: cc, codeChallengeMethod: ccm, userId: "", accessTokenExp: Duration.Zero,
@@ -303,15 +300,12 @@ public class OAuth2Server {
      * @throws OAuthException
      */
     private func validateClientId(ctx: JoyContext): String {
-        let clientId = ctx
-            .getForm("client_id")
-            .getOrThrow(
-                {
-                    =>
-                    @LogError("[OAuth2] invalid request, client_id is not existed")
-                    OAuthException(OAuthErrors.INVALID_REQ)
-                }
-            )
+        let clientId = ctx.getForm("client_id").getOrThrow {
+            =>
+                @LogError("[OAuth2] invalid request, client_id is not existed")
+                OAuthException(OAuthErrors.INVALID_REQ)
+        }
+
         if (clientId == "") {
             @LogError("[OAuth2] invalid request, clientId is empty")
             throw OAuthException(OAuthErrors.INVALID_REQ)
@@ -323,15 +317,12 @@ public class OAuth2Server {
      * @throws OAuthException
      */
     private func validateResponeType(ctx: JoyContext): String {
-        let respType = ctx
-            .getForm("response_type")
-            .getOrThrow(
-                {
-                    =>
-                    @LogError("[OAuth2] invalid request, response_type is not existed")
-                    OAuthException(OAuthErrors.UNSUPPORTED_RESP_TYPE)
-                }
-            )
+        let respType = ctx.getForm("response_type").getOrThrow {
+            =>
+                @LogError("[OAuth2] invalid request, response_type is not existed")
+                OAuthException(OAuthErrors.UNSUPPORTED_RESP_TYPE)
+        }
+
         if (!checkResponeType(respType)) {
             @LogError("[OAuth2] unauthorized_client, response type (${respType}) is invalid")
             throw OAuthException(OAuthErrors.UNAUTHORIZED_CLIENT)
@@ -343,7 +334,7 @@ public class OAuth2Server {
      * @throws OAuthException
      */
     private func validateCodeChange(ctx: JoyContext): String {
-        let cc = ctx.getForm("code_challenge").getOrDefault({=> ""})
+        let cc = ctx.getForm("code_challenge") ?? ""
         if (cc == "" && _cfg.forcePKCE) {
             @LogError("[OAuth2] invalid_request, code_challenge is empty")
             throw OAuthException(OAuthErrors.CODE_CHALLENG_ERQUIRED)
@@ -359,7 +350,7 @@ public class OAuth2Server {
      * @throws OAuthException
      */
     private func validateCodeChangeMethod(ctx: JoyContext): String {
-        var ccm = ctx.getForm("code_challenge_method").getOrDefault({=> ""})
+        var ccm = ctx.getForm("code_challenge_method") ?? ""
         if (ccm == "") {
             ccm = OAuthConsts.CODE_CHALLENGE_PLAIN
         }
@@ -455,15 +446,11 @@ public class OAuth2Server {
             @LogError("[OAuth2] invalid_request, method (${ctx.method}) is invalid")
             throw OAuthException(OAuthErrors.INVALID_REQ)
         }
-        let gt = ctx
-            .getForm("grant_type")
-            .getOrThrow(
-                {
-                    =>
-                    @LogError("[OAuth2] invalid_request, grant_type is not existed")
-                    OAuthException(OAuthErrors.UNSUPPORTED_GRANT_TYPE)
-                }
-            )
+        let gt = ctx.getForm("grant_type").getOrThrow {
+            =>
+                @LogError("[OAuth2] invalid_request, grant_type is not existed")
+                OAuthException(OAuthErrors.UNSUPPORTED_GRANT_TYPE)
+        }
 
         let (clientId, clientSecret) = _clientInfoHandleFunc(ctx)
         // @LogDebug("[OAuth2] client info: ${clientId}, ${clientSecret}")
@@ -489,13 +476,13 @@ public class OAuth2Server {
      * @throws OAuthException
      */
     private func validateAuthorizationCode(tgr: TokenGenerateRequest, ctx: JoyContext): Unit {
-        tgr.redirectURI = ctx.getForm("redirect_uri").getOrDefault({=> ""})
-        tgr.code = ctx.getForm("code").getOrDefault({=> ""})
+        tgr.redirectURI = ctx.getForm("redirect_uri") ?? ""
+        tgr.code = ctx.getForm("code") ?? ""
         if (tgr.redirectURI == "" || tgr.code == "") {
             @LogError("[OAuth2] invalid request, redirectURI or code is empty")
             throw OAuthException(OAuthErrors.INVALID_REQ)
         }
-        tgr.codeVerifier = ctx.getForm("code_verifier").getOrDefault({=> ""})
+        tgr.codeVerifier = ctx.getForm("code_verifier") ?? ""
         if (tgr.codeVerifier == "" && _cfg.forcePKCE) {
             @LogError("[OAuth2] invalid request, code verifier is empty")
             throw OAuthException(OAuthErrors.INVALID_REQ)
@@ -506,9 +493,9 @@ public class OAuth2Server {
      * @throws OAuthException
      */
     private func validatePassword(tgr: TokenGenerateRequest, ctx: JoyContext): Unit {
-        tgr.code = ctx.getForm("scope").getOrDefault({=> ""})
-        let username = ctx.getForm("username").getOrDefault({=> ""})
-        let pwd = ctx.getForm("password").getOrDefault({=> ""})
+        tgr.code = ctx.getForm("scope") ?? ""
+        let username = ctx.getForm("username") ?? ""
+        let pwd = ctx.getForm("password") ?? ""
         if (pwd == "" || username == "") {
             @LogError("[OAuth2] invalid request, username or password is empty")
             throw OAuthException(OAuthErrors.INVALID_REQ)
@@ -523,12 +510,12 @@ public class OAuth2Server {
     }
 
     private func validateClientCredentials(tgr: TokenGenerateRequest, ctx: JoyContext): Unit {
-        tgr.scope = ctx.getForm("scope").getOrDefault({=> ""})
+        tgr.scope = ctx.getForm("scope") ?? ""
     }
 
     private func validateRefreshToken(tgr: TokenGenerateRequest, ctx: JoyContext): Unit {
         tgr.refresh = _refreshTokenResolveHandleFunc(ctx)
-        tgr.scope = ctx.getForm("scope").getOrDefault({=> ""})
+        tgr.scope = ctx.getForm("scope") ?? ""
     }
 
     /**

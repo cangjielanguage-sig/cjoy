@@ -12,7 +12,7 @@ package cjoy.jsonrpc.api
 
 import std.io.ByteBuffer
 import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonReader, JsonWriter, JsonToken}
-import cjoy.log.*
+import cjoy.log.macros.*
 
 public class JSONRPCTool {
     public static func serialize(obj: JsonSerializable): ByteBuffer {

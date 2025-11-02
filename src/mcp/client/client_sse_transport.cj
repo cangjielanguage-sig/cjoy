@@ -17,7 +17,7 @@ import std.sync.AtomicBool
 import stdx.encoding.url.URL
 import cjoy.mcp.api.*
 import cjoy.jsonrpc.*
-import cjoy.log.*
+import cjoy.log.macros.*
 import cjoy.httpx.{JoySSEventStream, JoySimpleHttpClient}
 
 class McpSseClientTransport <: McpClientTransport {

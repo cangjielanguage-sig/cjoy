@@ -11,8 +11,9 @@
 package cjoy.mcp.server
 
 import cjoy.mcp.api.*
-import cjoy.framework.{Joy, VERSION}
-import cjoy.log.*
+import cjoy.framework.Joy
+import cjoy.version.VERSION
+import cjoy.log.macros.*
 
 public class McpServerFeatures {
     public var protocolVesion: String = McpConsts.LASTEST_PROTOCOL_VERSION

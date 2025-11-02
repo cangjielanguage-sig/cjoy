@@ -16,7 +16,7 @@ import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable}
 import cjoy.mcp.api.*
 import cjoy.jsonrpc.{JSONRPCRequest, JSONRPCResponse, JSONRPCMessage, JSONRPCTool, JSONRPCError, JSONRPCConsts, 
     JSONRPCException, JSONRPCNotification}
-import cjoy.log.*
+import cjoy.log.macros.*
 import cjoy.json.JsonTool
 import cjoy.framework.{JoyContext, JoySseEmitter}
 

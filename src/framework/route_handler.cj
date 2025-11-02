@@ -14,7 +14,7 @@ import std.collection.{ArrayList}
 import std.collection.concurrent.ConcurrentHashMap
 import std.fs.{Path, FileInfo, exists}
 import stdx.net.http.{HttpStatusCode, FileHandler}
-import cjoy.log.*
+import cjoy.log.macros.*
 
 class JoyGroupRouteHandler <: JoyRequestHandler {
     static let INSTANCE = JoyGroupRouteHandler()

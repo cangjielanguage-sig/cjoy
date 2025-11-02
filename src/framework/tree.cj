@@ -13,7 +13,7 @@ package cjoy.framework
 import std.regex.Regex
 import std.sort.sort
 import std.collection.{ArrayList, HashMap}
-import cjoy.log.*
+import cjoy.log.macros.*
 
 class Endpoint<T> <: ToString {
     Endpoint(let handler: T, let pattern: String, let paramKeys: Array<String>) {

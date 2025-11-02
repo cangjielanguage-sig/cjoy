@@ -13,7 +13,7 @@ package cjoy.config
 import std.collection.{Map, HashMap}
 import std.convert.Parsable
 import cjoy.utils.snakeCase
-import cjoy.log.*
+import cjoy.log.macros.*
 
 public class ConfigKey <: ToString {
     ConfigKey(public let key: String, public let arrIdx: Int, public var sub: ?ConfigKey) {

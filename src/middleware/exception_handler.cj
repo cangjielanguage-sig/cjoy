@@ -13,7 +13,7 @@ package cjoy.middleware
 import stdx.net.http.HttpStatusCode
 import cjoy.{JoyMiddlewareHandler, JoyRequestHandlerChain, JoyContext}
 import cjoy.validation.JoyValidationException
-import cjoy.log.*
+import cjoy.log.macros.*
 
 /**
  * covering catch all exception

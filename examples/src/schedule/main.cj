@@ -5,10 +5,10 @@
 package examples.schedule
 
 import cjoy.*
+import cjoy.ioc.*
 import cjoy.macros.*
 import cjoy.schedule.*
 import cjoy.middleware.ExceptionHandler
-import cjoy.log.*
 
 // 使用方式1： 采用宏标注函数，函数只有一个参数ScheduleContext
 @Scheduled[name = "metric job", cron = "*/2 * * * * *"]

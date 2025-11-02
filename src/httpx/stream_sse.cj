@@ -12,7 +12,7 @@ package cjoy.httpx
 
 import std.deriving.Derive
 import std.convert.Parsable
-import cjoy.log.*
+import cjoy.log.macros.*
 
 @Derive[ToString]
 public struct JoySSEvent {
@@ -70,9 +70,8 @@ public class JoySSEventStream <: Iterator<JoySSEvent> {
                     case text.startsWith("data:") => data._data = text.trimStart("data:").trimAscii()
                     case text.startsWith("id:") => data._id = text.trimStart("id:").trimAscii()
                     case text.startsWith("event:") => data._event = text.trimStart("event:").trimAscii()
-                    case text.startsWith("retry:") => data._retry = UInt
-                        .tryParse(text.trimStart("retry:").trimAscii())
-                        .getOrDefault({=> 0})
+                    case text.startsWith("retry:") => data._retry = UInt.tryParse(text.trimStart("retry:").trimAscii()) ??
+                        0
                     case text.isEmpty() =>
                         @LogDebug("SSE stream event: ${data}")
                         return data

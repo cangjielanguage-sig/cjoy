@@ -14,7 +14,7 @@ import std.collection.HashMap
 import stdx.encoding.url.URL
 import cjoy.framework.{JoyContext, JoyHttpConsts}
 import cjoy.json.*
-import cjoy.log.*
+import cjoy.log.macros.*
 
 public interface ClientPasswordVerifier {
     func verifyPassword(client: ClientInfo, pwd: String): Bool
@@ -22,6 +22,9 @@ public interface ClientPasswordVerifier {
 
 public type ValidateURIFunc = (baseURI: String, redirectURI: String) -> Unit
 
+/**
+ * @throws  OAuthException
+ */
 func defaultValidateURIFunc(baseURI: String, redirectURI: String): Unit {
     let base = URL.parse(baseURI)
     let redirect = URL.parse(redirectURI)
@@ -65,49 +68,60 @@ public type RefreshTokenResolveHandleFunc = (ctx: JoyContext) -> String
 // fetch the access token from the request
 public type AccessTokenResolveHandleFunc = (ctx: JoyContext) -> String
 
+/**
+ * @throws OAuthException
+ */
 public func clientFormHandleFunc(ctx: JoyContext): (String, String) {
-    let clientId = ctx.getForm("client_id").getOrThrow({=> OAuthException(OAuthErrors.INVALID_CLIENT)})
-    let clientSecret = ctx.getForm("client_secret").getOrDefault({=> ""})
+    let clientId = ctx.getForm("client_id") ?? throw OAuthException(OAuthErrors.INVALID_CLIENT)
+    let clientSecret = ctx.getForm("client_secret") ?? ""
     return (clientId, clientSecret)
 }
 
+/**
+ * @throws OAuthException
+ */
 public func clientBasicHandleFunc(ctx: JoyContext): (String, String) {
-    ctx.basicAuth()
-        .getOrThrow(
-            {
-                =>
-                @LogError("[OAuth2] get basic auth from header failed")
-                throw OAuthException(OAuthErrors.INVALID_CLIENT)
-            }
-        )
+    ctx.basicAuth().getOrThrow {
+        =>
+            @LogError("[OAuth2] get basic auth from header failed")
+            throw OAuthException(OAuthErrors.INVALID_CLIENT)
+    }
 }
 
+/**
+ * @throws OAuthException
+ */
 public func refreshTokenFormResolveHandleFunc(ctx: JoyContext): String {
-    ctx.getForm("refresh_token").getOrThrow({=> OAuthException(OAuthErrors.INVALID_REQ)})
+    ctx.getForm("refresh_token") ?? throw OAuthException(OAuthErrors.INVALID_REQ)
 }
 
+/**
+ * @throws OAuthException
+ */
 public func refreshTokenCookieResolveHandleFunc(ctx: JoyContext): String {
-    ctx.getCookie("refresh_token").getOrThrow({=> OAuthException(OAuthErrors.INVALID_REQ)})
+    ctx.getCookie("refresh_token") ?? throw OAuthException(OAuthErrors.INVALID_REQ)
 }
+
+private const PREFIX: String = "Bearer "
 
 public func accessTokenDefaultResolveHandleFunc(ctx: JoyContext): String {
     let auth = ctx.getHeader(JoyHttpConsts.HEADER_AUTHORIZATION)
-    const prefix = "Bearer "
-    if (let Some(h) <- auth && h.startsWith(prefix)) {
-        h[prefix.size..]
+
+    if (let Some(h) <- auth && h.startsWith(PREFIX)) {
+        h[PREFIX.size..]
     } else {
-        ctx.getForm("access_token").getOrDefault({=> ""})
+        ctx.getForm("access_token") ?? ""
     }
 }
 
 public func accessTokenCookieResolveHandleFunc(ctx: JoyContext): String {
-    ctx.getCookie("access_token").getOrDefault({=> ""})
+    ctx.getCookie("access_token") ?? ""
 }
 
-func defaultInternalErrorHandleFunc(ctx: JoyContext, ex: ErrorInfo): Unit {
+func defaultInternalErrorHandleFunc(_: JoyContext, ex: ErrorInfo): Unit {
     @LogError("[OAuth2] internal error, ${ex.code}, ${ex.description}")
 }
 
-func defaultResponseErrorHandleFunc(ctx: JoyContext, er: ErrorResponse): Unit {
+func defaultResponseErrorHandleFunc(_: JoyContext, er: ErrorResponse): Unit {
     @LogError("[OAuth2] reponse error, ${er.errorInfo.code}, ${er.errorInfo.description}")
 }

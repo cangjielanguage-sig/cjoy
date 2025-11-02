@@ -14,9 +14,10 @@ import std.time.{DateTime, DateTimeFormat}
 import stdx.net.http.{HttpStatusCode, Cookie}
 import stdx.crypto.keys.{RSAPrivateKey, RSAPublicKey}
 import cjoy.{JoyMiddlewareHandler, JoyRequestHandlerChain, JoyContext, JoyHttpConsts, JoyRequestHandlerFunc}
-import cjoy.log.*
+import cjoy.log.macros.*
 import cjoy.jwt.*
 import cjoy.json.*
+import cjoy.json.macros.*
 
 private const JWT_CTX_KEY: String = "__jwt__"
 private const JWT_PAYLOAD_CTX_KEY: String = "__jwt_payload__"

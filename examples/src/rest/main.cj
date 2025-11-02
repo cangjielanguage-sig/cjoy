@@ -8,7 +8,7 @@ import std.collection.*
 import stdx.net.http.HttpStatusCode
 import cjoy.*
 import cjoy.json.*
-import cjoy.log.*
+import cjoy.macros.*
 
 @Json
 class UserInfo {

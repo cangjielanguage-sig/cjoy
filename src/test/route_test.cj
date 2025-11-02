@@ -11,10 +11,10 @@
 package cjoy.test
 
 import std.io.*
-import std.unittest.testmacro.*
 import stdx.net.http.*
 import cjoy.*
 import cjoy.json.*
+import cjoy.macros.*
 
 @Json
 class UserInfo {
@@ -51,42 +51,42 @@ public class RouteTestCaseSuit {
                 "/users/{name}",
                 {
                     ctx: JoyContext =>
-                    let name = ctx.getParam("name") ?? "no name"
-                    ctx.string("/users/${name}")
+                        let name = ctx.getParam("name") ?? "no name"
+                        ctx.string("/users/${name}")
                 }
             )
             router.get(
                 "/users/{name}/posts/{postid}",
                 {
                     ctx: JoyContext =>
-                    let name = ctx.getParam("name") ?? "no name"
-                    let postid = ctx.getParam("postid") ?? "no post id"
-                    ctx.string("/users/${name}/posts/${postid}")
+                        let name = ctx.getParam("name") ?? "no name"
+                        let postid = ctx.getParam("postid") ?? "no post id"
+                        ctx.string("/users/${name}/posts/${postid}")
                 }
             )
             router.get(
                 "/users",
                 {
                     ctx: JoyContext =>
-                    let name = ctx.getQuery("name", "no name")
-                    ctx.string("/users?name=${name}")
+                        let name = ctx.getQuery("name", "no name")
+                        ctx.string("/users?name=${name}")
                 }
             )
             router.get(
                 "/posts",
                 {
                     ctx: JoyContext =>
-                    let ids = ctx.getQueryList("id")
-                    let str = String.join(ids.toArray(), delimiter: "&id=")
-                    ctx.string("/posts?id=${str}")
+                        let ids = ctx.getQueryList("id")
+                        let str = String.join(ids.toArray(), delimiter: "&id=")
+                        ctx.string("/posts?id=${str}")
                 }
             )
             router.post(
                 "/form",
                 {
                     ctx: JoyContext =>
-                    let id = ctx.getPostForm("id", "no id")
-                    ctx.string("id=${id}")
+                        let id = ctx.getPostForm("id", "no id")
+                        ctx.string("id=${id}")
                 }
             )
 
@@ -95,28 +95,26 @@ public class RouteTestCaseSuit {
                 "/json",
                 {
                     ctx: JoyContext =>
-                    let userInfo = ctx.readJson<UserInfo>().getOrThrow()
-                    ctx.json(userInfo)
+                        let userInfo = ctx.readJson<UserInfo>().getOrThrow()
+                        ctx.json(userInfo)
                 }
             )
 
             // Middleware
-            router
-                .apply(JoyTestMiddleware())
-                .get(
-                    "/mw-num-inline",
-                    {
-                        ctx: JoyContext =>
+            router.apply(JoyTestMiddleware()).get(
+                "/mw-num-inline",
+                {
+                    ctx: JoyContext =>
                         let num = ctx.getCtxParam<Int>("num").getOrThrow()
                         ctx.string("${num}")
-                    }
-                )
+                }
+            )
             router.get(
                 "/mw-num",
                 {
                     ctx: JoyContext =>
-                    let num = ctx.getCtxParam<Int>("num").getOrThrow()
-                    ctx.string("${num}")
+                        let num = ctx.getCtxParam<Int>("num").getOrThrow()
+                        ctx.string("${num}")
                 }
             )
 
@@ -127,21 +125,19 @@ public class RouteTestCaseSuit {
                 "/",
                 {
                     ctx: JoyContext =>
-                    let num = ctx.getCtxParam<Int>("num").getOrThrow()
-                    ctx.string("/group/,${num}")
+                        let num = ctx.getCtxParam<Int>("num").getOrThrow()
+                        ctx.string("/group/,${num}")
                 }
             )
 
-            group
-                .apply(JoyTestMiddleware())
-                .get(
-                    "/path",
-                    {
-                        ctx: JoyContext =>
+            group.apply(JoyTestMiddleware()).get(
+                "/path",
+                {
+                    ctx: JoyContext =>
                         let num = ctx.getCtxParam<Int>("num").getOrThrow()
                         ctx.string("/group/path,${num}")
-                    }
-                )
+                }
+            )
 
             _instance = joy
             joy.run("127.0.0.1", 18881)

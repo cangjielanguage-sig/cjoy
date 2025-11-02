@@ -15,6 +15,7 @@ import std.time.DateTime
 import std.crypto.digest.digest
 import stdx.crypto.digest.SHA256
 import cjoy.json.*
+import cjoy.json.macros.*
 import cjoy.framework.JoyContext
 import cjoy.utils.rawBase64URLEncode
 

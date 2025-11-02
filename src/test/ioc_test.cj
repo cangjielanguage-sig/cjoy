@@ -11,11 +11,12 @@
 package cjoy.test
 
 import cjoy.*
+import cjoy.ioc.*
 import cjoy.macros.*
 import cjoy.schedule.*
 import cjoy.validation.*
-import cjoy.context.*
 import cjoy.eventbus.*
+import cjoy.config.*
 
 // -------- @Autowired指定名称注入
 @Component

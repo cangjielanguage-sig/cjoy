@@ -13,7 +13,7 @@ package cjoy.middleware
 import std.collection.HashMap
 import stdx.net.http.HttpStatusCode
 import cjoy.{JoyMiddlewareHandler, JoyRequestHandlerChain, JoyContext, JoyHttpConsts}
-import cjoy.log.*
+import cjoy.log.macros.*
 
 public type BasicAuthFilterFunc = (ctx: JoyContext) -> Bool
 

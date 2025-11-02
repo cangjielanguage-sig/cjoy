@@ -1,0 +1,288 @@
+/*
+ * Copyright (c) 2025 lanlingx(xiaotengfei) All rights resvered.
+ * CJoy is licensed under Mulan PSL v2.
+ * You can use this software according to the terms and conditions of the Mulan PSL v2.
+ * You may obtain a copy of Mulan PSL v2 at:
+ *          http://license.coscl.org.cn/MulanPSL2
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
+ * See the Mulan PSL v2 for more details.
+ */
+
+macro package cjoy.framework.macros
+
+import std.ast.Tokens
+
+/**
+ * PathParam macro is used for annotation at the paramter of function
+ * which value from named paramter in url path.
+ *
+ * @attribute name: the name of paramter in url path
+ */
+public macro PathParam(attr: Tokens, input: Tokens) {
+    parseParam("PathParam", attr, input)
+    input
+}
+
+/**
+ * PathParam macro is used for annotation at the paramter of function
+ * which value from named paramter in url path.
+ * The paramter name of function is the same as named paramter in path.
+ *
+ */
+public macro PathParam(input: Tokens) {
+    parseParam("PathParam", input)
+    input
+}
+
+/**
+ * QueryParam macro is used for annotation at the paramter of function
+ * which value from named paramter in url query.
+ *
+ * @attribute name: the name of paramter in url query
+ * @attribute default: the default value of parameter
+ */
+public macro QueryParam(attr: Tokens, input: Tokens) {
+    parseParam("QueryParam", attr, input)
+    input
+}
+
+/**
+ * QueryParam macro is used for annotation at the paramter of function
+ * which value from named paramter in url query.
+ * The paramter name of function is the same as paramter name in query.
+ *
+ */
+public macro QueryParam(input: Tokens) {
+    parseParam("QueryParam", input)
+    input
+}
+
+/**
+ * QueryParam macro is used for annotation at the paramter of function
+ * which value from paramters in url query.
+ *
+ */
+public macro QueryBindParam(input: Tokens) {
+    parseParam("QueryBindParam", input)
+    input
+}
+
+/**
+ * PostFormParam macro is used for annotation at the paramter of function
+ * which value from named paramter in encoded url or post form.
+ *
+ * @attribute name: the name of paramter in encoded url or post form
+ * @attribute default: the default value of parameter
+ */
+public macro PostFormParam(attr: Tokens, input: Tokens) {
+    parseParam("PostFormParam", attr, input)
+    input
+}
+
+/**
+ * PostFormParam macro is used for annotation at the paramter of function
+ * which value from named paramter in encoded url or post form.
+ * The paramter name of function is the same as paramter name in encoded url or post form.
+ *
+ */
+public macro PostFormParam(input: Tokens) {
+    parseParam("PostFormParam", input)
+    input
+}
+
+/**
+ * PostFormParam macro is used for annotation at the paramter of function
+ * which value from paramters in encoded url or post form.
+ */
+public macro PostFormBindParam(input: Tokens) {
+    parseParam("PostFormBindParam", input)
+    input
+}
+
+/**
+ * HeaderParam macro is used for annotation at the paramter of function
+ * which value from named paramter in header.
+ *
+ * @attribute name: the name of paramter in header
+ * @attribute default: the default value of parameter
+ */
+public macro HeaderParam(attr: Tokens, input: Tokens) {
+    parseParam("HeaderParam", attr, input)
+    input
+}
+
+/**
+ * HeaderParam macro is used for annotation at the paramter of function
+ * which value from named paramter in header.
+ * The paramter name of function is the same as paramter name in header.
+ *
+ */
+public macro HeaderParam(input: Tokens) {
+    parseParam("HeaderParam", input)
+    input
+}
+
+/**
+ * HeaderParam macro is used for annotation at the paramter of function
+ * which value from paramters in header.
+ *
+ */
+public macro HeaderBindParam(input: Tokens) {
+    parseParam("HeaderBindParam", input)
+    input
+}
+
+/**
+ * ContextParam macro is used for annotation at the paramter of function
+ * which value from named paramter in context.
+ *
+ * @attribute name: the name of paramter in context
+ */
+public macro ContextParam(attr: Tokens, input: Tokens) {
+    parseParam("ContextParam", attr, input)
+    input
+}
+
+/**
+ * ContextParam macro is used for annotation at the paramter of function
+ * which value from named paramter in context.
+ * The paramter name of function is the same as paramter name in context.
+ *
+ */
+public macro ContextParam(input: Tokens) {
+    parseParam("ContextParam", input)
+    input
+}
+
+/**
+ * CookieParam macro is used for annotation at the paramter of function
+ * which value from named paramter in cookie.
+ *
+ * @attribute name: the name of paramter in cookie
+ * @attribute default: the default value of parameter
+ */
+public macro CookieParam(attr: Tokens, input: Tokens) {
+    parseParam("CookieParam", attr, input)
+    input
+}
+
+/**
+ * CookieParam macro is used for annotation at the paramter of function
+ * which value from named paramter in cookie.
+ * The paramter name of function is the same as paramter name in cookie.
+ *
+ */
+public macro CookieParam(input: Tokens) {
+    parseParam("CookieParam", input)
+    input
+}
+
+/**
+ * BodyParam macro is used for annotation at the paramter of function
+ * which value from body.
+ *
+ */
+public macro BodyParam(attr: Tokens, input: Tokens) {
+    parseParam("BodyParam", attr, input)
+    input
+}
+
+/**
+ * BodyParam macro is used for annotation at the paramter of function
+ * which value from body.
+ *
+ */
+public macro BodyParam(input: Tokens) {
+    parseParam("BodyParam", input)
+    input
+}
+
+/**
+ * Get macro is used for annotation at the function, register the funtion for GET `path`
+ *
+ * @attribute path: the path pattern
+ * @attribute produce: the format of reponse body, value is json/text, default is text
+ */
+public macro Get(attr: Tokens, input: Tokens) {
+    input + parseFunc("Get", attr, input)
+}
+
+/**
+ * Post macro is used for annotation at the function, register the funtion for POST `path`
+ *
+ * @attribute path: the path pattern
+ * @attribute produce: the format of reponse body, value is json/text, default is text
+ */
+public macro Post(attr: Tokens, input: Tokens) {
+    input + parseFunc("Post", attr, input)
+}
+
+/**
+ * Delete macro is used for annotation at the function, register the funtion for DELETE `path`
+ *
+ * @attribute path: the path pattern
+ * @attribute produce: the format of reponse body, value is json/text, default is text
+ */
+public macro Delete(attr: Tokens, input: Tokens) {
+    input + parseFunc("Delete", attr, input)
+}
+
+/**
+ * Patch macro is used for annotation at the function, register the funtion for PATCH `path`
+ *
+ * @attribute path: the path pattern
+ * @attribute produce: the format of reponse body, value is json/text, default is text
+ */
+public macro Patch(attr: Tokens, input: Tokens) {
+    input + parseFunc("Patch", attr, input)
+}
+
+/**
+ * Put macro is used for annotation at the function, register the funtion for PUT `path`
+ *
+ * @attribute path: the path pattern
+ * @attribute produce: the format of reponse body, value is json/text, default is text
+ */
+public macro Put(attr: Tokens, input: Tokens) {
+    input + parseFunc("Put", attr, input)
+}
+
+/**
+ * Head macro is used for annotation at the function, register the funtion for HEAD `path`
+ *
+ * @attribute path: the path pattern
+ * @attribute produce: the format of reponse body, value is json/text, default is text
+ */
+public macro Head(attr: Tokens, input: Tokens) {
+    input + parseFunc("Head", attr, input)
+}
+
+/**
+ * Handler macro is used for annotation at the function, register the funtion for `method path`
+ *
+ * @attribute path: the path pattern
+ * @attribute methods: the method list, like `GET,PUT` or `GET`
+ * @attribute produce: the format of reponse body, value is json/text, default is text
+ */
+public macro Handler(attr: Tokens, input: Tokens) {
+    input + parseFunc("Handler", attr, input)
+}
+
+/**
+ * Methods macro is used for annotation at the function,
+ * register the funtion to intercept group handler
+ *
+ * @attribute groups: the group list, like `/a/b/c,/d/f` or `/a`
+ */
+public macro Middleware(attr: Tokens, input: Tokens) {
+    input + parseMiddlewareFunc(attr, input)
+}
+
+/**
+ * Methods macro is used for annotation at the function,
+ * register the funtion to intercept route group handler
+ *
+ */
+public macro Middleware(input: Tokens) {
+    input + parseMiddlewareFunc(None, input)
+}

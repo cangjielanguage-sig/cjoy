@@ -16,21 +16,10 @@ import std.io.{readToEnd}
 import stdx.net.tls.TlsServerConfig
 import stdx.net.http.{Server, ServerBuilder}
 import stdx.crypto.x509.{X509Certificate, PrivateKey}
-import cjoy.log.*
+import cjoy.log.macros.*
 import cjoy.ioc.BeanFactoryManager
-import cjoy.context.{ServiceConainter, GLOBAL_SERVICE_CONTAINER}
-
-public const VERSION: String = "v0.80.0"
-const LOGO: String = ##"
- ________        ___  ________      ___    ___ 
-|\   ____\      |\  \|\   __  \    |\  \  /  /|
-\ \  \___|      \ \  \ \  \|\  \   \ \  \/  / /
- \ \  \       __ \ \  \ \  \\\  \   \ \    / / 
-  \ \  \____ |\  \\_\  \ \  \\\  \   \/  /  /  
-   \ \_______\ \________\ \_______\__/  / /    
-    \|_______|\|________|\|_______|\___/ /     
-                                  \|___|/          VERSION
-"##
+import cjoy.context.{ServiceConainter}
+import cjoy.version.printBanner
 
 /**
  * joy config
@@ -73,7 +62,7 @@ public class Joy {
         this.config = config
         this.name = name
         router = JoyRouteGroup(config, _services)
-        LogTool.info(LOGO.replace("VERSION", VERSION))
+        printBanner()
         LogTool.info("create joy app ${name}")
     }
 
@@ -122,7 +111,7 @@ public class Joy {
         }
         let joy = Joy(config, name)
         // 默认增加IoC服务
-        joy._services.addServicesFrom(GLOBAL_SERVICE_CONTAINER)
+        joy._services.addServicesFrom(ServiceConainter.GLOBAL)
         _INSTANCES.add(name, joy)
         joy
     }

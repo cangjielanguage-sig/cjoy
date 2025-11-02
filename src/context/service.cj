@@ -16,6 +16,7 @@ import std.collection.concurrent.ConcurrentHashMap
  * service conainter
  */
 public class ServiceConainter {
+    public static let GLOBAL: ServiceConainter = ServiceConainter()
     private let _services: ConcurrentHashMap<String, Any> = ConcurrentHashMap()
 
     /**
@@ -44,8 +45,3 @@ public class ServiceConainter {
         }
     }
 }
-
-/**
- * global service contianer
- */
-public let GLOBAL_SERVICE_CONTAINER: ServiceConainter = ServiceConainter()

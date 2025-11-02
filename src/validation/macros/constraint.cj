@@ -179,8 +179,8 @@ class SizeConstraintGenerator <: MinMaxBaseConstraintGenerator {
     }
 
     protected func toConstraint(): Tokens {
-        let min_ = Int.tryParse(min).getOrDefault({=> 0})
-        let max_ = Int.tryParse(max).getOrDefault({=> 100})
+        let min_ = Int.tryParse(min) ?? 0
+        let max_ = Int.tryParse(max) ?? 100
         quote(SizeConstraint($min_, $max_, $msg))
     }
 }
@@ -191,8 +191,8 @@ class LengthConstraintGenerator <: MinMaxBaseConstraintGenerator {
     }
 
     protected func toConstraint(): Tokens {
-        let min_ = Int.tryParse(min).getOrDefault({=> 0})
-        let max_ = Int.tryParse(max).getOrDefault({=> 100})
+        let min_ = Int.tryParse(min) ?? 0
+        let max_ = Int.tryParse(max) ?? 100
         quote(LengthConstraint($min_, $max_, $msg))
     }
 }

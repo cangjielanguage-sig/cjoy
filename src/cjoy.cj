@@ -10,5 +10,8 @@
 
 package cjoy
 
-public import cjoy.framework.*
 public import cjoy.context.*
+public import cjoy.log.*
+public import cjoy.bind.*
+// framework depends on context, log, bind
+public import cjoy.framework.*

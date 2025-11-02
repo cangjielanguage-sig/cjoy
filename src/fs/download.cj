@@ -29,7 +29,7 @@ public func downloadAttachment(ctx: JoyContext, filePath: Path): Unit {
     }
 
     let filename = filePath.fileName
-    let contentType = getMimeTypeByExt(filePath.extensionName).getOrDefault({=> "application/octet-stream"})
+    let contentType = getMimeTypeByExt(filePath.extensionName) ?? JoyHttpConsts.MIME_APP_OCTET_STREAM
     ctx.header(JoyHttpConsts.HEADER_CONTENT_DISPOSITION, "attachment; filename=\"${escapeQuotes(filename)}\"")
     ctx.header(JoyHttpConsts.HEADER_CONTENT_TYPE, contentType)
     ctx.header(JoyHttpConsts.HEADER_TRANSFER_ENCODING, "chunked")

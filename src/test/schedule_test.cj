@@ -11,6 +11,7 @@
 package cjoy.test
 
 import cjoy.schedule.*
+import cjoy.macros.*
 
 @Scheduled[name = "schud1", cron = "*/20 3-5/2 22 */5 4"]
 func test1(ctx: ScheduleContext): Unit {

@@ -13,6 +13,7 @@ package cjoy.config
 import std.collection.{HashMap, ArrayList}
 import std.env.getVariable
 import cjoy.bind.*
+import cjoy.macros.*
 
 @Test
 public class ConfigManagerTestCaseSuit {
