@@ -20,6 +20,7 @@ public class JoyMultiPart {
     private var _dispositionParams: HashMap<String, String> = HashMap()
     private var _isParseDisposition: Bool = false
     private var _nextState: ParseState = PS_HEADER
+    private var _headerNum: Int = 0
 
     var _memoryHandler: ?JoyMemoryMultiPartHandler = None
     var _diskHandler: ?JoyDiskMultiPartHandler = None
@@ -87,8 +88,12 @@ public class JoyMultiPart {
         }
     }
 
+    /**
+     * @throws MultiPartLimitReachedException
+     * @throws MultiPartParseException
+     */
     func read(r: JoyMultiPartParser, buffer: BufferReader): Unit {
-        var headerNum: Int = 0
+        var lastCache = ByteBuffer(1024)
         while (let Some(line) <- buffer.readUntil(b'\n')) {
             let linebs = line.bytes()
             if (linebs.isEmpty()) {
@@ -102,40 +107,66 @@ public class JoyMultiPart {
 
             // header line
             if (_nextState == PS_HEADER) {
-                let hKey = readHeaderKey(linebs)
-                if (!hKey.isEmpty()) {
-                    headerNum++
-                    if (headerNum > r._config.maxHeaders) {
-                        throw MultiPartLimitReachedException(
-                            "header limit reached, ${headerNum} > ${r._config.maxHeaders}")
-                    }
-                    _headers.add(String.fromUtf8(hKey), String.fromUtf8(linebs[(hKey.size + 1)..]))
-                    continue
-                }
+                readHeader(r, linebs)
+                continue
             }
 
             // end with dash line
             if (r.isDashLine(linebs)) {
                 buffer.rewindLast()
                 _nextState = PS_END
-                return
+                break
             }
 
-            // body
-            if (_nextState != PS_BODY) {
-                throw MultiPartParseException(
-                    "parse multi part failed, invalid state(${_nextState}), shoud be body line")
+            // 读取Body内容，但可能中间存在\r\n
+            checkIsBody()
+            if (lastCache.length > 0) {
+                r._handler.onPart(this, lastCache.bytes())
+                lastCache.clear()
             }
-
-            if (isEndLine(linebs)) {
-                r._handler.onPart(this, linebs[..linebs.size - 2])
+            if (isEndLine(linebs)) { // 可能是结束行
+                lastCache.write(linebs)
             } else {
                 r._handler.onPart(this, linebs)
             }
         }
 
+        checkIsEnd()
+        if (lastCache.length > 0) {
+            let bs = lastCache.bytes()
+            r._handler.onPart(this, bs[..bs.size - 2])
+        }
+    }
+
+    /**
+     * @throws MultiPartParseException
+     */
+    private func checkIsBody(): Unit {
+        if (_nextState != PS_BODY) {
+            throw MultiPartParseException("parse multi part failed, invalid state(${_nextState}), shoud be body line")
+        }
+    }
+
+    /**
+     * @throws MultiPartParseException
+     */
+    private func checkIsEnd(): Unit {
         if (_nextState != PS_END) {
             throw MultiPartParseException("parse multi part failed, invalid state(${_nextState}), shoud have end line")
+        }
+    }
+
+    /**
+     * @throws MultiPartLimitReachedException
+     */
+    private func readHeader(r: JoyMultiPartParser, line: Array<Byte>): Unit {
+        let hKey = readHeaderKey(line)
+        if (!hKey.isEmpty()) {
+            _headerNum++
+            if (_headerNum > r._config.maxHeaders) {
+                throw MultiPartLimitReachedException("header limit reached, ${_headerNum} > ${r._config.maxHeaders}")
+            }
+            _headers.add(String.fromUtf8(hKey), String.fromUtf8(line[(hKey.size + 1)..]))
         }
     }
 

@@ -60,6 +60,9 @@ public class JoyMultiPartParser <: Iterable<JoyMultiPart> {
         }
     }
 
+    /**
+     * @throws MultiPartParseException
+     */
     private func processLine(line: Array<Byte>): Bool {
         if (isFinalBoundary(line)) {
             return false
@@ -85,6 +88,9 @@ public class JoyMultiPartParser <: Iterable<JoyMultiPart> {
         throw MultiPartParseException("unexpected line in parser, data : ${String.fromUtf8(line)}")
     }
 
+    /**
+     * @throws MultiPartLimitReachedException
+     */
     private func checkParts() {
         if (_partsRead > _config.maxParts) {
             throw MultiPartLimitReachedException("parts limit reached, ${_partsRead} > ${_config.maxParts}")
@@ -153,7 +159,7 @@ public class JoyMultiPartParser <: Iterable<JoyMultiPart> {
 
 class BufferReader {
     private let _buffer: BufferedInputStream<InputStream>
-    private let _bb = ByteBuffer()
+    private let _bb = ByteBuffer(1024)
     private var _rewind = false
 
     init(input: InputStream) {

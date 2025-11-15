@@ -34,7 +34,7 @@ public class JoyMultiPartFuncHandler <: JoyMultiPartHandler {
 
 class JoyMemoryMultiPartHandler <: JoyMultiPartHandler & Resource {
     private let cache = HashMap<String, ByteBuffer>()
-    private var _isClosed = true
+    private var _isClosed = false
     private let _config: JoyMultiPartConfig
     private var _size: Int = 0
 
@@ -42,6 +42,9 @@ class JoyMemoryMultiPartHandler <: JoyMultiPartHandler & Resource {
         _config = config
     }
 
+    /**
+     * @throws MultiPartLimitReachedException
+     */
     public func onPart(part: JoyMultiPart, data: Array<Byte>): Unit {
         _size += data.size
         if (_size > _config.maxMemSize.value) {
@@ -81,7 +84,7 @@ class JoyMemoryMultiPartHandler <: JoyMultiPartHandler & Resource {
 
 class JoyDiskMultiPartHandler <: JoyMultiPartHandler & Resource {
     private let cache = HashMap<String, File>()
-    private var _isClosed = true
+    private var _isClosed = false
     private let _config: JoyMultiPartConfig
     private let _tempPath: Path
     private var _size: Int = 0
@@ -94,6 +97,9 @@ class JoyDiskMultiPartHandler <: JoyMultiPartHandler & Resource {
         }
     }
 
+    /**
+     * @throws MultiPartLimitReachedException
+     */
     public func onPart(part: JoyMultiPart, data: Array<Byte>): Unit {
         _size += data.size
         if (_size > _config.maxFileSize.value) {
