@@ -222,7 +222,6 @@ public class BindTestCaseSuit {
     }
 
     @TestCase
-    @Skip
     public func testArrayBind2Param() {
         let map1 = HashMap<String, Any>()
         map1.add("A", [1, 2])

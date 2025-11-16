@@ -75,7 +75,6 @@ public class ConfigManagerTestCaseSuit {
     }
 
     @TestCase
-    @Skip
     public func testBindChainArray(): Unit {
         let loader = ArgConfigLoader(["-Da.b[0]=1", "-Da.b[1]=2"])
         let manager = ConfigManager()

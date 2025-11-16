@@ -8,7 +8,7 @@ a fast，extensible，lightweight and joy cangjie application framework.<br/>
 
 <p align="center">
 <img alt="" src="https://img.shields.io/badge/release-v0.80.0-brightgreen" style="display: inline-block;" />
-<img alt="" src="https://img.shields.io/badge/cjc-v1.0.3-brightgreen" style="display: inline-block;" />
+<img alt="" src="https://img.shields.io/badge/cjc-v1.0.4-brightgreen" style="display: inline-block;" />
 <img alt="" src="https://img.shields.io/badge/cjcov-70%25+-brightgreen" style="display: inline-block;" />
 <img alt="" src="https://img.shields.io/badge/state-孵化-brightgreen" style="display: inline-block;" />
 <img alt="" src="https://img.shields.io/badge/domain-HOS/Cloud-brightgreen" style="display: inline-block;" />
@@ -61,7 +61,7 @@ a fast，extensible，lightweight and joy cangjie application framework.<br/>
 
 CJoy支持Windows, Linux与MacOS，推荐您在Linux(或WSL)，MacOS中运行仓颉，让您获得更好更快的体验。
 
-请选择对应的仓颉版本：<img alt="" src="https://img.shields.io/badge/cangjie-v1.0.3-brightgreen" style="display: inline-block;" />
+请选择对应的仓颉版本：<img alt="" src="https://img.shields.io/badge/cangjie-v1.0.4-brightgreen" style="display: inline-block;" />
 
 本项目依赖仓颉stdx包，请先下载对应版本的stdx包，使用说明参见 [仓颉编程语言 stdx](https://gitcode.com/Cangjie/Cangjie-STDX) 。
 
