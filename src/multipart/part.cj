@@ -100,7 +100,7 @@ public class JoyMultiPart {
                 break
             }
 
-            if (isEmptyLine(linebs)) {
+            if (isEmptyLine(linebs) && _nextState == PS_HEADER) {
                 _nextState = PS_BODY
                 continue
             }
