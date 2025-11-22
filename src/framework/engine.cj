@@ -42,7 +42,10 @@ public class JoyConfig {
         public let notFoundHandler!: JoyRequestHandler = JoyNotFoundHandler(),
 
         // set method not allowed handler 
-        public let methodNotAllowedHandler!: JoyRequestHandler = JoyMethodNotAllowedHandler()
+        public let methodNotAllowedHandler!: JoyRequestHandler = JoyMethodNotAllowedHandler(),
+
+        // max requestBodySize, 32M
+        public let maxRequestBodySize!: Int = 32 * 1024 * 1024
     ) {}
 }
 
@@ -151,7 +154,11 @@ public class Joy {
      * @param serverBuidler: the server buidler
      */
     public func run(serverBuidler: ServerBuilder): Unit {
-        let server = serverBuidler.distributor(router.distributor).logger(LogTool.logger).build()
+        let server = serverBuidler
+            .distributor(router.distributor)
+            .logger(LogTool.logger)
+            .maxRequestBodySize(config.maxRequestBodySize)
+            .build()
         if (config.enableDebugLog) {
             LogTool.enableDebugLog()
         }
