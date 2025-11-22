@@ -124,7 +124,7 @@ public class JoyMultiPart {
                 r._handler.onPart(this, lastCache.bytes())
                 lastCache.clear()
             }
-            if (isEndLine(linebs)) { // 可能是结束行
+            if (containEndLetter(linebs)) { // 可能是结束行
                 lastCache.write(linebs)
             } else {
                 r._handler.onPart(this, linebs)
@@ -132,7 +132,7 @@ public class JoyMultiPart {
         }
 
         checkIsEnd()
-        if (lastCache.length > 0) {
+        if (lastCache.length > 2) {
             let bs = lastCache.bytes()
             r._handler.onPart(this, bs[..bs.size - 2])
         }
@@ -174,8 +174,8 @@ public class JoyMultiPart {
         line.size == 2 && line[0] == b'\r' && line[1] == b'\n'
     }
 
-    private func isEndLine(line: Array<Byte>): Bool {
-        line.size > 2 && line[line.size - 2] == b'\r' && line[line.size - 1] == b'\n'
+    private func containEndLetter(line: Array<Byte>): Bool {
+        line.size >= 2 && line[line.size - 2] == b'\r' && line[line.size - 1] == b'\n'
     }
 
     private func readHeaderKey(line: Array<Byte>): Array<Byte> {
