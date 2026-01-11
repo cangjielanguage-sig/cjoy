@@ -211,6 +211,8 @@ public class Jwt {
             if (aud.isNone()) {
                 throw JwtException("token is missing required claim, not found audience")
             }
+        } else {
+            return
         }
 
         let auds = aud.getOrThrow().claims
