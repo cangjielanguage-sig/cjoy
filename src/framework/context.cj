@@ -56,6 +56,11 @@ public interface JoyContext <: Context {
     prop respStatus: UInt16
 
     /*
+     * return the http  response body
+     */
+    prop respBody: String
+
+    /*
      * return the http request path
      */
     prop path: String
@@ -457,6 +462,7 @@ class JoyHttpContext <: JoyContext {
     private var _cookieCache: HashMap<String, String> = HashMap()
     private var _parsedCookie: Bool = false
     private var _status: ?UInt16 = None
+    private var _body: ?Any = None
 
     // the index of executing handler chain
     var _handleIndex: Int = 0
@@ -549,6 +555,16 @@ class JoyHttpContext <: JoyContext {
             match (_status) {
                 case Some(s) => s
                 case _ => HttpStatusCode.STATUS_OK
+            }
+        }
+    }
+
+    public prop respBody: String {
+        get() {
+            match (_body) {
+                case Some(str: String) => str
+                case Some(bytes: Array<Byte>) => String.fromUtf8(bytes)
+                case _ => ""
             }
         }
     }
@@ -664,6 +680,7 @@ class JoyHttpContext <: JoyContext {
         let writer = JsonWriter(buffer)
         writer.writeValue(body)
         writer.flush()
+        _body = buffer
         _httpContext
             .responseBuilder
             .header(JoyHttpConsts.HEADER_CONTENT_TYPE, JoyHttpConsts.MIME_APP_JSON_UTF8)
@@ -672,27 +689,38 @@ class JoyHttpContext <: JoyContext {
     }
 
     public func json(body: String): JoyContext {
+        _body = body
         string(JoyHttpConsts.MIME_APP_JSON_UTF8, body)
         this
     }
 
     public func string(contentType: String, body: String): JoyContext {
+        _body = body
         _httpContext.responseBuilder.header(JoyHttpConsts.HEADER_CONTENT_TYPE, contentType).body(body)
         this
     }
 
     public func string(body: String): JoyContext {
+        _body = body
         string(JoyHttpConsts.MIME_TEXT_PLAIN_UTF8, body)
         this
     }
 
     public func data(body: Array<Byte>): JoyContext {
+        _body = body
         _httpContext.responseBuilder.body(body)
         this
     }
 
     public func data(body: InputStream): JoyContext {
-        _httpContext.responseBuilder.body(body)
+        // First convert the InputStream into a byte array to preserve its content, 
+        // as InputStream does not support repeated reading.
+        let buffer = ByteBuffer()
+        copy(body, to: buffer)
+        let bytes = buffer.bytes()
+        
+        _body = bytes  
+        _httpContext.responseBuilder.body(bytes)  
         this
     }
 
