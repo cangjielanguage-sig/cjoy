@@ -680,7 +680,7 @@ class JoyHttpContext <: JoyContext {
         let writer = JsonWriter(buffer)
         writer.writeValue(body)
         writer.flush()
-        _body = buffer
+        _body = buffer.bytes()
         _httpContext
             .responseBuilder
             .header(JoyHttpConsts.HEADER_CONTENT_TYPE, JoyHttpConsts.MIME_APP_JSON_UTF8)
