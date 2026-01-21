@@ -57,82 +57,182 @@ public class OAuth2Server {
         }
     }
 
+    /**
+     * set token type for OAuth2
+     *
+     * @param tt:  token type string
+     */
     public func setTokenType(tt: String): Unit {
         _cfg.tokenType = tt
     }
 
+    /**
+     * set whether allow GET method for token request
+     *
+     * @param allow:  true to allow, false otherwise
+     */
     public func setAllowGetAccessRequest(allow: Bool): Unit {
         _cfg.allowGetAccessRequest = allow
     }
 
+    /**
+     * set allowed response types
+     *
+     * @param types:  array of response types
+     */
     public func setAllowedResponseType(types: Array<ResponseType>): Unit {
         _cfg.allowResponseTypes = types
     }
 
+    /**
+     * set allowed grant types
+     *
+     * @param types:  array of grant types
+     */
     public func setAllowedGrantType(types: Array<GrantType>): Unit {
         _cfg.allowGrantTypes = types
     }
 
+    /**
+     * set function to get client info
+     *
+     * @param fn:  function to get client info
+     */
     public func setClientInfoHandleFunc(fn: ClientInfoHandleFunc): Unit {
         _clientInfoHandleFunc = fn
     }
 
+    /**
+     * set function to authorize user
+     *
+     * @param fn:  function to authorize user
+     */
     public func setUserAuthorizationHandleFunc(fn: UserAuthorizationHandleFunc): Unit {
         _userAuthorizationHandleFunc = fn
     }
 
+    /**
+     * set function to authorize user with password
+     *
+     * @param fn:  function to authorize user with password
+     */
     public func setPasswordAuthorizationHandleFunc(fn: PasswordAuthorizationHandleFunc): Unit {
         _passwordAuthorizationHanleFunc = fn
     }
 
+    /**
+     * set function to handle response error
+     *
+     * @param fn:  function to handle response error
+     */
     public func setResponseErrorHandleFunc(fn: ResponseErrorHandleFunc): Unit {
         _responseErrorHandleFunc = fn
     }
 
+    /**
+     * set function to handle internal error
+     *
+     * @param fn:  function to handle internal error
+     */
     public func setInternalErrorHandleFunc(fn: InternalErrorHandleFunc): Unit {
         _internalErrorHandleFunc = fn
     }
 
+    /**
+     * set function to resolve access token
+     *
+     * @param fn:  function to resolve access token
+     */
     public func setAccessTokenResolveHandleFunc(fn: AccessTokenResolveHandleFunc): Unit {
         _accessTokenResolveHandleFunc = fn
     }
 
+    /**
+     * set function to resolve refresh token
+     *
+     * @param fn:  function to resolve refresh token
+     */
     public func setRefreshTokenResolveHandleFunc(fn: RefreshingValidationHandleFunc): Unit {
         _refreshingValidationHandleFunc = fn
     }
 
+    /**
+     * set function to check if client is authorized
+     *
+     * @param fn:  function to check client authorization
+     */
     public func setClientAuthorizedHandleFunc(fn: ClientAuthorizedHandleFunc): Unit {
         _clientAuthorizedHandleFunc = fn
     }
 
+    /**
+     * set function to check client scope
+     *
+     * @param fn:  function to check client scope
+     */
     public func setClientScopeHandleFunc(fn: ClientScopeHandleFunc): Unit {
         _clientScopeHandleFunc = fn
     }
 
+    /**
+     * set function to validate refresh token
+     *
+     * @param fn:  function to validate refresh token
+     */
     public func setRefreshingValidationHandleFunc(fn: RefreshingValidationHandleFunc): Unit {
         _refreshingValidationHandleFunc = fn
     }
 
+    /**
+     * set function to handle pre-redirect error
+     *
+     * @param fn:  function to handle pre-redirect error
+     */
     public func setPreRedirectErrorHandleFunc(fn: PreRedirectErrorHandleFunc): Unit {
         _preRedirectErrorHandleFunc = fn
     }
 
+    /**
+     * set function to add extension fields
+     *
+     * @param fn:  function to add extension fields
+     */
     public func setExtensionFieldsHandleFunc(fn: ExtensionFieldsHandleFunc): Unit {
         _extensionFieldsHandleFunc = fn
     }
 
+    /**
+     * set function to set access token expiration
+     *
+     * @param fn:  function to set access token expiration
+     */
     public func setAccessTokenExpHandleFunc(fn: AccessTokenExpHandleFunc): Unit {
         _accessTokenExpHandleFunc = fn
     }
 
+    /**
+     * set function to set authorize scope
+     *
+     * @param fn:  function to set authorize scope
+     */
     public func setAuthorizeScopeHandleFunc(fn: AuthorizeScopeHandleFunc): Unit {
         _authorizeScopeHandleFunc = fn
     }
 
+    /**
+     * set function to handle response token
+     *
+     * @param fn:  function to handle response token
+     */
     public func setResponseTokenHandleFunc(fn: ResponseTokenHandleFunc): Unit {
         _responseTokenHandleFunc = fn
     }
 
+    /**
+     * set function to handle refreshing scope
+     *
+     * @param fn:  function to handle refreshing scope
+     */
     public func setRefreshingScopeHandleFunc(fn: RefreshingScopeHandleFunc): Unit {
         _refreshingScopeHandleFunc = fn
     }

@@ -12,6 +12,9 @@ macro package cjoy.mcp.macros
 
 import std.ast.*
 
+/**
+ * parameter info for resource parameter in macro
+ */
 class ResourceParamInfo <: ParamInfo {
     init(marcroName: String) {
         super(marcroName)

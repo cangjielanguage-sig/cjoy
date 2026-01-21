@@ -14,6 +14,9 @@ import std.collection.HashMap
 import stdx.net.http.HttpRequest
 import cjoy.framework.{JoyContext, JoyHttpConsts}
 
+/**
+ * form data handler for multi part content
+ */
 public class JoyMultiPartForm <: JoyMultiPartHandler & Resource & Iterable<JoyMultiPart> {
     private static let INSTANCE: JoyMultiPartForm = JoyMultiPartForm()
 

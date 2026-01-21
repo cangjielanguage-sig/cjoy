@@ -19,6 +19,9 @@ import cjoy.framework.{JoyContext, RouteInfo, TreeNode, JoyHttpConsts}
 import cjoy.log.macros.*
 import cjoy.json.JsonTool
 
+/**
+ * manages MCP resources
+ */
 public class McpResources {
     let resources: ConcurrentHashMap<String, McpResource> = ConcurrentHashMap()
     let resourceTempls: ConcurrentHashMap<String, ResourceTemplate> = ConcurrentHashMap()

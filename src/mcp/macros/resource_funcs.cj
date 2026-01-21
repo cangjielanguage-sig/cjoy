@@ -15,6 +15,9 @@ import std.collection.*
 import cjoy.utils.{MapToString, MapListGetFunc, randStr}
 import cjoy.utils.ast.parserAttrs
 
+/**
+ * function info for resource macro
+ */
 class ResoureFuncInfo <: FuncInfo {
     var uri: String = ""
     var mimeType: String = ""

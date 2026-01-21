@@ -15,13 +15,15 @@ import std.collection.*
 import cjoy.utils.{MapToString, MapListGetFunc}
 import cjoy.utils.ast.{parserAttrs, TypeNodeInfo}
 
+/**
+ * parameter info for tool parameter in macro
+ */
 open class ParamInfo {
     let marcroName: String
 
     var name: String = ""
     var description: String = ""
     var default: ?String = None
-
     var pid: Token = Token()
     var paramType: ?TypeNode = None
     var typeNode: TypeNodeInfo = TypeNodeInfo("")

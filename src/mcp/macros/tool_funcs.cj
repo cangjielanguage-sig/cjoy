@@ -15,6 +15,9 @@ import std.collection.*
 import cjoy.utils.{MapToString, MapListGetFunc, randStr}
 import cjoy.utils.ast.parserAttrs
 
+/**
+ * function info for tool macro
+ */
 open class FuncInfo {
     let macroName: String
     let decl: FuncDecl

@@ -18,6 +18,9 @@ import cjoy.framework.{JoyContext}
 import cjoy.log.macros.*
 import cjoy.json.JsonTool
 
+/**
+ * manages MCP tools
+ */
 public class McpTools {
     // tools
     let tools: ConcurrentHashMap<String, McpTool> = ConcurrentHashMap()

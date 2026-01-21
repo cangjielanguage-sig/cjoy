@@ -15,6 +15,9 @@ import cjoy.framework.Joy
 import cjoy.version.VERSION
 import cjoy.log.macros.*
 
+/**
+ * server features for MCP server
+ */
 public class McpServerFeatures {
     public var protocolVesion: String = McpConsts.LASTEST_PROTOCOL_VERSION
     public var serverInfo: Implementation = Implementation(name: "cjoy", version: VERSION)

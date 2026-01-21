@@ -19,6 +19,9 @@ const PS_HEADER: ParseState = 0
 const PS_BODY: ParseState = 1
 const PS_END: ParseState = 2
 
+/**
+ * parser for multi part content
+ */
 public class JoyMultiPartParser <: Iterable<JoyMultiPart> {
     let _config: JoyMultiPartConfig
     let _handler: JoyMultiPartHandler
@@ -143,10 +146,21 @@ public class JoyMultiPartParser <: Iterable<JoyMultiPart> {
         return b_
     }
 
+    /**
+     * get iterator of multi parts
+     *
+     * @return: iterator of JoyMultiPart
+     */
     public func iterator(): Iterator<JoyMultiPart> {
         _parts.iterator()
     }
 
+    /**
+     * get part by name
+     *
+     * @param name:  part name
+     * @return: part or None if not found
+     */
     public func getPart(name: String): ?JoyMultiPart {
         for (p in _parts) {
             if (p.name == name) {

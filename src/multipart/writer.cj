@@ -24,6 +24,12 @@ public class JoyMultiPartWriter <: Resource {
     private var _lastPart: ?TmpPart = None
     private var _closed: Bool = false
 
+    /**
+     * initialize multi part writer
+     *
+     * @param output: output stream
+     * @param boundry: boundary string
+     */
     public init(output: OutputStream, boundry!: ?String = None) {
         _buffer = BufferedOutputStream(output)
         if (let Some(b) <- boundry) {
@@ -34,12 +40,22 @@ public class JoyMultiPartWriter <: Resource {
         }
     }
 
+    /**
+     * get boundary string
+     *
+     * @return:  boundary string
+     */
     public prop boundary: String {
         get() {
             _boundary
         }
     }
 
+    /**
+     * get form data content type header value
+     *
+     * @return:  content type string
+     */
     public prop formDataContentType: String {
         get() {
             var b: String = _boundary
@@ -71,7 +87,11 @@ public class JoyMultiPartWriter <: Resource {
     }
 
     /**
-     * @throws IllegalArgumentException
+     * write part data
+     *
+     * @param bs:  part data bytes
+     * @return:  JoyMultiPartWriter
+     * @throws IllegalArgumentException if part is not created
      */
     public func writePartData(bs: Array<Byte>): JoyMultiPartWriter {
         if (_lastPart.isNone()) {
@@ -86,6 +106,14 @@ public class JoyMultiPartWriter <: Resource {
         this
     }
 
+    /**
+     * create file part
+     *
+     * @param fieldname:  field name
+     * @param filename:  file name
+     * @param contentType:  content type
+     * @return:  JoyMultiPartWriter
+     */
     public func createFromFile(fieldname: String, filename: String,
         contentType!: String = JoyHttpConsts.MIME_APP_OCTET_STREAM): JoyMultiPartWriter {
         let headers = HttpHeaders()
@@ -95,18 +123,40 @@ public class JoyMultiPartWriter <: Resource {
         createPart(headers)
     }
 
+    /**
+     * create form field part
+     *
+     * @param fieldname:  field name
+     * @return:  JoyMultiPartWriter
+     */
     public func createFormField(fieldname: String): JoyMultiPartWriter {
         let headers = HttpHeaders()
         headers.add(JoyHttpConsts.HEADER_CONTENT_DISPOSITION, "form-data; name=\"${escapeQuotes(fieldname)}\"")
         createPart(headers)
     }
 
+    /**
+     * write file part
+     *
+     * @param fieldname:  field name
+     * @param filename:  file name
+     * @param fileContent:  file content bytes
+     * @param contentType:  content type
+     * @return:  JoyMultiPartWriter
+     */
     public func writeFile(fieldname: String, filename: String, fileContent: Array<Byte>,
         contentType!: String = JoyHttpConsts.MIME_APP_OCTET_STREAM): JoyMultiPartWriter {
         createFromFile(fieldname, filename, contentType: contentType)
         writePartData(fileContent)
     }
 
+    /**
+     * write field part
+     *
+     * @param fieldname:  field name
+     * @param value:  field value
+     * @return:  JoyMultiPartWriter
+     */
     public func writeField(fieldname: String, value: String): JoyMultiPartWriter {
         createFormField(fieldname)
         writePartData(value.toArray())
@@ -138,6 +188,9 @@ public class JoyMultiPartWriter <: Resource {
         }
     }
 
+    /**
+     * close writer and flush data
+     */
     public func close(): Unit {
         if (_closed) {
             return

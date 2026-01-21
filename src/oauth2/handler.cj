@@ -118,10 +118,22 @@ public func accessTokenCookieResolveHandleFunc(ctx: JoyContext): String {
     ctx.getCookie("access_token") ?? ""
 }
 
+/**
+ * handle internal error with default logging
+ *
+ * @param ctx:  context
+ * @param ex:  error info
+ */
 func defaultInternalErrorHandleFunc(_: JoyContext, ex: ErrorInfo): Unit {
     @LogError("[OAuth2] internal error, ${ex.code}, ${ex.description}")
 }
 
+/**
+ * handle response error with default logging
+ *
+ * @param ctx:  context
+ * @param er:  error response
+ */
 func defaultResponseErrorHandleFunc(_: JoyContext, er: ErrorResponse): Unit {
     @LogError("[OAuth2] response error, ${er.errorInfo.code}, ${er.errorInfo.description}")
 }

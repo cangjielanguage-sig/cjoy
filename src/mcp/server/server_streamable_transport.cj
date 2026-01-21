@@ -20,6 +20,9 @@ import cjoy.mcp.api.*
 import cjoy.jsonrpc.{JSONRPCRequest, JSONRPCResponse, JSONRPCMessage, JSONRPCTool, JSONRPCError, JSONRPCConsts, JSONRPCException}
 import cjoy.log.macros.*
 
+/**
+ * MCP server transport for streaming with JSON response
+ */
 class McpStreamableServerTransport <: McpServerTransport {
     private let _sessions: ConcurrentHashMap<String, McpServerSession> = ConcurrentHashMap()
     private let _isJsonResp: Bool

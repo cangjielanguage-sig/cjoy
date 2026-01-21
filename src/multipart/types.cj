@@ -43,6 +43,9 @@ public struct JoyDataSize {
     }
 }
 
+/**
+ * configuration for multi part parsing and handling
+ */
 public struct JoyMultiPartConfig {
     public var maxParts: Int = 10
     public var maxHeaders: Int = 5

@@ -20,11 +20,13 @@ import cjoy.log.macros.*
 import cjoy.json.JsonTool
 import cjoy.framework.{JoyContext, JoySseEmitter}
 
+/**
+ * session state for MCP server
+ */
 class McpServerSessionState {
     private let _counter: SyncCounter = SyncCounter(1)
 
     public McpServerSessionState(let sessionId: String, let sseEmitter: JoySseEmitter) {}
-
     public func waitEnd(): Unit {
         @LogInfo("[MCP] waiting sse transport end, sessionId=${sessionId}")
         _counter.waitUntilZero()

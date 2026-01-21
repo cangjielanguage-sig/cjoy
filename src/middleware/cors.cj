@@ -16,10 +16,19 @@ import cjoy.log.macros.*
 
 public type AllowOriginFunc = (ctx: JoyContext, origin: String) -> Bool
 
+/**
+ * represents a CORS wildcard pattern for origin matching
+ */
 public class CorsWildcard {
     public CorsWildcard(let prefix: String, let suffix: String) {
     }
 
+    /**
+     * check if string matches the wildcard pattern
+     *
+     * @param str: string to check
+     * @return: true if matches, false otherwise
+     */
     public func canMatch(str: String): Bool {
         str.size >= prefix.size + suffix.size && str.startsWith(prefix) && str.endsWith(suffix)
     }

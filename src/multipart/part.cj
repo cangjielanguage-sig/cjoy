@@ -15,6 +15,9 @@ import std.fs.File
 import std.io.{ByteBuffer}
 import stdx.net.http.HttpHeaders
 
+/**
+ * represents a multi part content
+ */
 public class JoyMultiPart {
     let _headers: HttpHeaders = HttpHeaders()
     private var _dispositionParams: HashMap<String, String> = HashMap()

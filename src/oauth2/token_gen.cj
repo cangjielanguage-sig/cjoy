@@ -25,6 +25,13 @@ public interface TokenGenerate {
 }
 
 public class SecureRandTokenGenerate <: TokenGenerate {
+    /**
+     * generate access and refresh tokens using secure random
+     *
+     * @param data: the basic data for generation
+     * @param isGenRefresh:  whether to generate refresh token
+     * @return: tuple of (access token, refresh token)
+     */
     public func generate(data: GenerateBasic, isGenRefresh: Bool): (String, String) {
         let buffer = ByteBuffer()
         buffer.write(data.client.id.toArray())

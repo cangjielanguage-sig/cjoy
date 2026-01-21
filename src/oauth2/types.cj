@@ -194,6 +194,13 @@ public class AuthorizeRequest {
 public type CodeChallengeMethod = String
 
 extend CodeChallengeMethod {
+    /**
+     * validate PKCE code challenge
+     *
+     * @param cc: the code challenge
+     * @param ver: the code verifier
+     * @return: true if valid, false otherwise
+     */
     public func validate(cc: String, ver: String): Bool {
         match (this) {
             case "plain" => cc == ver

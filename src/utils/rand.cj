@@ -15,6 +15,13 @@ import std.collection.{map, collectArray}
 import std.random.Random
 import stdx.crypto.crypto.SecureRandom
 
+
+/**
+ * string utility functions for random string generation
+ *
+ * @param len: length of random string to generate
+ * @return: random string of specified length
+ */
 protected func randStr(len: Int32): String {
     let r = Random()
     let bs = r.nextBytes(len)
@@ -22,6 +29,12 @@ protected func randStr(len: Int32): String {
     String.join(array)
 }
 
+/**
+ * secure random string generation using SecureRandom
+ *
+ * @param len: length of random string to generate
+ * @return: secure random string of specified length
+ */
 protected func secureRandStr(len: Int32): String {
     let r = SecureRandom()
     let bs = r.nextBytes(len)

@@ -198,6 +198,12 @@ public class Joy {
         this
     }
 
+    /**
+     * get service by name from service container
+     *
+     * @param name: the service name
+     * @return: the service instance or None if not found
+     */
     public func getService<T>(name: String): ?T {
         _services.getService<T>(name)
     }

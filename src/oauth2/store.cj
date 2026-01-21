@@ -71,10 +71,21 @@ public interface ClientStore {
 public class MemoryClientStore <: ClientStore {
     private let _data: ConcurrentHashMap<String, ClientInfo> = ConcurrentHashMap()
 
+    /**
+     * get client info by id
+     *
+     * @param id:  client id
+     * @return: client info or None if not found
+     */
     public func getById(id: String): ?ClientInfo {
         _data.get(id)
     }
 
+    /**
+     * add client info to store
+     *
+     * @param clientInfo:  client info to add
+     */
     public func add(clientInfo: ClientInfo): Unit {
         _data.add(clientInfo.id, clientInfo)
     }
@@ -89,6 +100,9 @@ public class MemoryTokenStore <: TokenStore {
     private let _data: ConcurrentHashMap<String, TokenStoreItem>
     private let _future: Future<Unit>
 
+    /**
+     * initialize memory token store
+     */
     public init() {
         let data = ConcurrentHashMap<String, TokenStoreItem>()
         _data = data
@@ -100,6 +114,9 @@ public class MemoryTokenStore <: TokenStore {
         }
     }
 
+    /**
+     * destroy the token store and stop cleanup task
+     */
     public func destroy(): Unit {
         _future.cancel()
     }
@@ -128,6 +145,11 @@ public class MemoryTokenStore <: TokenStore {
         }
     }
 
+    /**
+     * create and store token information
+     *
+     * @param tokenInfo:  token information to store
+     */
     public func create(tokenInfo: TokenInfo): Unit {
         if (tokenInfo.code != "") {
             _data.add(tokenInfo.code, TokenStoreItem(tokenInfo, "code"))
@@ -148,26 +170,59 @@ public class MemoryTokenStore <: TokenStore {
         }
     }
 
+    /**
+     * remove token by authorization code
+     *
+     * @param code:  authorization code
+     */
     public func removeByCode(code: String): Unit {
         _data.remove(code)
     }
 
+    /**
+     * remove token by access token
+     *
+     * @param access:  access token
+     */
     public func removeByAccess(access: String): Unit {
         _data.remove(access)
     }
 
+    /**
+     * remove token by refresh token
+     *
+     * @param refresh:  refresh token
+     */
     public func removeByRefresh(refresh: String): Unit {
         _data.remove(refresh)
     }
 
+    /**
+     * get token info by authorization code
+     *
+     * @param code:  authorization code
+     * @return: token info or None if not found
+     */
     public func getByCode(code: String): ?TokenInfo {
         _data.get(code).map {it: TokenStoreItem => it._info}
     }
 
+    /**
+     * get token info by access token
+     *
+     * @param access:  access token
+     * @return: token info or None if not found
+     */
     public func getByAccess(access: String): ?TokenInfo {
         _data.get(access).map {it: TokenStoreItem => it._info}
     }
 
+    /**
+     * get token info by refresh token
+     *
+     * @param refresh:  refresh token
+     * @return: token info or None if not found
+     */
     public func getByRefresh(refresh: String): ?TokenInfo {
         _data.get(refresh).map {it: TokenStoreItem => it._info}
     }

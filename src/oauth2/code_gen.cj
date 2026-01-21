@@ -24,6 +24,12 @@ public interface CodeGenerate {
 }
 
 public class SecureRandCodeGenerate <: CodeGenerate {
+    /**
+     * generate authorization code using secure random
+     *
+     * @param data: the basic data for generation
+     * @return: the generated authorization code
+     */
     public func generate(data: GenerateBasic): String {
         let buffer = ByteBuffer()
         buffer.write(data.client.id.toArray())

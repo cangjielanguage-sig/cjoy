@@ -18,6 +18,9 @@ import cjoy.framework.JoyContext
 import cjoy.log.macros.*
 import cjoy.json.JsonTool
 
+/**
+ * manages MCP prompts
+ */
 public class McpPrompts {
     private let getPromptHandlers: ConcurrentHashMap<String, McpGetPromptHandler> = ConcurrentHashMap()
     let prompts: ConcurrentHashMap<String, McpPrompt> = ConcurrentHashMap()

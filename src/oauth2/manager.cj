@@ -60,10 +60,22 @@ public class DefaultOAuth2Manager <: OAuth2Manager {
         _clientPasswordVerifier = clientPasswordVerifier
     }
 
+    /**
+     * set grant config for a specific grant type
+     *
+     * @param grantType:  grant type
+     * @param config:  grant configuration
+     */
     public func setGrantConfig(grantType: GrantType, config: GrantConfig) {
         _gtcfg.add(grantType, config)
     }
 
+    /**
+     * get grant config for a specific grant type
+     *
+     * @param grantType:  grant type
+     * @return:  grant configuration
+     */
     public func getGrantConfig(grantType: GrantType): GrantConfig {
         let cfg = _gtcfg.get(grantType)
         match (cfg) {
@@ -78,10 +90,22 @@ public class DefaultOAuth2Manager <: OAuth2Manager {
         }
     }
 
+    /**
+     * set refresh token config
+     *
+     * @param config:  refreshing configuration
+     */
     public func setRefreshingConfig(config: RefreshingConfig) {
         _rfcfg = config
     }
 
+    /**
+     * get client info by id
+     *
+     * @param clientId:  client id
+     * @return:  client info
+     * @throws OAuthException if client not found
+     */
     public func getClient(clientId: String): ClientInfo {
         let client = _clientStore.getById(clientId)
         if (let Some(c) <- client) {
@@ -91,6 +115,14 @@ public class DefaultOAuth2Manager <: OAuth2Manager {
         }
     }
 
+    /**
+     * generate authorization token
+     *
+     * @param rt:  response type
+     * @param request:  token generation request
+     * @return:  token info
+     * @throws OAuthException if generation fails
+     */
     public func generateAuthToken(rt: ResponseType, request: TokenGenerateRequest): TokenInfo {
         let client = getClient(request.clientId)
         if (request.redirectURI != "") {
@@ -140,6 +172,14 @@ public class DefaultOAuth2Manager <: OAuth2Manager {
         token
     }
 
+    /**
+     * generate access token
+     *
+     * @param gt:  grant type
+     * @param request:  token generation request
+     * @return:  token info
+     * @throws OAuthException if generation fails
+     */
     public func generateAccessToken(gt: GrantType, request: TokenGenerateRequest): TokenInfo {
         let client = getClient(request.clientId)
         if (!(_clientPasswordVerifier?.verifyPassword(client, request.clientSecret) ?? true)) {
@@ -199,6 +239,13 @@ public class DefaultOAuth2Manager <: OAuth2Manager {
         token
     }
 
+    /**
+     * refresh access token
+     *
+     * @param request:  token generation request
+     * @return:  token info
+     * @throws OAuthException if refresh fails
+     */
     public func refreshAccessToken(request: TokenGenerateRequest): TokenInfo {
         let token = loadRefreshToken(request.refresh)
         let client = getClient(token.clientId)
@@ -240,6 +287,12 @@ public class DefaultOAuth2Manager <: OAuth2Manager {
         token
     }
 
+    /**
+     * remove access token
+     *
+     * @param access:  access token to remove
+     * @throws OAuthException if token is empty
+     */
     public func removeAccessToken(access: String): Unit {
         if (access == "") {
             throw OAuthException(OAuthErrors.INVALID_ACCESS_TOKEN)
@@ -248,6 +301,12 @@ public class DefaultOAuth2Manager <: OAuth2Manager {
         _tokenStore.removeByAccess(access)
     }
 
+    /**
+     * remove refresh token
+     *
+     * @param refresh:  refresh token to remove
+     * @throws OAuthException if token is empty
+     */
     public func removeRefreshToken(refresh: String): Unit {
         if (refresh == "") {
             throw OAuthException(OAuthErrors.INVALID_REFRESH_TOKEN)
@@ -256,6 +315,13 @@ public class DefaultOAuth2Manager <: OAuth2Manager {
         _tokenStore.removeByRefresh(refresh)
     }
 
+    /**
+     * load access token and validate it
+     *
+     * @param access:  access token
+     * @return:  token info
+     * @throws OAuthException if token is invalid or expired
+     */
     public func loadAccessToken(access: String): TokenInfo {
         if (access == "") {
             throw OAuthException(OAuthErrors.INVALID_ACCESS_TOKEN)
@@ -282,6 +348,13 @@ public class DefaultOAuth2Manager <: OAuth2Manager {
         token
     }
 
+    /**
+     * load refresh token and validate it
+     *
+     * @param refresh:  refresh token
+     * @return:  token info
+     * @throws OAuthException if token is invalid or expired
+     */
     public func loadRefreshToken(refresh: String): TokenInfo {
         if (refresh == "") {
             @LogError("[OAuth2] refresh token is empty")
