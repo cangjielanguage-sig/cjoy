@@ -9,7 +9,7 @@ import cjoy.bind.*
 
 @Bind
 public struct BindParam {
-    let str: String // 宏展开时会生成构造函数对其赋值，也可@BindField[default = abc] 指定默认值
+    let str: String // 宏展开时会生成构造函数对其赋值，也可以通过@BindField[default = abc]指定默认值
     var str2: ?String = None
     var i64: Int64 = 0
     @BindField[name = int]
@@ -20,7 +20,7 @@ public struct BindParam {
 }
 
 router.get("/bind", {ctx: JoyContext =>
-    // 自动把query参数绑定对BindParam对象上
+    // 自动把query参数绑定到BindParam对象上
     let params = ctx.bindQuery<BindParam>()
     ctx.string("bind")
 })

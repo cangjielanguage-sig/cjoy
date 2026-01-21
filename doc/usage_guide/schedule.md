@@ -56,7 +56,7 @@ func logMetric(ctx: ScheduleContext): Unit {
 
 ## 使用方式2：
 
-在Http Handler或Midlleware中使用，适合于收到Http请求时再创建调度任务
+在Http Handler或Middleware中使用，适合于收到Http请求时再创建调度任务
 
 ```cangjie
 @Post[path = "/crontab"]

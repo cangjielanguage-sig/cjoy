@@ -20,7 +20,7 @@ CJoy提供了两种实现Basic认证的方式：
 let joy = Joy.default()
 let router = joy.router
 
-// 创建BasicAuth中间件对象，指定认证任证
+ // 创建BasicAuth中间件对象，指定认证凭证
 let basicAuth = BasicAuth("test", HashMap<String, String>([("xiao", "xiao"), ("lanling", "lanling")]))
 router.use(basicAuth)
 ```
@@ -48,7 +48,7 @@ BasicAuth提供如下参数，非必选参数提供默认实现，用户可以�
 |参数|是否可选|说明|
 |---|---|---|
 |realm|否|用于设置所属领域名称|
-|creads|否|认证凭证|
+|creeds|否|认证凭证|
 |filterFunc|是|用于指定过滤函数|
 |validateFunc|是|用于指定校验函数|
 
@@ -119,13 +119,13 @@ source 支持如下：
 
 可选参数，认证的Schema，当lookupKey为header时指定且有效，默认值为`Bearer` 。
 
-假定Token为abcd，则要求请求在头哉指定为：`Authorization: Bearer abcd`
+假定Token为abcd，则要求请求在头域指定为：`Authorization: Bearer abcd`
 
 #### successHandleFunc
 
 可选参数，当认证成功之后回调，用于扩展校验 token 通过的自定义处理逻辑。
 
-#### errorHandleFucn
+#### errorHandleFunc
 
 可选参数，当认证失败之后回调，用于扩展校验 token 未通过的自定义处理逻辑。
 
@@ -149,7 +149,7 @@ CJoy内置了JWT的实现，支持如下签名算法：
  - RS256， RS384， RS512
  - PS256， PS384， PS512
 
-注：CJoy不是供None算法，因为无签名JWT可能在传输过程中被篡改。
+注：CJoy不支持None算法，因为无签名JWT可能在传输过程中被篡改。
 
 #### 生成Token
 
@@ -199,21 +199,21 @@ let token = jwt.signWith(priv)
 
 #### 解释Token
 
-HS256 示例：
+ HS256 示例：
 
-```cangjie
-let key = "abcd".toArray()
-let jwt = Jwt.pasrse(token).verifyWith(key)
-// parse函数还可以指定ParserConfig参数，用于检查指定的信息，具体配置项请参见ParserConfig定义
-let jwt2 = Jwt.pasrse(token, config: ParserConfig(expectedAud:["aud"])).verifyWith(key)
-```
+ ```cangjie
+ let key = "abcd".toArray()
+ let jwt = Jwt.parse(token).verifyWith(key)
+ // parse函数还可以指定ParserConfig参数，用于检查指定的信息，具体配置项请参见ParserConfig定义
+ let jwt2 = Jwt.parse(token, config: ParserConfig(expectedAud:["aud"])).verifyWith(key)
+ ```
 
-RS256 示例：
+ RS256 示例：
 
-```cangjie
-let pub = loadRSAPublicKey("./testdata/rsa_public.pem")
-let jwt = Jwt.pasrse(token).verifyWith(pub)
-```
+ ```cangjie
+ let pub = loadRSAPublicKey("./testdata/rsa_public.pem")
+ let jwt = Jwt.parse(token).verifyWith(pub)
+ ```
 
 ### JWT中间件
 
@@ -324,7 +324,7 @@ func authenticator(ctx: JoyContext): Unit {
 
 #### authorizator
 
-用于设置已认证的用户路由访问权限的函数，如下函数通过验证用户名是否为 admin，从而判断是否有访问路由的权限。如果没有访问权限，则会触发 Unauthorized 参数中声明的 jwt 流程验证失败的响应函数。
+用于设置已认证的用户路由访问权限的函数，如下函数通过验证用户名是否为 admin，从而判断是否有访问路由的权限。如果没有访问权限，则会触发Unauthorized参数中声明的jwt流程验证失败的响应函数。
 
 示例：
 
@@ -341,7 +341,7 @@ func authorizator(ctx: JoyContext, identity: String): Bool {
 
 #### setPayload
 
-用于设置登录时为 token 添加自定义负载信息的函数，如果不传入这个参数，则 token 的 payload 部分默认存储 token 的过期时间和创建时间，如下则额外存储了用户名信息。
+用于设置登录时为 token 添加自定义负载信息的函数。如果不传入这个参数，则 token 的 payload 部分默认存储 token 的过期时间和创建时间，如下则额外存储了用户名信息。
 
 示例:
 
@@ -527,37 +527,37 @@ let token = rsp.json<TokenBody>().getOrThrow()
 
 OAuth2模块面向接口编程，您可以实现如下接口，扩展自己的实现。
 
-- ClientStore：默认实现MemoryClientStore，建议扩展实现存储在数据库中
-- TokenStore：默认实现MMemoryTokenStore，建议扩展实现存储在Redis或数据库中
-- TokenGenerate：默认实现SecureRandTokenGenerate，是基于安全随机HMAC的实现，可以扩展实现生成JWT
-- CodeGenerate：默认实现SecureRandCodeGenerate，是基于安全随机HMAC的实现
+  - ClientStore：默认实现MemoryClientStore，建议扩展实现存储在数据库中
+  - TokenStore：默认实现MemoryTokenStore，建议扩展实现存储在Redis或数据库中
+  - TokenGenerate：默认实现SecureRandTokenGenerate，是基于安全随机HMAC的实现，可以扩展实现生成JWT
+  - CodeGenerate：默认实现SecureRandCodeGenerate，是基于安全随机HMAC的实现
 
 流程控制管理类 `OAuth2Server` 也提供一系列的setXXX方法，其函数原型定义在 `oauth2/handler.cj` 文件，您可以扩展自己的实现。
 
  - ClientInfoHandleFunc：获取Client信息，默认提供如下两个实现
    - clientFormHandleFunc：从提交表单中获取
    - clientBasicHandleFunc： 从头域Basic认证获取，默认采用它
- - ClientAuthorizedHandleFunc： 检查客户端是否允许使用此授权
- - ClientScopeHandleFunc： 检查客户端是否允许使用Scope
- - UserAuthorizationHandleFunc：从请求授权中获取UserId
- - PasswordAuthorizationHanleFunc：从请求授权中根据用户名+密码获取UserId
- - RefreshingScopeHandleFunc：检查Refresh Token的允许使用Scope
- - RefreshingValidationHandleFunc：检查Refresh Token还是否有效
- - ResponseErrorHandleFunc：回错误响应时回调，默认提供
-   - defaultResponseErrorHandleFunc：只打印日志，默认采用它
- - InternalErrorHandleFunc：发现内部错误时回调，默认提供
-   - defaultInternalErrorHandleFunc：只打印日志，默认采用它
- - PreRedirectErrorHandleFunc：当Redirect Error之前回调
- - AuthorizeScopeHandleFunc：认证对使用Scope进行设置
- - AccessTokenExpHandleFunc：对Access Token过期时间进行设置
- - ExtensionFieldsHandleFunc：生成响应时提取扩展字段回调
- - ResponseTokenHandleFunc：生成响应回调，设置是覆默认实现
- - RefreshTokenResolveHandleFunc：获取Refresh Token，默认提供如下两个实现
+  - ClientAuthorizedHandleFunc：检查客户端是否允许使用此授权
+  - ClientScopeHandleFunc：检查客户端是否允许使用Scope
+  - UserAuthorizationHandleFunc：从请求授权中获取UserId
+  - PasswordAuthorizationHandleFunc：从请求授权中根据用户名+密码获取UserId
+  - RefreshingScopeHandleFunc：检查Refresh Token的允许使用Scope
+  - RefreshingValidationHandleFunc：检查Refresh Token是否还有效
+  - ResponseErrorHandleFunc：响应错误时回调，默认提供
+    - defaultResponseErrorHandleFunc：只打印日志，默认采用它
+  - InternalErrorHandleFunc：发现内部错误时回调，默认提供
+    - defaultInternalErrorHandleFunc：只打印日志，默认采用它
+  - PreRedirectErrorHandleFunc：Redirect Error之前回调
+  - AuthorizeScopeHandleFunc：对认证使用Scope进行设置
+  - AccessTokenExpHandleFunc：对Access Token过期时间进行设置
+  - ExtensionFieldsHandleFunc：生成响应时提取扩展字段回调
+  - ResponseTokenHandleFunc：生成响应回调，设置是否覆盖默认实现
+  - RefreshTokenResolveHandleFunc：获取Refresh Token，默认提供如下两个实现
    - refreshTokenFormResolveHandleFunc：从提交表单中获取，默认采用它
    - refreshTokenCookieResolveHandleFunc：从Cookies中获取
- - AccessTokenResolveHandleFunc：获取Access Token,默认提供如下两个实现
-   - accessTokenDefaultResolveHandleFunc：从头域或提交表单中获取，默认采用它
-   - accessTokenCookieResolveHandleFunc：从Cookies中获取
+  - AccessTokenResolveHandleFunc：获取Access Token，默认提供如下两个实现
+    - accessTokenDefaultResolveHandleFunc：从头域或提交表单中获取，默认采用它
+    - accessTokenCookieResolveHandleFunc：从Cookies中获取
 
 ----
 << [返回](../../README.md#使用指导)

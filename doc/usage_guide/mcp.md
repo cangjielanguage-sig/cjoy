@@ -1,13 +1,13 @@
 # MCP
 
-CJoy内建支持MCP(Model Context Protocol)Server端开发。
+CJoy内建支持MCP(Model Context Protocol)服务端开发。
 
 - 协议版本：2025-03-26
 - 传输层协议：SSE, StreamableHttp
 
 MCP支持的情况：
 
- - 支持Tool，Resource, Prompt查询与调用，不支持listChanged与subscribe，不支持Batch请求
+ - 支持Tool、Resource、Prompt查询与调用，不支持listChanged与subscribe，不支持Batch请求
  - 支持SSE，StreamableHttp传输层（支持Json Response方式，不支持SSE Stream方式）
  - 接口认证需要使用者自已基于中间件机制扩展
  - StreamableHttp模式下Session存储在内存，多节点部署时需要前端LB配置基于会话级路由
@@ -20,10 +20,10 @@ CJoy提供宏来简化MCP的Tool，Resource, Prompt服务端函数的开发。
 
 Tool是核心MCP协议中重要组成，允许您的LLM与外部系统交互、执行代码和访问不在其训练数据中的数据。
 
-Tool可以执行查询数据库、调用API、进行计算或访问文件等任务，从而将其功能扩展到训练数据之外。当LLM决定使用工具时，流程如下：
-- 客户端根据Too的Schema发送带有参数的请求
-- CJoy路由请求到对应的函数
-- CJoy把结果返回给LLM，LLM可以在其响应中使用它
+ Tool可以执行查询数据库、调用API、进行计算或访问文件等任务，从而将其功能扩展到训练数据之外。当LLM决定使用工具时，流程如下：
+ - 客户端根据Tool的Schema发送带有参数的请求
+ - CJoy路由请求到对应的函数
+ - CJoy把结果返回给LLM，LLM可以在其响应中使用它
 
 CJoy提供宏`@Tool`标注函数，`@ToolParam`标注函数参数，发布其为MCP的Tool。
 
@@ -41,10 +41,10 @@ public func multiply(a: Int, b: Int): Int {
 
 注册Tool后，CJoy会自动：
 
-- 使用`@Tool`属性中`name`与`description`生成作为Tool名与描述
-- 使用`@ToolParam`属性中`name`与`description`作为Tool参数与描述。
-- 基于函数的参数和类型生成MCP协议的要求的InputSchema
-- 注册HTTP的请求路由，以便后续MCP请求能路由到些函数
+  - 使用`@Tool`属性中`name`与`description`生成Tool名与描述
+  - 使用`@ToolParam`属性中`name`与`description`作为Tool参数与描述
+  - 基于函数的参数和类型生成MCP协议要求的InputSchema
+  - 注册HTTP的请求路由，以便后续MCP请求能路由到此函数
 
 宏与宏属性说明：
 
@@ -76,7 +76,7 @@ public func multiply(a: Int, b: Int): Int {
  - 入参可以是可选参数，如`Option<类型>`，则Tool的Schema对应的参数也是可选
  - 入参还可以是JoyContext类型，用于获取HTTP上下文信息，不用`@ToolParam`标注
 
-当工具的输入参数较多时，可以把多个参数聚合在一个类型和，如下所示：
+当工具的输入参数较多时，可以把多个参数聚合在一个类型中，如下所示：
 
 ```cangjie
 @Json
@@ -102,7 +102,7 @@ public func add3(param: Params, ctx: JoyContext): Int {
 
 #### Tool出参
 
-框架自动将函数返回的值转换为客户端的适当的MCP协议定义人Content格式：
+框架自动将函数返回的值转换为客户端的适当的MCP协议定义的Content格式：
 
  - 出参是实现ToString或JsonSerializable接口的类型，返回TextContent
  - 出参是`Array<ToString|JsonSerializable>`或`ArrayList<ToString|JsonSerializable>`类型，返回多个TextContent
@@ -261,10 +261,10 @@ SSE方式，`McpServer.registerSseTo`支持把MCP的函数自动注册到服务�
 
 StreamableHttp方式，`McpServer.registerStreamableTo`支持把MCP的函数自动注册到服务实例上，有如下参数：
 
- - joy: 服务实列
- - path：接收MCP消息的Path，默认为`/mcp`
- - isJsonResp: 回响应采用Json方式代替SEE方式
-  
+  - joy: 服务实例
+  - path：接收MCP消息的Path，默认为`/mcp`
+  - isJsonResp: 响应采用Json方式代替SSE方式
+
 注：目前只支持isJsonResp=true
 
 ## 客户端

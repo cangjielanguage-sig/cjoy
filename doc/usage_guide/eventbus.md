@@ -77,7 +77,7 @@ public type EventSubscriberFunc = (ctx: Context, evt: Event) -> Unit
 
 ## 发布者
 
-在Http Handler或Midlleware中使用，适合于收到Http请求时发布事件。
+在Http Handler或Middleware中使用，适合于收到Http请求时发布事件。
 
 ```cangjie
 @Post[path = "/event"]

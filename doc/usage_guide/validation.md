@@ -32,7 +32,7 @@ public struct Data {
 }
 ```
 
-- 宏展开之后，会自动实现`JoyValidatable`接口，可以调用其`validate`方法进行对成员属性校验，若校验未通过，则抛出`JoyValidationException`异常。
+- 宏展开之后，会自动实现`JoyValidatable`接口，可以调用其`validate`方法对成员属性进行校验，若校验未通过，则抛出`JoyValidationException`异常。
 - 宏`@Valid`可以与`@Json`,`@Bind`一起使用。
 
 ## 函数参数

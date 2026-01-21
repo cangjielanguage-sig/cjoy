@@ -28,7 +28,7 @@ func addCrontab(ctx: JoyContext): Unit {
 
 ## 服务容器
 
-CJoy存在一个全局的服务容器ServiceConainter，一些内置的服务会默认加到此容器内。每个Joy实例也创建独属的服务容器，内置服务会自动加到Joy实例的服务容器中。
+CJoy存在一个全局的服务容器ServiceContainer，一些内置的服务会默认加到此容器内。每个Joy实例也创建独属的服务容器，内置服务会自动加到Joy实例的服务容器中。
 
 全局的服务实例：
 

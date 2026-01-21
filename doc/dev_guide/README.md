@@ -77,17 +77,18 @@
  - 路由层
    - ntree.cj：路由路径树
      - 类TreeNode：压缩前辍树
-   - route.cj：路径与Handler注册
-     - 接口JoyRouters：路由管理接口
-     - 类JoyRouteGroup：实现JoyRouters接口
-     - 类TreeRouteDistributor：实现Cangjie SDK的HttpRequestDistributor与HttpRequestHandler接口，并所有请求它路由给它做分发
+    - route.cj：路径与Handler注册
+      - 接口JoyRouters：路由管理接口
+      - 类JoyRouteGroup：实现JoyRouters接口
+      - 类TreeRouteDistributor：实现Cangjie SDK的HttpRequestDistributor与HttpRequestHandler接口，把所有请求路由给它做分发
  - 接口层：
    - handler.cj： Handler与Middleware接口定义
      - 类JoyRequestHandler：请求处理接口
      - 类JoyHandlers：请求处理类集合，用于宏生成的代码注册
      - 类JoyRequestHandlerChain：请求处理链
-     - 类JoyMiddlewareHandler：请求中间件接口
-     - 类JoyMiddlewares：中间件类集合，用于宏生成的代码注册
+      - 类JoyMiddlewareHandler：请求中间件接口
+      - 类JoyMiddlewares：中间件类集合，用于宏生成的代码注册
+      - 类JoyMiddleware：中间件接口
    - context.cj：每次请求产生上下文
      - 类JoyContext：请求上下文
   - 渲染层：

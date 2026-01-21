@@ -24,7 +24,7 @@ class UserInfo {
 |宏|属性参数|说明|
 |---|---|---|
 |`@Json`|description:"..",superClass:""|作用于类与结构体上，标注其自动生成Json序列化与反序列化函数，类与结构体需要无参数的构建函数。|
-|`@JsonField`|name:xx,<br/>omitempty:true,<br/>ignore:false,<br/>timeformat:"...",<br/>description:"..",<br/>required:false:<br/>schema={...}|作用类与结构体的成员变量上，变量需要采用var声明并要指定类型。|
+|`@JsonField`|name:xx,<br/>omitempty:true,<br/>ignore:false,<br/>timeformat:"...",<br/>description:"..",<br/>required:false,<br/>schema={...}|作用于类与结构体的成员变量上，变量需要采用var声明并要指定类型。|
 |`@ToJson`||原生Json DSL，作用于满足JSON格式的一串符号上，把它转成JsonSerializable对象，可以调用JsonTool.toJson方法序列化为json字符串。|
 
 以上宏的属性参数说明，属性可以采用`=`与`:`赋值，如`@JsonField[name=xx]`与`@JsonField[name:xx]`等价：
@@ -66,9 +66,9 @@ CJoy提供下面方式支持序列化和反序列化时的多态：
  - subTypeField&subTypes：按字段值来确定子类
  - subTypeAs&subTypes：按是否存在字段来确定子类
 
-在子类指定如下属性，用于帮助子类识别父类
-- 属性`superClass=父类类型名`来指定父类类型
-- 当序列化或反序列化为子类时，可以同时对父类的成员变量进行序列化和反序列化
+在子类指定如下属性，用于帮助子类识别父类：
+ - 属性`superClass=父类类型名`来指定父类类型
+ - 当序列化或反序列化为子类时，可以同时对父类的成员变量进行序列化和反序列化
 
 #### 按字段值来确定子类
 
@@ -96,10 +96,10 @@ public class ReadResourceResult {
 ```
 
 用于帮助父类识别与子类之间的关系：
-- 属性`subTypeField=字段名`来指定子类的区分字段
-- 属性`subTypes={"字段值1":"子类类型名"}`来指定区分字段不同值时的子类类型
-- 属性`subTypeField`与`subTypes`同时存在
-- 当反序列化`ResourceContents`时，如果json字符串中存在mimeType="text"时，即反序化为TextResourceContents对象；存在mimeType="blob"时，即反序化为BlobResourceContents对象
+ - 属性`subTypeField=字段名`来指定子类的区分字段
+ - 属性`subTypes={"字段值1":"子类类型名"}`来指定区分字段不同值时的子类类型
+ - 属性`subTypeField`与`subTypes`同时存在
+ - 当反序列化`ResourceContents`时，如果json字符串中存在mimeType="text"时，即反序列化为TextResourceContents对象；存在mimeType="blob"时，即反序列化为BlobResourceContents对象
 
 #### 按是否存在字段来确定子类
 
@@ -121,10 +121,10 @@ public class BlobResourceContents <: ResourceContents {
 ```
 
 用于帮助父类识别与子类之间的关系：
-- 属性`subTypeAs=true`来指定子类
-- 属性`subTypes={"字段名1":"子类类型名"}`来指定区分字段时的子类类型
-- 属性`subTypeAs`与`subTypes`同时存在
-- 当反序列化`ResourceContents`时，如果json字符串中存在text字段时，即反序化为TextResourceContents对象；存在blob字段时，即反序化为BlobResourceContents对象
+ - 属性`subTypeAs=true`来指定子类
+ - 属性`subTypes={"字段名1":"子类类型名"}`来指定区分字段时的子类类型
+ - 属性`subTypeAs`与`subTypes`同时存在
+ - 当反序列化`ResourceContents`时，如果json字符串中存在text字段时，即反序列化为TextResourceContents对象；存在blob字段时，即反序列化为BlobResourceContents对象
 
 **注：** 继承只支持class类型，不支持struct类型
 
@@ -132,7 +132,7 @@ public class BlobResourceContents <: ResourceContents {
 
 一些反序列化场景，可以通过定义Any类型泛化接收不同Json类型，如下所示。
 
-假定字符串为：
+假设字符串为：
 
 ```cangjie
 {
@@ -167,12 +167,12 @@ public class DataAny {
 }
 ```
 
-反序列化映射关系如下，可以把Any向下转型为对应仓颉数据类型。
+反序列化映射关系如下，可以把Any向下转型为对应的仓颉数据类型。
 
 |Json类型|仓颉类型|
 |---|---|
 |JsonObject|`HashMap<String, JsonSerializable>`|
-|JsonAray|`ArrayList<JsonSerializable>`|
+|JsonArray|`ArrayList<JsonSerializable>`|
 |JsonBool|Bool|
 |JsonNumber|Int64或Float64|
 |JsonString|String|

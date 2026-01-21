@@ -5,7 +5,7 @@ CJoy 提供对Chunked的封装，支持Chunked数据以及SSE(Server-Sent Events
 ## Chunked
 
 ```cangjie
-router.get("/chuncked", {ctx: JoyContext =>
+router.get("/chunked", {ctx: JoyContext =>
     let writer = ctx.chunkedWriter()
     for (num in 1..10) {
         writer.write(num.toString())

@@ -11,7 +11,7 @@
 * `/images/*`
 * `/favicon.ico`
 * `/{year}/{month}`
-* `/{year}/{month/{post}`
+* `/{year}/{month}/{post}`
 * `/{page:[0-9]+}`
 * `/{page:[0-9]+}-delete`
 * `/articles/{id}:{op}`

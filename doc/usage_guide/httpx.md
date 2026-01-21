@@ -79,11 +79,11 @@ ctx.string(rsp.text)
 
 ## 自定义扩展
 
-框架当前提供基础实现`JoyHttpClientService`，以及如下扩展实现：
+ 框架当前提供基础实现`JoyHttpClientService`，以及如下扩展实现：
 
- - `BasicAuthClient`： Basic认证
- - `TokanAuthClien`： Token认证
- - `RetryClient`： 重试
+  - `BasicAuthClient`：Basic认证
+  - `TokenAuthClient`：Token认证
+  - `RetryClient`：重试
   
 你可以参考上述实现，定制自己的HttpClient，实现 [JoyHttpClient](../../src/httpx/api.cj) 接口，对默认实现能力扩展增强。
 

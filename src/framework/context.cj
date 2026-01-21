@@ -56,7 +56,7 @@ public interface JoyContext <: Context {
     prop respStatus: UInt16
 
     /*
-     * return the http  response body
+     * return the http response body
      */
     prop respBody: String
 
@@ -433,6 +433,7 @@ public interface JoyContext <: Context {
             case _ => None
         }
     }
+    
     /**
      * get the request param by type and name
      *
@@ -462,7 +463,7 @@ class JoyHttpContext <: JoyContext {
     private var _cookieCache: HashMap<String, String> = HashMap()
     private var _parsedCookie: Bool = false
     private var _status: ?UInt16 = None
-    private var _body: ?Any = None
+    private var _body: Any = Option<Any>.None
 
     // the index of executing handler chain
     var _handleIndex: Int = 0
@@ -562,8 +563,8 @@ class JoyHttpContext <: JoyContext {
     public prop respBody: String {
         get() {
             match (_body) {
-                case Some(str: String) => str
-                case Some(bytes: Array<Byte>) => String.fromUtf8(bytes)
+                case str: String => str
+                case bytes: Array<Byte> => String.fromUtf8(bytes)
                 case _ => ""
             }
         }
