@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 lanlingx(xiaotengfei) All rights resvered.
+ * Copyright (c) 2025 lanlingx(xiaotengfei) All rights reserved.
  * CJoy is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -91,17 +91,17 @@ public class Jwt {
 
         let sstr = signingString()
         let sig = _method?.sign(sstr, key) ?? Array<Byte>()
-        sstr + "." + encodeSegemnt(sig)
+        sstr + "." + encodeSegment(sig)
     }
 
     /**
-     * pasrse the string token to JWT
+     * parse the string token to JWT
      *
      * @param token: the token to parse
-     * @param config: the paser config
+     * @param config: the parser config
      * @return: a JWT object
      */
-    public static func pasrse(token: String, config!: ParserConfig = ParserConfig()): Jwt {
+    public static func parse(token: String, config!: ParserConfig = ParserConfig()): Jwt {
         let jwt = Jwt()
         jwt._parseConfig = config
         jwt.parseToken(token)
@@ -239,14 +239,14 @@ public class Jwt {
         }
     }
 
-    private func encodeSegemnt(seg: Array<Byte>): String {
+    private func encodeSegment(seg: Array<Byte>): String {
         rawBase64URLEncode(seg)
     }
 
     private func signingString(): String {
         let h = JsonTool.toJsonBytes(_headers)
         let c = JsonTool.toJsonBytes(_claims)
-        encodeSegemnt(h) + "." + encodeSegemnt(c)
+        encodeSegment(h) + "." + encodeSegment(c)
     }
 
     /**

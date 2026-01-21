@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 lanlingx(xiaotengfei) All rights resvered.
+ * Copyright (c) 2025 lanlingx(xiaotengfei) All rights reserved.
  * CJoy is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -44,7 +44,7 @@ public type ClientScopeHandleFunc = (request: TokenGenerateRequest) -> Bool
 // get user id from request authorization, return the userId
 public type UserAuthorizationHandleFunc = (ctx: JoyContext) -> String
 // get user id from username and password, return the userId
-public type PasswordAuthorizationHanleFunc = (ctx: JoyContext, clientId: String, username: String, password: String) -> String
+public type PasswordAuthorizationHandleFunc = (ctx: JoyContext, clientId: String, username: String, password: String) -> String
 // check the scope of the refreshing token, return true or false
 public type RefreshingScopeHandleFunc = (request: TokenGenerateRequest, oldScope: String) -> Bool
 // check if refresh_token is still valid. eg no revocation or other, return true or false
@@ -123,5 +123,5 @@ func defaultInternalErrorHandleFunc(_: JoyContext, ex: ErrorInfo): Unit {
 }
 
 func defaultResponseErrorHandleFunc(_: JoyContext, er: ErrorResponse): Unit {
-    @LogError("[OAuth2] reponse error, ${er.errorInfo.code}, ${er.errorInfo.description}")
+    @LogError("[OAuth2] response error, ${er.errorInfo.code}, ${er.errorInfo.description}")
 }

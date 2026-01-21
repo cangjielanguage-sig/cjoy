@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 lanlingx(xiaotengfei) All rights resvered.
+ * Copyright (c) 2025 lanlingx(xiaotengfei) All rights reserved.
  * CJoy is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -13,7 +13,7 @@ package cjoy.schedule
 import std.sync.{Timer}
 import std.collection.concurrent.ConcurrentHashMap
 import std.time.DateTime
-import cjoy.context.ServiceConainter
+import cjoy.context.ServiceContainer
 import cjoy.log.macros.*
 
 public class Crontab <: Resource {
@@ -88,4 +88,4 @@ public class Crontab <: Resource {
     }
 }
 
-private let _: Unit = ServiceConainter.GLOBAL.addService("crontab", Crontab.INSTANCE)
+private let _: Unit = ServiceContainer.GLOBAL.addService("crontab", Crontab.INSTANCE)

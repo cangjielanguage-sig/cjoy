@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 lanlingx(xiaotengfei) All rights resvered.
+ * Copyright (c) 2025 lanlingx(xiaotengfei) All rights reserved.
  * CJoy is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -13,10 +13,10 @@ package cjoy.context
 import std.collection.concurrent.ConcurrentHashMap
 
 /**
- * service conainter
+ * service container
  */
-public class ServiceConainter {
-    public static let GLOBAL: ServiceConainter = ServiceConainter()
+public class ServiceContainer {
+    public static let GLOBAL: ServiceContainer = ServiceContainer()
     private let _services: ConcurrentHashMap<String, Any> = ConcurrentHashMap()
 
     /**
@@ -39,7 +39,7 @@ public class ServiceConainter {
         (_services.get(name) ?? Option<Any>.None) as T
     }
 
-    protected func addServicesFrom(sc: ServiceConainter): Unit {
+    protected func addServicesFrom(sc: ServiceContainer): Unit {
         for ((k, v) in sc._services) {
             _services.add(k, v)
         }

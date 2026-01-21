@@ -1,18 +1,18 @@
 /*
- * Copyright (c) 2025 lanlingx(xiaotengfei) All rights resvered.
+ * Copyright (c) 2025 lanlingx(xiaotengfei) All rights reserved.
  */
 
-package examples.crsf
+package examples.csrf
 
 import cjoy.*
 import cjoy.macros.*
 import cjoy.session.*
-import cjoy.middleware.{getCrsfToken, CrsfProtect, SessionManager}
+import cjoy.middleware.{getCsrfToken, CsrfProtect, SessionManager}
 
 // 1. 先在Get 请求某个url，生成CRSF token
 @Get[path = "/get_token"]
 func get1(ctx: JoyContext): String {
-    getCrsfToken(ctx)
+    getCsrfToken(ctx)
 }
 
 // 2.0 提交数据时，携带CRSF token，可以放在表单，Header等
@@ -26,8 +26,8 @@ main(): Int64 {
     // 设置Session管理
     let sessionManager = SessionManager(MemorySessionStorage())
     joy.router.use(sessionManager)
-    // CRSF依赖Session，需要先设置sessionManager
-    joy.router.use(CrsfProtect("abcdef"))
+    // CSRF依赖Session，需要先设置sessionManager
+    joy.router.use(CsrfProtect("abcdef"))
 
     // 启动服务
     JoyMiddlewares.registerTo(joy)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 lanlingx(xiaotengfei) All rights resvered.
+ * Copyright (c) 2025 lanlingx(xiaotengfei) All rights reserved.
  * CJoy is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -23,22 +23,22 @@ const csrfTokenCtxKey = "__csrf_token__"
 const csrfSaltCtxKey = "__csrf_salt__"
 
 // the extract token function
-type CrsfExtractFunc = (ctx: JoyContext) -> (String, String)
+type CsrfExtractFunc = (ctx: JoyContext) -> (String, String)
 
 // the default authentication failure handler 
-class DefaultCrsfErrorHandler <: JoyRequestHandler {
-    static let INSTANCE = DefaultCrsfErrorHandler()
+class DefaultCsrfErrorHandler <: JoyRequestHandler {
+    static let INSTANCE = DefaultCsrfErrorHandler()
 
     public func handle(ctx: JoyContext): Unit {
-        @LogError("[CRSF] verify failed, ${ctx.getClientIP()}, ${ctx.method} ${ctx.url}")
+        @LogError("[CSRF] verify failed, ${ctx.getClientIP()}, ${ctx.method} ${ctx.url}")
         ctx.status(HttpStatusCode.STATUS_UNAUTHORIZED)
     }
 }
 
 /**
- * obtain or generate one CRSF token
+ * obtain or generate one CSRF token
  */
-public func getCrsfToken(ctx: JoyContext): String {
+public func getCsrfToken(ctx: JoyContext): String {
     let session = getSession(ctx).getOrThrow()
     let secret = session.get<String>(csrfSecretCtxKey).getOrThrow()
 
@@ -54,17 +54,17 @@ public func getCrsfToken(ctx: JoyContext): String {
         s
     }
 
-    let token = CrsfProtect.tokenize(secret, salt)
+    let token = CsrfProtect.tokenize(secret, salt)
     session.set(csrfTokenCtxKey, token)
     token
 }
 
 /**
- * token Crsf protect middleware
+ * token Csrf protect middleware
  */
-public class CrsfProtect <: JoyMiddlewareHandler {
+public class CsrfProtect <: JoyMiddlewareHandler {
     private let _secret: String
-    private let _handleFunc: CrsfExtractFunc
+    private let _handleFunc: CsrfExtractFunc
     private let _ignoreMethods: Array<String>
     private let _filterHandler: ?JoyRequestFilterFunc
     private let _errorHandler: JoyRequestHandler
@@ -92,11 +92,11 @@ public class CrsfProtect <: JoyMiddlewareHandler {
         _errorHandler = if (let Some(h) <- errorHandler) {
             JoyFuncHandler(h)
         } else {
-            DefaultCrsfErrorHandler.INSTANCE
+            DefaultCsrfErrorHandler.INSTANCE
         }
     }
 
-    private static func createExtractFunc(lookupKey: String): CrsfExtractFunc {
+    private static func createExtractFunc(lookupKey: String): CsrfExtractFunc {
         let sn = lookupKey.split(":")
         if (sn.size != 2) {
             throw IllegalArgumentException("keyLookup format must be <source>:<name>")
@@ -152,7 +152,7 @@ public class CrsfProtect <: JoyMiddlewareHandler {
             }
         }
 
-        // Set secret to generate token in getCrsfToken func
+        // Set secret to generate token in getCSRFToken func
         let session = getSession(ctx).getOrThrow()
         session.set(csrfSecretCtxKey, _secret)
 
@@ -163,20 +163,20 @@ public class CrsfProtect <: JoyMiddlewareHandler {
 
         let salt = session.get<String>(csrfSaltCtxKey)
         if (salt.isNone()) {
-            @LogError("[CRSF] miss salt")
+            @LogError("[CSRF] miss salt")
             _errorHandler.handle(ctx)
             return
         }
 
         let (token, source) = _handleFunc(ctx)
         if (token.isEmpty()) {
-            @LogError("[CRSF] miss token in ${source}")
+            @LogError("[CSRF] miss token in ${source}")
             _errorHandler.handle(ctx)
             return
         }
 
         if (tokenize(_secret, salt.getOrThrow()) != token) {
-            @LogError("[CRSF] invalid token")
+            @LogError("[CSRF] invalid token")
             _errorHandler.handle(ctx)
             return
         }

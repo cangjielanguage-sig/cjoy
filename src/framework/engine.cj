@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 lanlingx(xiaotengfei) All rights resvered.
+ * Copyright (c) 2025 lanlingx(xiaotengfei) All rights reserved.
  * CJoy is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -18,7 +18,7 @@ import stdx.net.http.{Server, ServerBuilder}
 import stdx.crypto.x509.{X509Certificate, PrivateKey}
 import cjoy.log.macros.*
 import cjoy.ioc.BeanFactoryManager
-import cjoy.context.{ServiceConainter}
+import cjoy.context.{ServiceContainer}
 import cjoy.version.printBanner
 
 /**
@@ -55,7 +55,7 @@ public class JoyConfig {
 public class Joy {
     private static let _INSTANCES: ConcurrentHashMap<String, Joy> = ConcurrentHashMap()
     private var _server: ?Server = None
-    private let _services: ServiceConainter = ServiceConainter()
+    private let _services: ServiceContainer = ServiceContainer()
 
     public let config: JoyConfig
     public let name: String
@@ -114,7 +114,7 @@ public class Joy {
         }
         let joy = Joy(config, name)
         // 默认增加IoC服务
-        joy._services.addServicesFrom(ServiceConainter.GLOBAL)
+        joy._services.addServicesFrom(ServiceContainer.GLOBAL)
         _INSTANCES.add(name, joy)
         joy
     }

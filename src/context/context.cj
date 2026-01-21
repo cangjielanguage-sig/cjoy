@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 lanlingx(xiaotengfei) All rights resvered.
+ * Copyright (c) 2025 lanlingx(xiaotengfei) All rights reserved.
  * CJoy is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -69,6 +69,6 @@ public open class MapContext <: Context {
     }
 
     public open func getService<T>(name: String): ?T {
-        ServiceConainter.GLOBAL.getService<T>(name)
+        ServiceContainer.GLOBAL.getService<T>(name)
     }
 }

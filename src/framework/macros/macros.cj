@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 lanlingx(xiaotengfei) All rights resvered.
+ * Copyright (c) 2025 lanlingx(xiaotengfei) All rights reserved.
  * CJoy is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -201,7 +201,7 @@ public macro BodyParam(input: Tokens) {
  * Get macro is used for annotation at the function, register the funtion for GET `path`
  *
  * @attribute path: the path pattern
- * @attribute produce: the format of reponse body, value is json/text, default is text
+ * @attribute produce: the format of response body, value is json/text, default is text
  */
 public macro Get(attr: Tokens, input: Tokens) {
     input + parseFunc("Get", attr, input)
@@ -211,7 +211,7 @@ public macro Get(attr: Tokens, input: Tokens) {
  * Post macro is used for annotation at the function, register the funtion for POST `path`
  *
  * @attribute path: the path pattern
- * @attribute produce: the format of reponse body, value is json/text, default is text
+ * @attribute produce: the format of response body, value is json/text, default is text
  */
 public macro Post(attr: Tokens, input: Tokens) {
     input + parseFunc("Post", attr, input)
@@ -221,7 +221,7 @@ public macro Post(attr: Tokens, input: Tokens) {
  * Delete macro is used for annotation at the function, register the funtion for DELETE `path`
  *
  * @attribute path: the path pattern
- * @attribute produce: the format of reponse body, value is json/text, default is text
+ * @attribute produce: the format of response body, value is json/text, default is text
  */
 public macro Delete(attr: Tokens, input: Tokens) {
     input + parseFunc("Delete", attr, input)
@@ -231,7 +231,7 @@ public macro Delete(attr: Tokens, input: Tokens) {
  * Patch macro is used for annotation at the function, register the funtion for PATCH `path`
  *
  * @attribute path: the path pattern
- * @attribute produce: the format of reponse body, value is json/text, default is text
+ * @attribute produce: the format of response body, value is json/text, default is text
  */
 public macro Patch(attr: Tokens, input: Tokens) {
     input + parseFunc("Patch", attr, input)
@@ -241,7 +241,7 @@ public macro Patch(attr: Tokens, input: Tokens) {
  * Put macro is used for annotation at the function, register the funtion for PUT `path`
  *
  * @attribute path: the path pattern
- * @attribute produce: the format of reponse body, value is json/text, default is text
+ * @attribute produce: the format of response body, value is json/text, default is text
  */
 public macro Put(attr: Tokens, input: Tokens) {
     input + parseFunc("Put", attr, input)
@@ -251,7 +251,7 @@ public macro Put(attr: Tokens, input: Tokens) {
  * Head macro is used for annotation at the function, register the funtion for HEAD `path`
  *
  * @attribute path: the path pattern
- * @attribute produce: the format of reponse body, value is json/text, default is text
+ * @attribute produce: the format of response body, value is json/text, default is text
  */
 public macro Head(attr: Tokens, input: Tokens) {
     input + parseFunc("Head", attr, input)
@@ -262,7 +262,7 @@ public macro Head(attr: Tokens, input: Tokens) {
  *
  * @attribute path: the path pattern
  * @attribute methods: the method list, like `GET,PUT` or `GET`
- * @attribute produce: the format of reponse body, value is json/text, default is text
+ * @attribute produce: the format of response body, value is json/text, default is text
  */
 public macro Handler(attr: Tokens, input: Tokens) {
     input + parseFunc("Handler", attr, input)

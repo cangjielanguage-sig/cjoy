@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 lanlingx(xiaotengfei) All rights resvered.
+ * Copyright (c) 2025 lanlingx(xiaotengfei) All rights reserved.
  * CJoy is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -153,7 +153,7 @@ class DefaultMcpServerSession <: McpServerSession & McpRequestHandler & McpRespo
     private func sendResp(ctx: JoyContext, resp: JSONRPCResponse, jsonResp: Bool): Unit {
         if (_isJsonResp || jsonResp) {
             ctx.header(McpConsts.HEADER_MCP_SESSION_ID, _sessionId).json(resp)
-            @LogDebug("[MCP] send json reponse: ${JsonTool.toJson(resp)}, sessionId: ${_sessionId}")
+            @LogDebug("[MCP] send json response: ${JsonTool.toJson(resp)}, sessionId: ${_sessionId}")
         } else {
             let data = JSONRPCTool.serialize(resp)
             _transport.send(data)

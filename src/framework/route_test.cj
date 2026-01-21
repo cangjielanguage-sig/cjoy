@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 lanlingx(xiaotengfei) All rights resvered.
+ * Copyright (c) 2025 lanlingx(xiaotengfei) All rights reserved.
  * CJoy is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -17,7 +17,7 @@ import cjoy.context.*
 public class RouteTestCaseSuit {
     @TestCase
     public func testGroup() {
-        let router: JoyRouteGroup = JoyRouteGroup(JoyConfig(), ServiceConainter())
+        let router: JoyRouteGroup = JoyRouteGroup(JoyConfig(), ServiceContainer())
         let ga = router.group("/a")
         @Assert(ga.basePath(), "/a")
         let gb = ga.group("/b")
@@ -28,14 +28,14 @@ public class RouteTestCaseSuit {
 
     @TestCase
     public func findGroupRoot() {
-        let router: JoyRouteGroup = JoyRouteGroup(JoyConfig(), ServiceConainter())
+        let router: JoyRouteGroup = JoyRouteGroup(JoyConfig(), ServiceContainer())
         let r = router.findGroup("/a/b/c/d")
         @Assert(r.basePath(), "")
     }
 
     @TestCase
     public func findGroupLvl1() {
-        let router: JoyRouteGroup = JoyRouteGroup(JoyConfig(), ServiceConainter())
+        let router: JoyRouteGroup = JoyRouteGroup(JoyConfig(), ServiceContainer())
         router.group("/a")
         let r = router.findGroup("/a/b/c/d")
         @Assert(r.basePath(), "/a")
@@ -43,7 +43,7 @@ public class RouteTestCaseSuit {
 
     @TestCase
     public func findGroupLvl3() {
-        let router: JoyRouteGroup = JoyRouteGroup(JoyConfig(), ServiceConainter())
+        let router: JoyRouteGroup = JoyRouteGroup(JoyConfig(), ServiceContainer())
         router.group("/a")
         router.group("/a").group("/b").group("/c")
         let r = router.findGroup("/a/b/c/d")
@@ -52,7 +52,7 @@ public class RouteTestCaseSuit {
 
     @TestCase
     public func findGroupLvl3Indirect() {
-        let router: JoyRouteGroup = JoyRouteGroup(JoyConfig(), ServiceConainter())
+        let router: JoyRouteGroup = JoyRouteGroup(JoyConfig(), ServiceContainer())
         router.group("/a/b/c")
         let r = router.findGroup("/a/b/c/d")
         @Assert(r.basePath(), "/a/b/c")
@@ -60,7 +60,7 @@ public class RouteTestCaseSuit {
 
     @TestCase
     public func findGroupLvl1Match() {
-        let router: JoyRouteGroup = JoyRouteGroup(JoyConfig(), ServiceConainter())
+        let router: JoyRouteGroup = JoyRouteGroup(JoyConfig(), ServiceContainer())
         router.group("/a")
         router.group("/a").group("/c")
         let r = router.findGroup("/a/b/c/d")
@@ -69,7 +69,7 @@ public class RouteTestCaseSuit {
 
     @TestCase
     public func findGroupPathAllMatch() {
-        let router: JoyRouteGroup = JoyRouteGroup(JoyConfig(), ServiceConainter())
+        let router: JoyRouteGroup = JoyRouteGroup(JoyConfig(), ServiceContainer())
         router.group("/a")
         router.group("/a").group("/b").group("/c").group("/d")
         let r = router.findGroup("/a/b/c/d")
@@ -78,7 +78,7 @@ public class RouteTestCaseSuit {
 
     @TestCase
     public func findCreateGroups() {
-        let router: JoyRouteGroup = JoyRouteGroup(JoyConfig(), ServiceConainter())
+        let router: JoyRouteGroup = JoyRouteGroup(JoyConfig(), ServiceContainer())
         router.createGroups("/a/b/c/d")
         var r = router.findGroup("/a/b/c/d")
         @Assert(r.basePath(), "/a/b/c/d")

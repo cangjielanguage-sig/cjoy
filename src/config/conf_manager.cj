@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 lanlingx(xiaotengfei) All rights resvered.
+ * Copyright (c) 2025 lanlingx(xiaotengfei) All rights reserved.
  * CJoy is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -14,7 +14,7 @@ import std.collection.{ArrayList, HashMap, Map}
 import std.sort.sort
 import std.env.getVariables
 import cjoy.bind.{JoyBindable, MapContainer}
-import cjoy.context.ServiceConainter
+import cjoy.context.ServiceContainer
 import cjoy.log.macros.*
 
 class ConfigData <: ToString {
@@ -126,4 +126,4 @@ public class ConfigManager <: Config {
     }
 }
 
-private let _: Unit = ServiceConainter.GLOBAL.addService("config", ConfigManager.INSTANCE)
+private let _: Unit = ServiceContainer.GLOBAL.addService("config", ConfigManager.INSTANCE)

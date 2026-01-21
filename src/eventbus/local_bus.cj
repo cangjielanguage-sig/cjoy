@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 lanlingx(xiaotengfei) All rights resvered.
+ * Copyright (c) 2025 lanlingx(xiaotengfei) All rights reserved.
  * CJoy is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -13,7 +13,7 @@ package cjoy.eventbus
 import std.collection.{ArrayList}
 import std.collection.concurrent.{ArrayBlockingQueue, ConcurrentHashMap}
 import std.sync.{SyncCounter, AtomicBool}
-import cjoy.context.{Context, MapContext, ServiceConainter}
+import cjoy.context.{Context, MapContext, ServiceContainer}
 import cjoy.log.macros.*
 
 public class LocalEventBus <: EventBus {
@@ -173,4 +173,4 @@ private func matchNode(pattern: String, name: String): Bool {
     true
 }
 
-private let _: Unit = ServiceConainter.GLOBAL.addService("eventbus", LocalEventBus.INSTANCE)
+private let _: Unit = ServiceContainer.GLOBAL.addService("eventbus", LocalEventBus.INSTANCE)

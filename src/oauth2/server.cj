@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 lanlingx(xiaotengfei) All rights resvered.
+ * Copyright (c) 2025 lanlingx(xiaotengfei) All rights reserved.
  * CJoy is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -23,7 +23,7 @@ public class OAuth2Server {
 
     private var _clientInfoHandleFunc: ClientInfoHandleFunc
     private var _userAuthorizationHandleFunc: UserAuthorizationHandleFunc
-    private var _passwordAuthorizationHanleFunc: PasswordAuthorizationHanleFunc
+    private var _passwordAuthorizationHanleFunc: PasswordAuthorizationHandleFunc
     private var _responseErrorHandleFunc: ResponseErrorHandleFunc
     private var _internalErrorHandleFunc: InternalErrorHandleFunc
     private var _accessTokenResolveHandleFunc: AccessTokenResolveHandleFunc
@@ -81,7 +81,7 @@ public class OAuth2Server {
         _userAuthorizationHandleFunc = fn
     }
 
-    public func setPasswordAuthorizationHanleFunc(fn: PasswordAuthorizationHanleFunc): Unit {
+    public func setPasswordAuthorizationHandleFunc(fn: PasswordAuthorizationHandleFunc): Unit {
         _passwordAuthorizationHanleFunc = fn
     }
 
@@ -503,7 +503,7 @@ public class OAuth2Server {
 
         let userId = _passwordAuthorizationHanleFunc(ctx, tgr.clientId, username, pwd)
         if (userId == "") {
-            @LogError("[OAuth2] invalid grant, PasswordAuthorizationHanleFunc return user_id empty")
+            @LogError("[OAuth2] invalid grant, PasswordAuthorizationHandleFunc return user_id empty")
             throw OAuthException(OAuthErrors.INVALID_GRANT)
         }
         tgr.userId = userId

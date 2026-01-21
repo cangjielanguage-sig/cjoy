@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 lanlingx(xiaotengfei) All rights resvered.
+ * Copyright (c) 2025 lanlingx(xiaotengfei) All rights reserved.
  * CJoy is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -23,7 +23,7 @@ public type BasicAuthValidationFunc = (ctx: JoyContext, username: String, passwo
  * the basic authorization
  */
 public class BasicAuth <: JoyMiddlewareHandler {
-    public BasicAuth(let realm: String, let creads: HashMap<String, String>,
+    public BasicAuth(let realm: String, let creds: HashMap<String, String>,
         let validateFunc!: ?BasicAuthValidationFunc = None, let filterFunc!: ?BasicAuthFilterFunc = None) {}
 
     public func handle(ctx: JoyContext, chain: JoyRequestHandlerChain): Unit {
@@ -50,7 +50,7 @@ public class BasicAuth <: JoyMiddlewareHandler {
             return
         }
 
-        let opwd = creads.get(user)
+        let opwd = creds.get(user)
         if (opwd.isNone()) {
             basicAuthFailed(ctx)
             return

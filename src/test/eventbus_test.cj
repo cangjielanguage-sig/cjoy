@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 lanlingx(xiaotengfei) All rights resvered.
+ * Copyright (c) 2025 lanlingx(xiaotengfei) All rights reserved.
  * CJoy is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -10,7 +10,7 @@
 
 package cjoy.test
 
-import cjoy.context.{Context, MapContext, ServiceConainter}
+import cjoy.context.{Context, MapContext, ServiceContainer}
 import cjoy.eventbus.*
 import cjoy.macros.*
 import std.sync.AtomicInt64
@@ -31,7 +31,7 @@ func handleEvent2(ctx: Context, evt: Event): Unit {
 public class EventBusServiceTestCaseSuit {
     @TestCase
     public func test(): Unit {
-        let bus = ServiceConainter.GLOBAL.getService<EventBus>("eventbus").getOrThrow()
+        let bus = ServiceContainer.GLOBAL.getService<EventBus>("eventbus").getOrThrow()
         bus.fireEvent(MapContext(), Event.of("a.b.c.d").addData("k1", "v1"))
         @Assert(counter.load(), 2)
     }

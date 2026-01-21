@@ -10,7 +10,7 @@
 - [combination](src/combination/main.cj): 组合使用Json，Bind，Validation，Handler宏
 
 ## 协议
-- [chuncked](src/chuncked/main.cj): chuncked响应
+- [chunked](src/chunked/main.cj): chunked响应
 - [sse](src/sse/main.cj): Server-Sent Event
 - [tls](src/tls/main.cj): HTTPS
 - [fileserver](src/fileserver/main.cj): 文件服务器
@@ -21,10 +21,10 @@
 
 ## 中间件
 - [session](src/session/main.cj): Session
-- [reqeust id](src/requestid/main.cj): 获取或生成请求ID
+- [request id](src/requestid/main.cj): 获取或生成请求ID
 - [no cache](src/nocache/main.cj): 禁用缓存
 - [token auth](src/tokenauth/main.cj): 基于Token认证
-- [CRSF](src/crsf/main.cj): 防跨站请求伪造攻击
+- [CSRF](src/csrf/main.cj): 防跨站请求伪造攻击
 - [JWT auth](src/jwtauth/main.cj): 基于JWT认证
 
 ## 服务

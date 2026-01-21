@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 lanlingx(xiaotengfei) All rights resvered.
+ * Copyright (c) 2025 lanlingx(xiaotengfei) All rights reserved.
  * CJoy is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -16,7 +16,7 @@ import stdx.net.http.{HttpHeaders, HttpResponse}
 import cjoy.framework.{JoyHttpConsts}
 
 /*
- * the http reponse wrapper
+ * the http response wrapper
  */
 public class JoyHttpResponse {
     private let _response: HttpResponse

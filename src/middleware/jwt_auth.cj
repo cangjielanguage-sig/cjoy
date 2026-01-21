@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 lanlingx(xiaotengfei) All rights resvered.
+ * Copyright (c) 2025 lanlingx(xiaotengfei) All rights reserved.
  * CJoy is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -273,9 +273,9 @@ public class JwtAuth <: JoyMiddlewareHandler {
         }
     }
 
-    private func paserToken(ctx: JoyContext): Jwt {
+    private func parseToken(ctx: JoyContext): Jwt {
         let token = _getTokenFunc(ctx).getOrThrow({=> throw JwtException("not found token in reqired field")})
-        let jwt = Jwt.pasrse(token,
+        let jwt = Jwt.parse(token,
             config: jwtParserConfig ?? ParserConfig(expirationRequired: true, issueAtRequired: true))
         if (jwt.headers.alg != signingAlg) {
             throw JwtException("invalid signing algorithm")
@@ -288,7 +288,7 @@ public class JwtAuth <: JoyMiddlewareHandler {
     }
 
     private func setClaims(ctx: JoyContext): Unit {
-        let jwt = paserToken(ctx)
+        let jwt = parseToken(ctx)
         if (sendAuthorization) {
             if (let Some(t) <- getJwt(ctx)) {
                 ctx.header(JoyHttpConsts.HEADER_AUTHORIZATION, "${tokenHeadName} ${t}")
@@ -299,7 +299,7 @@ public class JwtAuth <: JoyMiddlewareHandler {
     }
 
     private func checkIfTokenExpire(ctx: JoyContext): Jwt {
-        let jwt = paserToken(ctx)
+        let jwt = parseToken(ctx)
         if (let Some(iat) <- jwt.claims.getIssuedAt()) {
             if (iat.value < DateTime.now().addNanoseconds(-maxRefresh.toNanoseconds())) {
                 throw JwtException("token is expired")

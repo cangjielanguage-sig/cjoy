@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 lanlingx(xiaotengfei) All rights resvered.
+ * Copyright (c) 2025 lanlingx(xiaotengfei) All rights reserved.
  * CJoy is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -14,7 +14,7 @@ import std.collection.ArrayList
 import std.collection.concurrent.ConcurrentHashMap
 import std.sync.AtomicBool
 import std.env.atExit
-import cjoy.context.ServiceConainter
+import cjoy.context.ServiceContainer
 import cjoy.log.macros.*
 
 public class BeanFactoryManager {
@@ -66,6 +66,6 @@ public class BeanFactoryManager {
     }
 }
 
-private let _: Unit = ServiceConainter.GLOBAL.addService("ioc", BeanFactoryManager.getApplicationContext())
+private let _: Unit = ServiceContainer.GLOBAL.addService("ioc", BeanFactoryManager.getApplicationContext())
 
 private let _: Unit = atExit {BeanFactoryManager.destroyAllBeans()}

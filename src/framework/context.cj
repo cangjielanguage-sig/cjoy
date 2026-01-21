@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 lanlingx(xiaotengfei) All rights resvered.
+ * Copyright (c) 2025 lanlingx(xiaotengfei) All rights reserved.
  * CJoy is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -18,7 +18,7 @@ import stdx.encoding.url.URL
 import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonReader, JsonWriter}
 import stdx.encoding.base64.fromBase64String
 import cjoy.bind.JoyBindable
-import cjoy.context.{Context, ServiceConainter}
+import cjoy.context.{Context, ServiceContainer}
 import cjoy.log.macros.*
 
 /**
@@ -456,7 +456,7 @@ public interface JoyContext <: Context {
 
 class JoyHttpContext <: JoyContext {
     let _httpContext: HttpContext
-    let _services: ServiceConainter
+    let _services: ServiceContainer
     private let _config: JoyConfig
     private let _paramMap: HashMap<String, String>
     private let _ctxParamMap: HashMap<String, Any>
@@ -468,7 +468,7 @@ class JoyHttpContext <: JoyContext {
     // the index of executing handler chain
     var _handleIndex: Int = 0
 
-    init(services: ServiceConainter, httpContext: HttpContext, paramMap: HashMap<String, String>, config: JoyConfig,
+    init(services: ServiceContainer, httpContext: HttpContext, paramMap: HashMap<String, String>, config: JoyConfig,
         ctxParamMap: HashMap<String, Any>) {
         _services = services
         _httpContext = httpContext

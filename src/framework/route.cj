@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 lanlingx(xiaotengfei) All rights resvered.
+ * Copyright (c) 2025 lanlingx(xiaotengfei) All rights reserved.
  * CJoy is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -14,7 +14,7 @@ import std.collection.{ArrayList, HashMap, forEach}
 import std.fs.{canonicalize, FSException, exists, FileInfo}
 import stdx.encoding.url.URL
 import stdx.net.http.{HttpRequestDistributor, HttpRequestHandler, HttpRequest, HttpContext}
-import cjoy.context.ServiceConainter
+import cjoy.context.ServiceContainer
 import cjoy.log.macros.*
 
 /**
@@ -167,10 +167,10 @@ public interface JoyRouters {
 class TreeRouteDistributor <: HttpRequestDistributor & HttpRequestHandler {
     var _root: TreeNode<JoyRequestHandler> = TreeNode(NT_STATIC, b'\0', "")
     let _config: JoyConfig
-    let _services: ServiceConainter
+    let _services: ServiceContainer
     let _groups: HashMap<String, JoyRouters> = HashMap()
 
-    init(config: JoyConfig, services: ServiceConainter) {
+    init(config: JoyConfig, services: ServiceContainer) {
         _config = config
         _services = services
     }
@@ -249,7 +249,7 @@ class JoyRouteGroup <: JoyRouters {
         _middlewares = middlewares
     }
 
-    init(config: JoyConfig, services: ServiceConainter) {
+    init(config: JoyConfig, services: ServiceContainer) {
         this("", TreeRouteDistributor(config, services), ArrayList())
     }
 

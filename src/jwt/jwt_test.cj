@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 lanlingx(xiaotengfei) All rights resvered.
+ * Copyright (c) 2025 lanlingx(xiaotengfei) All rights reserved.
  * CJoy is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -20,7 +20,7 @@ public class JwtTestCaseSuit {
         let key = "abcd".toArray()
         let jwt = createJwt("HS256")
         let token = jwt.signWith(key)
-        let jwt2 = Jwt.pasrse(token).verifyWith(key)
+        let jwt2 = Jwt.parse(token).verifyWith(key)
         assertJwt(jwt2)
     }
 
@@ -29,7 +29,7 @@ public class JwtTestCaseSuit {
         let key = "abcd".toArray()
         let jwt = createJwt("HS384")
         let token = jwt.signWith(key)
-        let jwt2 = Jwt.pasrse(token).verifyWith(key)
+        let jwt2 = Jwt.parse(token).verifyWith(key)
         assertJwt(jwt2)
     }
 
@@ -38,7 +38,7 @@ public class JwtTestCaseSuit {
         let key = "abcd".toArray()
         let jwt = createJwt("HS512")
         let token = jwt.signWith(key)
-        let jwt2 = Jwt.pasrse(token).verifyWith(key)
+        let jwt2 = Jwt.parse(token).verifyWith(key)
         assertJwt(jwt2)
     }
 
@@ -58,7 +58,7 @@ public class JwtTestCaseSuit {
             .subject("sub")
         let token = jwt.signWith(key)
         try {
-            Jwt.pasrse(token, config: ParserConfig(skipClaimsValidation: true)).verifyWith(key)
+            Jwt.parse(token, config: ParserConfig(skipClaimsValidation: true)).verifyWith(key)
         } catch (ex: JwtException) {
             @Fail(ex.message)
         }
@@ -79,7 +79,7 @@ public class JwtTestCaseSuit {
             .subject("sub")
         let token = jwt.signWith(key)
         try {
-            Jwt.pasrse(token, config: ParserConfig()).verifyWith(key)
+            Jwt.parse(token, config: ParserConfig()).verifyWith(key)
             @Fail("should throw jwt exception")
         } catch (ex: JwtException) {
             @Assert(ex.message.contains("before issued"))
@@ -100,7 +100,7 @@ public class JwtTestCaseSuit {
             .subject("sub")
         let token = jwt.signWith(key)
         try {
-            Jwt.pasrse(token, config: ParserConfig(issueAtRequired: true)).verifyWith(key)
+            Jwt.parse(token, config: ParserConfig(issueAtRequired: true)).verifyWith(key)
             @Fail("should throw jwt exception")
         } catch (ex: JwtException) {
             @Assert(ex.message.contains("missing required claim"))
@@ -122,7 +122,7 @@ public class JwtTestCaseSuit {
             .subject("sub")
         let token = jwt.signWith(key)
         try {
-            Jwt.pasrse(token, config: ParserConfig()).verifyWith(key)
+            Jwt.parse(token, config: ParserConfig()).verifyWith(key)
             @Fail("should throw jwt exception")
         } catch (ex: JwtException) {
             @Assert(ex.message.contains("token is expired"))
@@ -143,7 +143,7 @@ public class JwtTestCaseSuit {
             .subject("sub")
         let token = jwt.signWith(key)
         try {
-            Jwt.pasrse(token, config: ParserConfig(expirationRequired: true)).verifyWith(key)
+            Jwt.parse(token, config: ParserConfig(expirationRequired: true)).verifyWith(key)
             @Fail("should throw jwt exception")
         } catch (ex: JwtException) {
             @Assert(ex.message.contains("missing required claim"))
@@ -165,7 +165,7 @@ public class JwtTestCaseSuit {
             .subject("sub")
         let token = jwt.signWith(key)
         try {
-            Jwt.pasrse(token, config: ParserConfig()).verifyWith(key)
+            Jwt.parse(token, config: ParserConfig()).verifyWith(key)
             @Fail("should throw jwt exception")
         } catch (ex: JwtException) {
             @Assert(ex.message.contains("token is not valid yet"))
@@ -186,7 +186,7 @@ public class JwtTestCaseSuit {
             .subject("sub")
         let token = jwt.signWith(key)
         try {
-            Jwt.pasrse(token, config: ParserConfig(notBeforeRequired: true)).verifyWith(key)
+            Jwt.parse(token, config: ParserConfig(notBeforeRequired: true)).verifyWith(key)
             @Fail("should throw jwt exception")
         } catch (ex: JwtException) {
             @Assert(ex.message.contains("missing required claim"))
@@ -199,7 +199,7 @@ public class JwtTestCaseSuit {
         let jwt = createJwt("HS256")
         let token = jwt.signWith(key)
         try {
-            Jwt.pasrse(token, config: ParserConfig(expectedAud: ["aud", "aud1"])).verifyWith(key)
+            Jwt.parse(token, config: ParserConfig(expectedAud: ["aud", "aud1"])).verifyWith(key)
         } catch (ex: JwtException) {
             @Fail(ex.message)
         }
@@ -210,7 +210,7 @@ public class JwtTestCaseSuit {
         let jwt = createJwt("HS256")
         let token = jwt.signWith(key)
         try {
-            Jwt.pasrse(token, config: ParserConfig(expectedAud: ["aud"], expectedAllAud: true)).verifyWith(key)
+            Jwt.parse(token, config: ParserConfig(expectedAud: ["aud"], expectedAllAud: true)).verifyWith(key)
         } catch (ex: JwtException) {
             @Fail(ex.message)
         }
@@ -231,7 +231,7 @@ public class JwtTestCaseSuit {
             .subject("sub")
         let token = jwt.signWith(key)
         try {
-            Jwt.pasrse(token, config: ParserConfig(expectedAud: ["aud1", "aud2"], expectedAllAud: true)).verifyWith(key)
+            Jwt.parse(token, config: ParserConfig(expectedAud: ["aud1", "aud2"], expectedAllAud: true)).verifyWith(key)
         } catch (ex: JwtException) {
             @Fail(ex.message)
         }
@@ -243,7 +243,7 @@ public class JwtTestCaseSuit {
         let jwt = createJwt("HS256")
         let token = jwt.signWith(key)
         try {
-            Jwt.pasrse(token, config: ParserConfig(expectedAud: ["aud1"])).verifyWith(key)
+            Jwt.parse(token, config: ParserConfig(expectedAud: ["aud1"])).verifyWith(key)
             @Fail("should throw jwt exception")
         } catch (ex: JwtException) {
             @Assert(ex.message.contains("token has invalid audience"))
@@ -266,7 +266,7 @@ public class JwtTestCaseSuit {
         let token = jwt.signWith(key)
         try {
             Jwt
-                .pasrse(token, config: ParserConfig(expectedAud: ["aud1", "aud2", "aud3"], expectedAllAud: true))
+                .parse(token, config: ParserConfig(expectedAud: ["aud1", "aud2", "aud3"], expectedAllAud: true))
                 .verifyWith(key)
             @Fail("should throw jwt exception")
         } catch (ex: JwtException) {
@@ -280,7 +280,7 @@ public class JwtTestCaseSuit {
         let jwt = createJwt("HS256")
         let token = jwt.signWith(key)
         try {
-            Jwt.pasrse(token, config: ParserConfig(validMethods: ["HS256", "HS384"])).verifyWith(key)
+            Jwt.parse(token, config: ParserConfig(validMethods: ["HS256", "HS384"])).verifyWith(key)
         } catch (ex: JwtException) {
             @Fail(ex.message)
         }
@@ -292,7 +292,7 @@ public class JwtTestCaseSuit {
         let jwt = createJwt("HS256")
         let token = jwt.signWith(key)
         try {
-            Jwt.pasrse(token, config: ParserConfig(validMethods: ["HS384", "HS512"])).verifyWith(key)
+            Jwt.parse(token, config: ParserConfig(validMethods: ["HS384", "HS512"])).verifyWith(key)
             @Fail("should throw jwt exception")
         } catch (ex: JwtException) {
             @Assert(ex.message.contains("token signature is invalid"))
@@ -331,7 +331,7 @@ public class JwtTestCaseSuit {
         let pub = RSAPublicKey(priv)
         let jwt = createJwt("RS256")
         let token = jwt.signWith(priv)
-        let jwt2 = Jwt.pasrse(token).verifyWith(pub)
+        let jwt2 = Jwt.parse(token).verifyWith(pub)
         assertJwt(jwt2)
     }
 
@@ -341,7 +341,7 @@ public class JwtTestCaseSuit {
         let pub = loadRSAPublicKey("./testdata/rsa_public.pem")
         let jwt = createJwt("RS256")
         let token = jwt.signWith(priv)
-        let jwt2 = Jwt.pasrse(token).verifyWith(pub)
+        let jwt2 = Jwt.parse(token).verifyWith(pub)
         assertJwt(jwt2)
     }
 
@@ -351,7 +351,7 @@ public class JwtTestCaseSuit {
         let pub = RSAPublicKey(priv)
         let jwt = createJwt("PS256")
         let token = jwt.signWith(priv)
-        let jwt2 = Jwt.pasrse(token).verifyWith(pub)
+        let jwt2 = Jwt.parse(token).verifyWith(pub)
         assertJwt(jwt2)
     }
 }

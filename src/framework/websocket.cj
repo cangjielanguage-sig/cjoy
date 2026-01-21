@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 lanlingx(xiaotengfei) All rights resvered.
+ * Copyright (c) 2025 lanlingx(xiaotengfei) All rights reserved.
  * CJoy is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -15,7 +15,7 @@ import std.io.ByteBuffer
 import stdx.net.http.{WebSocket, WebSocketException, WebSocketFrame, WebSocketFrameType, HttpHeaders}
 import stdx.encoding.url.Form
 import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonReader, JsonWriter}
-import cjoy.context.{Context, ServiceConainter}
+import cjoy.context.{Context, ServiceContainer}
 import cjoy.log.macros.*
 
 /**
@@ -227,10 +227,10 @@ public class JoyWebSocketSession <: Context {
     private let _paramMap: HashMap<String, String>
     private let _ctxParamMap: HashMap<String, Any>
     private let _query: Form
-    private let _services: ServiceConainter
+    private let _services: ServiceContainer
 
     init(ws: WebSocket, config: JoyConfig, headers: HttpHeaders, query: Form, paramMap: HashMap<String, String>,
-        ctxParamMap: HashMap<String, Any>, services: ServiceConainter) {
+        ctxParamMap: HashMap<String, Any>, services: ServiceContainer) {
         _ws = ws
         _config = config
         _headers = headers

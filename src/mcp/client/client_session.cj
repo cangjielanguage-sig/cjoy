@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 lanlingx(xiaotengfei) All rights resvered.
+ * Copyright (c) 2025 lanlingx(xiaotengfei) All rights reserved.
  * CJoy is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -77,7 +77,7 @@ class DefaultMcpClientSession <: McpClientSession & McpResponseHandler & McpNoti
                 let reader = JsonReader(buffer)
                 T.fromJson(reader)
             case _ => throw JSONRPCException(
-                JSONRPCError(code: JSONRPCConsts.ERR_INTERNAL_ERROR, message: "wait reponse timeout"))
+                JSONRPCError(code: JSONRPCConsts.ERR_INTERNAL_ERROR, message: "wait response timeout"))
         }
     }
 
