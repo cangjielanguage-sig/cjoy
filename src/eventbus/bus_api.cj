@@ -16,15 +16,35 @@ import cjoy.context.{Context, MapContext}
  * implements the EventSubscriber interface to handle event
  */
 public interface EventSubscriber {
+    /**
+     * handle the event
+     *
+     * @param ctx: the context
+     * @param evt: the event
+     */
     func handle(ctx: Context, evt: Event): Unit
 }
 
 public type EventSubscriberFunc = (ctx: Context, evt: Event) -> Unit
 
+/**
+ * the event subscriber that wraps a function
+ */
 public class EventFuncSubscriber <: EventSubscriber {
+    /**
+     * create a new EventFuncSubscriber
+     *
+     * @param fn: the event subscriber function
+     */
     public EventFuncSubscriber(let fn: EventSubscriberFunc) {
     }
 
+    /**
+     * handle the event by calling the function
+     *
+     * @param ctx: the context
+     * @param evt: the event
+     */
     public func handle(ctx: Context, evt: Event): Unit {
         fn(ctx, evt)
     }
@@ -49,12 +69,26 @@ public interface EventBus {
      */
     func onEvent(pattern: String, name: String, subcriber: EventSubscriber, priority: Array<Int>): Unit
 
+    /**
+     * register a subscriber function to handle events
+     *
+     * @param pattern: the match pattern
+     * @param name: the sucriber name
+     * @param subcriber: the subscriber function
+     * @param priority: the priority of handle event
+     * @throws EventBusException if the pattern is invalid
+     */
     func onEvent(pattern: String, name: String, subcriber: EventSubscriberFunc, priority: Array<Int>): Unit {
         onEvent(pattern, name, EventFuncSubscriber(subcriber), priority)
     }
 
     /**
      * register a subscriber to handle events, only trigger once
+     *
+     * @param pattern: the match pattern
+     * @param name: the sucriber name
+     * @param listener: the subscriber
+     * @param priority: the priority of handle event
      */
     func onceEvent(pattern: String, name: String, listener: EventSubscriber, priority: Array<Int>): Unit {
         let onceListener = {
@@ -67,27 +101,46 @@ public interface EventBus {
         onEvent(pattern, name, onceListener, priority)
     }
 
+    /**
+     * register a subscriber function to handle events, only trigger once
+     *
+     * @param pattern: the match pattern
+     * @param name: the sucriber name
+     * @param subcriber: the subscriber function
+     * @param priority: the priority of handle event
+     */
     func onceEvent(pattern: String, name: String, subcriber: EventSubscriberFunc, priority: Array<Int>): Unit {
         onceEvent(pattern, name, EventFuncSubscriber(subcriber), priority)
     }
 
     /**
      * remove the subscriber by pattern and name
+     *
+     * @param pattern: the match pattern
+     * @param name: the subscriber name
      */
     func removeSubscriber(pattern: String, name: String): Unit
 
     /**
      * fire event by queue
+     *
+     * @param cxt: the context
+     * @param evts: the events to fire
      */
     func fireEventAsync(cxt: Context, evts: Array<Event>): Unit
 
     /**
      * fire event sync
+     *
+     * @param cxt: the context
+     * @param evts: the events to fire
      */
     func fireEvent(cxt: Context, evts: Array<Event>): Unit
 
     /**
      * async fire event by thread
+     *
+     * @param evts: the events to fire
      */
     func asyncFireEvent(_: Context, evts: Array<Event>): Unit {
         spawn {
@@ -97,11 +150,18 @@ public interface EventBus {
 
     /**
      * close queue and wait for all async events done.
+     *
+     * @throws InterruptedException if interrupted while waiting
      */
     func closeAndWait(): Unit
 }
 
 public class EventBusException <: Exception {
+    /**
+     * create a new event bus exception
+     *
+     * @param message: the error message
+     */
     public EventBusException(message: String) {
         super(message)
     }

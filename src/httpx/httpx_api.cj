@@ -20,54 +20,176 @@ import cjoy.framework.{JoyHttpConsts}
  * the http client service interface
  */
 public interface JoyHttpClient {
+    /**
+     * send http request and return response
+     *
+     * @param ctx: the context
+     * @param request: the http request
+     * @return the http response
+     */
     func send(ctx: Context, request: JoyHttpRequest): JoyHttpResponse
 
+    /**
+     * send http get request
+     *
+     * @param ctx: the context
+     * @param path: the request path
+     * @return the http response
+     */
     func get(ctx: Context, path: String): JoyHttpResponse {
         send(ctx, JoyHttpRequest.of(path).get())
     }
+    /**
+     * send http get request with query parameters
+     *
+     * @param ctx: the context
+     * @param path: the request path
+     * @param queries: the query parameters
+     * @return the http response
+     */
     func get(ctx: Context, path: String, queries: Map<String, ToString>): JoyHttpResponse {
         send(ctx, JoyHttpRequest.of(path).get().queries(queries))
     }
+    /**
+     * send http get request with headers
+     *
+     * @param ctx: the context
+     * @param path: the request path
+     * @param headers: the request headers
+     * @return the http response
+     */
     func get(ctx: Context, path: String, headers: HttpHeaders): JoyHttpResponse {
         send(ctx, JoyHttpRequest.of(path).get().headers(headers))
     }
 
+    /**
+     * send http post request
+     *
+     * @param ctx: the context
+     * @param path: the request path
+     * @param body: the request body
+     * @return the http response
+     */
     func post(ctx: Context, path: String, body: Any): JoyHttpResponse {
         send(ctx, JoyHttpRequest.of(path).post().body(body))
     }
+    /**
+     * send http post request with headers
+     *
+     * @param ctx: the context
+     * @param path: the request path
+     * @param headers: the request headers
+     * @param body: the request body
+     * @return the http response
+     */
     func post(ctx: Context, path: String, headers: HttpHeaders, body: Any): JoyHttpResponse {
         send(ctx, JoyHttpRequest.of(path).post().headers(headers).body(body))
     }
 
+    /**
+     * send http put request
+     *
+     * @param ctx: the context
+     * @param path: the request path
+     * @param body: the request body
+     * @return the http response
+     */
     func put(ctx: Context, path: String, body: Any): JoyHttpResponse {
         send(ctx, JoyHttpRequest.of(path).put().body(body))
     }
+    /**
+     * send http put request with headers
+     *
+     * @param ctx: the context
+     * @param path: the request path
+     * @param headers: the request headers
+     * @param body: the request body
+     * @return the http response
+     */
     func put(ctx: Context, path: String, headers: HttpHeaders, body: Any): JoyHttpResponse {
         send(ctx, JoyHttpRequest.of(path).put().headers(headers).body(body))
     }
 
+    /**
+     * send http patch request
+     *
+     * @param ctx: the context
+     * @param path: the request path
+     * @param body: the request body
+     * @return the http response
+     */
     func patch(ctx: Context, path: String, body: Any): JoyHttpResponse {
         send(ctx, JoyHttpRequest.of(path).patch().body(body))
     }
+    /**
+     * send http patch request with headers
+     *
+     * @param ctx: the context
+     * @param path: the request path
+     * @param headers: the request headers
+     * @param body: the request body
+     * @return the http response
+     */
     func patch(ctx: Context, path: String, headers: HttpHeaders, body: Any): JoyHttpResponse {
         send(ctx, JoyHttpRequest.of(path).patch().headers(headers).body(body))
     }
 
+    /**
+     * send http delete request
+     *
+     * @param ctx: the context
+     * @param path: the request path
+     * @param body: the request body
+     * @return the http response
+     */
     func delete(ctx: Context, path: String, body: Any): JoyHttpResponse {
         send(ctx, JoyHttpRequest.of(path).delete().body(body))
     }
+    /**
+     * send http delete request without body
+     *
+     * @param ctx: the context
+     * @param path: the request path
+     * @return the http response
+     */
     func delete(ctx: Context, path: String): JoyHttpResponse {
         send(ctx, JoyHttpRequest.of(path).delete())
     }
+    /**
+     * send http delete request with headers
+     *
+     * @param ctx: the context
+     * @param path: the request path
+     * @param headers: the request headers
+     * @param body: the request body
+     * @return the http response
+     */
     func delete(ctx: Context, path: String, headers: HttpHeaders, body: Any): JoyHttpResponse {
         send(ctx, JoyHttpRequest.of(path).delete().headers(headers).body(body))
     }
 
+    /**
+     * send http post request with form data
+     *
+     * @param ctx: the context
+     * @param path: the request path
+     * @param headers: the request headers
+     * @param form: the form data
+     * @return the http response
+     */
     func postform(ctx: Context, path: String, headers: HttpHeaders, form: Form): JoyHttpResponse {
         let body = form.toEncodeString()
         headers.add(JoyHttpConsts.HEADER_CONTENT_TYPE, JoyHttpConsts.MIME_APP_FORM_URL_ENCODED)
         send(ctx, JoyHttpRequest.of(path).post().headers(headers).body(body))
     }
+    /**
+     * send http post request with form data
+     *
+     * @param ctx: the context
+     * @param path: the request path
+     * @param form: the form data
+     * @return the http response
+     */
     func postform(ctx: Context, path: String, form: Form): JoyHttpResponse {
         let body = form.toEncodeString()
         send(ctx,

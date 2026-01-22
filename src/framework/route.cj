@@ -232,6 +232,11 @@ class TreeRouteDistributor <: HttpRequestDistributor & HttpRequestHandler {
         ri
     }
 
+    /**
+     * dump the route tree as a string for debugging
+     *
+     * @return the route tree structure string
+     */
     public func dump(): String {
         _root.dumpTree()
     }
@@ -259,6 +264,11 @@ class JoyRouteGroup <: JoyRouters {
         }
     }
 
+    /**
+     * dump the route tree as a string for debugging
+     *
+     * @return the route tree structure string
+     */
     public func dump(): String {
         _distributor._root.dumpTree()
     }

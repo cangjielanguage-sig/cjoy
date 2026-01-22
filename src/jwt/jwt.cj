@@ -177,7 +177,7 @@ public class Jwt {
      */
     private func validateNotBefore(cfg: ParserConfig, now: DateTime): Unit {
         if (let Some(v) <- _claims.getNotBefore()) {
-            if ((v.value - cfg.leeway) =< now) {
+            if ((v.value - cfg.leeway) <= now) {
                 throw JwtException("token is not valid yet")
             }
         } else {

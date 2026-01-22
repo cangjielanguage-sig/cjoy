@@ -34,31 +34,49 @@ import cjoy.bind.JoyBindable
 public interface Config {
     /**
      * return true if the key is existed
+     *
+     * @param key: the config key
+     * @return true if the key exists
      */
     func hashKey(key: String): Bool
 
     /**
      * get value by key
+     *
+     * @param key: the config key
+     * @return the config value
      */
     func getValue(key: String): ?String
 
     /**
      * get value by key with default value
+     *
+     * @param key: the config key
+     * @param defaultValue: the default value
+     * @return the config value
      */
     func getValue(key: String, defaultValue: String): String
 
     /**
      * bind config to object
+     *
+     * @param key: the config key
+     * @return the bound object
      */
     func bind<T>(key: String): ?T where T <: JoyBindable<T>
 
     /**
      * resolves config values into a string, eg: ${host}:${port} -> 127.0.0.1:18881
+     *
+     * @param exp: the expression string with placeholders
+     * @return the resolved string
      */
     func resolve(exp: String): String
 
     /**
      * add config loaders
+     *
+     * @param loaders: the config loaders to add
      */
     func addLoader(loaders: Array<ConfigLoader>): Unit
 }
@@ -66,16 +84,25 @@ public interface Config {
 public interface ConfigLoader {
     /**
      * load configs to map
+     *
+     * @return the loaded configs
      */
     func load(): Map<String, Any>
 
     /**
      * high priority will overwrite the config item value whit low priority
+     *
+     * @return the priority value
      */
     prop priority: Int
 }
 
 public class ConfigException <: Exception {
+    /**
+     * create a new config exception
+     *
+     * @param message: the error message
+     */
     public ConfigException(message: String) {
         super(message)
     }

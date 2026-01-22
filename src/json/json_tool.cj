@@ -32,6 +32,12 @@ public class JsonTool {
         T.fromJson(reader)
     }
 
+    /**
+     * deserialize json bytes to T
+     *
+     * @param bs: json bytes
+     * @return: object of T
+     */
     public static func fromJson<T>(bs: Array<Byte>): T where T <: JsonDeserializable<T> {
         var stream = ByteBuffer()
         stream.write(bs)
@@ -50,6 +56,13 @@ public class JsonTool {
         String.fromUtf8(toJsonBytes(val, indent: indent))
     }
 
+    /**
+     * serialize object of T to json bytes
+     *
+     * @param val: object of T
+     * @param indent: output indent using '\t'
+     * @return: json bytes
+     */
     public static func toJsonBytes<T>(val: T, indent!: Bool = false): Array<Byte> where T <: JsonSerializable {
         let stream = ByteBuffer()
         let writer = JsonWriter(stream)
@@ -61,6 +74,12 @@ public class JsonTool {
         stream.bytes()
     }
 
+    /**
+     * deserialize json bytes to object
+     *
+     * @param bs: json bytes
+     * @return: object
+     */
     public static func fromJsonToSerializable(bs: Array<Byte>): JsonSerializable {
         var buffer = ByteBuffer()
         buffer.write(bs)

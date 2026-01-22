@@ -38,6 +38,11 @@ public class RouteInfo<T> {
     ) {
     }
 
+    /**
+     * get the route params map
+     *
+     * @return the map of route params
+     */
     public func getParams(): HashMap<String, String> {
         let paramMap: HashMap<String, String> = HashMap()
         if (!routeParamKeys.isEmpty()) {
@@ -169,6 +174,14 @@ public class TreeNode<T> {
         hn
     }
 
+    /**
+     * add a route to the tree
+     *
+     * @param method: the HTTP method (GET, POST, etc.)
+     * @param pattern: the URL pattern (e.g., "/users/{id}")
+     * @param handler: the route handler
+     * @return the tree node
+     */
     public func addRoute(method: String, pattern: String, handler: T): TreeNode<T> {
         var parent = this
         var node = this
@@ -373,6 +386,14 @@ public class TreeNode<T> {
         None
     }
 
+    /**
+     * find the route handler by method and path
+     *
+     * @param ri: the route info to store matched route data
+     * @param method: the HTTP method
+     * @param path: the URL path
+     * @return the tree node if found, None otherwise
+     */
     public func findRouteHandler(ri: RouteInfo<T>, method: String, path: String): ?TreeNode<T> {
         let rn = findRoute(ri, method, path)
         if (let Some(node) <- rn) {
@@ -472,6 +493,11 @@ public class TreeNode<T> {
         }
     }
 
+    /**
+     * dump the tree structure as a string for debugging
+     *
+     * @return the tree structure string
+     */
     public func dumpTree(): String {
         let builder = StringBuilder()
         dumpTreeInner(builder, 0, "", this)

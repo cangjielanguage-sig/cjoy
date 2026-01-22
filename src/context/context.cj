@@ -48,6 +48,13 @@ public interface Context {
      */
     func getService<T>(name: String): ?T
 
+    /**
+     * get the service from context, throw exception if not found
+     *
+     * @param name: the name of service
+     * @return the service instance
+     * @throws Exception if service not found
+     */
     func mustService<T>(name: String): T {
         getService<T>(name).getOrThrow()
     }
@@ -56,18 +63,41 @@ public interface Context {
 public open class MapContext <: Context {
     private let _data: ConcurrentHashMap<String, Any> = ConcurrentHashMap()
 
+    /**
+     * set param in context
+     *
+     * @param key: the param key name
+     * @param value: the param value
+     */
     public func set(key: String, value: Any): Unit {
         _data.add(key, value)
     }
 
+    /**
+     * get param from context
+     *
+     * @param key: the param key name
+     * @return the param value
+     */
     public func get<T>(key: String): ?T {
         (_data.get(key) ?? Option<Any>.None) as T
     }
 
+    /**
+     * remove param from context
+     *
+     * @param key: the param key name
+     */
     public func remove(key: String): Unit {
         _data.remove(key)
     }
 
+    /**
+     * get the service from context
+     *
+     * @param name: the name of service
+     * @return the service instance
+     */
     public open func getService<T>(name: String): ?T {
         ServiceContainer.GLOBAL.getService<T>(name)
     }

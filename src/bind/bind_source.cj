@@ -16,13 +16,30 @@ import stdx.net.http.HttpHeaders
 import cjoy.log.macros.*
 
 public class MapContainer <: JoyBindSource & ToString {
+    /**
+     * create a new MapContainer
+     *
+     * @param data: the map data
+     */
     public MapContainer(let data: HashMap<String, Any>) {}
 
+    /**
+     * get one value by name from source
+     *
+     * @param name: the value name
+     * @return the value or None if not found
+     */
     public func getOne<T>(name: String): ?T {
         let v = data.get(name)
         getValue<Any, T>(v, name)
     }
 
+    /**
+     * get all values by name from source
+     *
+     * @param name: the value name
+     * @return the collection of values
+     */
     public func getList<T>(name: String): Collection<T> {
         let res = ArrayList<T>()
         if (let Some(val) <- data.get(name)) {
@@ -44,10 +61,21 @@ public class MapContainer <: JoyBindSource & ToString {
         res
     }
 
+    /**
+     * convert to string
+     *
+     * @return the string representation
+     */
     public func toString(): String {
         mapToString(data)
     }
 
+    /**
+     * convert map to string
+     *
+     * @param data: the map data
+     * @return the string representation
+     */
     public static func mapToString(data: Map<String, Any>): String {
         let builder = StringBuilder()
         builder.append("{")
@@ -72,6 +100,12 @@ public class MapContainer <: JoyBindSource & ToString {
         builder.toString()
     }
 
+    /**
+     * convert collection to string
+     *
+     * @param data: the collection data
+     * @return the string representation
+     */
     public static func colToString(data: Collection<Any>): String {
         let builder = StringBuilder()
         builder.append("[")
@@ -91,11 +125,23 @@ public class MapContainer <: JoyBindSource & ToString {
 }
 
 extend Form <: JoyBindSource {
+    /**
+     * get one value by name from form
+     *
+     * @param name: the value name
+     * @return the value or None if not found
+     */
     public func getOne<T>(name: String): ?T {
         let v = this.get(name)
         getValue<String, T>(v, name)
     }
 
+    /**
+     * get all values by name from form
+     *
+     * @param name: the value name
+     * @return the collection of values
+     */
     public func getList<T>(name: String): Collection<T> {
         let list = this.getAll(name)
         let res = ArrayList<T>()
@@ -110,11 +156,23 @@ extend Form <: JoyBindSource {
 }
 
 extend HttpHeaders <: JoyBindSource {
+    /**
+     * get one value by name from headers
+     *
+     * @param name: the header name
+     * @return the header value or None if not found
+     */
     public func getOne<T>(name: String): ?T {
         let v = this.getFirst(name)
         getValue<String, T>(v, name)
     }
 
+    /**
+     * get all values by name from headers
+     *
+     * @param name: the header name
+     * @return the collection of header values
+     */
     public func getList<T>(name: String): Collection<T> {
         let list = this.get(name)
         let res = ArrayList<T>()
@@ -129,11 +187,23 @@ extend HttpHeaders <: JoyBindSource {
 }
 
 extend HashMap<String, String> <: JoyBindSource {
+    /**
+     * get one value by name from hashmap
+     *
+     * @param name: the key name
+     * @return the value or None if not found
+     */
     public func getOne<T>(name: String): ?T {
         let v = this.get(name)
         getValue<String, T>(v, name)
     }
 
+    /**
+     * get list from hashmap (always return empty)
+     *
+     * @param _: the key name (not used)
+     * @return the empty collection
+     */
     public func getList<T>(_: String): Collection<T> {
         @LogWarn("[Bind] get list from HashMap<String, String> return empty")
         ArrayList<T>()

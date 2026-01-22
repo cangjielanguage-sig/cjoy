@@ -24,6 +24,11 @@ public class JsonSchemaInfo {
         public let schema!: String = ""
     ) {}
 
+    /**
+     * convert to json serializable
+     *
+     * @return: json serializable object
+     */
     public func toJson(): JsonSerializable {
         if (schema != "") {
             return JsonTool.fromJsonToSerializable(schema)
@@ -40,6 +45,12 @@ public enum JsonSchemaType {
     | Arr(JsonSchemaType)
     | Obj(Array<JsonSchemaInfo>)
 
+    /**
+     * convert to json serializable schema
+     *
+     * @param description: schema description
+     * @return: json serializable schema object
+     */
     public func toJson(description!: String = ""): JsonSerializable {
         let res: HashMap<String, JsonSerializable> = HashMap()
         let addDesc = {
@@ -83,12 +94,28 @@ public enum JsonSchemaType {
 }
 
 public interface Jsonable {
+    /**
+     * get json schema type
+     *
+     * @return: json schema type
+     */
     static func toSchema(): JsonSchemaType
 
+    /**
+     * convert to json schema serializable
+     *
+     * @return: json serializable schema object
+     */
     static func toJsonSchema(): JsonSerializable {
         toSchema().toJson()
     }
 
+    /**
+     * convert to json schema serializable with description
+     *
+     * @param description: schema description
+     * @return: json serializable schema object
+     */
     static func toJsonSchema(description: String): JsonSerializable {
         toSchema().toJson(description: description)
     }

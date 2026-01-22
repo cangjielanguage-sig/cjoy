@@ -44,10 +44,22 @@ public interface SigningMethod {
 public class SigningMethods {
     public static let METHODS: ConcurrentHashMap<String, SigningMethod> = ConcurrentHashMap()
 
+    /**
+     * register signing method
+     *
+     * @param alg: algorithm identifier
+     * @param method: signing method
+     */
     public static func register(alg: String, method: SigningMethod): Unit {
         METHODS.add(alg, method)
     }
 
+    /**
+     * get signing method by algorithm
+     *
+     * @param alg: algorithm identifier
+     * @return: signing method or None if not found
+     */
     public static func getMethod(alg: String): ?SigningMethod {
         METHODS.get(alg)
     }

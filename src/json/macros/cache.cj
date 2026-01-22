@@ -16,14 +16,29 @@ import std.collection.HashMap
 class JsonInfoCache {
     static let FIELD_INFOS: HashMap<String, JsonFieldInfo> = HashMap()
 
+    /**
+     * clear all cached field info
+     */
     public static func clear(): Unit {
         FIELD_INFOS.clear()
     }
 
+    /**
+     * add field info to cache
+     *
+     * @param vid: variable identifier
+     * @param info: field info
+     */
     public static func addCache(vid: String, info: JsonFieldInfo): Unit {
         FIELD_INFOS.add(vid, info)
     }
 
+    /**
+     * create json field generator from variable declaration
+     *
+     * @param vd: variable declaration
+     * @return: json field generator
+     */
     public static func create(vd: VarDecl): JsonFieldGenerator {
         let vtypeTokens = vd.declType.toTokens()
         let vtypeName = vtypeTokens[0].value

@@ -26,12 +26,24 @@ public var serializableSingleStringAsArray: Bool = true
 public class NumberData <: JsonSerializable & JsonDeserializable<NumberData> {
     public NumberData(public let value: DateTime) {}
 
+    /**
+     * create number data from float64
+     *
+     * @param number: float64 number
+     * @return: number data
+     */
     public static func of(number: Float64): NumberData {
         let a = trunc(number)
         let b = (number - a) * 1e9
         NumberData(DateTime.ofEpoch(second: Int64(a), nanosecond: Int64(b)))
     }
 
+    /**
+     * create number data from int64
+     *
+     * @param number: int64 number
+     * @return: number data
+     */
     public static func of(number: Int64): NumberData {
         NumberData(DateTime.ofEpoch(second: number, nanosecond: 0))
     }
@@ -76,6 +88,11 @@ public class ClaimStrings <: JsonSerializable & JsonDeserializable<ClaimStrings>
         throw JwtException("deserializable claim strings failed")
     }
 
+    /**
+     * get first claim value
+     *
+     * @return: first claim value or empty string
+     */
     public func getFirstValue(): String {
         if (claims.size >= 1) {
             return claims[0]
@@ -85,21 +102,119 @@ public class ClaimStrings <: JsonSerializable & JsonDeserializable<ClaimStrings>
 }
 
 public interface Claims {
+    /**
+     * get expiration time
+     *
+     * @return: expiration time or None
+     */
     func getExpirationTime(): ?NumberData
+
+    /**
+     * get issued at time
+     *
+     * @return: issued at time or None
+     */
     func getIssuedAt(): ?NumberData
+
+    /**
+     * get not before time
+     *
+     * @return: not before time or None
+     */
     func getNotBefore(): ?NumberData
+
+    /**
+     * get issuer
+     *
+     * @return: issuer or None
+     */
     func getIssuer(): ?String
+
+    /**
+     * get subject
+     *
+     * @return: subject or None
+     */
     func getSubject(): ?String
+
+    /**
+     * get audience
+     *
+     * @return: audience or None
+     */
     func getAudience(): ?ClaimStrings
+
+    /**
+     * get claim string by name
+     *
+     * @param name: claim name
+     * @return: claim value or None
+     */
     func getClaimString(name: String): ?String
 
+    /**
+     * set expiration time
+     *
+     * @param exp: expiration time
+     * @return: claims
+     */
     func expirationTime(exp: DateTime): Claims
+
+    /**
+     * set issued at time
+     *
+     * @param iat: issued at time
+     * @return: claims
+     */
     func issuedAt(iat: DateTime): Claims
+
+    /**
+     * set not before time
+     *
+     * @param nbf: not before time
+     * @return: claims
+     */
     func notBefore(nbf: DateTime): Claims
+
+    /**
+     * set issuer
+     *
+     * @param iss: issuer
+     * @return: claims
+     */
     func issuer(iss: String): Claims
+
+    /**
+     * set subject
+     *
+     * @param sub: subject
+     * @return: claims
+     */
     func subject(sub: String): Claims
+
+    /**
+     * set audience
+     *
+     * @param aud: audience
+     * @return: claims
+     */
     func audience(aud: String): Claims
+
+    /**
+     * set audiences
+     *
+     * @param auds: audiences
+     * @return: claims
+     */
     func audiences(auds: Array<String>): Claims
+
+    /**
+     * set claim
+     *
+     * @param name: claim name
+     * @param value: claim value
+     * @return: claims
+     */
     func claim(name: String, value: JsonSerializable): Claims
 }
 

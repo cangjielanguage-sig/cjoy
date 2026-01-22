@@ -14,9 +14,18 @@ import std.io.ByteBuffer
 import stdx.net.http.{HttpContext, HttpResponseWriter, HttpStatusCode}
 import stdx.encoding.json.stream.{JsonSerializable, JsonWriter}
 
+/**
+ * the builder for server-sent event
+ */
 public class JoyServerEventBuilder {
     private let _sb: StringBuilder = StringBuilder()
 
+    /**
+     * set the event name
+     *
+     * @param event: the event name
+     * @return the JoyServerEventBuilder
+     */
     public func event(event: String): JoyServerEventBuilder {
         _sb.append("event: ")
         _sb.append(event)
@@ -24,6 +33,12 @@ public class JoyServerEventBuilder {
         this
     }
 
+    /**
+     * set the event id
+     *
+     * @param id: the event id
+     * @return the JoyServerEventBuilder
+     */
     public func id(id: String): JoyServerEventBuilder {
         _sb.append("id: ")
         _sb.append(id)
@@ -31,6 +46,12 @@ public class JoyServerEventBuilder {
         this
     }
 
+    /**
+     * set the event data
+     *
+     * @param data: the event data
+     * @return the JoyServerEventBuilder
+     */
     public func data(data: String): JoyServerEventBuilder {
         _sb.append("data: ")
         _sb.append(data)
@@ -38,6 +59,12 @@ public class JoyServerEventBuilder {
         this
     }
 
+    /**
+     * set the retry time
+     *
+     * @param retry: the retry time in milliseconds
+     * @return the JoyServerEventBuilder
+     */
     public func retry(retry: UInt): JoyServerEventBuilder {
         _sb.append("retry: ")
         _sb.append(retry)
@@ -45,6 +72,12 @@ public class JoyServerEventBuilder {
         this
     }
 
+    /**
+     * add a comment to the event
+     *
+     * @param comment: the comment string
+     * @return the JoyServerEventBuilder
+     */
     public func comment(comment: String): JoyServerEventBuilder {
         _sb.append(": ")
         _sb.append(comment)
@@ -52,6 +85,11 @@ public class JoyServerEventBuilder {
         this
     }
 
+    /**
+     * build the server-sent event string
+     *
+     * @return the SSE formatted string
+     */
     public func build(): String {
         if (_sb.size > 0) {
             _sb.append("\n")
@@ -60,6 +98,9 @@ public class JoyServerEventBuilder {
     }
 }
 
+/**
+ * the writer for chunked http response
+ */
 public open class ChunkedWriter {
     protected let _httpContext: HttpContext
     protected let _httpResponseWriter: HttpResponseWriter
@@ -74,6 +115,12 @@ public open class ChunkedWriter {
         _httpResponseWriter = HttpResponseWriter(httpContext)
     }
 
+    /**
+     * add a header to response
+     *
+     * @param name: the header name
+     * @param value: the header value
+     */
     public func header(name: String, value: String): Unit {
         _httpContext.responseBuilder.header(name, value)
     }
@@ -87,11 +134,17 @@ public open class ChunkedWriter {
         }
     }
 
+    /**
+     * end the chunked response
+     */
     public func end(): Unit {
         _end = true
     }
 }
 
+/**
+ * the writer for chunked http response
+ */
 public class JoyChunkedWriter <: ChunkedWriter {
     init(httpContext: HttpContext) {
         super(httpContext)
@@ -136,6 +189,9 @@ public class JoyChunkedWriter <: ChunkedWriter {
     }
 }
 
+/**
+ * the writer for server-sent events
+ */
 public class JoySseEmitter <: ChunkedWriter {
     init(httpContext: HttpContext) {
         super(httpContext)

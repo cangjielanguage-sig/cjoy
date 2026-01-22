@@ -15,6 +15,12 @@ import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonRead
 import cjoy.log.macros.*
 
 public class JSONRPCTool {
+    /**
+     * serialize json object to byte buffer
+     *
+     * @param obj: json serializable object
+     * @return: byte buffer
+     */
     public static func serialize(obj: JsonSerializable): ByteBuffer {
         let buffer = ByteBuffer()
         let writer = JsonWriter(buffer)
@@ -23,6 +29,12 @@ public class JSONRPCTool {
         buffer
     }
 
+    /**
+     * deserialize params to T
+     *
+     * @param params: params data
+     * @return: object of T
+     */
     public static func deserializeParams<T>(params: Any): T where T <: JsonDeserializable<T> {
         let data = (params as Array<Byte>) ?? Array<Byte>()
         let buffer = ByteBuffer()
@@ -30,6 +42,12 @@ public class JSONRPCTool {
         T.fromJson(JsonReader(buffer))
     }
 
+    /**
+     * deserialize byte array to json rpc message
+     *
+     * @param content: json rpc message bytes
+     * @return: json rpc message
+     */
     public static func deserialize(content: Array<Byte>): JSONRPCMessage {
         let buffer = ByteBuffer()
         buffer.write(content)
@@ -37,7 +55,11 @@ public class JSONRPCTool {
     }
 
     /**
-     * @throws JSONRPCException
+     * deserialize byte buffer to json rpc message
+     *
+     * @param buffer: byte buffer
+     * @return: json rpc message
+     * @throws JSONRPCException if the message is invalid
      */
     public static func deserialize(buffer: ByteBuffer): JSONRPCMessage {
         let reader = JsonReader(buffer)

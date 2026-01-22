@@ -477,6 +477,9 @@ class JoyHttpContext <: JoyContext {
         _ctxParamMap = ctxParamMap
     }
 
+    /**
+     * reset the context state
+     */
     func reset(): Unit {
         _paramMap.clear()
         _ctxParamMap.clear()
@@ -484,10 +487,18 @@ class JoyHttpContext <: JoyContext {
         _handleIndex = 0
     }
 
+    /**
+     * reset the handler chain index
+     */
     func resetHandleIndex(): Unit {
         _handleIndex = 0
     }
 
+    /**
+     * increment and return the handler chain index
+     *
+     * @return the new handler chain index
+     */
     func addHandleIndex(): Int {
         _handleIndex += 1
         _handleIndex
@@ -499,10 +510,20 @@ class JoyHttpContext <: JoyContext {
         }
     }
 
+    /**
+     * copy the path params
+     *
+     * @return the cloned path params map
+     */
     func copyParams(): HashMap<String, String> {
         _paramMap.clone()
     }
 
+    /**
+     * copy the context params
+     *
+     * @return the cloned context params map
+     */
     func copyCtxParams(): HashMap<String, Any> {
         _ctxParamMap.clone()
     }
@@ -828,6 +849,12 @@ class JoyHttpContext <: JoyContext {
         (up[0], up[1])
     }
 
+    /**
+     * get service by name from service container
+     *
+     * @param name: the service name
+     * @return: the service instance or None if not found
+     */
     public func getService<T>(name: String): ?T {
         _services.getService<T>(name)
     }

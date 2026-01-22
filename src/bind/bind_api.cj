@@ -34,6 +34,13 @@ public interface JoyBindable<T> {
     static func bind(source: JoyBindSource, name: String): ?T {
         bind(source, name, None, None)
     }
+    /**
+     * bind http request query, postform or header params to object with complex structure
+     *
+     * @param source: the bind source object
+     * @param name: the name of bind field, can be a nested field
+     * @return: the object
+     */
     static func bindField(source: JoyBindSource, name: String): ?T {
         let map = source.getOne<HashMap<String, Any>>(name)
         match (map) {

@@ -33,8 +33,18 @@ public type JoyRequestHandlerFunc = (ctx: JoyContext) -> Unit
 public type JoyRequestFilterFunc = (ctx: JoyContext) -> Bool
 
 public class JoyFuncHandler <: JoyRequestHandler {
+    /**
+     * create a new JoyFuncHandler
+     *
+     * @param handler: the handler function
+     */
     public JoyFuncHandler(let handler: JoyRequestHandlerFunc) {}
 
+    /**
+     * process request using handler function
+     *
+     * @param ctx: the context
+     */
     public func handle(ctx: JoyContext): Unit {
         this.handler(ctx)
     }
@@ -76,6 +86,13 @@ public class JoyHandlers {
         HANDLERS.add((path, methods, handler))
     }
 
+    /**
+     * add handler function for generate code by macros
+     *
+     * @param path: the path
+     * @param methods: the http methods
+     * @param handler: the handler function
+     */
     public static func addHandler(path: String, methods: Array<String>, handler: JoyRequestHandlerFunc): Unit {
         HANDLERS.add((path, methods, JoyFuncHandler(handler)))
     }
