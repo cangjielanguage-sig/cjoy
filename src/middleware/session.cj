@@ -90,13 +90,13 @@ public class SessionManager <: JoyMiddlewareHandler {
                         s.invalidate()
                         // overrides session which created by last SessionManager
                         newCookie = true
-                        createNewSessoin(ctx)
+                        createNewSession(ctx)
                     } else {
                         s
                     }
                 } else {
                     newCookie = true
-                    createNewSessoin(ctx)
+                    createNewSession(ctx)
                 }
             }
         }
@@ -127,7 +127,7 @@ public class SessionManager <: JoyMiddlewareHandler {
         }
     }
 
-    private func createNewSessoin(ctx: JoyContext): JoySession {
+    private func createNewSession(ctx: JoyContext): JoySession {
         let sess = _storage.getOrCreate("", Int32(_config.idLength / 2))
         ctx.setCtxParam(SESSION_CTX_KEY, sess)
         sess

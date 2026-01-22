@@ -534,9 +534,11 @@ class JoyHttpContext <: JoyContext {
             for (c in cookies) {
                 let arr = c.split(";")
                 for (a in arr) {
-                    let kv = a.split("=")
-                    if (kv.size == 2) {
-                        _cookieCache.add(kv[0].trimAscii(), kv[1].trimAscii())
+                    let firstEq = a.indexOf(b'=') ?? 0
+                    if (firstEq > 0) {
+                        let key = a[0..firstEq].trimAscii()
+                        let value = a[firstEq + 1..].trimAscii()
+                        _cookieCache.add(key, value)
                     }
                 }
             }
