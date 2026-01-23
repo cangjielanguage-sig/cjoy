@@ -17,3 +17,4 @@ cov_output/
 cjcov_logs/
 .VSCodeCounter
 log.txt
+cjpm.lock

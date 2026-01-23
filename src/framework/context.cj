@@ -11,7 +11,7 @@
 package cjoy.framework
 
 import std.collection.{HashMap, ArrayList}
-import std.io.{InputStream, ByteBuffer, copy, StringReader}
+import std.io.{InputStream, ByteBuffer, copy, StringReader, BufferedInputStream, SeekPosition}
 import std.net.IPAddress
 import stdx.net.http.{HttpContext, RedirectHandler, HttpStatusCode, HttpResponseBuilder, Cookie}
 import stdx.encoding.url.URL
@@ -433,7 +433,7 @@ public interface JoyContext <: Context {
             case _ => None
         }
     }
-    
+
     /**
      * get the request param by type and name
      *
@@ -460,11 +460,11 @@ class JoyHttpContext <: JoyContext {
     private let _config: JoyConfig
     private let _paramMap: HashMap<String, String>
     private let _ctxParamMap: HashMap<String, Any>
-    private let _requestBuffer:ByteBuffer = ByteBuffer()
+    private let _requestBuffer: ByteBuffer = ByteBuffer()
     private var _cookieCache: HashMap<String, String> = HashMap()
     private var _parsedCookie: Bool = false
     private var _status: ?UInt16 = None
-    private var _body: Any = Option<Any>.None
+    private var _respBody: Any = Option<Any>.None
 
     // the index of executing handler chain
     var _handleIndex: Int = 0
@@ -476,7 +476,6 @@ class JoyHttpContext <: JoyContext {
         _config = config
         _paramMap = paramMap
         _ctxParamMap = ctxParamMap
-        copy(_httpContext.request.body, to: _requestBuffer)
     }
 
     /**
@@ -486,6 +485,7 @@ class JoyHttpContext <: JoyContext {
         _paramMap.clear()
         _ctxParamMap.clear()
         _cookieCache.clear()
+        _requestBuffer.clear()
         _handleIndex = 0
     }
 
@@ -587,7 +587,7 @@ class JoyHttpContext <: JoyContext {
 
     public prop respBody: String {
         get() {
-            match (_body) {
+            match (_respBody) {
                 case str: String => str
                 case bytes: Array<Byte> => String.fromUtf8(bytes)
                 case _ => ""
@@ -653,7 +653,14 @@ class JoyHttpContext <: JoyContext {
         _httpContext.request.form.getAll(name)
     }
 
+    private func copyRequestBody(): Unit {
+        if (let Some(len) <- _httpContext.request.bodySize && len > 0 && _requestBuffer.length == 0) {
+            copy(_httpContext.request.body, to: _requestBuffer)
+        }
+    }
+
     public func readJson<T>(): ?T where T <: JsonDeserializable<T> {
+        copyRequestBody()
         if (_requestBuffer.length == 0) {
             return None
         }
@@ -662,15 +669,22 @@ class JoyHttpContext <: JoyContext {
         }
         let buffer = BufferedInputStream(_requestBuffer)
         let reader = JsonReader(buffer)
-        T.fromJson(reader)
+        let res = T.fromJson(reader)
+        _requestBuffer.seek(SeekPosition.Begin(0))
+        res
     }
 
     public func readRawData(): Array<Byte> {
+        copyRequestBody()
         _requestBuffer.bytes()
     }
 
     public func readString(): String {
-        _requestBuffer.bytes().toString()
+        copyRequestBody()
+        let reader = StringReader(BufferedInputStream(_requestBuffer))
+        let res = reader.readToEnd()
+        _requestBuffer.seek(SeekPosition.Begin(0))
+        res
     }
 
     public func bindQuery<T>(): ?T where T <: JoyBindable<T> {
@@ -703,7 +717,7 @@ class JoyHttpContext <: JoyContext {
         let writer = JsonWriter(buffer)
         writer.writeValue(body)
         writer.flush()
-        _body = buffer.bytes()
+        _respBody = buffer.bytes()
         _httpContext
             .responseBuilder
             .header(JoyHttpConsts.HEADER_CONTENT_TYPE, JoyHttpConsts.MIME_APP_JSON_UTF8)
@@ -712,25 +726,25 @@ class JoyHttpContext <: JoyContext {
     }
 
     public func json(body: String): JoyContext {
-        _body = body
+        _respBody = body
         string(JoyHttpConsts.MIME_APP_JSON_UTF8, body)
         this
     }
 
     public func string(contentType: String, body: String): JoyContext {
-        _body = body
+        _respBody = body
         _httpContext.responseBuilder.header(JoyHttpConsts.HEADER_CONTENT_TYPE, contentType).body(body)
         this
     }
 
     public func string(body: String): JoyContext {
-        _body = body
+        _respBody = body
         string(JoyHttpConsts.MIME_TEXT_PLAIN_UTF8, body)
         this
     }
 
     public func data(body: Array<Byte>): JoyContext {
-        _body = body
+        _respBody = body
         _httpContext.responseBuilder.body(body)
         this
     }
@@ -741,9 +755,9 @@ class JoyHttpContext <: JoyContext {
         let buffer = ByteBuffer()
         copy(body, to: buffer)
         let bytes = buffer.bytes()
-        
-        _body = bytes  
-        _httpContext.responseBuilder.body(bytes)  
+
+        _respBody = bytes
+        _httpContext.responseBuilder.body(bytes)
         this
     }
 
