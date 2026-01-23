@@ -460,6 +460,7 @@ class JoyHttpContext <: JoyContext {
     private let _config: JoyConfig
     private let _paramMap: HashMap<String, String>
     private let _ctxParamMap: HashMap<String, Any>
+    private let _requestBuffer:ByteBuffer = ByteBuffer()
     private var _cookieCache: HashMap<String, String> = HashMap()
     private var _parsedCookie: Bool = false
     private var _status: ?UInt16 = None
@@ -475,6 +476,7 @@ class JoyHttpContext <: JoyContext {
         _config = config
         _paramMap = paramMap
         _ctxParamMap = ctxParamMap
+        copy(_httpContext.request.body, to: _requestBuffer)
     }
 
     /**
@@ -652,26 +654,23 @@ class JoyHttpContext <: JoyContext {
     }
 
     public func readJson<T>(): ?T where T <: JsonDeserializable<T> {
-        if (_httpContext.request.bodySize.isSome() && _httpContext.request.bodySize.getOrThrow() == 0) {
+        if (_requestBuffer.length == 0) {
             return None
         }
         if (!getContentType().startsWith(JoyHttpConsts.MIME_APP_JSON)) {
             return None
         }
-
-        let reader = JsonReader(_httpContext.request.body)
+        let buffer = BufferedInputStream(_requestBuffer)
+        let reader = JsonReader(buffer)
         T.fromJson(reader)
     }
 
     public func readRawData(): Array<Byte> {
-        let buffer = ByteBuffer()
-        copy(_httpContext.request.body, to: buffer)
-        buffer.bytes()
+        _requestBuffer.bytes()
     }
 
     public func readString(): String {
-        let reader = StringReader(_httpContext.request.body)
-        reader.readToEnd()
+        _requestBuffer.bytes().toString()
     }
 
     public func bindQuery<T>(): ?T where T <: JoyBindable<T> {
