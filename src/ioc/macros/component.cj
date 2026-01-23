@@ -167,8 +167,7 @@ open class ComponentClassInfo {
     }
 
     func getSubMacroTokens(): Tokens {
-        getSchuedleTokens()
-        getEventBusTokens()
+        getSchuedleTokens() + Token(TokenKind.NL) + getEventBusTokens()
     }
 }
 
