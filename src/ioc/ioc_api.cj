@@ -11,101 +11,125 @@
 package cjoy.ioc
 
 /**
- * the bean class implements this interface
+ * Bean class implements this interface for lifecycle management
  */
 public interface BeanLifecycle {
     /**
-     * invoke this func when the bean post construct
+     * Invoke this function when bean is constructed
      */
     func afterInit(): Unit {
     }
 
     /**
-     * invoke this func when the bean before destory
+     * Invoke this function when bean is about to be destroyed
      */
     func beforeDestroy(): Unit {
     }
 }
 
 /**
- * the interface of application context
+ * Interface of application context for bean management
  */
 public interface ApplicationContext {
     /**
-     * get bean by name from app context
+     * Get bean by name from application context
      *
-     * @param name: the name of bean
-     * @return: the existed bean
+     * @param name name of bean
+     * @return existed bean or None
      */
     func getBean<T>(name: String): ?T
 
     /**
-     * get bean by type from app context
+     * Get bean by type from application context
      *
-     * @return: the existed bean
+     * @return existed bean or None
      */
     func getBean<T>(): ?T
 
     /**
-     * get all beans by type from app context
+     * Get all beans by type from application context
      *
-     * @return: the existed bean list
+     * @return collection of bean instances
      */
     func getBeans<T>(): Collection<T>
 
     /**
-     *  get bean by name from app context, it will create new bean if the bean scope is Prototype
+     * Get bean by type name from application context,
+     * will create new bean if bean scope is Prototype
      *
-     * @param beanType: the type of bean
-     * @return: the existed bean or new created bean
-     * @throws IocException if not exist factory
+     * @param beanType type name of bean
+     * @return existed bean or newly created bean
+     * @throws IocException if bean factory not found
      */
     func getBeanByTypeName<T>(beanType: String): ?T
 
     /**
-     *  get bean by name from app context, it will throw IocException if the bean scope is Prototype
+     * Get beans by type name from application context,
+     * will throw IocException if bean scope is Prototype
      *
-     * @param beanType: the type of bean
-     * @return: the existed bean
-     * @throws IocException if not exist factory or is prototype
+     * @param beanType type name of bean
+     * @return collection of bean instances
+     * @throws IocException if bean factory not found or is prototype
      */
     func getBeansByTypeName<T>(beanType: String): Collection<T>
 
     /**
-     * get all beans from app context
+     * Get all beans from application context
      *
-     * @return: the existed bean list
+     * @return collection of all bean instances
      */
     func getAllBeans(): Collection<BeanLifecycle>
 
     /**
-     * add a bean to app context
+     * Add a bean to application context
      *
-     * @param name: the name of bean
-     * @param beanType: the type name of bean
-     * @param bean: the bean object
+     * @param name name of bean
+     * @param beanType type name of bean
+     * @param bean bean object instance
      */
     func addBean(name: String, beanType: String, bean: BeanLifecycle): Unit
 }
 
+/**
+ * Bean scope type definition
+ */
 public type BeanScope = String
 
+/**
+ * Singleton bean scope
+ */
 const SINGLETON: BeanScope = "singleton"
+
+/**
+ * Prototype bean scope
+ */
 const PROTOTYPE: BeanScope = "prototype"
 
+/**
+ * Bean factory interface for creating bean instances
+ */
 public interface BeanFactory {
     prop beanType: String
     prop beanScope: BeanScope
 
     /**
-     * create a bean return the bean name and instance
+     * Create a bean instance
      *
-     * @param ctx: the application context
+     * @param ctx application context
+     * @return tuple of bean name and bean instance
      */
     func create(ctx: ApplicationContext): (String, BeanLifecycle)
 }
 
+/**
+ * IoC exception for IoC related errors
+ */
 public class IocException <: Exception {
+    /**
+     * Create IoC exception with message
+     *
+     * @param message error message
+     */
     public IocException(message: String) {
         super(message)
     }

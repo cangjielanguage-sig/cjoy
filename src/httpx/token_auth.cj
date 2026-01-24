@@ -12,18 +12,28 @@ package cjoy.httpx
 
 import cjoy.context.Context
 
+/**
+ * HTTP client with token-based authentication
+ */
 public class TokenAuthClient <: JoyHttpClient {
     public TokenAuthClient(let http: JoyHttpClient, let token!: String, let position!: String = "header:Authorization",
         let authSchema!: String = "Bearer") {
     }
 
+    /**
+     * Send HTTP request with token-based authentication
+     *
+     * @param ctx request context
+     * @param request HTTP request
+     * @return HTTP response
+     */
     public func send(ctx: Context, request: JoyHttpRequest): JoyHttpResponse {
         createFunc(token, position, authSchema)(request)
         http.send(ctx, request)
     }
 
     /**
-     * @throws IllegalArgumentException
+     * @throws IllegalArgumentException if position format is invalid
      */
     private func createFunc(token: String, position: String, authSchema: String): (request: JoyHttpRequest) -> Unit {
         let sn = position.split(":")

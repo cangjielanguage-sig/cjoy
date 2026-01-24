@@ -17,50 +17,92 @@ import std.env.atExit
 import cjoy.context.ServiceContainer
 import cjoy.log.macros.*
 
+/**
+ * Bean factory manager for IoC container
+ */
 public class BeanFactoryManager {
     private static let CONTEXT: DefaultApplicationContext = DefaultApplicationContext()
     private static let POST_FUNCS: ArrayList<() -> Unit> = ArrayList()
 
     static let EXECUTED: AtomicBool = AtomicBool(false)
 
+    /**
+     * Get application context
+     *
+     * @return application context instance
+     */
     public static func getApplicationContext(): ApplicationContext {
         CONTEXT
     }
 
+    /**
+     * Register bean factory with dependencies
+     *
+     * @param beanType bean type name
+     * @param depends array of bean type names this bean depends on
+     * @param factory bean factory
+     */
     public static func register(beanType: String, depends: Array<String>, factory: BeanFactory): Unit {
         @LogInfo("[IOC] register bean info, beanType=${beanType}, depends=${depends}")
         CONTEXT._factories.add(beanType, factory)
-        CONTEXT._beanDependManger.addDepends(beanType, depends)
+        CONTEXT._beanDependManager.addDepends(beanType, depends)
     }
 
+    /**
+     * Register bean types for interfaces
+     *
+     * @param beanType bean type name
+     * @param interfaces array of interface type names this bean implements
+     */
     public static func registerTypes(beanType: String, interfaces: Array<String>): Unit {
         @LogInfo("[IOC] register bean types, beanType=${beanType}, interfaces=${interfaces}")
-        CONTEXT._beanDependManger.addTypes(beanType, interfaces)
+        CONTEXT._beanDependManager.addTypes(beanType, interfaces)
     }
 
+    /**
+     * Register post initialization function
+     *
+     * @param name function name
+     * @param fn function to execute after bean initialization
+     */
     public static func registerPostFunc(name: String, fn: () -> Unit): Unit {
         @LogInfo("[IOC] register post func, name=${name}")
         POST_FUNCS.add(fn)
     }
 
+    /**
+     * Execute registered post functions
+     */
     private static func executePostFuncs(): Unit {
         if (EXECUTED.compareAndSwap(false, true)) {
-            @LogInfo("[IOC] exeucte registered post func")
+            @LogInfo("[IOC] execute registered post func")
             for (fn in POST_FUNCS) {
                 fn()
             }
         }
     }
 
+    /**
+     * Initialize all beans in dependency order
+     */
     public static func initAllBeans(): Unit {
         CONTEXT.createAllBeans()
         executePostFuncs()
     }
 
+    /**
+     * Destroy all beans in reverse order
+     */
     public static func destroyAllBeans(): Unit {
         CONTEXT.destroyAllBeans()
     }
 
+    /**
+     * Get bean factory by type
+     *
+     * @param beanType bean type name
+     * @return bean factory or None
+     */
     public static func get(beanType: String): ?BeanFactory {
         CONTEXT._factories.get(beanType)
     }

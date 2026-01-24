@@ -11,8 +11,7 @@
 package cjoy.fs
 
 class JoyETag {
-    private static let PREFIX = [Rune(b'W'), Rune(b'/')]
-    private static let PREFIX2 = "W/"
+    private static let PREFIX = "W/"
 
     static func strongMatch(a: String, b: String): Bool {
         a == b && a != "" && a[0] == b'"'
@@ -24,26 +23,26 @@ class JoyETag {
 
     static func scan(str: String): (String, String) {
         // ETag is either W/"text" or "text"
-        var x = str.trimAscii()
+        let x = str.trimAscii()
         var start = 0
-        if (x.startsWith(PREFIX2)) {
-            start += 2
+        if (x.startsWith(PREFIX)) {
+            start = 2
         }
 
-        x = x[start..]
-        if (x.size < 2 || x[0] != b'"') {
+        let s = x[start..]
+        if (s.size < 2 || x[start] != b'"') {
             return ("", "")
         }
 
-        var i = 1
+        var i = start + 1
         while (i < x.size) {
             let c = x[i]
-            i++
             match {
                 case c == b'"' => return (x[..i + 1], x[i + 1..])
                 case c == 0x21 || c >= 0x23 && c <= 0x7E || c >= 0x80 => ()
                 case _ => return ("", "")
             }
+            i++
         }
 
         ("", "")

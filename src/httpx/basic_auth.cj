@@ -14,10 +14,20 @@ import stdx.encoding.base64.toBase64String
 import cjoy.context.Context
 import cjoy.framework.{JoyHttpConsts}
 
+/**
+ * HTTP client with basic authentication
+ */
 public class BasicAuthClient <: JoyHttpClient {
     public BasicAuthClient(let http: JoyHttpClient, let username!: String, let password!: String) {
     }
 
+    /**
+     * Send HTTP request with basic authentication
+     *
+     * @param ctx request context
+     * @param request HTTP request
+     * @return HTTP response
+     */
     public func send(ctx: Context, request: JoyHttpRequest): JoyHttpResponse {
         let authValue = "Basic " + toBase64String((username + ":" + password).toArray())
         request.header(JoyHttpConsts.HEADER_AUTHORIZATION, authValue)

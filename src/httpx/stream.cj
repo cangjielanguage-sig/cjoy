@@ -7,7 +7,6 @@
  * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  */
-
 package cjoy.httpx
 
 import std.collection.concurrent.LinkedBlockingQueue
@@ -20,6 +19,9 @@ enum StreamData {
     | Error(String)
 }
 
+/**
+ * HTTP byte stream that supports both line-by-line iteration and raw byte reading
+ */
 public class JoyHttpStream <: Iterator<String> & InputStream {
     private let _queue = LinkedBlockingQueue<StreamData>()
     private let _byteBuffer = ArrayList<Byte>()
@@ -32,6 +34,9 @@ public class JoyHttpStream <: Iterator<String> & InputStream {
     }
 
     /**
+     * Read bytes from stream
+     *
+     * @return true if bytes read successfully, false if EOF
      * @throws Exception if receive a error
      */
     private func readBytes(): Bool {
@@ -49,6 +54,12 @@ public class JoyHttpStream <: Iterator<String> & InputStream {
         }
     }
 
+    /**
+     * Read bytes from stream
+     *
+     * @param buffer byte buffer to read into
+     * @return number of bytes read
+     */
     public func read(buffer: Array<Byte>): Int64 {
         if (_byteBuffer.isEmpty() && !this.readBytes()) {
             return 0
@@ -85,22 +96,43 @@ public class JoyHttpStream <: Iterator<String> & InputStream {
         }
     }
 
+    /**
+     * Read next line from stream
+     *
+     * @return line string or None if EOF
+     */
     public func next(): Option<String> {
         return this.reader.readln()
     }
 
+    /**
+     * Put byte data to stream
+     *
+     * @param data byte data
+     */
     public func put(data: Array<Byte>): Unit {
         _queue.add(StreamData.Bytes(data))
     }
 
+    /**
+     * Mark end of file
+     */
     public func markEOF(): Unit {
         _queue.add(StreamData.EOF)
     }
 
+    /**
+     * Mark error on stream
+     *
+     * @param err error message
+     */
     public func markError(err: String): Unit {
         _queue.add(StreamData.Error(err))
     }
 
+    /**
+     * Close stream
+     */
     public func close(): Unit {
         this.markEOF()
         if (let Some(fn) <- _closeFn) {

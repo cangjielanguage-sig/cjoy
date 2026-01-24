@@ -13,15 +13,18 @@ package cjoy.ioc
 import std.collection.{ArrayList, HashMap, HashSet, map, forEach, any, filter, collectHashSet, collectArray}
 import std.sort.sort
 
+/**
+ * Bean dependency node
+ */
 class BeanDepend <: Equatable<BeanDepend> & Hashable & ToString {
     BeanDepend(let beanType: String,
         // dependent bean types
         let depends!: HashSet<BeanDepend> = HashSet(),
         // dependent on bean types
         let depons!: HashSet<BeanDepend> = HashSet(),
-            // the tree reverse depth 
+            // tree reverse depth
             var depth!: Int = Int.Max,
-            // class or interface 
+            // class or interface
             var isClass!: Bool = false) {
     }
 
@@ -38,12 +41,21 @@ class BeanDepend <: Equatable<BeanDepend> & Hashable & ToString {
     }
 }
 
+/**
+ * Bean dependency manager
+ */
 class BeanDependManager {
     // key: beanType
     private let _beanTypes: HashMap<String, BeanDepend> = HashMap()
-    // key: interface type, value: the array of beanType
+    // key: interface type, value: array of beanType
     private let _extends: HashMap<String, HashSet<String>> = HashMap()
 
+    /**
+     * Get or create bean dependency node
+     *
+     * @param beanType bean type name
+     * @return bean dependency node
+     */
     private func get(beanType: String): BeanDepend {
         let bd = _beanTypes.get(beanType)
         match (bd) {
@@ -55,6 +67,12 @@ class BeanDependManager {
         }
     }
 
+    /**
+     * Add dependency relationship
+     *
+     * @param beanType bean type name
+     * @param depends array of bean type names this bean depends on
+     */
     func addDepends(beanType: String, depends: Array<String>): Unit {
         let bt = get(beanType)
         bt.isClass = true
@@ -66,6 +84,12 @@ class BeanDependManager {
         }
     }
 
+    /**
+     * Add interface implementations
+     *
+     * @param beanType bean type name
+     * @param interfaces array of interface type names this bean implements
+     */
     func addTypes(beanType: String, interfaces: Array<String>): Unit {
         for (it in interfaces) {
             let inter = _extends.get(it)
@@ -76,11 +100,21 @@ class BeanDependManager {
         }
     }
 
+    /**
+     * Get class types by interface or class name
+     *
+     * @param btype interface or class type name
+     * @return hash set of class type names
+     */
     func getClassType(btype: String): HashSet<String> {
         _extends.get(btype) ?? HashSet<String>([btype])
     }
 
     /**
+     * Get sorted bean dependencies
+     *
+     * @param onlyClass true to return only class beans, false to include interfaces
+     * @return array of bean dependencies sorted by depth
      * @throws IocException if exist depend cycle
      */
     func getSortedBeanDepends(onlyClass!: Bool = true): Array<BeanDepend> {
@@ -104,7 +138,9 @@ class BeanDependManager {
     }
 
     /**
-     * @throws IocException if not found the type
+     * Set depth to 0 for beans with no dependencies
+     *
+     * @throws IocException if not found any type with no dependencies
      */
     private func setDepth0(): Unit {
         // 先找到最底层，即没有任何依赖的Bean类型
@@ -122,7 +158,9 @@ class BeanDependManager {
     }
 
     /**
-     * @throws IocException if not found the type
+     * Add dependencies for interface types
+     *
+     * @throws IocException if not found implementation class
      */
     private func addDependForInterface(): Unit {
         // 过滤所有接口
@@ -132,10 +170,10 @@ class BeanDependManager {
                 case Some(bts) =>
                     // 构建接口到实现类的依赖关系
                     for (klass in bts) {
-                    match (_beanTypes.get(klass)) {
-                        case Some(bd) => it.depends.add(bd)
-                        // 没有找到对应实现类的注册过其信息
-                        case _ => throw IocException(
+                        match (_beanTypes.get(klass)) {
+                            case Some(bd) => it.depends.add(bd)
+                            // 没有找到对应实现类的注册过其信息
+                            case _ => throw IocException(
                             "not found the class `${klass}` implements inferface `${it.beanType}`")
                     }
                 }
@@ -149,7 +187,10 @@ class BeanDependManager {
     }
 
     /**
-     * @throws IocException if exist depend cycle
+     * Recursively calculate depth for each bean type
+     *
+     * @param depth current current depth
+     * @throws IocException if not found any bean has no dependencies
      */
     private func recursiveDepth(depth: Int): Unit {
         // 从下往上找到Bean类型，并修改Depth值，即所在深度

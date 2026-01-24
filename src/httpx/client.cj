@@ -41,11 +41,21 @@ func defaultNoVerifyHttpCert(url: String, verify: Bool): ClientBuilder {
     cb.connector(socketConnector)
 }
 
+/**
+ * HTTP client service with connection pooling
+ */
 public class JoyHttpClientService <: JoyHttpClient & Resource {
     private let _client: Client
     private let _url: String
     private var _isClosed = false
 
+    /**
+     * Create HTTP client service with given base URL
+     *
+     * @param url base URL
+     * @param verify whether to verify SSL certificate
+     * @param budilerFn optional client builder function
+     */
     public init(url: String, verify!: Bool = false,
         budilerFn!: (url: String, verify: Bool) -> ClientBuilder = defaultNoVerifyHttpCert) {
         _url = url.trimEnd("/")
@@ -56,10 +66,16 @@ public class JoyHttpClientService <: JoyHttpClient & Resource {
         _client.close()
     }
 
+    /**
+     * Destroy the client service
+     */
     public func destroy(): Unit {
         close()
     }
 
+    /**
+     * Close the client connection
+     */
     public func close(): Unit {
         if (_isClosed) {
             return
@@ -68,10 +84,22 @@ public class JoyHttpClientService <: JoyHttpClient & Resource {
         _isClosed = true
     }
 
+    /**
+     * Check if client is closed
+     *
+     * @return true if closed
+     */
     public func isClosed(): Bool {
         _isClosed
     }
 
+    /**
+     * Send HTTP request
+     *
+     * @param ctx request context
+     * @param request HTTP request
+     * @return HTTP response
+     */
     public func send(ctx: Context, request: JoyHttpRequest): JoyHttpResponse {
         let url = mergeUrl(request)
         let rb = HttpRequestBuilder().url(url)
@@ -86,6 +114,12 @@ public class JoyHttpClientService <: JoyHttpClient & Resource {
         JoyHttpResponse(rsp)
     }
 
+    /**
+     * Merge base URL with request path and queries
+     *
+     * @param request HTTP request
+     * @return full URL
+     */
     private func mergeUrl(request: JoyHttpRequest): String {
         var url = if (request._path.startsWith("/")) {
             _url + request._path
@@ -107,6 +141,12 @@ public class JoyHttpClientService <: JoyHttpClient & Resource {
         url
     }
 
+    /**
+     * Write request body to request builder
+     *
+     * @param request HTTP request
+     * @param rb HTTP request builder
+     */
     private func writeBody(request: JoyHttpRequest, rb: HttpRequestBuilder): Unit {
         if (let Some(f) <- request._form) {
             let body = f.toEncodeString()

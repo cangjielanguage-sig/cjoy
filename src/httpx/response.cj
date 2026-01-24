@@ -15,8 +15,8 @@ import stdx.encoding.json.stream.{JsonDeserializable, JsonReader}
 import stdx.net.http.{HttpHeaders, HttpResponse}
 import cjoy.framework.{JoyHttpConsts}
 
-/*
- * the http response wrapper
+/**
+ * HTTP response wrapper
  */
 public class JoyHttpResponse {
     private let _response: HttpResponse
@@ -38,6 +38,11 @@ public class JoyHttpResponse {
         }
     }
 
+    /**
+     * Parse response body as JSON
+     *
+     * @return deserialized JSON object or None if failed
+     */
     public func json<T>(): ?T where T <: JsonDeserializable<T> {
         if (_response.bodySize.isSome() && _response.bodySize.getOrThrow() == 0) {
             return None
@@ -74,10 +79,10 @@ public class JoyHttpResponse {
     }
 
     /**
-     * get the event stream
+     * Get event stream
      *
-     * @return the sse stream
-     * @throw IllegalArgumentException: when the response is not event stream
+     * @return SSE event stream
+     * @throws IllegalArgumentException when response is not event stream
      */
     public prop eventStream: JoySSEventStream {
         get() {

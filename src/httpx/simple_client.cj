@@ -16,10 +16,17 @@ import cjoy.framework.JoyHttpConsts
 import cjoy.log.macros.*
 
 /**
- * This is a simple HTTP client that closes the connection directly after each request response,
+ * This is a simple HTTP client that closes connection directly after each request response,
  * which is not suitable for high-performance connection reuse scenarios.
  */
 public struct JoySimpleHttpClient {
+    /**
+     * Connect to server-sent events endpoint
+     *
+     * @param url SSE endpoint URL
+     * @param verify whether to verify SSL certificate
+     * @return SSE event stream
+     */
     public static func sseConnect(url: String, verify!: Bool = false): JoySSEventStream {
         let header = HashMap<String, String>()
         header.add(JoyHttpConsts.HEADER_ACCEPT, JoyHttpConsts.MIME_TEXT_EVENT_STREAM)
@@ -27,6 +34,15 @@ public struct JoySimpleHttpClient {
         return JoySSEventStream(httpStream)
     }
 
+    /**
+     * Send HTTP GET request
+     *
+     * @param url request URL
+     * @param body optional request body
+     * @param header optional request headers
+     * @param verify whether to verify SSL certificate
+     * @return response body as string, or None if failed
+     */
     public static func get(
         url: String,
         body!: Option<Array<Byte>> = None,
@@ -36,6 +52,15 @@ public struct JoySimpleHttpClient {
         return send("GET", url, header, body, verify: verify)
     }
 
+    /**
+     * Send HTTP POST request
+     *
+     * @param url request URL
+     * @param body request body
+     * @param header optional request headers
+     * @param verify whether to verify SSL certificate
+     * @return response body as string, or None if failed
+     */
     public static func post(
         url: String,
         body: Array<Byte>,
@@ -45,6 +70,16 @@ public struct JoySimpleHttpClient {
         return send("POST", url, header, body, verify: verify)
     }
 
+    /**
+     * Send HTTP request synchronously
+     *
+     * @param method HTTP method
+     * @param url request URL
+     * @param header request headers
+     * @param body optional request body
+     * @param verify whether to verify SSL certificate
+     * @return response body as string, or None if failed
+     */
     public static func send(
         method: String,
         url: String,
@@ -65,6 +100,15 @@ public struct JoySimpleHttpClient {
         return respBody
     }
 
+    /**
+     * Send HTTP GET request asynchronously
+     *
+     * @param url request URL
+     * @param body optional request body
+     * @param header optional request headers
+     * @param verify whether to verify SSL certificate
+     * @return HTTP byte stream
+     */
     public static func asyncGet(
         url: String,
         body!: Option<Array<Byte>> = None,
@@ -74,6 +118,15 @@ public struct JoySimpleHttpClient {
         return asyncSend("GET", url, header, body, verify: verify)
     }
 
+    /**
+     * Send HTTP POST request asynchronously
+     *
+     * @param url request URL
+     * @param body request body
+     * @param header optional request headers
+     * @param verify whether to verify SSL certificate
+     * @return HTTP byte stream
+     */
     public static func asyncPost(
         url: String,
         body: Array<Byte>,
@@ -83,6 +136,16 @@ public struct JoySimpleHttpClient {
         return asyncSend("POST", url, header, body, verify: verify)
     }
 
+    /**
+     * Send HTTP request asynchronously
+     *
+     * @param method HTTP method
+     * @param url request URL
+     * @param header request headers
+     * @param body optional request body
+     * @param verify whether to verify SSL certificate
+     * @return HTTP byte stream
+     */
     public static func asyncSend(
         method: String,
         url: String,
@@ -116,6 +179,15 @@ public struct JoySimpleHttpClient {
         return httpStream
     }
 
+    /**
+     * Prepare HTTP request builder
+     *
+     * @param method HTTP method
+     * @param url request URL
+     * @param header request headers
+     * @param body optional request body
+     * @return HTTP request
+     */
     private static func prepareHttpRequest(
         method: String,
         url: String,
@@ -137,6 +209,16 @@ public struct JoySimpleHttpClient {
         return rb.build()
     }
 
+    /**
+     * Send HTTP request and get response
+     *
+     * @param method HTTP method
+     * @param url request URL
+     * @param header request headers
+     * @param body optional request body
+     * @param verify whether to verify SSL certificate
+     * @return HTTP client and response
+     */
     private static func sendHttp(
         method: String,
         url: String,
@@ -149,6 +231,14 @@ public struct JoySimpleHttpClient {
         return (client, client.send(req))
     }
 
+    /**
+     * Log HTTP request information
+     *
+     * @param method HTTP method
+     * @param url request URL
+     * @param header request headers
+     * @param body optional request body
+     */
     private static func logHttpInfo(method: String, url: String, header: HashMap<String, String>,
         body: Option<Array<Byte>>) {
         let sb = StringBuilder()

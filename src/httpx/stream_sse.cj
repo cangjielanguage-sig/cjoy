@@ -8,6 +8,7 @@
  * See the Mulan PSL v2 for more details.
  */
 
+
 package cjoy.httpx
 
 import std.deriving.Derive
@@ -53,12 +54,18 @@ public struct JoySSEvent {
     }
 }
 
+/**
+ * Server-sent events stream iterator
+ */
 public class JoySSEventStream <: Iterator<JoySSEvent> {
     JoySSEventStream(private let httpStream: JoyHttpStream) {}
 
     /**
-     * @throws IllegalArgumentException
-     * @throws IllegalStateException
+     * Read next SSE event from stream
+     *
+     * @return SSE event or None if EOF
+     * @throws IllegalArgumentException if invalid SSE message format
+     * @throws IllegalStateException if unreachable code
      */
     public func next(): Option<JoySSEvent> {
         var data = JoySSEvent()
@@ -86,6 +93,9 @@ public class JoySSEventStream <: Iterator<JoySSEvent> {
         throw IllegalStateException("Unreachable")
     }
 
+    /**
+     * Close SSE stream
+     */
     public func close(): Unit {
         this.httpStream.close()
     }

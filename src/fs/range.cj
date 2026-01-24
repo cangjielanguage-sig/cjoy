@@ -112,7 +112,7 @@ class JoyHttpRange {
 type JoyHttpRangs = ArrayList<JoyHttpRange>
 
 extend JoyHttpRangs {
-    func sumSize() {
+    func sumSize(): Int {
         var size = 0
         for (hr in this) {
             size += hr.length

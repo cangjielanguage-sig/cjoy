@@ -214,6 +214,7 @@ public class JoyFileServer {
             return
         }
 
+        ctx.header(JoyHttpConsts.HEADER_TRANSFER_ENCODING, "chunked")
         if (ranges.size == 1) {
             // 单个Range请求
             let r = ranges[0]

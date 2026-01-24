@@ -15,15 +15,24 @@ import std.collection.concurrent.ConcurrentHashMap
 import std.sync.{Mutex, AtomicBool}
 import cjoy.log.macros.*
 
+/**
+ * Default application context implementation
+ */
 class DefaultApplicationContext <: ApplicationContext {
     private let _beans = ConcurrentHashMap<String, BeanLifecycle>()
     private let _beansByTypes = ConcurrentHashMap<String, BeanLifecycle>()
     private let _mutex: Mutex = Mutex()
 
     let _factories: ConcurrentHashMap<String, BeanFactory> = ConcurrentHashMap()
-    let _beanDependManger: BeanDependManager = BeanDependManager()
+    let _beanDependManager: BeanDependManager = BeanDependManager()
     let _inited: AtomicBool = AtomicBool(false)
 
+    /**
+     * Get bean by name
+     *
+     * @param name bean name
+     * @return bean instance or None
+     */
     public func getBean<T>(name: String): ?T {
         let res = _beans.get(name)
         convert<T>(res)
@@ -40,6 +49,9 @@ class DefaultApplicationContext <: ApplicationContext {
     }
 
     /**
+     * Get bean by type
+     *
+     * @return bean instance or None
      * @throws IocException if exist multiple candidate
      */
     public func getBean<T>(): ?T {
@@ -53,11 +65,20 @@ class DefaultApplicationContext <: ApplicationContext {
         }
     }
 
+    /**
+     * Get all beans by type
+     *
+     * @return collection of bean instances
+     */
     public func getBeans<T>(): Collection<T> {
         return getBeansByType<T>()
     }
 
     /**
+     * Get bean by type name
+     *
+     * @param beanType bean type name
+     * @return bean instance or None
      * @throws IocException if exist multiple candidate
      */
     public func getBeanByTypeName<T>(beanType: String): ?T {
@@ -66,10 +87,14 @@ class DefaultApplicationContext <: ApplicationContext {
     }
 
     /**
+     * Get bean by type name
+     *
+     * @param beanType bean type name
+     * @return bean lifecycle or None
      * @throws IocException if exist multiple candidate
      */
     private func getBeanByTypeNameInner(beanType: String): ?BeanLifecycle {
-        let classTypes = _beanDependManger.getClassType(beanType)
+        let classTypes = _beanDependManager.getClassType(beanType)
         let res = ArrayList<BeanLifecycle>()
         for (bt in classTypes) {
             let factory = _factories.get(bt)
@@ -92,6 +117,12 @@ class DefaultApplicationContext <: ApplicationContext {
     }
 
     /**
+     * Get bean by type name and factory
+     *
+     * @param f bean factory
+     * @param bt bean type name
+     * @param classTypeSize number of class types
+     * @return bean lifecycle or None
      * @throws IocException if exist multiple candidate
      */
     private func getBeanByTypeNameInner(f: BeanFactory, bt: String, classTypeSize: Int): ?BeanLifecycle {
@@ -113,14 +144,26 @@ class DefaultApplicationContext <: ApplicationContext {
         }
     }
 
+    /**
+     * Get all beans by type name
+     *
+     * @param beanType bean type name
+     * @return collection of bean instances
+     */
     public func getBeansByTypeName<T>(beanType: String): Collection<T> {
         let res = getBeansByTypeNameInner(beanType)
         res |> map {it => convert<T>(it).getOrThrow({=> IocException("${beanType} object is not T type")})} |>
             collectArray
     }
 
+    /**
+     * Get all beans by type name
+     *
+     * @param beanType bean type name
+     * @return collection of bean lifecycles
+     */
     private func getBeansByTypeNameInner(beanType: String): Collection<BeanLifecycle> {
-        let classTypes = _beanDependManger.getClassType(beanType)
+        let classTypes = _beanDependManager.getClassType(beanType)
         let res = ArrayList<BeanLifecycle>()
         for (bt in classTypes) {
             let factory = _factories.get(bt)
@@ -136,6 +179,11 @@ class DefaultApplicationContext <: ApplicationContext {
         res
     }
 
+    /**
+     * Get all beans
+     *
+     * @return collection of all bean lifecycles
+     */
     public func getAllBeans(): Collection<BeanLifecycle> {
         let iter = _beans.iterator()
         let res = ArrayList<BeanLifecycle>()
@@ -145,6 +193,11 @@ class DefaultApplicationContext <: ApplicationContext {
         res
     }
 
+    /**
+     * Get beans by type
+     *
+     * @return array of beans matching type T
+     */
     private func getBeansByType<T>(): ArrayList<T> {
         let iter = _beans.iterator()
         let res = ArrayList<T>()
@@ -158,6 +211,13 @@ class DefaultApplicationContext <: ApplicationContext {
         return res
     }
 
+    /**
+     * Add bean to context
+     *
+     * @param name bean name
+     * @param beanType bean type name
+     * @param bean bean instance
+     */
     public func addBean(name: String, beanType: String, bean: BeanLifecycle): Unit {
         // 按Bean Name建立关系
         _beans.add(name, bean)
@@ -166,12 +226,14 @@ class DefaultApplicationContext <: ApplicationContext {
     }
 
     /**
+     * Create all beans in dependency order
+     *
      * @throws IocException if not found bean factory
      */
     public func createAllBeans(): Unit {
         if (_inited.compareAndSwap(false, true)) {
             // 按Bean依赖关系排序，创建所有Bean
-            let beans = _beanDependManger.getSortedBeanDepends()
+            let beans = _beanDependManager.getSortedBeanDepends()
             for (b in beans) {
                 match (_factories.get(b.beanType)) {
                     case Some(factory) =>
@@ -192,6 +254,9 @@ class DefaultApplicationContext <: ApplicationContext {
         }
     }
 
+    /**
+     * Destroy all beans
+     */
     public func destroyAllBeans(): Unit {
         let beans = getAllBeans()
         for (b in beans) {

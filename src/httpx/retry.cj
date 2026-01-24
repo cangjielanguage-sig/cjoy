@@ -13,10 +13,20 @@ package cjoy.httpx
 import stdx.net.http.{HttpStatusCode}
 import cjoy.context.Context
 
+/**
+ * HTTP client with automatic retry on server errors
+ */
 public class RetryClient <: JoyHttpClient {
     public RetryClient(let http: JoyHttpClient, let maxRetries!: Int = 3) {
     }
 
+    /**
+     * Send HTTP request with automatic retry on server errors
+     *
+     * @param ctx request context
+     * @param request HTTP request
+     * @return HTTP response
+     */
     public func send(ctx: Context, request: JoyHttpRequest): JoyHttpResponse {
         var lastEx: ?Exception = None
         for (_ in 0..maxRetries) {
