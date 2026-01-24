@@ -58,6 +58,9 @@ public class RouteInfo<T> {
     }
 }
 
+/**
+ * node type for route tree
+ */
 type NodeType = Int
 
 const NT_STATIC: NodeType = 0
@@ -77,6 +80,9 @@ extend NodeType {
     }
 }
 
+/**
+ * tree node for route matching
+ */
 public class TreeNode<T> {
     // regex matcher for regexp nodes
     var _regex: ?Regex = None

@@ -13,6 +13,9 @@ package cjoy.middleware
 import stdx.net.http.HttpStatusCode
 import cjoy.{JoyMiddlewareHandler, JoyRequestHandlerChain, JoyContext, JoyHttpConsts}
 
+/**
+ * security middleware for setting security HTTP headers
+ */
 public class Security <: JoyMiddlewareHandler {
     public Security(
         // AllowedHosts is a list of fully qualified domain names that are allowed. Default is empty list, which allows any and all host names.

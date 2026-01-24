@@ -21,6 +21,9 @@ public abstract class BaseMessage <: ToString & JsonSerializable {
 
 public abstract class JSONRPCMessage <: BaseMessage {}
 
+/**
+ * JSON-RPC request message
+ */
 @Json
 public class JSONRPCRequest <: JSONRPCMessage {
     public var jsonrpc: String = JSONRPCConsts.JSON_RPC_VERSION
@@ -30,6 +33,9 @@ public class JSONRPCRequest <: JSONRPCMessage {
     public var params: Any = Option<Any>.None
 }
 
+/**
+ * JSON-RPC error message
+ */
 @Json
 public class JSONRPCError <: BaseMessage {
     public var code: Int = 0
@@ -37,6 +43,9 @@ public class JSONRPCError <: BaseMessage {
     public var data: Any = Option<Any>.None
 }
 
+/**
+ * JSON-RPC response message
+ */
 @Json
 public class JSONRPCResponse <: JSONRPCMessage {
     public var jsonrpc: String = JSONRPCConsts.JSON_RPC_VERSION
@@ -46,6 +55,10 @@ public class JSONRPCResponse <: JSONRPCMessage {
     public var error: ?JSONRPCError = None
 }
 
+/**
+ * JSON-RPC notification message
+(无响应的通知消息)
+ */
 @Json
 public class JSONRPCNotification <: JSONRPCMessage {
     public var jsonrpc: String = JSONRPCConsts.JSON_RPC_VERSION
@@ -54,6 +67,9 @@ public class JSONRPCNotification <: JSONRPCMessage {
     public var params: Any = Option<Any>.None
 }
 
+/**
+ * JSON-RPC exception for JSON-RPC errors
+ */
 public class JSONRPCException <: Exception {
     public let error: JSONRPCError
 

@@ -24,6 +24,9 @@ public interface JoyMultiPartHandler {
     func onPart(part: JoyMultiPart, data: Array<Byte>): Unit
 }
 
+/**
+ * multipart handler with function callback
+ */
 public class JoyMultiPartFuncHandler <: JoyMultiPartHandler {
     public JoyMultiPartFuncHandler(let handler: (JoyMultiPart, Array<Byte>) -> Unit) {}
 
@@ -32,6 +35,9 @@ public class JoyMultiPartFuncHandler <: JoyMultiPartHandler {
     }
 }
 
+/**
+ * memory-based multipart handler for caching parts in memory
+ */
 class JoyMemoryMultiPartHandler <: JoyMultiPartHandler & Resource {
     private let cache = HashMap<String, ByteBuffer>()
     private var _isClosed = false
@@ -82,6 +88,9 @@ class JoyMemoryMultiPartHandler <: JoyMultiPartHandler & Resource {
     }
 }
 
+/**
+ * disk-based multipart handler for saving parts to temporary files
+ */
 class JoyDiskMultiPartHandler <: JoyMultiPartHandler & Resource {
     private let cache = HashMap<String, File>()
     private var _isClosed = false

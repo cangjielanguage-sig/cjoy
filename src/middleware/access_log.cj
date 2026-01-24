@@ -15,6 +15,9 @@ import stdx.log.Logger
 import cjoy.{JoyMiddlewareHandler, JoyRequestHandlerChain, JoyContext, JoyRequestFilterFunc}
 import cjoy.log.LogTool
 
+/**
+ * access log middleware for logging HTTP request information
+ */
 public class AccessLog <: JoyMiddlewareHandler {
     private let _logger: Logger
     private let _filterFn: ?JoyRequestFilterFunc

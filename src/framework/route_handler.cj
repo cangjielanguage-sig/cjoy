@@ -11,10 +11,8 @@
 package cjoy.framework
 
 import std.collection.{ArrayList}
-import std.collection.concurrent.ConcurrentHashMap
-import std.fs.{Path, FileInfo, exists}
-import stdx.net.http.{HttpStatusCode, FileHandler}
-import cjoy.log.macros.*
+import std.fs.{Path}
+
 
 class JoyGroupRouteHandler <: JoyRequestHandler {
     static let INSTANCE = JoyGroupRouteHandler()
@@ -49,7 +47,24 @@ class JoyRequestHandlerWrapper <: JoyRequestHandlerChain & JoyRequestHandler {
     }
 }
 
+/**
+ * factory interface for creating file serve handlers
+ */
 public interface JoyFileHandlerFactory {
+    /**
+     * create a handler to serve a single file
+     *
+     * @param filePath: the path of the file to serve
+     * @return the file serve handler
+     */
     func createFileServeHandler(filePath: String): JoyRequestHandler
+
+    /**
+     * create a handler to serve a file system directory
+     *
+     * @param root: the root directory path
+     * @param confg: the joy configuration
+     * @return the file system serve handler
+     */
     func createFileSystemServeHandler( root: Path, confg: JoyConfig): JoyRequestHandler
 }

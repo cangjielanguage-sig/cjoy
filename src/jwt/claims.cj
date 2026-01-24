@@ -15,6 +15,9 @@ import std.time.DateTime
 import std.math.trunc
 import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonWriter, JsonReader, JsonToken}
 
+/**
+ * JWT exception for JWT related errors
+ */
 public class JwtException <: Exception {
     public init(message: String) {
         super(message)

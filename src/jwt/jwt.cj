@@ -14,6 +14,9 @@ import std.time.DateTime
 import cjoy.json.JsonTool
 import cjoy.utils.{StrExt, rawBase64URLEncode, rawBase64URLDecode}
 
+/**
+ * JWT (JSON Web Token) for authentication and information exchange
+ */
 public class Jwt {
     private var _headers: MapHeaders = MapHeaders()
     private var _claims: MapClaims = MapClaims()

@@ -14,10 +14,13 @@ import std.regex.Regex
 import std.time.DateTime
 import std.collection.HashMap
 
+/**
+ * base interface for validation constraints
+ */
 public interface JoyConstraint {}
 
 /**
- * for collection
+ * size constraint for collection
  */
 public class SizeConstraint <: JoyConstraint {
     public let message: String
@@ -31,7 +34,7 @@ public class SizeConstraint <: JoyConstraint {
 }
 
 /**
- * for string
+ * length constraint for string
  */
 public class LengthConstraint <: JoyConstraint {
     public let message: String
@@ -45,7 +48,7 @@ public class LengthConstraint <: JoyConstraint {
 }
 
 /**
- * for string
+ * not empty constraint for string
  */
 public class NotEmptyConstraint <: JoyConstraint {
     public let message: String
@@ -59,7 +62,7 @@ public class NotEmptyConstraint <: JoyConstraint {
 }
 
 /**
- * for string
+ * not blank constraint for string
  */
 public class NotBlankConstraint <: JoyConstraint {
     public let message: String
@@ -73,7 +76,7 @@ public class NotBlankConstraint <: JoyConstraint {
 }
 
 /**
- * for number
+ * range constraint for number
  */
 public class RangeConstraint <: JoyConstraint {
     public let message: String
@@ -87,7 +90,7 @@ public class RangeConstraint <: JoyConstraint {
 }
 
 /**
- * for string
+ * regex pattern constraint for string
  */
 public class PatternConstraint <: JoyConstraint {
     public let message: String
@@ -103,7 +106,7 @@ public class PatternConstraint <: JoyConstraint {
 }
 
 /**
- * for datetime
+ * datetime range constraint
  */
 public class DateTimeRangeConstraint <: JoyConstraint {
     public let message: String
@@ -117,7 +120,7 @@ public class DateTimeRangeConstraint <: JoyConstraint {
 }
 
 /**
- * for string
+ * chinese mobile phone number constraint
  */
 public class ChMobilePhoneConstraint <: JoyConstraint {
     public let message: String
@@ -132,7 +135,7 @@ public class ChMobilePhoneConstraint <: JoyConstraint {
 }
 
 /**
- * for string
+ * email format constraint
  */
 public class EmailConstraint <: JoyConstraint {
     public let message: String
@@ -147,7 +150,7 @@ public class EmailConstraint <: JoyConstraint {
 }
 
 /**
- * for string
+ * IPv4 address format constraint
  */
 public class IPV4Constraint <: JoyConstraint {
     public let message: String
@@ -162,6 +165,9 @@ public class IPV4Constraint <: JoyConstraint {
     }
 }
 
+/**
+ * enum string constraint
+ */
 public class EnumStrConstraint <: JoyConstraint {
     public let message: String
     public EnumStrConstraint(public let values: Array<String>, let msg: String) {
@@ -173,6 +179,9 @@ public class EnumStrConstraint <: JoyConstraint {
     }
 }
 
+/**
+ * enum integer constraint
+ */
 public class EnumIntConstraint <: JoyConstraint {
     public let message: String
     public EnumIntConstraint(public let values: Array<Int>, let msg: String) {
@@ -184,6 +193,9 @@ public class EnumIntConstraint <: JoyConstraint {
     }
 }
 
+/**
+ * validation exception for constraint violation
+ */
 public class JoyValidationException <: Exception {
     public let field: String
     public let constraint: JoyConstraint

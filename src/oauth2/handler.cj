@@ -16,7 +16,17 @@ import cjoy.framework.{JoyContext, JoyHttpConsts}
 import cjoy.json.*
 import cjoy.log.macros.*
 
+/**
+ * the interface to verify client password for OAuth2 authorization
+ */
 public interface ClientPasswordVerifier {
+    /**
+     * verify the client password
+     *
+     * @param client: the client information
+     * @param pwd: the password to verify
+     * @return true if password is valid, false otherwise
+     */
     func verifyPassword(client: ClientInfo, pwd: String): Bool
 }
 

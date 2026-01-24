@@ -106,7 +106,8 @@ public class FileSessionStorage <: AbstractSessionStorage {
     let _path: Path // root path
 
     /*
-     *
+     * create FileSessionStorage
+     * 
      * @param path: the sessoin store root path
      * @param maxLifetime: max life time. Default is 1hour.
      * @throws IllegalArgumentException if the path is not dir

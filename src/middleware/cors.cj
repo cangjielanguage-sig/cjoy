@@ -17,7 +17,7 @@ import cjoy.log.macros.*
 public type AllowOriginFunc = (ctx: JoyContext, origin: String) -> Bool
 
 /**
- * represents a CORS wildcard pattern for origin matching
+ * CORS wildcard pattern for origin matching
  */
 public class CorsWildcard {
     public CorsWildcard(let prefix: String, let suffix: String) {
@@ -34,6 +34,9 @@ public class CorsWildcard {
     }
 }
 
+/**
+ * CORS middleware for handling cross-origin requests
+ */
 public class Cors <: JoyMiddlewareHandler {
     // Set to true when allowed origins contains a "*"
     var _allowedOriginsAll: Bool = false

@@ -32,7 +32,6 @@ enum JoyCondResult {
 /**
  * File server for serving static files
  *
- * refer to golang net/http/fs.go ServeFile and ServeContent
  */
 public class JoyFileServer {
     // 默认缓冲区大小

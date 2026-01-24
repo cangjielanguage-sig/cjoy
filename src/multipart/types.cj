@@ -16,12 +16,18 @@ public class MultiPartParseException <: Exception {
     }
 }
 
+/**
+ * multipart size limit reached exception
+ */
 public class MultiPartLimitReachedException <: Exception {
     public init(message: String) {
         super(message)
     }
 }
 
+/**
+ * data size constants
+ */
 public struct JoyDataSize {
     private let _value: Int
     const init(value: Int) {

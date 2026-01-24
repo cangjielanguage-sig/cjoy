@@ -32,6 +32,9 @@ public type JoyRequestHandlerFunc = (ctx: JoyContext) -> Unit
 // the request filter function 
 public type JoyRequestFilterFunc = (ctx: JoyContext) -> Bool
 
+/**
+ * function based request handler implementation
+ */
 public class JoyFuncHandler <: JoyRequestHandler {
     /**
      * create a new JoyFuncHandler
@@ -50,12 +53,18 @@ public class JoyFuncHandler <: JoyRequestHandler {
     }
 }
 
+/**
+ * default 404 not found handler
+ */
 public class JoyNotFoundHandler <: JoyRequestHandler {
     public func handle(ctx: JoyContext): Unit {
         notFound(ctx.httpContext)
     }
 }
 
+/**
+ * default 405 method not allowed handler
+ */
 public class JoyMethodNotAllowedHandler <: JoyRequestHandler {
     public func handle(ctx: JoyContext): Unit {
         let methods: Collection<String> = ctx.getCtxParam<Collection<String>>("methods").getOrThrow()
@@ -64,6 +73,9 @@ public class JoyMethodNotAllowedHandler <: JoyRequestHandler {
     }
 }
 
+/**
+ * default options handler
+ */
 class JoyOptionsHandler <: JoyRequestHandler {
     static let INSTANCE = JoyOptionsHandler()
 
@@ -72,6 +84,9 @@ class JoyOptionsHandler <: JoyRequestHandler {
     }
 }
 
+/**
+ * handler registry for registering route handlers
+ */
 public class JoyHandlers {
     private static let HANDLERS: ArrayList<(String, Array<String>, JoyRequestHandler)> = ArrayList()
 

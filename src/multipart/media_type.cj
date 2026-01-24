@@ -16,6 +16,9 @@ import std.collection.{HashMap}
 import std.io.ByteBuffer
 import cjoy.utils.{StrExt, ishex, unhex}
 
+/**
+ * media type for parsing Content-Type and Content-Disposition headers
+ */
 public class JoyMediaType {
     private static let ERR = JoyMediaType("")
 

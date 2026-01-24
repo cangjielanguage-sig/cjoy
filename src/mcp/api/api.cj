@@ -20,85 +20,268 @@ import cjoy.framework.{JoyContext, JoyHttpConsts}
 import cjoy.jsonrpc.*
 import cjoy.multipart.getMimeTypeByExt
 
+/**
+ * base interface for MCP session
+ */
 public interface McpSession <: Resource {
+    /**
+     * send a JSON-RPC request and wait for response
+     *
+     * @param method: the method name
+     * @param requestParams: the request parameters
+     * @return the response of type T
+     */
     func sendRequest<T>(method: String, requestParams: JsonSerializable): T where T <: JsonDeserializable<T>
+
+    /**
+     * send a JSON-RPC notification without waiting for response
+     *
+     * @param method: the notification method name
+     * @param params: the notification parameters
+     */
     func sendNotification(method: String, params: ?JsonSerializable): Unit
     func sendNotification(method: String) {
         sendNotification(method, None)
     }
+
+    /**
+     * add a consumer for notification method
+     *
+     * @param method: the notification method name
+     * @param consumer: the consumer function to handle notification bytes
+     */
     func addNotificationConsumer(method: String, consumer: (Array<Byte>) -> Unit): Unit
 }
 
+/**
+ * MCP server session interface for handling incoming requests
+ */
 public interface McpServerSession <: McpSession {
+    /**
+     * handle incoming JSON-RPC message
+     *
+     * @param ctx: the context
+     * @param message: the JSON-RPC message
+     */
     func handle(ctx: JoyContext, message: JSONRPCMessage): Unit
 }
 
+/**
+ * MCP client session interface for connecting to MCP server
+ */
 public interface McpClientSession <: McpSession {
+    /**
+     * connect to MCP server
+     */
     func connect(): Unit
 }
 
+/**
+ * MCP notification handler interface
+ */
 public interface McpNotificationHandler {
+    /**
+     * handle notification message
+     *
+     * @param message: the notification message
+     */
     func onNotification(message: JSONRPCNotification): Unit
 }
 
+/**
+ * MCP response handler interface
+ */
 public interface McpResponseHandler {
+    /**
+     * handle response message
+     *
+     * @param message: the response message
+     */
     func onResponse(message: JSONRPCResponse): Unit
 }
 
+/**
+ * MCP request handler interface
+ */
 public interface McpRequestHandler {
+    /**
+     * handle request message
+     *
+     * @param ctx: the context
+     * @param message: the request message
+     */
     func onRequest(ctx: JoyContext, message: JSONRPCRequest): Unit
 }
 
+/**
+ * MCP tool call handler interface
+ */
 public interface McpCallToolHandler {
+    /**
+     * handle tool call with arguments
+     *
+     * @param ctx: the context
+     * @param arguments: the tool arguments as bytes
+     * @return the result of tool call
+     */
     func handle(ctx: JoyContext, arguments: Array<Byte>): Any
 }
 
+/**
+ * MCP resource read handler interface
+ */
 public interface McpReadResourceHandler {
+    /**
+     * read resource content
+     *
+     * @param ctx: the context
+     * @return the resource content
+     */
     func readResource(ctx: JoyContext): Any
 }
 
+/**
+ * MCP prompt get handler interface
+ */
 public interface McpGetPromptHandler {
+    /**
+     * get prompt content with arguments
+     *
+     * @param ctx: the context
+     * @param arguments: the prompt arguments
+     * @return the prompt content
+     */
     func getPrompt(ctx: JoyContext, arguments: HashMap<String, String>): Any
 }
 
+/**
+ * MCP transport interface for message communication
+ */
 public interface McpTransport <: Resource {
+    /**
+     * send message through transport
+     *
+     * @param message: the message bytes to send
+     */
     func send(message: ByteBuffer): Unit
 }
 
+/**
+ * MCP client transport interface with connection support
+ */
 public interface McpClientTransport <: McpTransport {
+    /**
+     * connect to transport with message consumer
+     *
+     * @param consumer: the consumer function to handle incoming messages
+     */
     func connect(consumer: (ByteBuffer) -> Unit): Unit
+
+    /**
+     * set callback when reconnected
+     *
+     * @param callback: the callback function
+     */
     func whenReConnect(callback: () -> Unit): Unit
 }
 
+/**
+ * MCP server transport interface
+ */
 public interface McpServerTransport <: McpTransport {}
 
+/**
+ * MCP client interface for communicating with MCP server
+ */
 public interface McpClient <: Resource {
+    /**
+     * return server capabilities
+     */
     prop serverCapabilities: ?ServerCapabilities
+
+    /**
+     * return server info
+     */
     prop serverInfo: ?Implementation
 
+    /**
+     * send ping request
+     */
     func ping(): Unit
+
+    /**
+     * initialize connection with server
+     *
+     * @return the initialize result
+     */
     func initialize(): InitializeResult
 
+    /**
+     * list available tools
+     *
+     * @param cursor: the pagination cursor
+     * @return the list tools result
+     */
     func listTools(cursor: ?String): ListToolsResult
     func listTools(): ListToolsResult {
         listTools(None)
     }
+
+    /**
+     * call a tool
+     *
+     * @param request: the tool call request
+     * @return the tool call result
+     */
     func callTool(request: CallToolRequest): CallToolResult
 
+    /**
+     * list available resources
+     *
+     * @param cursor: the pagination cursor
+     * @return the list resources result
+     */
     func listResources(cursor: ?String): ListResourcesResult
     func listResources(): ListResourcesResult {
         listResources(None)
     }
+
+    /**
+     * list resource templates
+     *
+     * @param cursor: the pagination cursor
+     * @return the list resource templates result
+     */
     func listResourceTemplates(cursor: ?String): ListResourceTemplatesResult
     func listResourceTemplates(): ListResourceTemplatesResult {
         listResourceTemplates(None)
     }
+
+    /**
+     * read resource content
+     *
+     * @param request: the read resource request
+     * @return the read resource result
+     */
     func readResource(request: ReadResourceRequest): ReadResourceResult
 
+    /**
+     * list available prompts
+     *
+     * @param cursor: the pagination cursor
+     * @return the list prompts result
+     */
     func listPrompts(cursor: ?String): ListPromptResult
     func listPrompts(): ListPromptResult {
         listPrompts(None)
     }
+
+    /**
+     * get prompt content
+     *
+     * @param request: the get prompt request
+     * @return the get prompt result
+     */
     func getPrompt(request: GetPromptRequest): GetPromptResult
 }
 
