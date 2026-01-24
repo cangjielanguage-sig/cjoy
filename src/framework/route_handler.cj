@@ -49,64 +49,7 @@ class JoyRequestHandlerWrapper <: JoyRequestHandlerChain & JoyRequestHandler {
     }
 }
 
-class JoyFileServeHandler <: JoyRequestHandler {
-    let fileHandler: FileHandler
-
-    public init(filepth: String) {
-        fileHandler = FileHandler(filepth)
-    }
-
-    public func handle(ctx: JoyContext): Unit {
-        fileHandler.handle(ctx.httpContext)
-    }
-}
-
-class JoyFileSystemServeHandler <: JoyRequestHandler {
-    private let cache: ConcurrentHashMap<String, FileHandler> = ConcurrentHashMap()
-
-    public JoyFileSystemServeHandler(let root: Path, let confg: JoyConfig) {}
-
-    public func handle(ctx: JoyContext): Unit {
-        let pathOpt = ctx.getParam("*")
-        if (let Some(path) <- pathOpt) {
-            serves(ctx, path)
-        } else {
-            confg.notFoundHandler.handle(ctx)
-        }
-    }
-
-    private func serves(ctx: JoyContext, path: String): Unit {
-        if (path.contains("..")) {
-            @LogWarn("url path contain `..`, path=${path}")
-            ctx.status(HttpStatusCode.STATUS_BAD_REQUEST)
-            return
-        }
-
-        let filePath = root.join(path).normalize()
-        if (!exists(filePath)) {
-            confg.notFoundHandler.handle(ctx)
-            return
-        }
-
-        let fp = filePath.toString()
-        match (cache.get(fp)) {
-            case Some(v) => v.handle(ctx.httpContext)
-            case _ =>
-                let fi = FileInfo(filePath)
-                if (fi.isDirectory() || fi.isHidden() || !fi.canRead()) {
-                    @LogWarn("forbidden to donwnload file ${fp}")
-                    ctx.status(HttpStatusCode.STATUS_FORBIDDEN)
-                    return
-                }
-                if (!fp.startsWith(root.toString())) {
-                    @LogWarn("forbidden to donwnload file ${fp}")
-                    ctx.status(HttpStatusCode.STATUS_FORBIDDEN)
-                    return
-                }
-
-                let fh = FileHandler(fp)
-                cache.addIfAbsent(fp, fh)
-                fh.handle(ctx.httpContext)
-        }
-    }
+public interface JoyFileHandlerFactory {
+    func createFileServeHandler(filePath: String): JoyRequestHandler
+    func createFileSystemServeHandler( root: Path, confg: JoyConfig): JoyRequestHandler
 }

@@ -11,7 +11,7 @@
 package cjoy.fs
 
 import std.collection.ArrayList
-import std.convert.Parsable
+import std.convert.RadixConvertible
 import stdx.net.http.HttpHeaders
 import cjoy.utils.StrExt
 import cjoy.framework.JoyHttpConsts
@@ -34,22 +34,28 @@ class JoyHttpRange {
      * @throws IllegalArgumentException
      */
     public static func parse(str: String, size: Int): JoyHttpRangs {
-        let res: JoyHttpRangs = ArrayList()
+        let res: JoyHttpRangs = JoyHttpRangs()
         if (str.isEmpty()) {
-            return res
+            throw IllegalArgumentException("invalid http range, ${str}")
         }
+
         if (!str.startsWith(PREFIX)) {
             throw IllegalArgumentException("invalid http range, ${str}")
         }
 
-        let remain = str[PREFIX.size..]
-        let array = str.split(",")
+        let remain = str[PREFIX.size..].trimAscii()
+        if (remain.isEmpty()) {
+            throw IllegalArgumentException("invalid http range, ${str}")
+        }
+
+        let array = remain.split(",")
         var noOverlap = false
         for (s in array) {
             let x = s.trimAscii()
             if (x.isEmpty()) {
                 continue
             }
+
             var (start, end, ok) = x.cut(b'-')
             if (!ok) {
                 throw IllegalArgumentException("invalid http range, ${str}")
@@ -61,31 +67,33 @@ class JoyHttpRange {
                 if (end.isEmpty() || end[0] == b'-') {
                     throw IllegalArgumentException("invalid http range, ${str}")
                 }
-                var i = Int.parse(end)
+                var i = Int.parse(end, radix: 10)
                 if (i > size) {
                     i = size
                 }
                 JoyHttpRange(start: size - i, length: i)
             } else {
-                var istart = Int.parse(start)
+                var istart = Int.parse(start, radix: 10)
                 var iend = 0
                 var ilen = 0
                 if (istart < 0) {
                     throw IllegalArgumentException("invalid http range, ${str}")
                 }
+
                 if (istart > size) {
                     noOverlap = true
                     continue
                 }
+
                 if (end.isEmpty()) {
                     ilen = size - istart
                 } else {
-                    iend = Int.parse(end)
+                    iend = Int.parse(end, radix: 10)
                     if (istart > iend) {
                         throw IllegalArgumentException("invalid http range, ${str}")
                     }
                     if (iend >= size) {
-                        istart = size - 1
+                        iend = size - 1
                     }
                     ilen = iend - istart + 1
                 }
@@ -94,7 +102,7 @@ class JoyHttpRange {
             res.add(httpRange)
         }
 
-        if (noOverlap && res.isEmpty()) {
+        if (res.isEmpty()) {
             throw IllegalArgumentException("invalid range: failed to overlap")
         }
         res

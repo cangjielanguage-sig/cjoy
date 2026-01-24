@@ -15,3 +15,5 @@ public import cjoy.log.*
 public import cjoy.bind.*
 // framework depends on context, log, bind
 public import cjoy.framework.*
+// DONOT remove it
+import cjoy.fs

@@ -15,6 +15,7 @@ import std.fs.{canonicalize, FSException, exists, FileInfo}
 import stdx.encoding.url.URL
 import stdx.net.http.{HttpRequestDistributor, HttpRequestHandler, HttpRequest, HttpContext}
 import cjoy.context.ServiceContainer
+import cjoy.ioc.BeanFactoryManager
 import cjoy.log.macros.*
 
 /**
@@ -490,7 +491,8 @@ class JoyRouteGroup <: JoyRouters {
             relativePath + "/*"
         }
 
-        handle([JoyHttpConsts.METHOD_GET], path, JoyFileSystemServeHandler(fp, _distributor._config))
+        let factory = getJoyFileHandlerFactory()
+        handle([JoyHttpConsts.METHOD_GET], path, factory.createFileSystemServeHandler(fp, _distributor._config))
         this
     }
 
@@ -505,8 +507,14 @@ class JoyRouteGroup <: JoyRouters {
             throw FSException("invalid file, filepath=${filepath}")
         }
 
-        handle([JoyHttpConsts.METHOD_GET], relativePath, JoyFileServeHandler(fp.toString()))
+        let factory = getJoyFileHandlerFactory()
+        handle([JoyHttpConsts.METHOD_GET], relativePath, factory.createFileServeHandler(fp.toString()))
         this
+    }
+
+    private func getJoyFileHandlerFactory(): JoyFileHandlerFactory {
+        BeanFactoryManager.initAllBeans()
+        BeanFactoryManager.getApplicationContext().getBean<JoyFileHandlerFactory>().getOrThrow()
     }
 
     public func websocket(pattern: String, handler: JoyWebSocketHandler): JoyRouters {
