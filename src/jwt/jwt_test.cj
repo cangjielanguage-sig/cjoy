@@ -54,7 +54,7 @@ public class JwtTestCaseSuit {
             .audience("aud")
             .issuedAt(DateTime.now().addDays(1))
             .expirationTime(DateTime.now().addDays(1))
-            .notBefore(DateTime.now().addSeconds(5))
+            .notBefore(DateTime.now().addSeconds(-5))
             .subject("sub")
         let token = jwt.signWith(key)
         try {
@@ -75,7 +75,7 @@ public class JwtTestCaseSuit {
             .audience("aud")
             .issuedAt(DateTime.now().addDays(1))
             .expirationTime(DateTime.now().addDays(1))
-            .notBefore(DateTime.now().addSeconds(5))
+            .notBefore(DateTime.now().addSeconds(-5))
             .subject("sub")
         let token = jwt.signWith(key)
         try {
@@ -96,7 +96,7 @@ public class JwtTestCaseSuit {
             .issuer("cjoy")
             .audience("aud")
             .expirationTime(DateTime.now().addDays(1))
-            .notBefore(DateTime.now().addSeconds(5))
+            .notBefore(DateTime.now().addSeconds(-3))
             .subject("sub")
         let token = jwt.signWith(key)
         try {
@@ -118,7 +118,7 @@ public class JwtTestCaseSuit {
             .audience("aud")
             .issuedAt(DateTime.now().addSeconds(-5))
             .expirationTime(DateTime.now().addSeconds(-1))
-            .notBefore(DateTime.now().addSeconds(5))
+            .notBefore(DateTime.now().addSeconds(-3))
             .subject("sub")
         let token = jwt.signWith(key)
         try {
@@ -139,7 +139,7 @@ public class JwtTestCaseSuit {
             .issuer("cjoy")
             .audience("aud")
             .issuedAt(DateTime.now().addSeconds(-5))
-            .notBefore(DateTime.now().addSeconds(5))
+            .notBefore(DateTime.now().addSeconds(-3))
             .subject("sub")
         let token = jwt.signWith(key)
         try {
@@ -161,7 +161,7 @@ public class JwtTestCaseSuit {
             .audience("aud")
             .issuedAt(DateTime.now().addSeconds(-5))
             .expirationTime(DateTime.now().addSeconds(100))
-            .notBefore(DateTime.now().addSeconds(-1))
+            .notBefore(DateTime.now().addSeconds(1))
             .subject("sub")
         let token = jwt.signWith(key)
         try {
@@ -227,7 +227,7 @@ public class JwtTestCaseSuit {
             .audiences(["aud1", "aud2"])
             .issuedAt(DateTime.now().addSeconds(-5))
             .expirationTime(DateTime.now().addSeconds(100))
-            .notBefore(DateTime.now().addSeconds(5))
+            .notBefore(DateTime.now().addSeconds(-3))
             .subject("sub")
         let token = jwt.signWith(key)
         try {
@@ -261,7 +261,7 @@ public class JwtTestCaseSuit {
             .audiences(["aud1", "aud2"])
             .issuedAt(DateTime.now().addSeconds(-5))
             .expirationTime(DateTime.now().addSeconds(100))
-            .notBefore(DateTime.now().addSeconds(5))
+            .notBefore(DateTime.now().addSeconds(-3))
             .subject("sub")
         let token = jwt.signWith(key)
         try {
@@ -309,7 +309,7 @@ public class JwtTestCaseSuit {
             .audience("aud")
             .issuedAt(DateTime.now().addSeconds(-30))
             .expirationTime(DateTime.now().addDays(1))
-            .notBefore(DateTime.now().addSeconds(5))
+            .notBefore(DateTime.now().addSeconds(-3))
             .subject("sub")
             .claim("c1", "v1")
         jwt
