@@ -312,6 +312,7 @@ public class JwtTestCaseSuit {
             .notBefore(DateTime.now().addSeconds(-3))
             .subject("sub")
             .claim("c1", "v1")
+            .claim("c2", ["v2_1", "v2_2"])
         jwt
     }
 
@@ -323,6 +324,8 @@ public class JwtTestCaseSuit {
         @Assert(jwt.claims.getExpirationTime().isSome())
         @Assert(jwt.claims.getNotBefore().isSome())
         @Assert(jwt.claims.getIssuedAt().isSome())
+        @Assert(jwt.claims.getClaimString("c1").getOrThrow() == "v1")
+        @Assert(jwt.claims.getClaimStrings("c2").getOrThrow().claims == ["v2_1", "v2_2"])
     }
 
     @TestCase
