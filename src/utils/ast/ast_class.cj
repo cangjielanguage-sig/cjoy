@@ -13,6 +13,10 @@ package cjoy.utils.ast
 import std.ast.*
 import std.collection.{ArrayList, map, any, collectArrayList}
 
+/**
+ * class/struct generator for macro code generation
+ * extracts and analyzes class/struct member information
+ */
 protected class ClassGenentor {
     public let typeDecl: Decl
     public let superTypes: ArrayList<TypeNode>
@@ -23,6 +27,13 @@ protected class ClassGenentor {
     public let constructors: ArrayList<FuncDecl>
     public let funcs: ArrayList<FuncDecl>
 
+    /**
+     * creates a new ClassGenentor from a class/struct declaration
+     *
+     * @param macroName: name of the macro using this generator
+     * @param typeDecl: the class or struct declaration
+     * @throws if typeDecl is not a ClassDecl or StructDecl
+     */
     public init(macroName: String, typeDecl: Decl) {
         this.typeDecl = typeDecl
         this.isOpen = typeDecl.modifiers |> any {t => t.keyword.value == "open"}
@@ -48,6 +59,12 @@ protected class ClassGenentor {
         }
     }
 
+    /**
+     * extracts non-static member variables from body
+     *
+     * @param body: the class/struct body
+     * @return: list of non-static variable declarations
+     */
     private static func getMemberVariables(body: Body): ArrayList<VarDecl> {
         let result = ArrayList<VarDecl>()
         for (decl in body.decls) {
@@ -63,6 +80,13 @@ protected class ClassGenentor {
         return result
     }
 
+    /**
+     * extracts constructor functions from body
+     *
+     * @param typeName: name of the class/struct
+     * @param body: the class/struct body
+     * @return: list of constructor declarations (init or type-named)
+     */
     private static func getConstructors(typeName: String, body: Body): ArrayList<FuncDecl> {
         let result = ArrayList<FuncDecl>()
         for (decl in body.decls) {
@@ -78,6 +102,12 @@ protected class ClassGenentor {
         return result
     }
 
+    /**
+     * extracts non-static member functions from body
+     *
+     * @param body: the class/struct body
+     * @return: list of non-static function declarations
+     */
     private static func getMemberFuncs(body: Body): ArrayList<FuncDecl> {
         let result = ArrayList<FuncDecl>()
         for (decl in body.decls) {
@@ -93,6 +123,11 @@ protected class ClassGenentor {
         return result
     }
 
+    /**
+     * builds constructor function tokens from member variables
+     *
+     * @return: constructor function tokens
+     */
     func buildCtorFunc(): Tokens {
         let params = ArrayList<Tokens>()
         let paramsWithDefVal = ArrayList<Tokens>()
@@ -131,6 +166,14 @@ protected class ClassGenentor {
         )
     }
 
+    /**
+     * generates class/struct declaration tokens
+     *
+     * @param newSupper: additional supertype tokens to add
+     * @param funcs: function tokens to add to body
+     * @param createCtor: if true, auto-generate constructor from member variables
+     * @return: complete class/struct declaration tokens
+     */
     public func genTokens(newSupper: Tokens, funcs: Tokens, createCtor!: Bool = true): Tokens {
         let ctor = if (createCtor) {
             buildCtorFunc()

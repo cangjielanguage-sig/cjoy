@@ -15,18 +15,69 @@ import std.collection.{ArrayList, HashMap}
 import std.convert.Parsable
 import cjoy.utils.{ListToString, MapToString}
 
+/**
+ * visitor pattern interface for parsing tokens into structured values
+ *
+ * @param T: the type of value to return from each visitor method
+ */
 protected interface TokenVisitor<T> {
+    /**
+     * called when array parsing begins
+     *
+     * @return: container for array values
+     */
     func onArrayBegin(): T
+
+    /**
+     * called for each array item
+     *
+     * @param list: the array container
+     * @param value: the item value
+     */
     func onArrayItem(list: T, value: T): Unit
+
+    /**
+     * called when array parsing ends
+     *
+     * @param list: the array container
+     */
     func onArrayEnd(list: T): Unit
 
+    /**
+     * called when object parsing begins
+     *
+     * @return: container for object key-value pairs
+     */
     func onObjBegin(): T
+
+    /**
+     * called for each object key-value pair
+     *
+     * @param map: the object container
+     * @param key: the key
+     * @param value: the value
+     */
     func onObjItem(map: T, key: String, value: T): Unit
+
+    /**
+     * called when object parsing ends
+     *
+     * @param map: the object container
+     */
     func onObjEnd(map: T): Unit
 
+    /**
+     * called for each atomic value
+     *
+     * @param value: the value token
+     * @return: the converted value
+     */
     func onValue(value: Token): T
 }
 
+/**
+ * default visitor implementation that converts tokens to ToString values
+ */
 protected class TokenStrValueVisitor <: TokenVisitor<ToString> {
     public func onArrayBegin(): ToString {
         ListToString()
@@ -66,6 +117,11 @@ protected class TokenStrValueVisitor <: TokenVisitor<ToString> {
     }
 }
 
+/**
+ * generic token parser that uses visitor pattern to build values
+ *
+ * @param T: result type from parsing
+ */
 protected open class TokenParser<T> {
     let _tokens: Tokens
     let _visitor: TokenVisitor<T>
@@ -74,6 +130,13 @@ protected open class TokenParser<T> {
     protected var _currToken: Token
     protected var _depth = 0
 
+    /**
+     * creates a new token parser
+     *
+     * @param visitor: the visitor for building parsed values
+     * @param tokens: tokens to parse
+     * @param pos: starting position in tokens
+     */
     public init(visitor: TokenVisitor<T>, tokens: Tokens, pos!: Int64 = 0) {
         _visitor = visitor
         _tokens = tokens
@@ -85,6 +148,12 @@ protected open class TokenParser<T> {
         }
     }
 
+    /**
+     * asserts current token is of specified kind
+     *
+     * @param kind: expected token kind
+     * @throws Exception if current token kind doesn't match
+     */
     func assertToken(kind: TokenKind) {
         if (_currToken.kind != kind) {
             _currToken.dump()
@@ -94,6 +163,11 @@ protected open class TokenParser<T> {
         }
     }
 
+    /**
+     * moves to next token, optionally skipping newlines
+     *
+     * @param skipNL: if true, skip newline tokens
+     */
     func next(skipNL!: Bool = true) {
         do {
             _pos += 1
@@ -106,11 +180,19 @@ protected open class TokenParser<T> {
         }
     }
 
+    /**
+     * asserts current token kind and moves to next
+     *
+     * @param kind: token kind to skip
+     */
     func skip(kind: TokenKind) {
         assertToken(kind)
         next()
     }
 
+    /**
+     * skips all newline tokens
+     */
     func skipNLs() {
         while (_pos < _tokens.size && _currToken.kind == TokenKind.NL) {
             _pos += 1
@@ -137,6 +219,11 @@ protected open class TokenParser<T> {
         throw Exception("unknown token ${_currToken.value} in parsing")
     }
 
+    /**
+     * checks if current token is a value token
+     *
+     * @return: true if current token is a value (identifier, literal, etc.)
+     */
     func isValueToken() {
         match (_currToken.kind) {
             case TokenKind.IDENTIFIER | TokenKind.INTEGER_LITERAL | TokenKind.FLOAT_LITERAL | TokenKind.STRING_LITERAL
@@ -145,6 +232,11 @@ protected open class TokenParser<T> {
         }
     }
 
+    /**
+     * checks and skips assignment or colon token
+     *
+     * @throws Exception if current token is not ASSIGN or COLON
+     */
     func checkMidToken() {
         if (_currToken.kind == TokenKind.ASSIGN || _currToken.kind == TokenKind.COLON) {
             next() // '=' or ':'
@@ -154,6 +246,11 @@ protected open class TokenParser<T> {
         }
     }
 
+    /**
+     * parses key-value attributes (name = value pairs)
+     *
+     * @return: parsed map of attributes
+     */
     func parseAttr(): T {
         let map = _visitor.onObjBegin()
         while (_pos < _tokens.size) {
@@ -178,6 +275,11 @@ protected open class TokenParser<T> {
         map
     }
 
+    /**
+     * parses array tokens [item1, item2, ...]
+     *
+     * @return: parsed array value
+     */
     func parseArray(): T {
         skip(TokenKind.LSQUARE)
         _depth += 1
@@ -203,6 +305,11 @@ protected open class TokenParser<T> {
         arr
     }
 
+    /**
+     * parses map tokens {key: value, ...}
+     *
+     * @return: parsed map value
+     */
     func parseMap(): T {
         skip(TokenKind.LCURL)
         _depth += 1

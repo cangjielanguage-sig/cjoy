@@ -15,6 +15,12 @@ import std.collection.{HashMap, ArrayList}
 import std.time.DateTime
 import std.unicode.UnicodeStringExtension
 
+/**
+ * interface for types that support validation with constraints
+ *
+ * types implementing this interface can be validated against various constraints
+ * such as length, range, pattern, size, date range, etc.
+ */
 public interface JoyValidatable {
     /**
      * validate the field value with the constraints

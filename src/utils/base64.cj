@@ -12,6 +12,12 @@ package cjoy.utils
 
 import stdx.encoding.base64.{toBase64String, fromBase64String}
 
+/**
+ * encodes bytes to base64 URL-safe format
+ *
+ * @param bs: input bytes to encode
+ * @return: base64 URL-safe encoded string (no padding, uses '-' and '_' instead of '+' and '/')
+ */
 protected func rawBase64URLEncode(bs: Array<Byte>): String {
     var res: String = toBase64String(bs)
     res = res.trimEnd("=")
@@ -20,6 +26,12 @@ protected func rawBase64URLEncode(bs: Array<Byte>): String {
     res
 }
 
+/**
+ * decodes base64 URL-safe string to bytes
+ *
+ * @param str: base64 URL-safe string to decode (may be missing padding)
+ * @return: decoded bytes, or None if invalid base64 format
+ */
 protected func rawBase64URLDecode(str: String): ?Array<Byte> {
     var v = str
     let len = str.size % 4

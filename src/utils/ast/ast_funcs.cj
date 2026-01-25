@@ -14,6 +14,13 @@ import std.ast.*
 import std.collection.{ArrayList, HashSet}
 import cjoy.utils.{MapToString, MapListGetFunc}
 
+/**
+ * checks attribute names against list of valid attribute names
+ *
+ * @param attrNames: array of attribute names to check
+ * @param validAttrNames: array of valid attribute names
+ * @return: tuple of (is valid, error message if invalid)
+ */
 func checkAttr(attrNames: Array<String>, validAttrNames: Array<String>): (Bool, String) {
     let names = HashSet(attrNames)
     if (names.size != attrNames.size) {
@@ -26,6 +33,15 @@ func checkAttr(attrNames: Array<String>, validAttrNames: Array<String>): (Bool, 
     return (true, "ok")
 }
 
+/**
+ * parses macro attributes with validation
+ *
+ * @param tokens: tokens to parse
+ * @param validKeys: list of valid attribute keys
+ * @param macroName: name of the macro for error messages
+ * @return: parsed attribute map
+ * @throws if attributes are invalid
+ */
 protected func parserAttrs(tokens: Tokens, validKeys!: Array<String>, macroName!: String): MapToString {
     let visitor = TokenStrValueVisitor()
     let parser = TokenParser(visitor, tokens)
@@ -38,6 +54,13 @@ protected func parserAttrs(tokens: Tokens, validKeys!: Array<String>, macroName!
     resust
 }
 
+/**
+ * joins multiple token lists with a separator token
+ *
+ * @param tokensList: list of token lists to join
+ * @param separator: token to insert between lists
+ * @return: joined tokens
+ */
 protected func joinTokens(tokensList: ArrayList<Tokens>, separator: Token): Tokens {
     if (tokensList.isEmpty()) {
         Tokens()
@@ -52,6 +75,12 @@ protected func joinTokens(tokensList: ArrayList<Tokens>, separator: Token): Toke
     }
 }
 
+/**
+ * gets default value tokens from a variable declaration
+ *
+ * @param varDecl: the variable declaration
+ * @return: tokens representing default value, or type-based default
+ */
 protected func getDefValueOfType(varDecl: VarDecl): Option<Tokens> {
     try {
         let expr = varDecl.expr
@@ -65,6 +94,12 @@ protected func getDefValueOfType(varDecl: VarDecl): Option<Tokens> {
     }
 }
 
+/**
+ * gets default value tokens based on type
+ *
+ * @param typeNode: the type node
+ * @return: tokens representing default value based on type, or None
+ */
 protected func getDefValueOfType(typeNode: TypeNode): Option<Tokens> {
     match (typeNode) {
         case varType: RefType => return match (varType.identifier.value) {
@@ -94,6 +129,12 @@ protected func getDefValueOfType(typeNode: TypeNode): Option<Tokens> {
     }
 }
 
+/**
+ * gets generic type parameter tokens from a declaration
+ *
+ * @param decl: the declaration
+ * @return: generic type parameter tokens
+ */
 protected func getGenericTypeParamsTokens(decl: Decl): Tokens {
     try {
         let generic = decl.genericParam
@@ -103,6 +144,12 @@ protected func getGenericTypeParamsTokens(decl: Decl): Tokens {
     }
 }
 
+/**
+ * gets generic constraint tokens from a declaration
+ *
+ * @param decl: the declaration
+ * @return: concatenated generic constraint tokens
+ */
 protected func getGenericConstraintsTokens(decl: Decl): Tokens {
     let tokens = Tokens()
     for (c in decl.genericConstraint) {

@@ -12,6 +12,12 @@ package cjoy.utils.ast
 
 import std.ast.*
 
+/**
+ * type node information parser for parsing declaration parameter types
+ * used for macro parameter type validation and introspection
+ *
+ * @param supportTypes: string describing supported types for error messages
+ */
 protected class TypeNodeInfo {
     // the type of decl param
     protected var vtype: Token = Token()
@@ -24,10 +30,21 @@ protected class TypeNodeInfo {
 
     private let supportTypes: String
 
+    /**
+     * creates a new TypeNodeInfo
+     *
+     * @param supportTypes: string describing supported types for error messages
+     */
     public init(supportTypes: String) {
         this.supportTypes = supportTypes
     }
 
+    /**
+     * parses type node and extracts type information
+     *
+     * @param input: tokens for error reporting
+     * @param varType: the type node to parse
+     */
     protected func parse(input: Tokens, varType: TypeNode): Unit {
         match (varType) {
             case x: PrimitiveType =>
