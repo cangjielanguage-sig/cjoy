@@ -10,9 +10,9 @@
 
 package cjoy.framework
 
-import std.collection.{forEach, ArrayList, HashMap}
+import std.collection.{forEach, ArrayList}
 import stdx.net.http.{notFound, HttpStatusCode, OptionsHandler}
-import cjoy.ioc.{BeanFactoryManager, ApplicationContext}
+import cjoy.ioc.{BeanFactoryManager}
 
 /**
  * the interface of request handler

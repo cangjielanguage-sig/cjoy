@@ -36,5 +36,10 @@ func downloadFie(ctx: JoyContext): Unit {
 }
 ```
 
+## 断点继传
+
+`staticFile`与`staticFs`提供的文件服务，支持HTTP协议Range & Content-Range以及增强校验Last-Modified & Etag & If-Range，为并行下载以及断点续传提供了技术支持。
+
+
 ----
 << [返回](../../README.md#使用指导)

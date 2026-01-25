@@ -10,7 +10,12 @@
 
 package cjoy.fs
 
-class JoyETag {
+import std.time.DateTime
+
+/**
+ * parse and generate http Etag
+ */
+class JoyHttpEtag {
     private static let PREFIX = "W/"
 
     static func strongMatch(a: String, b: String): Bool {
@@ -21,8 +26,23 @@ class JoyETag {
         a.trimStart(PREFIX) == b.trimStart(PREFIX)
     }
 
+    /**
+     * Generate ETag for file
+     *
+     * @param size: file size
+     * @param modTime: modification time
+     * @return ETag string
+     */
+    static func generate(size: Int64, modTime: DateTime): String {
+        // 简单处理，使用文件大小、修改时间和文件名生成ETag
+        let sizeStr = size.toString()
+        let timeStr = modTime.toUnixTimeStamp().toSeconds().toString()
+        "\"${sizeStr}-${timeStr}\""
+    }
+
     static func scan(str: String): (String, String) {
         // ETag is either W/"text" or "text"
+        // See RFC 7232 2.3.
         let x = str.trimAscii()
         var start = 0
         if (x.startsWith(PREFIX)) {

@@ -66,7 +66,7 @@ public class JoyMultiPartWriter <: Resource {
         }
     }
 
-    private func createPart(headers: HttpHeaders): JoyMultiPartWriter {
+    public func createPart(headers: HttpHeaders): JoyMultiPartWriter {
         if (let Some(p) <- _lastPart) {
             p.close()
         }

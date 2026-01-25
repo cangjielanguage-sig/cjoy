@@ -12,25 +12,31 @@ package cjoy.fs
 
 import std.collection.ArrayList
 import std.convert.RadixConvertible
+import std.io.OutputStream
 import stdx.net.http.HttpHeaders
-import cjoy.utils.StrExt
 import cjoy.framework.JoyHttpConsts
+import cjoy.utils.{StrExt, trimString}
+import cjoy.multipart.JoyMultiPartWriter
 
 class JoyHttpRange {
     private static let PREFIX = "bytes="
 
     public JoyHttpRange(let start!: Int = 0, let length!: Int = 0) {}
 
-    func contentRange(size: Int): String {
+    public func contentRange(size: Int): String {
         "bytes ${start}-${start + length - 1}/${size}"
     }
 
-    public func addToHeaders(headers: HttpHeaders, contentType: String, size: Int): Unit {
-        headers.add(JoyHttpConsts.HEADER_RANGE, contentRange(size))
+    public func mimeHeaders(contentType: String, size: Int): HttpHeaders {
+        let headers = HttpHeaders()
         headers.add(JoyHttpConsts.HEADER_CONTENT_TYPE, contentType)
+        headers.add(JoyHttpConsts.HEADER_CONTENT_RANGE, contentRange(size))
+        headers
     }
 
     /**
+     * parse http range
+     *
      * @throws IllegalArgumentException
      */
     public static func parse(str: String, size: Int): JoyHttpRangs {
@@ -43,7 +49,7 @@ class JoyHttpRange {
             throw IllegalArgumentException("invalid http range, ${str}")
         }
 
-        let remain = str[PREFIX.size..].trimAscii()
+        let remain = trimString(str[PREFIX.size..])
         if (remain.isEmpty()) {
             throw IllegalArgumentException("invalid http range, ${str}")
         }
@@ -51,7 +57,7 @@ class JoyHttpRange {
         let array = remain.split(",")
         var noOverlap = false
         for (s in array) {
-            let x = s.trimAscii()
+            let x = trimString(s)
             if (x.isEmpty()) {
                 continue
             }
@@ -60,8 +66,8 @@ class JoyHttpRange {
             if (!ok) {
                 throw IllegalArgumentException("invalid http range, ${str}")
             }
-            start = start.trimAscii()
-            end = end.trimAscii()
+            start = trimString(start)
+            end = trimString(end)
 
             let httpRange = if (start.isEmpty()) {
                 if (end.isEmpty() || end[0] == b'-') {
@@ -103,7 +109,11 @@ class JoyHttpRange {
         }
 
         if (res.isEmpty()) {
-            throw IllegalArgumentException("invalid range: failed to overlap")
+            if (noOverlap) {
+                throw IllegalArgumentException("invalid range: failed to overlap")
+            } else {
+                throw IllegalArgumentException("invalid range: ${str}")
+            }
         }
         res
     }
@@ -118,5 +128,25 @@ extend JoyHttpRangs {
             size += hr.length
         }
         return size
+    }
+
+    func mimeSize(contentType: String, size: Int): Int {
+        let writer = CountingWriter()
+        var encSize = 0
+        try (mw = JoyMultiPartWriter(writer)) {
+            for (ra in this) {
+                mw.createPart(ra.mimeHeaders(contentType, size))
+                encSize += ra.length
+            }
+        }
+        encSize += writer.len
+        encSize
+    }
+}
+
+class CountingWriter <: OutputStream {
+    var len = 0
+    public func write(buffer: Array<Byte>): Unit {
+        len += buffer.size
     }
 }

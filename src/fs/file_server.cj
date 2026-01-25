@@ -12,13 +12,13 @@
 package cjoy.fs
 
 import std.collection.ArrayList
-import std.convert.Parsable
 import std.fs.{Path, exists, File, OpenMode, FileInfo, Directory}
-import std.io.SeekPosition
+import std.io.{SeekPosition, OutputStream}
 import std.time.{DateTime, DateTimeFormat}
 import stdx.net.http.{HttpStatusCode, HttpResponseWriter}
 import cjoy.framework.{JoyContext, JoyHttpConsts}
-import cjoy.multipart.{getMimeTypeByExt}
+import cjoy.multipart.{getMimeTypeByExt, JoyMultiPartWriter}
+import cjoy.utils.{trimString}
 
 /**
  * HTTP conditional result
@@ -49,7 +49,7 @@ public class JoyFileServer {
      */
     public static func serveFile(ctx: JoyContext, filePath: Path): Unit {
         if (!exists(filePath)) {
-            writeError(ctx, "404 page not found", HttpStatusCode.STATUS_NOT_FOUND)
+            writeError(ctx, "file not found", HttpStatusCode.STATUS_NOT_FOUND)
             return
         }
 
@@ -74,7 +74,7 @@ public class JoyFileServer {
      */
     public static func serveContent(ctx: JoyContext, filePath: Path, modTime: ?DateTime, eTag: ?String): Unit {
         if (!exists(filePath)) {
-            writeError(ctx, "404 page not found", HttpStatusCode.STATUS_NOT_FOUND)
+            writeError(ctx, "file not found", HttpStatusCode.STATUS_NOT_FOUND)
             return
         }
 
@@ -83,7 +83,7 @@ public class JoyFileServer {
         // 获取文件大小
         let size = fileInfo.size
         if (size < 0) {
-            writeError(ctx, "500 Internal Server Error", HttpStatusCode.STATUS_INTERNAL_SERVER_ERROR)
+            writeError(ctx, "negative content size computed", HttpStatusCode.STATUS_INTERNAL_SERVER_ERROR)
             return
         }
 
@@ -92,7 +92,7 @@ public class JoyFileServer {
         let realModTime = modTime ?? fileModTime
 
         // 生成ETag
-        let realETag = eTag ?? generateETag(filePath, size, fileModTime)
+        let realETag = eTag ?? JoyHttpEtag.generate(size, fileModTime)
 
         // 设置Last-Modified头
         if (let Some(mt) <- modTime) {
@@ -111,21 +111,21 @@ public class JoyFileServer {
         }
 
         // 设置Content-Type
-        let contentType = getMimeTypeByExt(".${filePath.extensionName}") ?? JoyHttpConsts.MIME_APP_OCTET_STREAM
-        ctx.header(JoyHttpConsts.HEADER_CONTENT_TYPE, contentType)
+        let contentType = if (let Some(ct) <- ctx.getHeader(JoyHttpConsts.HEADER_CONTENT_TYPE)) {
+            ct
+        } else {
+            getMimeTypeByExt(".${filePath.extensionName}") ?? JoyHttpConsts.MIME_APP_OCTET_STREAM
+        }
 
         // 处理Range请求
         let rangeHeader = ctx.getHeader(JoyHttpConsts.HEADER_RANGE)
-        let rangeStr = if (let Some(r) <- rangeHeader) {
-            r
-        } else {
-            ""
-        }
+        let rangeStr = rangeHeader ?? ""
 
         if (rangeStr.isEmpty()) {
             // 没有Range请求，发送整个文件
-            ctx.header(JoyHttpConsts.HEADER_TRANSFER_ENCODING, "chunked")
-            sendFile(ctx, filePath, 0, size, contentType)
+            ctx.header(JoyHttpConsts.HEADER_CONTENT_TYPE, contentType)
+            ctx.header(JoyHttpConsts.HEADER_CONTENT_LENGTH, "${size}")
+            sendFile(ctx, filePath, 0, size)
         } else {
             // 处理Range请求
             handleRangeRequest(ctx, filePath, rangeStr, size, contentType)
@@ -207,26 +207,59 @@ public class JoyFileServer {
         try {
             ranges = JoyHttpRange.parse(rangeStr, size)
         } catch (e: IllegalArgumentException) {
-            // Range解析失败，返回整个文件
-            ctx.header(JoyHttpConsts.HEADER_ACCEPT_RANGES, "bytes")
-            ctx.header(JoyHttpConsts.HEADER_TRANSFER_ENCODING, "chunked")
-            sendFile(ctx, filePath, 0, size, contentType)
-            return
+            // Range解析失败
+            if (e.message.indexOf("overlap").isSome()) {
+                // 一些客户端会在所有请求中添加Range头限制响应大小。如果文件为空忽略范围头部，直接以200响应而非416。
+                ranges = JoyHttpRangs()
+            } else {
+                ctx.header(JoyHttpConsts.HEADER_CONTENT_RANGE, "bytes */${size}")
+                writeError(ctx, "Requested Range Not Satisfiable", HttpStatusCode.STATUS_REQUESTED_RANGE_NOT_SATISFIABLE)
+                return
+            }
         }
 
-        ctx.header(JoyHttpConsts.HEADER_TRANSFER_ENCODING, "chunked")
+        if (ranges.sumSize() > size) {
+            // 所有范围的总字节数大于文件的大小本身，因此这很可能是一次攻击，或一次客户端。忽略范围请求。
+            ranges = JoyHttpRangs()
+        }
+
         if (ranges.size == 1) {
             // 单个Range请求
+            // RFC 7233, Section 4.1:
+            // 如果仅传输单个部件，服务器生成206响应必须生成一个Content-Range 头部字段，用于描述范围
+            // 所选表示的封装内容，以及一个负载包含范围数据。
+            // 服务器必须不生成多部分响应请求单个范围，因为客户端不请求多个部分可能不支持多部分响应
             let r = ranges[0]
-            ctx.header(JoyHttpConsts.HEADER_ACCEPT_RANGES, "bytes")
-            ctx.header(JoyHttpConsts.HEADER_CONTENT_RANGE, r.contentRange(size))
-            ctx.status(HttpStatusCode.STATUS_PARTIAL_CONTENT)
-            sendFile(ctx, filePath, r.start, r.length, contentType)
+            ctx.header(JoyHttpConsts.HEADER_CONTENT_LENGTH, "${r.length}")
+            if (ctx.method != JoyHttpConsts.METHOD_HEAD) {
+                ctx.header(JoyHttpConsts.HEADER_ACCEPT_RANGES, "bytes")
+                ctx.header(JoyHttpConsts.HEADER_CONTENT_RANGE, r.contentRange(size))
+                ctx.status(HttpStatusCode.STATUS_PARTIAL_CONTENT)
+                sendFile(ctx, filePath, r.start, r.length)
+            }
         } else {
             // 多个Range请求，返回multipart/byteranges
-            // 简化处理，暂不支持multipart range，返回416错误
-            ctx.header(JoyHttpConsts.HEADER_CONTENT_RANGE, "bytes */${size}")
-            writeError(ctx, "Requested Range Not Satisfiable", HttpStatusCode.STATUS_REQUESTED_RANGE_NOT_SATISFIABLE)
+            let sendSize = ranges.mimeSize(contentType, size)
+            ctx.header(JoyHttpConsts.HEADER_CONTENT_LENGTH, "${sendSize}")
+
+            if (ctx.method != JoyHttpConsts.METHOD_HEAD) {
+                ctx.header(JoyHttpConsts.HEADER_ACCEPT_RANGES, "bytes")
+
+                let writer = JoyHttpResponseWriter(ctx)
+                let mw = JoyMultiPartWriter(writer)
+                func write(buf: Array<Byte>): Unit {
+                    mw.writePartData(buf)
+                }
+
+                ctx.header(JoyHttpConsts.HEADER_CONTENT_TYPE, "multipart/byteranges; boundary=" + mw.boundary)
+                try (file = File(filePath, OpenMode.Read)) {
+                    for (ra in ranges) {
+                        let buf = Array<UInt8>(BUFFER_SIZE, repeat: 0)
+                        mw.createPart(ra.mimeHeaders(contentType, size))
+                        readFileToWriter(file, ra.start, ra.length, write)
+                    }
+                }
+            }
         }
     }
 
@@ -237,33 +270,38 @@ public class JoyFileServer {
      * @param filePath: path of file
      * @param offset: offset to start reading
      * @param length: length to read
-     * @param contentType: content type
      */
-    private static func sendFile(ctx: JoyContext, filePath: Path, offset: Int64, length: Int64, contentType: String): Unit {
-        let writer = HttpResponseWriter(ctx.httpContext)
-        let buf = Array<UInt8>(BUFFER_SIZE, repeat: 0)
-
+    private static func sendFile(ctx: JoyContext, filePath: Path, offset: Int64, length: Int64): Unit {
+        let writer = JoyHttpResponseWriter(ctx)
+        func write(buf: Array<Byte>): Unit {
+            writer.write(buf)
+        }
         try (file = File(filePath, OpenMode.Read)) {
-            // 跳转到offset
-            if (offset > 0) {
-                file.seek(SeekPosition.Current(offset))
+            readFileToWriter(file, offset, length, write)
+        }
+    }
+
+    private static func readFileToWriter(file: File, offset: Int64, length: Int64, writer: (buf: Array<Byte>) -> Unit): Unit {
+        let buf = Array<Byte>(BUFFER_SIZE, repeat: 0)
+        // 跳转到offset
+        if (offset > 0) {
+            file.seek(SeekPosition.Current(offset))
+        }
+
+        var remaining = length
+        while (remaining > 0) {
+            let readLen = if (remaining > BUFFER_SIZE) {
+                BUFFER_SIZE
+            } else {
+                remaining
             }
 
-            var remaining = length
-            while (remaining > 0) {
-                let readLen = if (remaining > BUFFER_SIZE) {
-                    BUFFER_SIZE
-                } else {
-                    remaining
-                }
-
-                let actualRead = file.read(buf[..readLen])
-                if (actualRead <= 0) {
-                    break
-                }
-                writer.write(buf[..actualRead])
-                remaining -= actualRead
+            let actualRead = file.read(buf[..readLen])
+            if (actualRead <= 0) {
+                break
             }
+            writer(buf[..actualRead])
+            remaining -= actualRead
         }
     }
 
@@ -342,37 +380,29 @@ public class JoyFileServer {
             return JoyCondResult.MatchNone
         }
 
-        let headerValue = ifMatch.getOrThrow()
-
-        // 检查是否为*
-        if (headerValue.trimAscii() == "*") {
-            return JoyCondResult.MatchTrue
-        }
-
+        var value = trimString(ifMatch.getOrThrow())
         // 解析ETag列表
-        var i = 0
-        let trimmed = headerValue.trimAscii()
-        while (i < trimmed.size) {
-            // 跳过逗号和空格
-            while (i < trimmed.size && (trimmed[i] == b',' || trimmed[i] == b' ' || trimmed[i] == b'\t')) {
-                i++
-            }
-
-            if (i >= trimmed.size) {
+        while (true) {
+            if (value.isEmpty()) {
                 break
             }
-
+            if (value[0] == b',') {
+                value = value[1..]
+                continue
+            }
+            // 检查是否为*
+            if (value[0] == b'*') {
+                return JoyCondResult.MatchTrue
+            }
             // 扫描ETag
-            let (tag, remain) = JoyETag.scan(trimmed[i..])
+            let (tag, remain) = JoyHttpEtag.scan(value)
             if (tag.isEmpty()) {
                 break
             }
-
-            if (JoyETag.strongMatch(tag, eTag)) {
+            if (JoyHttpEtag.strongMatch(tag, eTag)) {
                 return JoyCondResult.MatchTrue
             }
-
-            i += tag.size
+            value = remain
         }
 
         return JoyCondResult.MatchFalse
@@ -391,37 +421,30 @@ public class JoyFileServer {
             return JoyCondResult.MatchNone
         }
 
-        let headerValue = ifNoneMatch.getOrThrow()
-
-        // 检查是否为*
-        if (headerValue.trimAscii() == "*") {
-            return JoyCondResult.MatchFalse
-        }
-
+        var value = trimString(ifNoneMatch.getOrThrow())
         // 解析ETag列表
-        var i = 0
-        let trimmed = headerValue.trimAscii()
-        while (i < trimmed.size) {
-            // 跳过逗号和空格
-            while (i < trimmed.size && (trimmed[i] == b',' || trimmed[i] == b' ' || trimmed[i] == b'\t')) {
-                i++
-            }
-
-            if (i >= trimmed.size) {
+        while (true) {
+            if (value.isEmpty()) {
                 break
             }
-
-            // 扫描ETag
-            let (tag, remain) = JoyETag.scan(trimmed[i..])
-            if (tag.isEmpty()) {
-                break
+            if (value[0] == b',') {
+                value = value[1..]
+                continue
             }
-
-            if (JoyETag.weakMatch(tag, eTag)) {
+            // 检查是否为*
+            if (value[0] == b'*') {
                 return JoyCondResult.MatchFalse
             }
 
-            i += tag.size
+            // 扫描ETag
+            let (tag, remain) = JoyHttpEtag.scan(value)
+            if (tag.isEmpty()) {
+                break
+            }
+            if (JoyHttpEtag.weakMatch(tag, eTag)) {
+                return JoyCondResult.MatchFalse
+            }
+            value = remain
         }
 
         return JoyCondResult.MatchTrue
@@ -457,7 +480,7 @@ public class JoyFileServer {
 
         // 比较时间（忽略秒以下精度）
         let pt = parsedTime.getOrThrow()
-        if (modTime <= pt) {
+        if (modTime.toUnixTimeStamp().toSeconds() <= pt.toUnixTimeStamp().toSeconds()) {
             return JoyCondResult.MatchFalse
         }
 
@@ -488,9 +511,9 @@ public class JoyFileServer {
             return JoyCondResult.MatchNone
         }
 
-        // 比较时间
+        // （忽略秒以下精度）
         let pt = parsedTime.getOrThrow()
-        if (modTime <= pt) {
+        if (modTime.toUnixTimeStamp().toSeconds() <= pt.toUnixTimeStamp().toSeconds()) {
             return JoyCondResult.MatchTrue
         }
 
@@ -518,9 +541,9 @@ public class JoyFileServer {
         let headerValue = ifRange.getOrThrow()
 
         // 尝试解析为ETag
-        let (tag, _) = JoyETag.scan(headerValue)
+        let (tag, _) = JoyHttpEtag.scan(headerValue)
         if (!tag.isEmpty()) {
-            if (JoyETag.strongMatch(tag, eTag)) {
+            if (JoyHttpEtag.strongMatch(tag, eTag)) {
                 return JoyCondResult.MatchTrue
             } else {
                 return JoyCondResult.MatchFalse
@@ -534,7 +557,7 @@ public class JoyFileServer {
         }
 
         let pt = parsedTime.getOrThrow()
-        if (modTime == pt) {
+        if (modTime.toUnixTimeStamp() == pt.toUnixTimeStamp()) {
             return JoyCondResult.MatchTrue
         }
 
@@ -560,21 +583,6 @@ public class JoyFileServer {
      */
     private static func formatHttpTime(time: DateTime): String {
         time.format(DateTimeFormat.RFC1123)
-    }
-
-    /**
-     * Generate ETag for file
-     *
-     * @param filePath: path of file
-     * @param size: file size
-     * @param modTime: modification time
-     * @return ETag string
-     */
-    private static func generateETag(filePath: Path, size: Int64, modTime: DateTime): String {
-        // 使用文件大小、修改时间和文件名生成ETag
-        let sizeStr = size.toString()
-        let timeStr = modTime.toUnixTimeStamp().toMilliseconds().toString()
-        "\"${sizeStr}-${timeStr}\""
     }
 
     /**
@@ -688,5 +696,16 @@ public class JoyFileServer {
      */
     private static func escapeHtml(str: String): String {
         str.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;").replace("'", "&#39;")
+    }
+}
+
+class JoyHttpResponseWriter <: OutputStream {
+    let _writer: HttpResponseWriter
+    public init(ctx: JoyContext) {
+        _writer = HttpResponseWriter(ctx.httpContext)
+    }
+
+    public func write(buffer: Array<Byte>): Unit {
+        _writer.write(buffer)
     }
 }

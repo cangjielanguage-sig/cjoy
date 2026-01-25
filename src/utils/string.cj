@@ -70,3 +70,34 @@ protected func snakeCase(str: String): String {
     }
     builder.toString()
 }
+
+protected func isASCIISpace(b: Byte): Bool {
+    return b == b' ' || b == b'\t' || b == b'\n' || b == b'\r'
+}
+
+protected func isASCIILetter(b: Byte): Bool {
+    let x = b | 0x20 // make lower case
+    x >= b'a' && x <= b'z'
+}
+
+protected func trimBytes(bs: Array<Byte>): Array<Byte> {
+    var x = bs
+    while (x.size > 0 && isASCIISpace(x[0])) {
+        x = x[1..]
+    }
+    while (x.size > 0 && isASCIISpace(x[x.size - 1])) {
+        x = x[..x.size - 1]
+    }
+    x
+}
+
+protected func trimString(s: String): String {
+    var x = s
+    while (x.size > 0 && isASCIISpace(x[0])) {
+        x = x[1..]
+    }
+    while (x.size > 0 && isASCIISpace(x[x.size - 1])) {
+        x = x[..x.size - 1]
+    }
+    x
+}
