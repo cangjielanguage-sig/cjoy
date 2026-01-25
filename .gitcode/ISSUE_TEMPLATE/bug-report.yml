@@ -1,0 +1,66 @@
+name: 缺陷反馈|Bug
+description: 当您发现了一个缺陷，需要向CJoy反馈时，请使用此模板。
+title: "[Bug]: "
+labels: ["Bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢对CJoy的支持与关注，欢迎反馈缺陷。
+  - type: textarea
+    attributes:
+      label: 发生了什么问题？
+      description: 提供尽可能多的信息描述产生了什么问题：
+      placeholder: ""
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: 期望行为是什么？
+      description: 描述期望行为或效果应如何：
+      placeholder: ""
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: 如何复现该缺陷
+      description: 提供尽可能多的信息描述如何复现该缺陷，如最小可复现用例代码，错误行为截图等：
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: 其他补充信息
+      description: 补充下其他您认为需要提供的信息：
+    validations:
+      required: false
+  - type: textarea
+    attributes:
+      label: cjc版本信息
+      description: 请将 cjc -v 的输出结果以图片或者文字的形式填写在下方：
+      placeholder: ""
+    validations:
+      required: true
+  - type: checkboxes
+    attributes:
+      label: 操作系统
+      description: cangjie运行的操作系统
+      options:
+        - label: Linux
+          required: false
+        - label: Windows
+          required: false
+        - label: MacOS
+          required: false
+    validations:
+      required: true
+  - type: checkboxes
+    attributes:
+      label: 分支版本信息
+      description: 在哪些分支版本存在该缺陷？
+      options:
+        - label: main
+          required: false
+        - label: dev
+          required: false
+    validations:
+      required: true
