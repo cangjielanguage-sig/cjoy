@@ -161,7 +161,12 @@ public class Jwt {
     }
 
     /**
-     * @throws JwtException
+     *
+     *  The "exp" (expiration time) claim identifies the expiration time on
+     *  or after which the JWT MUST NOT be accepted for processing.  The
+     *  processing of the "exp" claim requires that the current date/time
+     *  MUST be before the expiration date/time listed in the "exp" claim.
+     * @throws JwtException if validate failed
      */
     private func validateExpirationTime(cfg: ParserConfig, now: DateTime): Unit {
         if (let Some(v) <- _claims.getExpirationTime()) {
@@ -176,11 +181,20 @@ public class Jwt {
     }
 
     /**
-     * @throws JwtException
+     *
+     *  The "nbf" (not before) claim identifies the time before which the JWT
+     *  MUST NOT be accepted for processing.  The processing of the "nbf"
+     *  claim requires that the current date/time MUST be after or equal to
+     *  the not-before date/time listed in the "nbf" claim.  Implementers MAY
+     *  provide for some small leeway, usually no more than a few minutes, to
+     *  account for clock skew.  Its value MUST be a number containing a
+     *  NumericDate value.  Use of this claim is OPTIONAL.
+     *    
+     * @throws JwtException if validate failed
      */
     private func validateNotBefore(cfg: ParserConfig, now: DateTime): Unit {
         if (let Some(v) <- _claims.getNotBefore()) {
-            if ((v.value - cfg.leeway) < now) {
+            if ((v.value - cfg.leeway) > now) {
                 throw JwtException("token is not valid yet")
             }
         } else {
@@ -191,7 +205,13 @@ public class Jwt {
     }
 
     /**
-     * @throws JwtException
+     *
+     *  The "iat" (issued at) claim identifies the time at which the JWT was
+     *  issued.  This claim can be used to determine the age of the JWT.  Its
+     *  value MUST be a number containing a NumericDate value.  Use of this
+     *  claim is OPTIONAL.
+     *
+     * @throws JwtException if validate failed
      */
     private func validateIssuedAt(cfg: ParserConfig, now: DateTime): Unit {
         if (let Some(v) <- _claims.getIssuedAt()) {
