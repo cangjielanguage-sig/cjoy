@@ -12,7 +12,7 @@ package cjoy.version
 
 import cjoy.log.LogTool
 
-public const VERSION: String = "v0.80.0"
+public const VERSION: String = "v0.90.0"
 private const LOGO: String = ##"
  ________        ___  ________      ___    ___ 
 |\   ____\      |\  \|\   __  \    |\  \  /  /|
