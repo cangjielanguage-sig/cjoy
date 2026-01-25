@@ -156,6 +156,14 @@ public interface Claims {
     func getClaimString(name: String): ?String
 
     /**
+     * get claim strings by name
+     *
+     * @param name: claim name
+     * @return: claim value or None
+     */
+    func getClaimStrings(name: String): ?ClaimStrings
+
+    /**
      * set expiration time
      *
      * @param exp: expiration time
@@ -249,7 +257,14 @@ extend MapClaims <: Claims {
     }
 
     public func getClaimString(name: String): ?String {
-        toString(name)
+        match (toClaimStrings(name)) {
+            case Some(v) => v.getFirstValue()
+            case _ => None
+        }
+    }
+
+    public func getClaimStrings(name: String): ?ClaimStrings {
+        toClaimStrings(name)
     }
 
     public func expirationTime(exp: DateTime): Claims {
