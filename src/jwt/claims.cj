@@ -223,10 +223,10 @@ public interface Claims {
      * set claim
      *
      * @param name: claim name
-     * @param value: claim value
+     * @param value: claim json string
      * @return: claims
      */
-    func claim(name: String, value: JsonSerializable): Claims
+    func claim(name: String, value: Array<String>): Claims
 }
 
 public type MapClaims = HashMap<String, JsonSerializable>
@@ -301,8 +301,8 @@ extend MapClaims <: Claims {
         this
     }
 
-    public func claim(name: String, value: JsonSerializable): Claims {
-        add(name, value)
+    public func claim(name: String, value: Array<String>): Claims {
+        add(name, ClaimStrings(value))
         this
     }
 
