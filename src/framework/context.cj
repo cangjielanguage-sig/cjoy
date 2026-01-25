@@ -750,7 +750,6 @@ class JoyHttpContext <: JoyContext {
     }
 
     public func data(body: InputStream): JoyContext {
-        // First convert the InputStream into a byte array to preserve its content, as InputStream does not support repeated reading.
         let buffer = ByteBuffer()
         copy(body, to: buffer)
         let bytes = buffer.bytes()
