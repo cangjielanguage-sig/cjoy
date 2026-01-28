@@ -11,7 +11,10 @@ a fast，extensible，lightweight and joy cangjie application framework.<br/>
 <img alt="" src="https://img.shields.io/badge/cjc-v1.0.4-brightgreen" style="display: inline-block;" />
 <img alt="" src="https://img.shields.io/badge/cjcov-70%25+-brightgreen" style="display: inline-block;" />
 <img alt="" src="https://img.shields.io/badge/state-孵化-brightgreen" style="display: inline-block;" />
-<img alt="" src="https://img.shields.io/badge/domain-HOS/Cloud-brightgreen" style="display: inline-block;" />
+<img alt="" src="https://img.shields.io/badge/domain-cloud-brightgreen" style="display: inline-block;" />
+<img alt="" src="https://img.shields.io/badge/License-MulanPSL2-orange.svg?style=flat-square&logo=opensourceinitiative&" style="display: inline-block;" />
+<img alt="" src="https://atomgit.com/Cangjie-SIG/cjoy/star/badge.svg?style=flat-square" style="display: inline-block;" />
+<img alt="" src="https://atomgit.com/Cangjie-SIG/cjoy/star/2025top.svg" style="display: inline-block;" />
 </p>
 
 ## 🔑 概览
