@@ -16,6 +16,8 @@ import cjoy.jsonrpc.*
 import cjoy.utils.TimeoutCache
 import cjoy.log.macros.*
 
+@JoyCreateLogger("cjoy.mcp.client")
+
 public func createMcpSseClient(url: String, features!: McpClientFeatures = McpClientFeatures()): McpClient {
     let transport = McpSseClientTransport(url)
     DefaultMcpClient(features, transport)
@@ -94,19 +96,19 @@ class DefaultMcpClient <: McpClient {
         _serverCapabilities = result.capabilities
         _serverInfo = result.serverInfo
         _serverInstructions = result.instructions
-        @LogInfo(
+        @JoyLogInfo(
             "[MCP]initialize server response with protocol:${result.protocolVersion}, capabilities:${_serverCapabilities}, info:${_serverInfo}, instructions:${_serverInstructions}"
         )
 
         if (!_features.protocolVesions.contains(result.protocolVersion)) {
             let msg = "[MCP]unsupported protocal version[${result.protocolVersion}] from server"
-            @LogInfo(msg)
+            @JoyLogInfo(msg)
             throw JSONRPCException(JSONRPCError(code: JSONRPCConsts.ERR_INVALID_PARAMS, message: msg))
         }
 
         _session.sendNotification(McpConsts.METHOD_NOTIFICATION_INITIALIZED)
         _initialized.store(true)
-        @LogInfo("[MCP]client initialized")
+        @JoyLogInfo("[MCP]client initialized")
         result
     }
 
@@ -117,16 +119,16 @@ class DefaultMcpClient <: McpClient {
             McpConsts.METHOD_TOOLS_LIST,
             PaginatedRequest(cursor: cursor)
         )
-        @LogInfo("[MCP]list tool result:${result}")
+        @JoyLogInfo("[MCP]list tool result:${result}")
         result
     }
 
     public func callTool(request: CallToolRequest): CallToolResult {
         checkInitialized()
         checkToolCapbilities()
-        @LogInfo("[MCP]call tool request:${request}")
+        @JoyLogInfo("[MCP]call tool request:${request}")
         let result: CallToolResult = _session.sendRequest(McpConsts.METHOD_TOOLS_CALL, request)
-        @LogInfo("[MCP]call tool result:${result}")
+        @JoyLogInfo("[MCP]call tool result:${result}")
         result
     }
 
@@ -134,7 +136,7 @@ class DefaultMcpClient <: McpClient {
         checkInitialized()
         let result: ListResourcesResult = _session.sendRequest(McpConsts.METHOD_RESOURCES_LIST,
             PaginatedRequest(cursor: cursor))
-        @LogInfo("[MCP]list resource result:${result}")
+        @JoyLogInfo("[MCP]list resource result:${result}")
         result
     }
 
@@ -142,15 +144,15 @@ class DefaultMcpClient <: McpClient {
         checkInitialized()
         let result: ListResourceTemplatesResult = _session.sendRequest(McpConsts.METHOD_RESOURCES_TEMPLATES_LIST,
             PaginatedRequest(cursor: cursor))
-        @LogInfo("[MCP]list resource template result:${result}")
+        @JoyLogInfo("[MCP]list resource template result:${result}")
         result
     }
 
     public func readResource(request: ReadResourceRequest): ReadResourceResult {
         checkInitialized()
-        @LogInfo("[MCP]read resource request:${request}")
+        @JoyLogInfo("[MCP]read resource request:${request}")
         let result: ReadResourceResult = _session.sendRequest(McpConsts.METHOD_RESOURCES_READ, request)
-        @LogInfo("[MCP]read resource result:${result}")
+        @JoyLogInfo("[MCP]read resource result:${result}")
         result
     }
 
@@ -158,15 +160,15 @@ class DefaultMcpClient <: McpClient {
         checkInitialized()
         let result: ListPromptResult = _session.sendRequest(McpConsts.METHOD_PROMPTS_LIST,
             PaginatedRequest(cursor: cursor))
-        @LogInfo("[MCP]list prompt result:${result}")
+        @JoyLogInfo("[MCP]list prompt result:${result}")
         result
     }
 
     public func getPrompt(request: GetPromptRequest): GetPromptResult {
         checkInitialized()
-        @LogInfo("[MCP]get prompt request:${request}")
+        @JoyLogInfo("[MCP]get prompt request:${request}")
         let result: GetPromptResult = _session.sendRequest(McpConsts.METHOD_PROMPTS_GET, request)
-        @LogInfo("[MCP]get prompt result:${result}")
+        @JoyLogInfo("[MCP]get prompt result:${result}")
         result
     }
 

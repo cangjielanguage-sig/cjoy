@@ -10,10 +10,12 @@ import cjoy.eventbus.*
 import cjoy.ioc.*
 import cjoy.middleware.ExceptionHandler
 
+@JoyCreateLogger("examples.eventbus")
+
 // 采用宏标注函数，函数有两个参数
 @SubscribeEvent[name = "sub1", pattern = "a.b.**"]
 func handleEvent1(ctx: Context, evt: Event): Unit {
-    @LogInfo("handle event ${evt.name} in func")
+    @JoyLogInfo("handle event ${evt.name} in func")
 }
 
 @Post[path = "/publish-event"]
@@ -28,7 +30,7 @@ class Bean {
     // 在Bean中宏标注函数
     @SubscribeEvent[name = "sub2", pattern = "a.b.c.d"]
     func handleEvent(ctx: Context, evt: Event): Unit {
-        @LogInfo("handle event ${evt.name} in bean")
+        @JoyLogInfo("handle event ${evt.name} in bean")
     }
 }
 

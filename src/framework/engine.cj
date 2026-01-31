@@ -21,6 +21,8 @@ import cjoy.ioc.BeanFactoryManager
 import cjoy.context.{ServiceContainer}
 import cjoy.version.printBanner
 
+@JoyCreateLogger("cjoy.framework")
+
 /**
  * joy config
  */
@@ -30,6 +32,7 @@ public class JoyConfig {
         public let remoteIPHeaders!: Array<String> = [],
 
         // enable debug log
+        @Deprecated["Use JoyLoggerFactory", since: "v0.90.0"]
         public var enableDebugLog!: Bool = true,
 
         // whether case insensitive when add route handler
@@ -66,7 +69,7 @@ public class Joy {
         this.name = name
         router = JoyRouteGroup(config, _services)
         printBanner()
-        LogTool.info("create joy app ${name}")
+        @JoyLogInfo("create joy app ${name}")
     }
 
     /**
@@ -156,17 +159,14 @@ public class Joy {
     public func run(serverBuidler: ServerBuilder): Unit {
         let server = serverBuidler
             .distributor(router.distributor)
-            .logger(LogTool.logger)
+            .logger(_JOY_LOGGER)
             .maxRequestBodySize(config.maxRequestBodySize)
             .build()
-        if (config.enableDebugLog) {
-            LogTool.enableDebugLog()
-        }
         _server = Some(server)
         // 在Run之前至少要执行一次
         BeanFactoryManager.initAllBeans()
-        @LogInfo("run cjoy app ${name}, bind at ${server.addr}:${server.port}")
-        @LogInfo("route tree:\n${router.dump()}")
+        @JoyLogInfo("run cjoy app ${name}, bind at ${server.addr}:${server.port}")
+        @JoyLogInfo("route tree:\n${router.dump()}")
         server.serve()
     }
 

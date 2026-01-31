@@ -44,7 +44,7 @@ class McpSseClientTransport <: McpClientTransport {
         var u = URL.parse(url)
         u = u.replace(path: "")
         _baseUrl = u.toString()
-        @LogInfo("[MCP]http sse base url: ${_baseUrl}")
+        @JoyLogInfo("[MCP]http sse base url: ${_baseUrl}")
     }
 
     public func connect(consumer: (ByteBuffer) -> Unit): Unit {
@@ -78,14 +78,14 @@ class McpSseClientTransport <: McpClientTransport {
         spawn {
             while (let Some(evt) <- seeStream_.next()) {
                 if (evt.event != McpConsts.EVENT_MESSAGE) {
-                    @LogError("[MCP]invliad message event ${evt}")
+                    @JoyLogError("[MCP]invliad message event ${evt}")
                     break
                 }
                 let buffer = ByteBuffer()
                 unsafe { buffer.write(evt.data.rawData()) }
                 consumer_(buffer)
             }
-            @LogInfo("[MCP]http sse stream is close")
+            @JoyLogInfo("[MCP]http sse stream is close")
             connected_.store(false)
         }
     }
@@ -105,7 +105,7 @@ class McpSseClientTransport <: McpClientTransport {
             verify: false)
         if (let Some(v) <- resp) {
             if (v != "") {
-                @LogInfo("[MCP]http request response ${v}")
+                @JoyLogInfo("[MCP]http request response ${v}")
             }
         }
     }

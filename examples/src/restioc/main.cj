@@ -11,6 +11,8 @@ import cjoy.json.*
 import cjoy.ioc.*
 import cjoy.macros.*
 
+@JoyCreateLogger("examples.restioc")
+
 @Json
 class UserInfo {
     var name: String = ""
@@ -26,7 +28,7 @@ class UserHandler {
     public func create(ctx: JoyContext, @BodyParam user: ?UserInfo): Unit {
         if (let Some(u) <- user) {
             users.add(u.name, u)
-            @LogInfo("save user info, name=${u.name}")
+            @JoyLogInfo("save user info, name=${u.name}")
             ctx.status(HttpStatusCode.STATUS_CREATED)
         } else {
             ctx.status(HttpStatusCode.STATUS_BAD_REQUEST)

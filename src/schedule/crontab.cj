@@ -60,13 +60,13 @@ public class Crontab <: Resource {
         }
         let job = CronJob.parse(name, cronExp, fn)
         _jobs.add(name, job)
-        @LogInfo("[Schedule] add crontab job, name=${name}")
+        @JoyLogInfo("[Schedule] add crontab job, name=${name}")
     }
 
     public func addJobIfAbsent(name: String, cronExp: String, fn: ScheduleFunc): Unit {
         let job = CronJob.parse(name, cronExp, fn)
         if (_jobs.addIfAbsent(name, job).isNone()) {
-            @LogInfo("[Schedule] add crontab job, name=${name}")
+            @JoyLogInfo("[Schedule] add crontab job, name=${name}")
         }
     }
 

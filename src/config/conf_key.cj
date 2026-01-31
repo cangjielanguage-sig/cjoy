@@ -15,6 +15,8 @@ import std.convert.Parsable
 import cjoy.utils.snakeCase
 import cjoy.log.macros.*
 
+@JoyCreateLogger("cjoy.bind")
+
 public class ConfigKey <: ToString {
     ConfigKey(public let key: String, public let arrIdx: Int, public var sub: ?ConfigKey) {
     }
@@ -92,6 +94,6 @@ public func splitKey(key: String): ConfigKey {
         temp = sub
     }
 
-    @LogDebug("[Config] split ${key} to ${cfgKey}")
+    @JoyLogDebug("[Config] split ${key} to ${cfgKey}")
     cfgKey
 }

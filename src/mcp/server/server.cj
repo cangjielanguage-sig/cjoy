@@ -15,6 +15,8 @@ import cjoy.framework.Joy
 import cjoy.version.VERSION
 import cjoy.log.macros.*
 
+@JoyCreateLogger("cjoy.mcp.server")
+
 /**
  * server features for MCP server
  */

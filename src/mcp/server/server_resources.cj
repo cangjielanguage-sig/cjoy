@@ -33,15 +33,15 @@ public class McpResources {
     }
 
     public func dump() {
-        @LogInfo("[MCP] resource handler:\n${_root.dumpTree()}")
+        @JoyLogInfo("[MCP] resource handler:\n${_root.dumpTree()}")
     }
 
     public func addResource(resource: McpResource): Unit {
         if (resources.contains(resource.uri)) {
-            @LogError("[MCP] resource `${resource.uri}` is existed, will be overwrite")
+            @JoyLogError("[MCP] resource `${resource.uri}` is existed, will be overwrite")
         }
         if (resource.uri.indexOf("://").isNone()) {
-            @LogError("[MCP] resource `${resource.uri}` is invalid")
+            @JoyLogError("[MCP] resource `${resource.uri}` is invalid")
             return
         }
         if (resource.uri.indexOf("{").isSome()) {
@@ -72,7 +72,7 @@ public class McpResources {
     private func addCtxParam(ctx: JoyContext, ri: RouteInfo<McpReadResourceHandler>) {
         if (!ri.routeParamKeys.isEmpty()) {
             if (ri.routeParamKeys.size != ri.routeParamValues.size) {
-                @LogError("[MCP] resource handler parameter list length mismatch when find route target")
+                @JoyLogError("[MCP] resource handler parameter list length mismatch when find route target")
                 throw Exception("parameter list length mismatch")
             }
             for (idx in 0..ri.routeParamKeys.size) {
@@ -87,7 +87,7 @@ public class McpResources {
         let _ = _root.findRouteHandler(ri, "GET", uri)
         match (ri.handler) {
             case Some(x) =>
-                @LogDebug("[MCP] found resource handler, uri=${request.uri}")
+                @JoyLogDebug("[MCP] found resource handler, uri=${request.uri}")
                 addCtxParam(ctx, ri)
                 let result: Any = x.readResource(ctx)
                 let contents: Array<ResourceContents> = match (result) {
@@ -121,12 +121,12 @@ public class McpResources {
                     case x: ToString => [createTextResourceContents(request.uri, x.toString(),
                         getMimeType(ctx, JoyHttpConsts.MIME_TEXT_PLAIN))]
                     case _ =>
-                        @LogWarn("[MCP] read resource `${request.uri}`unknow return type")
+                        @JoyLogWarn("[MCP] read resource `${request.uri}`unknow return type")
                         [createTextResourceContents(request.uri, "", getMimeType(ctx, JoyHttpConsts.MIME_TEXT_PLAIN))]
                 }
                 ReadResourceResult(contents: ArrayList<ResourceContents>(contents))
             case _ =>
-                @LogError("[MCP] not found resource handler, uri=${request.uri}")
+                @JoyLogError("[MCP] not found resource handler, uri=${request.uri}")
                 throw Exception("not found resource handler")
         }
     }

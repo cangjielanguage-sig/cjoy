@@ -36,7 +36,7 @@ class DefaultAuthFailureHandler <: JoyRequestHandler {
     static let INSTANCE = DefaultAuthFailureHandler()
 
     public func handle(ctx: JoyContext): Unit {
-        @LogError("[TokenAuth] auth failed, ${ctx.getClientIP()}, ${ctx.method} ${ctx.url}")
+        @JoyLogError("[TokenAuth] auth failed, ${ctx.getClientIP()}, ${ctx.method} ${ctx.url}")
         ctx.status(HttpStatusCode.STATUS_UNAUTHORIZED)
     }
 }

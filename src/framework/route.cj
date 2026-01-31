@@ -210,7 +210,7 @@ class TreeRouteDistributor <: HttpRequestDistributor & HttpRequestHandler {
         let ri: RouteInfo<JoyRequestHandler> = RouteInfo()
         var node = _root.findRouteHandler(ri, req.method, path)
         if (node.isNone()) {
-            @LogDebug("not found handler, method=${req.method}, path=${path}")
+            @JoyLogDebug("not found handler, method=${req.method}, path=${path}")
             ri.handler = _config.notFoundHandler
             return ri
         }
@@ -226,7 +226,7 @@ class TreeRouteDistributor <: HttpRequestDistributor & HttpRequestHandler {
                 return ri
             }
 
-            @LogDebug("not found handler, method=${req.method}, path=${path}")
+            @JoyLogDebug("not found handler, method=${req.method}, path=${path}")
             ri.handler = _config.notFoundHandler
             return ri
         }
@@ -463,14 +463,14 @@ class JoyRouteGroup <: JoyRouters {
         _applyMWs.clear()
         let wrapperHandler = JoyRequestHandlerWrapper(handler, mws)
         methods |> forEach {method => addHandler(method, pattern, wrapperHandler)}
-        @LogInfo("add route handler, path=${_path}${pattern}, methods=${methods}")
+        @JoyLogInfo("add route handler, path=${_path}${pattern}, methods=${methods}")
         this
     }
 
     private func groupHandle(methods: Array<String>, pattern: String, handler: JoyRequestHandler): JoyRouters {
         let wrapperHandler = JoyRequestHandlerWrapper(handler, _middlewares)
         methods |> forEach {method => addHandler(method, pattern, wrapperHandler)}
-        @LogInfo("add route route handler, path=${_path}${pattern}, methods=${methods}")
+        @JoyLogInfo("add route route handler, path=${_path}${pattern}, methods=${methods}")
         this
     }
 

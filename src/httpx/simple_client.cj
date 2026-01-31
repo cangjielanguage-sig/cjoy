@@ -15,6 +15,8 @@ import stdx.net.http.*
 import cjoy.framework.JoyHttpConsts
 import cjoy.log.macros.*
 
+@JoyCreateLogger("cjoy.httpx")
+
 /**
  * This is a simple HTTP client that closes connection directly after each request response,
  * which is not suitable for high-performance connection reuse scenarios.
@@ -91,7 +93,7 @@ public struct JoySimpleHttpClient {
         let (client, resp) = sendHttp(method, url, header, body, verify)
         if (resp.status != HttpStatusCode.STATUS_OK) {
             let err = resp.text
-            @LogError("http request failed, ${method} ${url}, error:${err}")
+            @JoyLogError("http request failed, ${method} ${url}, error:${err}")
             client.close()
             return None
         }
@@ -158,7 +160,7 @@ public struct JoySimpleHttpClient {
         let httpStream = JoyHttpStream()
         if (resp.status >= 300) {
             let err = resp.text
-            @LogError("http request failed, ${method} ${url}, error:${err}")
+            @JoyLogError("http request failed, ${method} ${url}, error:${err}")
             client.close()
             httpStream.markError(err)
         } else {
@@ -249,6 +251,6 @@ public struct JoySimpleHttpClient {
         if (let Some(b) <- body) {
             sb.append("${String.fromUtf8(b)}\n")
         }
-        @LogDebug("${sb.toString()}")
+        @JoyLogDebug("${sb.toString()}")
     }
 }

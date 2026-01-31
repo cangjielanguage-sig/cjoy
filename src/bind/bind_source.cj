@@ -52,11 +52,11 @@ public class MapContainer <: JoyBindSource & ToString {
                 }
                 case xl: Collection<T> => return xl
                 case _ =>
-                    @LogDebug("[Bind] bind source data for ${name} is not collection")
+                    @JoyLogDebug("[Bind] bind source data for ${name} is not collection")
                     ()
             }
         } else {
-            @LogDebug("[Bind] not found bind source data for ${name}")
+            @JoyLogDebug("[Bind] not found bind source data for ${name}")
         }
         res
     }
@@ -205,7 +205,7 @@ extend HashMap<String, String> <: JoyBindSource {
      * @return the empty collection
      */
     public func getList<T>(_: String): Collection<T> {
-        @LogWarn("[Bind] get list from HashMap<String, String> return empty")
+        @JoyLogWarn("[Bind] get list from HashMap<String, String> return empty")
         ArrayList<T>()
     }
 }
@@ -217,7 +217,7 @@ private func getValue<V, T>(v: ?V, name: String): ?T {
             case _ => None
         }
         case _ =>
-            @LogDebug("[Bind] not found bind data for ${name}")
+            @JoyLogDebug("[Bind] not found bind data for ${name}")
             None
     }
 }

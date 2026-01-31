@@ -10,6 +10,8 @@ import cjoy.config.*
 import cjoy.ioc.*
 import cjoy.log.macros.*
 
+@JoyCreateLogger("examples.config")
+
 @Get[path = "/config"]
 func config(ctx: JoyContext): String {
     // 在Handler中使用配置项
@@ -28,8 +30,8 @@ class Handler {
     let home: String
 
     public init() {
-        @LogInfo("address:${address}")
-        @LogInfo("home:${home}")
+        @JoyLogInfo("address:${address}")
+        @JoyLogInfo("home:${home}")
     }
 }
 

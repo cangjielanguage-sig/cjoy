@@ -14,6 +14,8 @@ import std.io.ByteBuffer
 import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonReader, JsonWriter, JsonToken}
 import cjoy.log.macros.*
 
+@JoyCreateLogger("cjoy.jsonrpc.api")
+
 public class JSONRPCTool {
     /**
      * serialize json object to byte buffer
@@ -63,7 +65,7 @@ public class JSONRPCTool {
      */
     public static func deserialize(buffer: ByteBuffer): JSONRPCMessage {
         let reader = JsonReader(buffer)
-        @LogDebug("[JSONRPC] deserializing json: ${String.fromUtf8(buffer.bytes())}")
+        @JoyLogDebug("[JSONRPC] deserializing json: ${String.fromUtf8(buffer.bytes())}")
 
         var id: ?JsonSerializable = None
         var method: String = ""

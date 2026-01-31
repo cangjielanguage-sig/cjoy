@@ -13,7 +13,7 @@ package cjoy.middleware
 import std.time.DateTime
 import stdx.log.Logger
 import cjoy.{JoyMiddlewareHandler, JoyRequestHandlerChain, JoyContext, JoyRequestFilterFunc}
-import cjoy.log.LogTool
+import cjoy.log.JoyLoggerFactory
 
 /**
  * access log middleware for logging HTTP request information
@@ -26,7 +26,7 @@ public class AccessLog <: JoyMiddlewareHandler {
         if (let Some(l) <- logger) {
             _logger = l
         } else {
-            _logger = LogTool.logger
+            _logger = JoyLoggerFactory.createLogger("cjoy.middleware.accesslog")
         }
         _filterFn = filterFn
     }

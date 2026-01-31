@@ -28,7 +28,7 @@ public class McpPrompts {
     //-----Prompt -----
     public func addPrompt(prompt: McpPrompt): Unit {
         if (prompts.contains(prompt.name)) {
-            @LogWarn("[MCP] prompt `${prompt.name}` is existed, will be overwrite")
+            @JoyLogWarn("[MCP] prompt `${prompt.name}` is existed, will be overwrite")
         }
         prompts.add(prompt.name, prompt)
     }
@@ -62,11 +62,11 @@ public class McpPrompts {
                         collectArray
                     case x: Collection<ToString> => x |> map {it => toPromptMessage(it.toString())} |> collectArray
                     case _ =>
-                        @LogError("[MCP] unknow prompt return type, name=${req.name}")
+                        @JoyLogError("[MCP] unknow prompt return type, name=${req.name}")
                         throw Exception("unknow prompt return type")
                 }
             case _ =>
-                @LogError("[MCP] not found prompt handler, name=${req.name}")
+                @JoyLogError("[MCP] not found prompt handler, name=${req.name}")
                 throw Exception("not found prompt handler")
         }
         GetPromptResult(messages: ArrayList(messages))

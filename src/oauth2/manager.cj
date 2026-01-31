@@ -14,6 +14,8 @@ import std.collection.HashMap
 import std.time.DateTime
 import cjoy.log.macros.*
 
+@JoyCreateLogger("cjoy.oauth2")
+
 /**
  * authorization management
  */
@@ -164,7 +166,7 @@ public class DefaultOAuth2Manager <: OAuth2Manager {
                 token.access = at
                 token.refresh = rt
             case _ =>
-                @LogError("[OAuth2] unsupported response type, ${rt}")
+                @JoyLogError("[OAuth2] unsupported response type, ${rt}")
                 throw OAuthException(OAuthErrors.UNSUPPORTED_RESP_TYPE)
         }
 
@@ -185,7 +187,7 @@ public class DefaultOAuth2Manager <: OAuth2Manager {
         if (!(_clientPasswordVerifier?.verifyPassword(client, request.clientSecret) ?? true)) {
             throw OAuthException(OAuthErrors.INVALID_CLIENT)
         } else if (client.secret != "" && request.clientSecret != client.secret) {
-            @LogError("[OAuth2] invalid client, client secret is invalid")
+            @JoyLogError("[OAuth2] invalid client, client secret is invalid")
             throw OAuthException(OAuthErrors.INVALID_CLIENT)
         }
 
@@ -194,7 +196,7 @@ public class DefaultOAuth2Manager <: OAuth2Manager {
         }
 
         if (gt == OAuthConsts.GRANT_TYPE_CLIENT_CREDENTIALS && client.isPublic) {
-            @LogError("[OAuth2] invalid client, client is public but grant type is client_credentials")
+            @JoyLogError("[OAuth2] invalid client, client is public but grant type is client_credentials")
             throw OAuthException(OAuthErrors.INVALID_CLIENT)
         }
 
@@ -338,10 +340,10 @@ public class DefaultOAuth2Manager <: OAuth2Manager {
 
         if (token.refresh != "" && token.refreshExpiredIn != 0 &&
             token.refreshCreateAt.addSeconds(token.refreshExpiredIn) < ct) {
-            @LogError("[OAuth2] expired refresh token, create at ${token.refreshCreateAt}")
+            @JoyLogError("[OAuth2] expired refresh token, create at ${token.refreshCreateAt}")
             throw OAuthException(OAuthErrors.EXPIRED_REFRESHT_OKEN)
         } else if (token.accessExpiredIn != 0 && token.accessCreateAt.addSeconds(token.accessExpiredIn) < ct) {
-            @LogError("[OAuth2] expired access token, create at ${token.accessCreateAt}")
+            @JoyLogError("[OAuth2] expired access token, create at ${token.accessCreateAt}")
             throw OAuthException(OAuthErrors.EXPIRED_ACCESS_TOKEN)
         }
 
@@ -357,7 +359,7 @@ public class DefaultOAuth2Manager <: OAuth2Manager {
      */
     public func loadRefreshToken(refresh: String): TokenInfo {
         if (refresh == "") {
-            @LogError("[OAuth2] refresh token is empty")
+            @JoyLogError("[OAuth2] refresh token is empty")
             throw OAuthException(OAuthErrors.INVALID_REFRESH_TOKEN)
         }
 
@@ -367,19 +369,19 @@ public class DefaultOAuth2Manager <: OAuth2Manager {
             .getOrThrow(
                 {
                     =>
-                    @LogError("[OAuth2] not found refresh token")
+                    @JoyLogError("[OAuth2] not found refresh token")
                     OAuthException(OAuthErrors.INVALID_REFRESH_TOKEN)
                 }
             )
 
         if (token.refresh != refresh) {
-            @LogError("[OAuth2] refresh token is not equal")
+            @JoyLogError("[OAuth2] refresh token is not equal")
             throw OAuthException(OAuthErrors.INVALID_REFRESH_TOKEN)
         }
 
         if (token.refresh != "" && token.refreshExpiredIn != 0 &&
             token.refreshCreateAt.addSeconds(token.refreshExpiredIn) < ct) {
-            @LogError("[OAuth2] expired refresh token, create at ${token.refreshCreateAt}")
+            @JoyLogError("[OAuth2] expired refresh token, create at ${token.refreshCreateAt}")
             throw OAuthException(OAuthErrors.EXPIRED_REFRESHT_OKEN)
         }
         token
@@ -401,7 +403,7 @@ public class DefaultOAuth2Manager <: OAuth2Manager {
     private func getAuthorizationCode(code: String): TokenInfo {
         let token = _tokenStore.getByCode(code).getOrThrow({=> OAuthException(OAuthErrors.INVALID_AUTHORIZE_CODE)})
         if (token.code != code || token.codeCreateAt.addSeconds(token.codeExpiredIn) < DateTime.now()) {
-            @LogError("[OAuth2] expired authorize code, create at ${token.codeCreateAt}")
+            @JoyLogError("[OAuth2] expired authorize code, create at ${token.codeCreateAt}")
             throw OAuthException(OAuthErrors.INVALID_AUTHORIZE_CODE)
         }
         token
@@ -423,7 +425,7 @@ public class DefaultOAuth2Manager <: OAuth2Manager {
         if (ccm == "") {
             ccm = OAuthConsts.CODE_CHALLENGE_PLAIN
         }
-        @LogDebug("[OAuth2], code_challenge=${cc}, verfiy_code=${ver}, method=${ccm}")
+        @JoyLogDebug("[OAuth2], code_challenge=${cc}, verfiy_code=${ver}, method=${ccm}")
         if (!ccm.validate(cc, ver)) {
             throw OAuthException(OAuthErrors.INVALID_CODE_CHALLENGE)
         }

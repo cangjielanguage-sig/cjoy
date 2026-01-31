@@ -43,7 +43,7 @@ public class BeanFactoryManager {
      * @param factory bean factory
      */
     public static func register(beanType: String, depends: Array<String>, factory: BeanFactory): Unit {
-        @LogInfo("[IOC] register bean info, beanType=${beanType}, depends=${depends}")
+        @JoyLogInfo("[IOC] register bean info, beanType=${beanType}, depends=${depends}")
         CONTEXT._factories.add(beanType, factory)
         CONTEXT._beanDependManager.addDepends(beanType, depends)
     }
@@ -55,7 +55,7 @@ public class BeanFactoryManager {
      * @param interfaces array of interface type names this bean implements
      */
     public static func registerTypes(beanType: String, interfaces: Array<String>): Unit {
-        @LogInfo("[IOC] register bean types, beanType=${beanType}, interfaces=${interfaces}")
+        @JoyLogInfo("[IOC] register bean types, beanType=${beanType}, interfaces=${interfaces}")
         CONTEXT._beanDependManager.addTypes(beanType, interfaces)
     }
 
@@ -66,7 +66,7 @@ public class BeanFactoryManager {
      * @param fn function to execute after bean initialization
      */
     public static func registerPostFunc(name: String, fn: () -> Unit): Unit {
-        @LogInfo("[IOC] register post func, name=${name}")
+        @JoyLogInfo("[IOC] register post func, name=${name}")
         POST_FUNCS.add(fn)
     }
 
@@ -75,7 +75,7 @@ public class BeanFactoryManager {
      */
     private static func executePostFuncs(): Unit {
         if (EXECUTED.compareAndSwap(false, true)) {
-            @LogInfo("[IOC] execute registered post func")
+            @JoyLogInfo("[IOC] execute registered post func")
             for (fn in POST_FUNCS) {
                 fn()
             }

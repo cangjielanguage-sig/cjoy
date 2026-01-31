@@ -32,7 +32,7 @@ public class McpTools {
 
     public func addTool(tool: McpTool): Unit {
         if (tools.contains(tool.name)) {
-            @LogWarn("[MCP]tool `${tool.name}` is existed, will be overwrite")
+            @JoyLogWarn("[MCP]tool `${tool.name}` is existed, will be overwrite")
         }
         tools.add(tool.name, tool)
     }
@@ -64,13 +64,13 @@ public class McpTools {
                     case x: Collection<Image> => x |> map {it => it.toImageContext()} |> collectArray
                     case x: Collection<Audio> => x |> map {it => it.toAudioContent()} |> collectArray
                     case _ =>
-                        @LogError("[MCP] call tool `${request.name}` failed, unknow return type")
+                        @JoyLogError("[MCP] call tool `${request.name}` failed, unknow return type")
                         isError = true
                         [createTextContent("unknow return type")]
                 }
             } catch (ex: Exception) {
                 isError = true
-                @LogError("[MCP]call tool `${request.name}` failed, ${ex.message}")
+                @JoyLogError("[MCP]call tool `${request.name}` failed, ${ex.message}")
                 [createTextContent(ex.message)]
             }
             CallToolResult(isError: isError, content: ArrayList<Content>(contents))

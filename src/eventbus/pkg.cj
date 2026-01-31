@@ -9,3 +9,7 @@
  */
 
 package cjoy.eventbus
+
+import cjoy.log.macros.*
+
+@JoyCreateLogger("cjoy.eventbus")

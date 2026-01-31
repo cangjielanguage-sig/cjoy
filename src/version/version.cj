@@ -10,7 +10,9 @@
 
 package cjoy.version
 
-import cjoy.log.LogTool
+import cjoy.log.macros.*
+
+@JoyCreateLogger("cjoy.version")
 
 public const VERSION: String = "v0.90.0"
 private const LOGO: String = ##"
@@ -25,5 +27,5 @@ private const LOGO: String = ##"
 "##
 
 public func printBanner(): Unit {
-    LogTool.info(LOGO.replace("VERSION", VERSION))
+    @JoyLogInfo(LOGO.replace("VERSION", VERSION))
 }

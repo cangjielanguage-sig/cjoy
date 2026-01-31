@@ -191,9 +191,6 @@ public class JwtAuth <: JoyMiddlewareHandler {
 
             chain.next(ctx)
         } catch (ex: JwtException) {
-            if (ctx.config.enableDebugLog) {
-                ex.printStackTrace()
-            }
             doUnauthorized(ctx, HttpStatusCode.STATUS_UNAUTHORIZED, ex.message)
         }
     }
@@ -224,9 +221,6 @@ public class JwtAuth <: JoyMiddlewareHandler {
             // callback loginResponse
             loginResponse(ctx, HttpStatusCode.STATUS_OK, token, expire)
         } catch (ex: JwtException) {
-            if (ctx.config.enableDebugLog) {
-                ex.printStackTrace()
-            }
             doUnauthorized(ctx, HttpStatusCode.STATUS_UNAUTHORIZED, ex.message)
         }
     }
@@ -266,9 +260,6 @@ public class JwtAuth <: JoyMiddlewareHandler {
             // callback refreshResponse
             refreshResponse(ctx, HttpStatusCode.STATUS_OK, token, expire)
         } catch (ex: JwtException) {
-            if (ctx.config.enableDebugLog) {
-                ex.printStackTrace()
-            }
             doUnauthorized(ctx, HttpStatusCode.STATUS_UNAUTHORIZED, ex.message)
         }
     }
@@ -312,7 +303,7 @@ public class JwtAuth <: JoyMiddlewareHandler {
 
     private func doUnauthorized(ctx: JoyContext, code: UInt16, message: String): Unit {
         ctx.header(JoyHttpConsts.HEADER_WWW_AUTHENTICATE, "JWT realm=" + realm)
-        @LogError("[JwtAuth] auth failed, ${ctx.getClientIP()}, ${ctx.method} ${ctx.url}, ${message}")
+        @JoyLogError("[JwtAuth] auth failed, ${ctx.getClientIP()}, ${ctx.method} ${ctx.url}, ${message}")
         unauthorized(ctx, code, message)
     }
 }

@@ -8,9 +8,7 @@ import cjoy.*
 import cjoy.middleware.AccessLog
 
 main(): Int64 {
-    // 关闭Debug级别日志
-    var cfg = JoyConfig(enableDebugLog: false)
-    let joy = Joy.create(cfg)
+    let joy = Joy.default()
     // 使用AccessLog输出访问日志
     joy.router.use(AccessLog(filterFn: {
         ctx: JoyContext =>

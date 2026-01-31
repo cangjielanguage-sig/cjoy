@@ -36,7 +36,7 @@ class DefaultMcpClientSession <: McpClientSession & McpResponseHandler & McpNoti
         _transport = transport
         _requestTimeout = requestTimeout
         _respWaiters = TimeoutCache(requestTimeout) {
-            k, v => @LogWarn("MCP request is timout, id: ${k}")
+            k, v => @JoyLogWarn("MCP request is timout, id: ${k}")
         }
     }
 
@@ -52,7 +52,7 @@ class DefaultMcpClientSession <: McpClientSession & McpResponseHandler & McpNoti
                 match (message) {
                     case m: JSONRPCResponse => onResponse(m)
                     case m: JSONRPCNotification => onNotification(m)
-                    case _ => @LogInfo("[MCP]client recv unknown message")
+                    case _ => @JoyLogInfo("[MCP]client recv unknown message")
                 }
             }
         )
@@ -64,7 +64,7 @@ class DefaultMcpClientSession <: McpClientSession & McpResponseHandler & McpNoti
         let waiter = ResponseWaiter()
         _respWaiters.add(id, waiter)
         _transport.send(JSONRPCTool.serialize(request))
-        @LogDebug("[MCP]sent request, method: ${method}, id: ${id}")
+        @JoyLogDebug("[MCP]sent request, method: ${method}, id: ${id}")
 
         waiter.counter.waitUntilZero(timeout: _requestTimeout)
         match (waiter.response) {
@@ -88,7 +88,7 @@ class DefaultMcpClientSession <: McpClientSession & McpResponseHandler & McpNoti
             JSONRPCNotification(method: method)
         }
         _transport.send(JSONRPCTool.serialize(message))
-        @LogInfo("[MCP]send notification, method:${method}")
+        @JoyLogInfo("[MCP]send notification, method:${method}")
     }
 
     public func addNotificationConsumer(method: String, consumer: (Array<Byte>) -> Unit): Unit {

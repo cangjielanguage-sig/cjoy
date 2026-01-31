@@ -55,7 +55,7 @@ public interface JoyBindable<T> {
                         let container = MapContainer(HashMap<String, Any>([("", data)]))
                         bind(container, "", None, None)
                     case _ =>
-                        @LogDebug("[Bind] not found bind source data for ${name}")
+                        @JoyLogDebug("[Bind] not found bind source data for ${name}")
                         None
                 }
         }

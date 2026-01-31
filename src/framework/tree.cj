@@ -47,7 +47,7 @@ public class RouteInfo<T> {
         let paramMap: HashMap<String, String> = HashMap()
         if (!routeParamKeys.isEmpty()) {
             if (routeParamKeys.size != routeParamValues.size) {
-                @LogError("parameter list length mismatch when find route target")
+                @JoyLogError("parameter list length mismatch when find route target")
                 throw Exception("parameter list length mismatch")
             }
             for (idx in 0..routeParamKeys.size) {

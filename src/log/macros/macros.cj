@@ -11,21 +11,44 @@
 macro package cjoy.log.macros
 
 import std.ast.Tokens
+public import cjoy.log.{LogTool, JoyLoggerFactory}
 
-public import cjoy.log.LogTool
-
+@Deprecated["Use JoyLogDebug", since: "v0.90.0", strict: false]
 public macro LogDebug(input: Tokens): Tokens {
     quote(LogTool.debug($input, @sourceFile(), @sourceLine()))
 }
 
+@Deprecated["Use JoyLogInfo", since: "v0.90.0", strict: false]
 public macro LogInfo(input: Tokens): Tokens {
     quote(LogTool.info($input, @sourceFile(), @sourceLine()))
 }
 
+@Deprecated["Use JoyLogWarn", since: "v0.90.0", strict: false]
 public macro LogWarn(input: Tokens): Tokens {
     quote(LogTool.warn($input, @sourceFile(), @sourceLine()))
 }
 
+@Deprecated["Use JoyLogError", since: "v0.90.0", strict: false]
 public macro LogError(input: Tokens): Tokens {
     quote(LogTool.error($input, @sourceFile(), @sourceLine()))
+}
+
+public macro JoyCreateLogger(input: Tokens): Tokens {
+    quote(protected let _JOY_LOGGER = JoyLoggerFactory.createLogger($input))
+}
+
+public macro JoyLogDebug(input: Tokens): Tokens {
+    quote(_JOY_LOGGER.debug($input, ("%F", @sourceFile()), ("%L", @sourceLine()), ("%T", Thread.currentThread.name), ("%t", Thread.currentThread.id), ("%P", @sourcePackage())))
+}
+
+public macro JoyLogInfo(input: Tokens): Tokens {
+    quote(_JOY_LOGGER.info($input, ("%F", @sourceFile()), ("%L", @sourceLine()), ("%T", Thread.currentThread.name), ("%t", Thread.currentThread.id), ("%P", @sourcePackage())))
+}
+
+public macro JoyLogWarn(input: Tokens): Tokens {
+    quote(_JOY_LOGGER.warn($input, ("%F", @sourceFile()), ("%L", @sourceLine()), ("%T", Thread.currentThread.name), ("%t", Thread.currentThread.id), ("%P", @sourcePackage())))
+}
+
+public macro JoyLogError(input: Tokens): Tokens {
+    quote(_JOY_LOGGER.error($input, ("%F", @sourceFile()), ("%L", @sourceLine()), ("%T", Thread.currentThread.name), ("%t", Thread.currentThread.id), ("%P", @sourcePackage())))
 }

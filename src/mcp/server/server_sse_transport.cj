@@ -29,7 +29,7 @@ class McpSseServerTransport <: McpServerTransport {
     }
 
     public func handleSseRequest(ctx: JoyContext): Unit {
-        @LogInfo("[MCP] recv sse request from ${ctx.getClientIP()}")
+        @JoyLogInfo("[MCP] recv sse request from ${ctx.getClientIP()}")
         let emitter = ctx.eventEmitter()
         // create session
         let sessionId = secureRandStr(16)
@@ -42,10 +42,10 @@ class McpSseServerTransport <: McpServerTransport {
         try {
             let data = "${_messageEndpoint}?sessionId=${sessionId}"
             sendEvent(emitter, McpConsts.EVENT_ENDPOINT, data)
-            @LogInfo("[MCP] send sse endpoint ${data} to session: ${sessionId}")
+            @JoyLogInfo("[MCP] send sse endpoint ${data} to session: ${sessionId}")
         } catch (ex: Exception) {
             _sessions.remove(sessionId)
-            @LogError("[MCP] failed to sse message to session: ${sessionId}, error: ${ex.message}")
+            @JoyLogError("[MCP] failed to sse message to session: ${sessionId}, error: ${ex.message}")
             let err = JSONRPCError(code: JSONRPCConsts.ERR_INTERNAL_ERROR, message: ex.message)
             ctx.status(HttpStatusCode.STATUS_INTERNAL_SERVER_ERROR).json(err)
             return
@@ -74,12 +74,12 @@ class McpSseServerTransport <: McpServerTransport {
                 sess.handle(ctx, message)
                 ctx.ok()
             } catch (ex: Exception) {
-                @LogError("[MCP] handle message faild, session: ${sessionId}, error: ${ex.message}")
+                @JoyLogError("[MCP] handle message faild, session: ${sessionId}, error: ${ex.message}")
                 let err = JSONRPCError(code: JSONRPCConsts.ERR_INTERNAL_ERROR, message: ex.message)
                 ctx.status(HttpStatusCode.STATUS_INTERNAL_SERVER_ERROR).json(err)
             }
         } else {
-            @LogError("[MCP] not found sesson, session: ${sessionId}")
+            @JoyLogError("[MCP] not found sesson, session: ${sessionId}")
             let err = JSONRPCError(code: JSONRPCConsts.ERR_INVALID_PARAMS, message: "session not found")
             ctx.status(HttpStatusCode.STATUS_NOT_FOUND).json(err)
         }
@@ -156,10 +156,10 @@ class McpSseServerSessionTransport <: McpTransport {
     public func send(data: String): Unit {
         try {
             sendEvent(_emitter, McpConsts.EVENT_MESSAGE, data)
-            @LogDebug("[MCP] send sse message ${data} to session: ${_state.sessionId}")
+            @JoyLogDebug("[MCP] send sse message ${data} to session: ${_state.sessionId}")
             _lastMsgTime = DateTime.now()
         } catch (ex: Exception) {
-            @LogError("[MCP] failed to sse message to session: ${_state.sessionId}, error: ${ex.message}")
+            @JoyLogError("[MCP] failed to sse message to session: ${_state.sessionId}, error: ${ex.message}")
             _running = false
             if (_removeOnErr) {
                 _sessions.remove(_state.sessionId)

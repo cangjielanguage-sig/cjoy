@@ -23,10 +23,7 @@ public class ExceptionHandler <: JoyMiddlewareHandler {
         try {
             chain.next(ctx)
         } catch (ex: Exception) {
-            if (ctx.config.enableDebugLog) {
-                ex.printStackTrace()
-            }
-            @LogError("handle request occurs an error, message=${ex.message}")
+            @JoyLogError("handle request occurs an error, message=${ex.message}")
             match (ex) {
                 case _: NoneValueException =>
                     // for Option.getOrThrow, Parable.parse

@@ -28,9 +28,9 @@ class McpServerSessionState {
 
     public McpServerSessionState(let sessionId: String, let sseEmitter: JoySseEmitter) {}
     public func waitEnd(): Unit {
-        @LogInfo("[MCP] waiting sse transport end, sessionId=${sessionId}")
+        @JoyLogInfo("[MCP] waiting sse transport end, sessionId=${sessionId}")
         _counter.waitUntilZero()
-        @LogInfo("[MCP] server SSE transport is end, sessionId: ${sessionId}")
+        @JoyLogInfo("[MCP] server SSE transport is end, sessionId: ${sessionId}")
         sseEmitter.end()
     }
 
@@ -57,11 +57,11 @@ class DefaultMcpServerSession <: McpServerSession & McpRequestHandler & McpRespo
     func updateTransport(transport: McpTransport): Unit {
         _transport.close()
         _transport = transport
-        @LogInfo("[MCP] update SSE transport, sessionId=${_sessionId}")
+        @JoyLogInfo("[MCP] update SSE transport, sessionId=${_sessionId}")
     }
 
     func closeTransport(): Unit {
-        @LogInfo("[MCP] close SSE transport, sessionId=${_sessionId}")
+        @JoyLogInfo("[MCP] close SSE transport, sessionId=${_sessionId}")
         _transport.close()
     }
 
@@ -70,7 +70,7 @@ class DefaultMcpServerSession <: McpServerSession & McpRequestHandler & McpRespo
             case m: JSONRPCRequest => onRequest(ctx, m)
             case m: JSONRPCNotification => onNotification(m)
             case m: JSONRPCResponse => onResponse(m)
-            case _ => @LogInfo("[MCP] server recv unknown message, sessionId: ${_sessionId}")
+            case _ => @JoyLogInfo("[MCP] server recv unknown message, sessionId: ${_sessionId}")
         }
     }
 
@@ -85,7 +85,7 @@ class DefaultMcpServerSession <: McpServerSession & McpRequestHandler & McpRespo
             JSONRPCNotification(method: method)
         }
         _transport.send(JSONRPCTool.serialize(message))
-        @LogInfo("[MCP] send notification, method: ${method}, sessionId: ${_sessionId}")
+        @JoyLogInfo("[MCP] send notification, method: ${method}, sessionId: ${_sessionId}")
     }
 
     public func addNotificationConsumer(method: String, consumer: (Array<Byte>) -> Unit): Unit {
@@ -107,43 +107,43 @@ class DefaultMcpServerSession <: McpServerSession & McpRequestHandler & McpRespo
         var jsonResp: Bool = false
         let result = match (message.method) {
             case "ping" =>
-                @LogInfo("[MCP] recv `ping` request")
+                @JoyLogInfo("[MCP] recv `ping` request")
                 message.params
             case "initialize" =>
                 let request: InitializeRequest = JSONRPCTool.deserializeParams(message.params)
-                @LogInfo("[MCP] recv `initialize` request: ${request}, sessionId: ${_sessionId}")
+                @JoyLogInfo("[MCP] recv `initialize` request: ${request}, sessionId: ${_sessionId}")
                 jsonResp = _streamable
                 onRecvInitRequest(request)
             case "tools/list" =>
                 let page: PaginatedRequest = JSONRPCTool.deserializeParams(message.params)
-                @LogInfo("[MCP] recv `tools/list` request: ${page}, sessionId: ${_sessionId}")
+                @JoyLogInfo("[MCP] recv `tools/list` request: ${page}, sessionId: ${_sessionId}")
                 McpServer.TOOLS.listTools(page)
             case "tools/call" =>
                 let req: CallToolRequest = JSONRPCTool.deserializeParams(message.params)
-                @LogDebug("[MCP] recv `tools/call` request: ${req}, sessionId: ${_sessionId}")
+                @JoyLogDebug("[MCP] recv `tools/call` request: ${req}, sessionId: ${_sessionId}")
                 McpServer.TOOLS.callTool(ctx, req)
             case "resources/list" =>
                 let page: PaginatedRequest = JSONRPCTool.deserializeParams(message.params)
-                @LogInfo("[MCP] recv `resources/list` request: ${page}, sessionId: ${_sessionId}")
+                @JoyLogInfo("[MCP] recv `resources/list` request: ${page}, sessionId: ${_sessionId}")
                 McpServer.RESOURCES.listResources(page)
             case "resources/templates/list" =>
                 let page: PaginatedRequest = JSONRPCTool.deserializeParams(message.params)
-                @LogInfo("[MCP] recv `resources/templates/list` request: ${page}, sessionId: ${_sessionId}")
+                @JoyLogInfo("[MCP] recv `resources/templates/list` request: ${page}, sessionId: ${_sessionId}")
                 McpServer.RESOURCES.listResourceTemplates(page)
             case "resources/read" =>
                 let req: ReadResourceRequest = JSONRPCTool.deserializeParams(message.params)
-                @LogDebug("[MCP] recv `resources/read` request: ${req}, sessionId: ${_sessionId}")
+                @JoyLogDebug("[MCP] recv `resources/read` request: ${req}, sessionId: ${_sessionId}")
                 McpServer.RESOURCES.readResource(ctx, req)
             case "prompts/list" =>
                 let page: PaginatedRequest = JSONRPCTool.deserializeParams(message.params)
-                @LogInfo("[MCP] recv `prompts/list` request: ${page}, sessionId: ${_sessionId}")
+                @JoyLogInfo("[MCP] recv `prompts/list` request: ${page}, sessionId: ${_sessionId}")
                 McpServer.PROMPTS.listPrompt(page)
             case "prompts/get" =>
                 let req: GetPromptRequest = JSONRPCTool.deserializeParams(message.params)
-                @LogDebug("[MCP] recv `prompts/get` request: ${req}, sessionId: ${_sessionId}")
+                @JoyLogDebug("[MCP] recv `prompts/get` request: ${req}, sessionId: ${_sessionId}")
                 McpServer.PROMPTS.getPrompt(ctx, req)
             case _ =>
-                @LogError("[MCP] recv unknown `${message.method}` request, sessionId: ${_sessionId}")
+                @JoyLogError("[MCP] recv unknown `${message.method}` request, sessionId: ${_sessionId}")
                 let error = JSONRPCError(code: JSONRPCConsts.ERR_METHOD_NOT_FOUND, message: "not found method")
                 let resp = JSONRPCResponse(id: message.id, error: error)
                 return sendResp(ctx, resp, false)
@@ -155,7 +155,7 @@ class DefaultMcpServerSession <: McpServerSession & McpRequestHandler & McpRespo
     private func sendResp(ctx: JoyContext, resp: JSONRPCResponse, jsonResp: Bool): Unit {
         if (_isJsonResp || jsonResp) {
             ctx.header(McpConsts.HEADER_MCP_SESSION_ID, _sessionId).json(resp)
-            @LogDebug("[MCP] send json response: ${JsonTool.toJson(resp)}, sessionId: ${_sessionId}")
+            @JoyLogDebug("[MCP] send json response: ${JsonTool.toJson(resp)}, sessionId: ${_sessionId}")
         } else {
             let data = JSONRPCTool.serialize(resp)
             _transport.send(data)

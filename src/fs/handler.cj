@@ -18,6 +18,8 @@ import cjoy.ioc.*
 import cjoy.ioc.macros.Component
 import cjoy.log.macros.*
 
+@JoyCreateLogger("cjoy.eventbus")
+
 @Component[extends = ["JoyFileHandlerFactory"]]
 class DefaultJoyFileHandlerFactory <: JoyFileHandlerFactory {
     public func createFileServeHandler(filePath: String): JoyRequestHandler {
@@ -52,7 +54,7 @@ class JoyFileSystemServeHandler <: JoyRequestHandler {
 
     private func serves(ctx: JoyContext, path: String): Unit {
         if (path.contains("..")) {
-            @LogWarn("url path contain `..`, path=${path}")
+            @JoyLogWarn("url path contain `..`, path=${path}")
             ctx.status(HttpStatusCode.STATUS_BAD_REQUEST)
             return
         }
@@ -65,14 +67,14 @@ class JoyFileSystemServeHandler <: JoyRequestHandler {
 
         let fi = FileInfo(filePath)
         if (fi.isDirectory() || fi.isHidden() || !fi.canRead()) {
-            @LogWarn("forbidden to donwnload file ${filePath}")
+            @JoyLogWarn("forbidden to donwnload file ${filePath}")
             ctx.status(HttpStatusCode.STATUS_FORBIDDEN)
             return
         }
 
         let fp = filePath.toString()
         if (!fp.startsWith(root.toString())) {
-            @LogWarn("forbidden to donwnload file ${filePath}")
+            @JoyLogWarn("forbidden to donwnload file ${filePath}")
             ctx.status(HttpStatusCode.STATUS_FORBIDDEN)
             return
         }

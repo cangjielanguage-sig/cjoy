@@ -10,3 +10,6 @@
 
 package cjoy.schedule
 
+import cjoy.log.macros.*
+
+@JoyCreateLogger("cjoy.schedule")

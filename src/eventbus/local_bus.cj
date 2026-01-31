@@ -68,13 +68,13 @@ public class LocalEventBus <: EventBus {
         if (let Some(group) <- existed) {
             group.add(item)
         }
-        @LogInfo("[EventBus] register subscriber, pattern=${pattern},name=${name},priority=${pr}")
+        @JoyLogInfo("[EventBus] register subscriber, pattern=${pattern},name=${name},priority=${pr}")
     }
 
     public func removeSubscriber(pattern: String, name: String): Unit {
         if (let Some(sg) <- _subcribers.get(pattern)) {
             sg.del(name)
-            @LogInfo("[EventBus] deregister subscriber, pattern=${pattern},name=${name}")
+            @JoyLogInfo("[EventBus] deregister subscriber, pattern=${pattern},name=${name}")
         }
     }
 

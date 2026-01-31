@@ -117,12 +117,12 @@ public class CronJob <: Equatable<CronJob> & ToString {
     }
 
     public func run(start: DateTime): Unit {
-        @LogInfo("[Schedule] starting cron job: ${_name}")
+        @JoyLogInfo("[Schedule] starting cron job: ${_name}")
         try {
             _fn(_context)
         } finally {
             let dt: Duration = (DateTime.now().toUnixTimeStamp() - start.toUnixTimeStamp())
-            @LogInfo("[Schedule] fininish cron job: ${_name} in ${dt}")
+            @JoyLogInfo("[Schedule] fininish cron job: ${_name} in ${dt}")
         }
     }
 

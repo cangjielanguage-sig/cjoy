@@ -101,7 +101,7 @@ public class ConfigManager <: Config {
         for (d in data) {
             if (let Some(val) <- getDataValue(d.data, cfgKey)) {
                 map["obj"] = val
-                @LogDebug("[Config] bind data is ${container}")
+                @JoyLogDebug("[Config] bind data is ${container}")
                 let obj = T.bind(container, "obj", None, None)
                 if (let Some(y) <- obj) {
                     return y
@@ -119,7 +119,7 @@ public class ConfigManager <: Config {
         for (loader in loaders) {
             let ld = loader.load()
             let cd = ConfigData(ld, loader.priority)
-            @LogDebug("[Config] load data ${cd}")
+            @JoyLogDebug("[Config] load data ${cd}")
             data.add(cd)
         }
         sort(data, by: {a, b => b.priority.compare(a.priority)}, stable: true)

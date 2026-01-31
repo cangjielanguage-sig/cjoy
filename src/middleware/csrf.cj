@@ -30,7 +30,7 @@ class DefaultCsrfErrorHandler <: JoyRequestHandler {
     static let INSTANCE = DefaultCsrfErrorHandler()
 
     public func handle(ctx: JoyContext): Unit {
-        @LogError("[CSRF] verify failed, ${ctx.getClientIP()}, ${ctx.method} ${ctx.url}")
+        @JoyLogError("[CSRF] verify failed, ${ctx.getClientIP()}, ${ctx.method} ${ctx.url}")
         ctx.status(HttpStatusCode.STATUS_UNAUTHORIZED)
     }
 }
@@ -163,20 +163,20 @@ public class CsrfProtect <: JoyMiddlewareHandler {
 
         let salt = session.get<String>(csrfSaltCtxKey)
         if (salt.isNone()) {
-            @LogError("[CSRF] miss salt")
+            @JoyLogError("[CSRF] miss salt")
             _errorHandler.handle(ctx)
             return
         }
 
         let (token, source) = _handleFunc(ctx)
         if (token.isEmpty()) {
-            @LogError("[CSRF] miss token in ${source}")
+            @JoyLogError("[CSRF] miss token in ${source}")
             _errorHandler.handle(ctx)
             return
         }
 
         if (tokenize(_secret, salt.getOrThrow()) != token) {
-            @LogError("[CSRF] invalid token")
+            @JoyLogError("[CSRF] invalid token")
             _errorHandler.handle(ctx)
             return
         }

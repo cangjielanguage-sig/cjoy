@@ -9,3 +9,7 @@
  */
 
 package cjoy.ioc
+
+import cjoy.log.macros.*
+
+@JoyCreateLogger("cjoy.ioc")

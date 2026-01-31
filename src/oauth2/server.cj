@@ -352,7 +352,7 @@ public class OAuth2Server {
                 url = url.replace(query: "")
                 url = url.replace(fragment: b.toString())
             case _ =>
-                @LogError("[OAuth2] unsupported_response_type, invalid response type ${req.responseType}")
+                @JoyLogError("[OAuth2] unsupported_response_type, invalid response type ${req.responseType}")
                 throw OAuthException(OAuthErrors.UNSUPPORTED_RESP_TYPE)
         }
         url.toString()
@@ -375,12 +375,12 @@ public class OAuth2Server {
      */
     private func validateAuthorizeRequest(ctx: JoyContext): AuthorizeRequest {
         if (!(ctx.method == JoyHttpConsts.METHOD_GET || ctx.method == JoyHttpConsts.METHOD_POST)) {
-            @LogError("[OAuth2] invalid request, method(${ctx.method}) is invalid")
+            @JoyLogError("[OAuth2] invalid request, method(${ctx.method}) is invalid")
             throw OAuthException(OAuthErrors.INVALID_REQ)
         }
         let redirectURI = ctx.getForm("redirect_uri").getOrThrow {
             =>
-                @LogError("[OAuth2] invalid request, redirectURI is not existed")
+                @JoyLogError("[OAuth2] invalid request, redirectURI is not existed")
                 OAuthException(OAuthErrors.INVALID_REQ)
         }
 
@@ -402,12 +402,12 @@ public class OAuth2Server {
     private func validateClientId(ctx: JoyContext): String {
         let clientId = ctx.getForm("client_id").getOrThrow {
             =>
-                @LogError("[OAuth2] invalid request, client_id is not existed")
+                @JoyLogError("[OAuth2] invalid request, client_id is not existed")
                 OAuthException(OAuthErrors.INVALID_REQ)
         }
 
         if (clientId == "") {
-            @LogError("[OAuth2] invalid request, clientId is empty")
+            @JoyLogError("[OAuth2] invalid request, clientId is empty")
             throw OAuthException(OAuthErrors.INVALID_REQ)
         }
         clientId
@@ -419,12 +419,12 @@ public class OAuth2Server {
     private func validateResponeType(ctx: JoyContext): String {
         let respType = ctx.getForm("response_type").getOrThrow {
             =>
-                @LogError("[OAuth2] invalid request, response_type is not existed")
+                @JoyLogError("[OAuth2] invalid request, response_type is not existed")
                 OAuthException(OAuthErrors.UNSUPPORTED_RESP_TYPE)
         }
 
         if (!checkResponeType(respType)) {
-            @LogError("[OAuth2] unauthorized_client, response type (${respType}) is invalid")
+            @JoyLogError("[OAuth2] unauthorized_client, response type (${respType}) is invalid")
             throw OAuthException(OAuthErrors.UNAUTHORIZED_CLIENT)
         }
         respType
@@ -436,11 +436,11 @@ public class OAuth2Server {
     private func validateCodeChange(ctx: JoyContext): String {
         let cc = ctx.getForm("code_challenge") ?? ""
         if (cc == "" && _cfg.forcePKCE) {
-            @LogError("[OAuth2] invalid_request, code_challenge is empty")
+            @JoyLogError("[OAuth2] invalid_request, code_challenge is empty")
             throw OAuthException(OAuthErrors.CODE_CHALLENG_ERQUIRED)
         }
         if (cc != "" && cc.size < 43 || cc.size > 128) {
-            @LogError("[OAuth2] invalid_request, code_challenge len (${cc.size}) is invalid")
+            @JoyLogError("[OAuth2] invalid_request, code_challenge len (${cc.size}) is invalid")
             throw OAuthException(OAuthErrors.INVALID_CODE_CHALLENGE_LEN)
         }
         cc
@@ -455,7 +455,7 @@ public class OAuth2Server {
             ccm = OAuthConsts.CODE_CHALLENGE_PLAIN
         }
         if (ccm != "" && !checkCodeChallengeMethod(ccm)) {
-            @LogError("[OAuth2] invalid_request, code_challenge_method l (${ccm}) is invalid")
+            @JoyLogError("[OAuth2] invalid_request, code_challenge_method l (${ccm}) is invalid")
             throw OAuthException(OAuthErrors.UNSUPPORTED_CODE_CHALLENGE_METHOD)
         }
         ccm
@@ -472,7 +472,7 @@ public class OAuth2Server {
         }
         var allowed = _clientAuthorizedHandleFunc?(req.clientId, gt) ?? true
         if (!allowed) {
-            @LogError("[OAuth2] client authorized handle return not allowed")
+            @JoyLogError("[OAuth2] client authorized handle return not allowed")
             throw OAuthException(OAuthErrors.UNAUTHORIZED_CLIENT)
         }
 
@@ -540,20 +540,20 @@ public class OAuth2Server {
      * @throws OAuthException
      */
     private func validateTokenRequest(ctx: JoyContext): (String, TokenGenerateRequest) {
-        @LogDebug("[OAuth2] form=${ctx.httpContext.request.form.toEncodeString()}")
+        @JoyLogDebug("[OAuth2] form=${ctx.httpContext.request.form.toEncodeString()}")
         if (!(ctx.method == JoyHttpConsts.METHOD_POST || _cfg.allowGetAccessRequest && ctx.method == JoyHttpConsts
             .METHOD_GET)) {
-            @LogError("[OAuth2] invalid_request, method (${ctx.method}) is invalid")
+            @JoyLogError("[OAuth2] invalid_request, method (${ctx.method}) is invalid")
             throw OAuthException(OAuthErrors.INVALID_REQ)
         }
         let gt = ctx.getForm("grant_type").getOrThrow {
             =>
-                @LogError("[OAuth2] invalid_request, grant_type is not existed")
+                @JoyLogError("[OAuth2] invalid_request, grant_type is not existed")
                 OAuthException(OAuthErrors.UNSUPPORTED_GRANT_TYPE)
         }
 
         let (clientId, clientSecret) = _clientInfoHandleFunc(ctx)
-        // @LogDebug("[OAuth2] client info: ${clientId}, ${clientSecret}")
+        // @JoyLogDebug("[OAuth2] client info: ${clientId}, ${clientSecret}")
         let tgr = TokenGenerateRequest(
             request: ctx,
             clientId: clientId,
@@ -565,7 +565,7 @@ public class OAuth2Server {
             case "client_credentials" => validateClientCredentials(tgr, ctx)
             case "refresh_token" => validateRefreshToken(tgr, ctx)
             case _ =>
-                @LogError("[OAuth2] unsupported_grant_type, invalid grant type ${gt}")
+                @JoyLogError("[OAuth2] unsupported_grant_type, invalid grant type ${gt}")
                 throw OAuthException(OAuthErrors.UNSUPPORTED_GRANT_TYPE)
         }
 
@@ -579,12 +579,12 @@ public class OAuth2Server {
         tgr.redirectURI = ctx.getForm("redirect_uri") ?? ""
         tgr.code = ctx.getForm("code") ?? ""
         if (tgr.redirectURI == "" || tgr.code == "") {
-            @LogError("[OAuth2] invalid request, redirectURI or code is empty")
+            @JoyLogError("[OAuth2] invalid request, redirectURI or code is empty")
             throw OAuthException(OAuthErrors.INVALID_REQ)
         }
         tgr.codeVerifier = ctx.getForm("code_verifier") ?? ""
         if (tgr.codeVerifier == "" && _cfg.forcePKCE) {
-            @LogError("[OAuth2] invalid request, code verifier is empty")
+            @JoyLogError("[OAuth2] invalid request, code verifier is empty")
             throw OAuthException(OAuthErrors.INVALID_REQ)
         }
     }
@@ -597,13 +597,13 @@ public class OAuth2Server {
         let username = ctx.getForm("username") ?? ""
         let pwd = ctx.getForm("password") ?? ""
         if (pwd == "" || username == "") {
-            @LogError("[OAuth2] invalid request, username or password is empty")
+            @JoyLogError("[OAuth2] invalid request, username or password is empty")
             throw OAuthException(OAuthErrors.INVALID_REQ)
         }
 
         let userId = _passwordAuthorizationHanleFunc(ctx, tgr.clientId, username, pwd)
         if (userId == "") {
-            @LogError("[OAuth2] invalid grant, PasswordAuthorizationHandleFunc return user_id empty")
+            @JoyLogError("[OAuth2] invalid grant, PasswordAuthorizationHandleFunc return user_id empty")
             throw OAuthException(OAuthErrors.INVALID_GRANT)
         }
         tgr.userId = userId
@@ -623,13 +623,13 @@ public class OAuth2Server {
      */
     private func getAccessToken(_: JoyContext, gt: GrantType, tgr: TokenGenerateRequest): TokenInfo {
         if (!checkGrantType(gt)) {
-            @LogError("[OAuth2] unauthorized_client, invalid grant type ${gt}")
+            @JoyLogError("[OAuth2] unauthorized_client, invalid grant type ${gt}")
             throw OAuthException(OAuthErrors.UNAUTHORIZED_CLIENT)
         }
 
         var allowed = _clientAuthorizedHandleFunc?(tgr.clientId, gt) ?? true
         if (!allowed) {
-            @LogError("[OAuth2] unauthorized_client, client authorized handle return not allowed")
+            @JoyLogError("[OAuth2] unauthorized_client, client authorized handle return not allowed")
             throw OAuthException(OAuthErrors.UNAUTHORIZED_CLIENT)
         }
 
@@ -638,7 +638,7 @@ public class OAuth2Server {
             case "password" | "client_credentials" =>
                 allowed = _clientScopeHandleFunc?(tgr) ?? true
                 if (!allowed) {
-                    @LogError("[OAuth2] invalid scope, ClientScopeHandleFunc return not allowed")
+                    @JoyLogError("[OAuth2] invalid scope, ClientScopeHandleFunc return not allowed")
                     throw OAuthException(OAuthErrors.INVALID_SCOPE)
                 }
                 return _manager.generateAccessToken(gt, tgr)
@@ -647,7 +647,7 @@ public class OAuth2Server {
                     let rti = _manager.loadRefreshToken(tgr.refresh)
                     allowed = scopeFn(tgr, rti.scope)
                     if (!allowed) {
-                        @LogError("[OAuth2] invalid scope, RefreshingScopeHandleFunc return not allowed")
+                        @JoyLogError("[OAuth2] invalid scope, RefreshingScopeHandleFunc return not allowed")
                         throw OAuthException(OAuthErrors.INVALID_SCOPE)
                     }
                 }
@@ -655,14 +655,14 @@ public class OAuth2Server {
                     let rti = _manager.loadRefreshToken(tgr.refresh)
                     allowed = validationFn(rti)
                     if (!allowed) {
-                        @LogError("[OAuth2] invalid refresh_token, RefreshingValidationHandleFunc return not allowed")
+                        @JoyLogError("[OAuth2] invalid refresh_token, RefreshingValidationHandleFunc return not allowed")
                         throw OAuthException(OAuthErrors.INVALID_REFRESH_TOKEN)
                     }
                     return _manager.refreshAccessToken(tgr)
                 }
                 return _manager.refreshAccessToken(tgr)
             case _ =>
-                @LogError("[OAuth2] unsupported_grant_type, invalid grant type ${gt}")
+                @JoyLogError("[OAuth2] unsupported_grant_type, invalid grant type ${gt}")
                 throw OAuthException(OAuthErrors.UNSUPPORTED_GRANT_TYPE)
         }
     }

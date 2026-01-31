@@ -80,12 +80,12 @@ public class JoySSEventStream <: Iterator<JoySSEvent> {
                     case text.startsWith("retry:") => data._retry = UInt.tryParse(text.trimStart("retry:").trimAscii()) ??
                         0
                     case text.isEmpty() =>
-                        @LogDebug("SSE stream event: ${data}")
+                        @JoyLogDebug("SSE stream event: ${data}")
                         return data
                     case _ => throw IllegalArgumentException("invalid SSE message ${text}")
                 }
             } else {
-                @LogDebug("SSE stream finished")
+                @JoyLogDebug("SSE stream finished")
                 return None
             }
         }

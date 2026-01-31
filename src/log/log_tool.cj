@@ -14,6 +14,7 @@ import stdx.log.{LogLevel, Logger}
 import stdx.logger.SimpleLogger
 import std.env.getStdOut
 
+@Deprecated["Use JoyLoggerFactory", since: "v0.90.0", strict: false]
 public class LogTool {
     private static var _logger: Logger = SimpleLogger(getStdOut())
 

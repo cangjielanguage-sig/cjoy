@@ -2,6 +2,8 @@ Changelog
 ------
 # v0.90.0
 
+ - 变更：废弃LogTool，启用JoyLoggerFactory适配其它的日志框架
+
 # v0.80.0
 
  - 变更：宏统一由cjoy.macros重新导出

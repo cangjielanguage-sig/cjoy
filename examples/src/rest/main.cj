@@ -10,6 +10,8 @@ import cjoy.*
 import cjoy.json.*
 import cjoy.macros.*
 
+@JoyCreateLogger("examples.rest")
+
 @Json
 class UserInfo {
     var name: String = ""
@@ -24,7 +26,7 @@ class UserHandler {
         let user = ctx.bindJsonBody<UserInfo>()
         if (let Some(u) <- user) {
             users.add(u.name, u)
-            @LogInfo("save user info, name=${u.name}")
+            @JoyLogInfo("save user info, name=${u.name}")
             ctx.status(HttpStatusCode.STATUS_CREATED)
         } else {
             ctx.status(HttpStatusCode.STATUS_BAD_REQUEST)

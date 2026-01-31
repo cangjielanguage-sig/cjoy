@@ -12,3 +12,6 @@ package cjoy.bind
 
 // reimport the dependent
 public import std.convert.Parsable
+import cjoy.log.macros.*
+
+@JoyCreateLogger("cjoy.bind")

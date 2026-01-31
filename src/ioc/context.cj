@@ -240,7 +240,7 @@ class DefaultApplicationContext <: ApplicationContext {
                         // Prototype Bean 每次getBeanByTypeName都创建，不存储避免太多导致内存泄露
                         if (factory.beanScope == SINGLETON) {
                             let (name, bean) = factory.create(this)
-                            @LogInfo("[IOC] created bean, name=${name}, beanType=${b.beanType}")
+                            @JoyLogInfo("[IOC] created bean, name=${name}, beanType=${b.beanType}")
                             addBean(name, b.beanType, bean)
                         }
                     case _ => throw IocException("not found bean factory for `${b.beanType}`")

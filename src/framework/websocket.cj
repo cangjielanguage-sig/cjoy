@@ -350,7 +350,7 @@ class JoyWebSocketUpgradeHandler <: JoyRequestHandler {
             origins: handler.supportedOrigins()
         )
 
-        @LogDebug("[WebSocket] upgrade websocket success from ${ctx.getClientIP()}")
+        @JoyLogDebug("[WebSocket] upgrade websocket success from ${ctx.getClientIP()}")
 
         let ctxHttp = (ctx as JoyHttpContext).getOrThrow()
         let req = ctx.httpContext.request
@@ -383,7 +383,7 @@ class JoyWebSocketUpgradeHandler <: JoyRequestHandler {
                     case _ => ()
                 }
             } catch (ex: Exception) {
-                @LogWarn("[WebSocket] read frame from websocket occurs an error, message=${ex.message}")
+                @JoyLogWarn("[WebSocket] read frame from websocket occurs an error, message=${ex.message}")
                 handler.onError(session, ex)
                 isOpen = false
             }
@@ -432,14 +432,14 @@ class JoyWebSocketUpgradeHandler <: JoyRequestHandler {
     private func handleCloseWebFrame(session: JoyWebSocketSession, frame: WebSocketFrame): Unit {
         match {
             case frame.payload.size == 0 =>
-                @LogDebug("[WebSocket] revceive empty close status")
+                @JoyLogDebug("[WebSocket] revceive empty close status")
                 handler.onClose(session, JoyWebSocketCloseStatus.NORMAL)
             case frame.payload.size <= 125 && frame.payload.size > 1 =>
                 let statusCode = toUInt16(frame.payload[0..2])
-                @LogDebug("[WebSocket] revceive close status code, ${statusCode}")
+                @JoyLogDebug("[WebSocket] revceive close status code, ${statusCode}")
                 handler.onClose(session, statusCode)
             case _ =>
-                @LogWarn("[WebSocket] revceive invalid close status code")
+                @JoyLogWarn("[WebSocket] revceive invalid close status code")
                 handler.onError(session, WebSocketException("invalid close status code"))
         }
     }

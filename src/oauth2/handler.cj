@@ -93,7 +93,7 @@ public func clientFormHandleFunc(ctx: JoyContext): (String, String) {
 public func clientBasicHandleFunc(ctx: JoyContext): (String, String) {
     ctx.basicAuth().getOrThrow {
         =>
-            @LogError("[OAuth2] get basic auth from header failed")
+            @JoyLogError("[OAuth2] get basic auth from header failed")
             throw OAuthException(OAuthErrors.INVALID_CLIENT)
     }
 }
@@ -135,7 +135,7 @@ public func accessTokenCookieResolveHandleFunc(ctx: JoyContext): String {
  * @param ex:  error info
  */
 func defaultInternalErrorHandleFunc(_: JoyContext, ex: ErrorInfo): Unit {
-    @LogError("[OAuth2] internal error, ${ex.code}, ${ex.description}")
+    @JoyLogError("[OAuth2] internal error, ${ex.code}, ${ex.description}")
 }
 
 /**
@@ -145,5 +145,5 @@ func defaultInternalErrorHandleFunc(_: JoyContext, ex: ErrorInfo): Unit {
  * @param er:  error response
  */
 func defaultResponseErrorHandleFunc(_: JoyContext, er: ErrorResponse): Unit {
-    @LogError("[OAuth2] response error, ${er.errorInfo.code}, ${er.errorInfo.description}")
+    @JoyLogError("[OAuth2] response error, ${er.errorInfo.code}, ${er.errorInfo.description}")
 }

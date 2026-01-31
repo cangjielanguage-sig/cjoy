@@ -13,8 +13,7 @@ import examples.multipkgs.user
 import examples.multipkgs.product
 
 main(): Int64 {
-    var cfg = JoyConfig(enableDebugLog: false)
-    let joy = Joy.create(cfg)
+    let joy = Joy.default()
     joy.router.use(ExceptionHandler())
     // 注册所有生成的handlers
     JoyMiddlewares.registerTo(joy)
