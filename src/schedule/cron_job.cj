@@ -16,6 +16,9 @@ import std.convert.Parsable
 import std.time.DateTime
 import cjoy.log.macros.*
 
+/**
+ * Cron job for scheduled task execution
+ */
 public class CronJob <: Equatable<CronJob> & ToString {
     private static let REG_SPACES = Regex(##"\s+"##)
     private static let REG_N = Regex(##"(.*)/(\d+)"##)

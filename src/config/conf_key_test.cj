@@ -13,32 +13,32 @@ package cjoy.config
 @Test
 public class ConfigKeyTestCaseSuit {
     @TestCase
-    public func testTransferKey1() {
-        let key = transferKey("abcDef")
+    public func testconvertKey1() {
+        let key = convertKey("abcDef")
         @Assert(key, "abc-def")
     }
 
     @TestCase
-    public func testTransferKey2() {
-        let key = transferKey("abcDEf")
+    public func testconvertKey2() {
+        let key = convertKey("abcDEf")
         @Assert(key, "abc-def")
     }
 
     @TestCase
-    public func testTransferKey3() {
-        let key = transferKey("abcDefG")
+    public func testconvertKey3() {
+        let key = convertKey("abcDefG")
         @Assert(key, "abc-def-g")
     }
 
     @TestCase
-    public func testTransferKey4() {
-        let key = transferKey("abc-def")
+    public func testconvertKey4() {
+        let key = convertKey("abc-def")
         @Assert(key, "abc-def")
     }
 
     @TestCase
-    public func testTransferKey5() {
-        let key = transferKey("AbcDEf-g")
+    public func testconvertKey5() {
+        let key = convertKey("AbcDEf-g")
         @Assert(key, "abc-def-g")
     }
 }

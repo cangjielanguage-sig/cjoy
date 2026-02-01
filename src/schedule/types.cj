@@ -13,14 +13,23 @@ package cjoy.schedule
 import cjoy.context.MapContext
 import cjoy.framework.Joy
 
+/**
+ * Schedule context for scheduled task execution
+ */
 public class ScheduleContext <: MapContext {
     public func getService<T>(name: String): ?T {
         Joy.default().getService<T>(name)
     }
 }
 
+/**
+ * Function type for scheduled task execution
+ */
 public type ScheduleFunc = (ctx: ScheduleContext) -> Unit
 
+/**
+ * Schedule exception for scheduling errors
+ */
 public class ScheduleException <: Exception {
     public ScheduleException(msg: String) {
         super(msg)
@@ -29,6 +38,9 @@ public class ScheduleException <: Exception {
 
 const BAD_CRON_FORMAT: String = "schedule string must have five components like * * * * *"
 
+/**
+ * Out of range error for cron field values
+ */
 class OutOfRange <: ToString {
     OutOfRange(
         let rangeVal!: String = "",
@@ -43,6 +55,9 @@ class OutOfRange <: ToString {
     }
 }
 
+/**
+ * Parsing error for cron expressions
+ */
 class ParsingErr <: ToString {
     ParsingErr(let invalidPart: String, let base!: String = "") {
     }

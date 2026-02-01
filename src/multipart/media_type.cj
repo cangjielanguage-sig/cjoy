@@ -17,7 +17,7 @@ import std.io.ByteBuffer
 import cjoy.utils.{StrExt, ishex, unhex}
 
 /**
- * media type for parsing Content-Type and Content-Disposition headers
+ * Media type parser for Content-Type and Content-Disposition headers
  */
 public class JoyMediaType {
     private static let ERR = JoyMediaType("")

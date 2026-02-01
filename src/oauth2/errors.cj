@@ -12,6 +12,9 @@ package cjoy.oauth2
 
 import std.collection.HashMap
 
+/**
+ * Error information for OAuth2
+ */
 public class ErrorInfo {
     public ErrorInfo(
         public var statusCode!: UInt16 = 0,
@@ -20,6 +23,9 @@ public class ErrorInfo {
     ) {}
 }
 
+/**
+ * OAuth2 exception
+ */
 public class OAuthException <: Exception {
     public OAuthException(public let errorInfo: ErrorInfo) {
         super(errorInfo.description)
@@ -43,6 +49,9 @@ public class ErrorResponse {
     }
 }
 
+/**
+ * OAuth2 error constants
+ */
 public struct OAuthErrors {
     // inner error
     public static let INVALID_REDIRECT_URI = ErrorInfo(statusCode: 400, code: "invalid redirect uri")

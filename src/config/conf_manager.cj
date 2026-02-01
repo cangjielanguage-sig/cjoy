@@ -45,7 +45,7 @@ public class ConfigManager <: Config {
             return true
         }
 
-        let cfgKey = splitKey(transferKey(key))
+        let cfgKey = splitKey(convertKey(key))
         for (d in data) {
             if (let Some(v) <- getDataValue(d.data, cfgKey)) {
                 return true
@@ -75,7 +75,7 @@ public class ConfigManager <: Config {
         match (v) {
             case Some(x) => x
             case _ =>
-                let cfgKey = splitKey(transferKey(key))
+                let cfgKey = splitKey(convertKey(key))
                 for (d in data) {
                     let val = getDataValue(d.data, cfgKey)
                     if (let Some(v) <- getStringValue(val)) {
@@ -95,7 +95,7 @@ public class ConfigManager <: Config {
     }
 
     private func bindInner<T>(key: String): Option<T> where T <: JoyBindable<T> {
-        let cfgKey = splitKey(transferKey(key))
+        let cfgKey = splitKey(convertKey(key))
         let map = HashMap<String, Any>()
         let container = MapContainer(map)
         for (d in data) {

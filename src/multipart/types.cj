@@ -10,6 +10,9 @@
 
 package cjoy.multipart
 
+/**
+ * Exception thrown when multi part parsing fails
+ */
 public class MultiPartParseException <: Exception {
     public init(message: String) {
         super(message)

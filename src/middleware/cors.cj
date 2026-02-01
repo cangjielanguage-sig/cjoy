@@ -14,6 +14,9 @@ import std.collection.{ArrayList, any, filter, count}
 import cjoy.{JoyMiddlewareHandler, JoyRequestHandlerChain, JoyContext, JoyHttpConsts}
 import cjoy.log.macros.*
 
+/**
+ * Function type to check if an origin is allowed
+ */
 public type AllowOriginFunc = (ctx: JoyContext, origin: String) -> Bool
 
 /**

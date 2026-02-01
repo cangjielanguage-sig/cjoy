@@ -17,6 +17,9 @@ import cjoy.framework.{JoyContext, JoyHttpConsts}
 import cjoy.json.*
 import cjoy.log.macros.*
 
+/**
+ * OAuth2 server implementation for handling authorization and token requests
+ */
 public class OAuth2Server {
     private let _cfg: ServerConfig
     private let _manager: OAuth2Manager

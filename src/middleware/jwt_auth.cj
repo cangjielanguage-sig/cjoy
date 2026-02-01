@@ -29,6 +29,9 @@ public func getJwt(ctx: JoyContext): ?String {
     ctx.getCtxParam(JWT_CTX_KEY)
 }
 
+/**
+ * Interface for JWT signing and verification keys
+ */
 public interface Jwtkey {
     /**
      * return the sign and verify key
@@ -37,7 +40,7 @@ public interface Jwtkey {
 }
 
 /**
- * the HSXXX algorithm key
+ * the HMAC (HS256, HS384, HS512) algorithm key
  */
 public class HmacSigningkey <: Jwtkey {
     public HmacSigningkey(let key: Array<Byte>) {
@@ -49,7 +52,7 @@ public class HmacSigningkey <: Jwtkey {
 }
 
 /**
- * the RSXXX algorithm key
+ * the RSA (RS256, RS384, RS512) algorithm key
  */
 public class RsaSigningkey <: Jwtkey {
     public RsaSigningkey(let privateKey: RSAPrivateKey, let publicKey: RSAPublicKey) {

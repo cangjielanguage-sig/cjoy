@@ -23,6 +23,9 @@ public interface CodeGenerate {
     func generate(data: GenerateBasic): String
 }
 
+/**
+ * Authorization code generator using secure random
+ */
 public class SecureRandCodeGenerate <: CodeGenerate {
     /**
      * generate authorization code using secure random

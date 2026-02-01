@@ -34,7 +34,7 @@ public class JsonConfigLoader <: ConfigLoader {
                 case _ => ()
             }
         }
-        transferKeys(data)
+        convertKeys(data)
         data
     }
 

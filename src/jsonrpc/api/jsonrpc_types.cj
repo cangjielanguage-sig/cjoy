@@ -13,12 +13,18 @@ package cjoy.jsonrpc.api
 import cjoy.json.*
 import cjoy.json.macros.*
 
+/**
+ * Base class for JSON-RPC messages
+ */
 public abstract class BaseMessage <: ToString & JsonSerializable {
     public func toString(): String {
         JsonTool.toJson(this)
     }
 }
 
+/**
+ * JSON-RPC base message class
+ */
 public abstract class JSONRPCMessage <: BaseMessage {}
 
 /**

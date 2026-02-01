@@ -34,7 +34,7 @@ public class PropertiesConfigLoader <: ConfigLoader {
                 }
             }
         }
-        transferKeys(data)
+        convertKeys(data)
         data
     }
 

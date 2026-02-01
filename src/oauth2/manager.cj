@@ -30,6 +30,9 @@ public interface OAuth2Manager {
     func loadRefreshToken(refresh: String): TokenInfo
 }
 
+/**
+ * Default OAuth2 manager implementation
+ */
 public class DefaultOAuth2Manager <: OAuth2Manager {
     private let _clientStore: ClientStore
     private let _tokenStore: TokenStore

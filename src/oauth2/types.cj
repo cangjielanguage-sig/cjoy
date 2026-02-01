@@ -219,8 +219,14 @@ extend CodeChallengeMethod {
  */
 public type GrantType = String
 
+/**
+ * OAuth2 response type
+ */
 public type ResponseType = String
 
+/**
+ * OAuth2 constants
+ */
 public struct OAuthConsts {
     // CodeChallengeMethod
     public static const CODE_CHALLENGE_PLAIN: CodeChallengeMethod = "plain"

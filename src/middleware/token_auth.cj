@@ -11,17 +11,26 @@
 package cjoy.middleware
 
 import stdx.net.http.HttpStatusCode
-import cjoy.{JoyMiddlewareHandler, JoyRequestHandlerChain, JoyContext, JoyHttpConsts, JoyRequestHandler, 
+import cjoy.{JoyMiddlewareHandler, JoyRequestHandlerChain, JoyContext, JoyHttpConsts, JoyRequestHandler,
     JoyRequestHandlerFunc, JoyFuncHandler, JoyRequestFilterFunc}
 import cjoy.log.macros.*
 
-// the validate function 
+/**
+ * Function type to validate token
+ */
 public type TokenAuthValidatorFunc = (ctx: JoyContext, token: String) -> Bool
 
-// the authentication function
+/**
+ * authentication function
+ *
+ * @param ctx:  context
+ * @return true if authenticated, false otherwise
+ */
 type AuthFunc = (ctx: JoyContext) -> Bool
 
-// Predefined tokens
+/**
+ * predefined tokens validator
+ */
 class PredefinedTokenAuthValidator {
     public PredefinedTokenAuthValidator(let tokens: Array<String>) {
     }
@@ -31,7 +40,9 @@ class PredefinedTokenAuthValidator {
     }
 }
 
-// the default authentication failure handler 
+/**
+ * default authentication failure handler
+ */
 class DefaultAuthFailureHandler <: JoyRequestHandler {
     static let INSTANCE = DefaultAuthFailureHandler()
 

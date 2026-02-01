@@ -36,7 +36,7 @@ public class ArgConfigLoader <: ConfigLoader {
                 addToData(data, arg, cfgKey, value)
             }
         }
-        transferKeys(data)
+        convertKeys(data)
         data
     }
 

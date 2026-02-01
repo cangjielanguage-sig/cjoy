@@ -16,6 +16,9 @@ import std.time.DateTime
 import cjoy.context.ServiceContainer
 import cjoy.log.macros.*
 
+/**
+ * Crontab for managing multiple cron jobs
+ */
 public class Crontab <: Resource {
     public static let INSTANCE: Crontab = Crontab()
 

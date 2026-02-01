@@ -15,14 +15,18 @@ import stdx.net.http.HttpStatusCode
 import cjoy.{JoyMiddlewareHandler, JoyRequestHandlerChain, JoyContext, JoyHttpConsts}
 import cjoy.log.macros.*
 
-@JoyCreateLogger("cjoy.middleware")
-
+ /**
+ * Function type to filter whether basic auth is required
+ */
 public type BasicAuthFilterFunc = (ctx: JoyContext) -> Bool
 
+/**
+ * Function type to validate username and password
+ */
 public type BasicAuthValidationFunc = (ctx: JoyContext, username: String, password: String) -> Bool
 
 /**
- * the basic authorization
+ * the Basic authentication middleware
  */
 public class BasicAuth <: JoyMiddlewareHandler {
     public BasicAuth(let realm: String, let creds: HashMap<String, String>,

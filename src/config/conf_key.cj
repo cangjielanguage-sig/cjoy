@@ -15,8 +15,6 @@ import std.convert.Parsable
 import cjoy.utils.snakeCase
 import cjoy.log.macros.*
 
-@JoyCreateLogger("cjoy.bind")
-
 public class ConfigKey <: ToString {
     ConfigKey(public let key: String, public let arrIdx: Int, public var sub: ?ConfigKey) {
     }
@@ -30,20 +28,20 @@ public class ConfigKey <: ToString {
     }
 }
 
-func transferKey(key: String): String {
+func convertKey(key: String): String {
     snakeCase(key)
 }
 
-public func transferKeys(data: Map<String, Any>): Unit {
+public func convertKeys(data: Map<String, Any>): Unit {
     let iter = data.iterator()
     let map = HashMap<String, Any>()
     while (let Some((k, v)) <- iter.next()) {
-        let tk = transferKey(k)
+        let tk = convertKey(k)
         if (k != tk) {
             map.add(tk, data[k])
         }
         match (v) {
-            case x: Map<String, Any> => transferKeys(x)
+            case x: Map<String, Any> => convertKeys(x)
             case _ => ()
         }
     }

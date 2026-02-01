@@ -25,7 +25,7 @@ public interface JoyMultiPartHandler {
 }
 
 /**
- * multipart handler with function callback
+ * MultiPart handler implementation with function callback
  */
 public class JoyMultiPartFuncHandler <: JoyMultiPartHandler {
     public JoyMultiPartFuncHandler(let handler: (JoyMultiPart, Array<Byte>) -> Unit) {}

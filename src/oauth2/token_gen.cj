@@ -24,6 +24,9 @@ public interface TokenGenerate {
     func generate(data: GenerateBasic, isGenRefresh: Bool): (String, String)
 }
 
+/**
+ * Access and refresh token generator using secure random
+ */
 public class SecureRandTokenGenerate <: TokenGenerate {
     /**
      * generate access and refresh tokens using secure random

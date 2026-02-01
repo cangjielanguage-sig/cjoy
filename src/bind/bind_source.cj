@@ -15,6 +15,9 @@ import stdx.encoding.url.Form
 import stdx.net.http.HttpHeaders
 import cjoy.log.macros.*
 
+/**
+ * map container implemments JoyBindSource
+ */
 public class MapContainer <: JoyBindSource & ToString {
     /**
      * create a new MapContainer

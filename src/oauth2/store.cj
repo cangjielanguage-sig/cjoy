@@ -68,6 +68,9 @@ public interface ClientStore {
     func add(clientInfo: ClientInfo): Unit
 }
 
+/**
+ * Memory-based client store implementation
+ */
 public class MemoryClientStore <: ClientStore {
     private let _data: ConcurrentHashMap<String, ClientInfo> = ConcurrentHashMap()
 
@@ -96,6 +99,9 @@ class TokenStoreItem {
     }
 }
 
+/**
+ * Memory-based token store implementation with automatic cleanup
+ */
 public class MemoryTokenStore <: TokenStore {
     private let _data: ConcurrentHashMap<String, TokenStoreItem>
     private let _future: Future<Unit>
