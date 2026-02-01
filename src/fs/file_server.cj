@@ -231,20 +231,20 @@ public class JoyFileServer {
             // 服务器必须不生成多部分响应请求单个范围，因为客户端不请求多个部分可能不支持多部分响应
             let r = ranges[0]
             ctx.header(JoyHttpConsts.HEADER_CONTENT_LENGTH, "${r.length}")
+            ctx.status(HttpStatusCode.STATUS_PARTIAL_CONTENT)
             if (ctx.method != JoyHttpConsts.METHOD_HEAD) {
                 ctx.header(JoyHttpConsts.HEADER_ACCEPT_RANGES, "bytes")
                 ctx.header(JoyHttpConsts.HEADER_CONTENT_RANGE, r.contentRange(size))
-                ctx.status(HttpStatusCode.STATUS_PARTIAL_CONTENT)
                 sendFile(ctx, filePath, r.start, r.length)
             }
         } else {
             // 多个Range请求，返回multipart/byteranges
             let sendSize = ranges.mimeSize(contentType, size)
             ctx.header(JoyHttpConsts.HEADER_CONTENT_LENGTH, "${sendSize}")
-
+            ctx.status(HttpStatusCode.STATUS_PARTIAL_CONTENT)
             if (ctx.method != JoyHttpConsts.METHOD_HEAD) {
                 ctx.header(JoyHttpConsts.HEADER_ACCEPT_RANGES, "bytes")
-
+               
                 let writer = JoyHttpResponseWriter(ctx)
                 let mw = JoyMultiPartWriter(writer)
                 func write(buf: Array<Byte>): Unit {
@@ -258,6 +258,8 @@ public class JoyFileServer {
                         mw.createPart(ra.mimeHeaders(contentType, size))
                         readFileToWriter(file, ra.start, ra.length, write)
                     }
+                    // Close multipart writer to write final boundary
+                    mw.close()
                 }
             }
         }
@@ -283,9 +285,9 @@ public class JoyFileServer {
 
     private static func readFileToWriter(file: File, offset: Int64, length: Int64, writer: (buf: Array<Byte>) -> Unit): Unit {
         let buf = Array<Byte>(BUFFER_SIZE, repeat: 0)
-        // 跳转到offset
+        // 跳转到offset (from beginning of file)
         if (offset > 0) {
-            file.seek(SeekPosition.Current(offset))
+            file.seek(SeekPosition.Begin(offset))
         }
 
         var remaining = length

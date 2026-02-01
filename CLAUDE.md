@@ -14,11 +14,11 @@ cjpm build
 # Run all tests
 cjpm test
 
-# Run a specific test file (HLT - high level test)
-cjpm test --target src/test/route_test.cj
+# Run a test case suit
+cjpm test -i --filter=FileServerTestCaseSuit.*
 
-# Run internal tests within a module (LHT - low level test)
-cjpm test --target src/framework/route_test.cj
+# Run a test case 
+cjpm test -i --filter=FileServerTestCaseSuit.testStaticFile
 ```
 
 ### Run Examples

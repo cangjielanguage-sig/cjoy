@@ -492,7 +492,7 @@ class JoyRouteGroup <: JoyRouters {
         }
 
         let factory = getJoyFileHandlerFactory()
-        handle([JoyHttpConsts.METHOD_GET], path, factory.createFileSystemServeHandler(fp, _distributor._config))
+        handle([JoyHttpConsts.METHOD_GET, JoyHttpConsts.METHOD_HEAD], path, factory.createFileSystemServeHandler(fp, _distributor._config))
         this
     }
 
@@ -508,7 +508,7 @@ class JoyRouteGroup <: JoyRouters {
         }
 
         let factory = getJoyFileHandlerFactory()
-        handle([JoyHttpConsts.METHOD_GET], relativePath, factory.createFileServeHandler(fp.toString()))
+        handle([JoyHttpConsts.METHOD_GET, JoyHttpConsts.METHOD_HEAD], relativePath, factory.createFileServeHandler(fp.toString()))
         this
     }
 
