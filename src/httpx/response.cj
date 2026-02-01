@@ -66,7 +66,7 @@ public class JoyHttpResponse {
         }
     }
 
-    public prop header: HttpHeaders {
+    public prop headers: HttpHeaders {
         get() {
             _response.headers
         }

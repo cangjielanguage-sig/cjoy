@@ -97,7 +97,7 @@ class FuncInfo {
                 ctx.status(UInt16(statusCode))
             )
         } else if (retType != "Unit") {
-            ret += handleUInt16(funcName, params)
+            ret += handleSingeRet(funcName, params)
         } else {
             ret += quote(
                 $(funcName)($(params))
@@ -141,7 +141,7 @@ class FuncInfo {
         ret
     }
 
-    private func handleUInt16(funcName: Token, params: Tokens): Tokens {
+    private func handleSingeRet(funcName: Token, params: Tokens): Tokens {
         var ret = Tokens()
         ret += quote(let bodyRsp = $(funcName)($(params)))
         if (produce == "json") {

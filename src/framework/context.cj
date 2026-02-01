@@ -465,6 +465,7 @@ class JoyHttpContext <: JoyContext {
     private var _parsedCookie: Bool = false
     private var _status: ?UInt16 = None
     private var _respBody: Any = Option<Any>.None
+    private var _respContentType: ?String = None
 
     // the index of executing handler chain
     var _handleIndex: Int = 0
@@ -487,6 +488,8 @@ class JoyHttpContext <: JoyContext {
         _cookieCache.clear()
         _requestBuffer.clear()
         _handleIndex = 0
+        _respBody = Option<Any>.None
+        _respContentType = None
     }
 
     /**
@@ -718,10 +721,8 @@ class JoyHttpContext <: JoyContext {
         writer.writeValue(body)
         writer.flush()
         _respBody = buffer.bytes()
-        _httpContext
-            .responseBuilder
-            .header(JoyHttpConsts.HEADER_CONTENT_TYPE, JoyHttpConsts.MIME_APP_JSON_UTF8)
-            .body(buffer)
+        _httpContext.responseBuilder.body(buffer)
+        contentType(JoyHttpConsts.MIME_APP_JSON_UTF8)
         this
     }
 
@@ -733,7 +734,8 @@ class JoyHttpContext <: JoyContext {
 
     public func string(contentType: String, body: String): JoyContext {
         _respBody = body
-        _httpContext.responseBuilder.header(JoyHttpConsts.HEADER_CONTENT_TYPE, contentType).body(body)
+        _httpContext.responseBuilder.body(body)
+        this.contentType(contentType)
         this
     }
 
@@ -760,7 +762,10 @@ class JoyHttpContext <: JoyContext {
     }
 
     public func contentType(contentType: String): JoyContext {
-        _httpContext.responseBuilder.header(JoyHttpConsts.HEADER_CONTENT_TYPE, contentType)
+        if (_respContentType.isNone()) {
+             _respContentType = contentType
+            _httpContext.responseBuilder.header(JoyHttpConsts.HEADER_CONTENT_TYPE, contentType)
+        }
         this
     }
 
@@ -802,7 +807,6 @@ class JoyHttpContext <: JoyContext {
     }
 
     public func ok(): JoyContext {
-        _status = HttpStatusCode.STATUS_OK
         status(HttpStatusCode.STATUS_OK)
     }
 
