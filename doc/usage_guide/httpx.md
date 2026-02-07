@@ -44,12 +44,27 @@ import cjoy.httpx.auth.*
 var client = JoyHttpClientService("https://api.example.com")
 
 // 配置超时和证书处理
-let config = JoyHttpClientConfig()
-config.connectTimeout = Duration.second * 10      // 连接超时10秒
-config.readTimeout = Duration.second * 30        // 读取超时30秒
-config.trustAllCerts = true               // 信任所有证书（开发环境）
-
-client = JoyHttpClientService("https://api.example.com", config: config)
+client = JoyHttpClientService("https://api.example.com", budilerFn: (url: String, verify: Bool) =>
+    let cb = ClientBuilder()
+    if (url.startsWith("https")) {
+        var config = TlsClientConfig()
+        if (!verify) {
+            config.verifyMode = TrustAll
+        }
+        config.domain = URL.parse(url).hostName
+        cb.tlsConfig(config)
+    }
+    let socketConnector = {
+        sa: SocketAddress =>
+            let socket = TcpSocket(sa)
+            socket.readTimeout = Duration.minute
+            socket.writeTimeout = Duration.minute
+            socket.connect(timeout: Duration.minute)
+            return socket
+    }
+    cb.readTimeout(Duration.minute)
+    cb.connector(socketConnector)
+)
 ```
 
 ### 1.2 服务注册与使用
@@ -144,12 +159,11 @@ func createResource(ctx: JoyContext): Unit {
 func submitForm(ctx: JoyContext): Unit {
     let client = ctx.getService<JoyHttpClient>("apiClient").getOrThrow()
     
-    let formData = HashMap<String, String>([
-        ("username", "testuser"),
-        ("password", "testpass"),
-        ("remember", "true")
-    ])
-    
+    let formData = Form()
+    form.add("username", "testuser")
+    form.add("password", "testpass")
+    form.add("remember", "true")
+
     // 表单编码提交
     let response = client.postForm(ctx, "/login", data: formData)
     

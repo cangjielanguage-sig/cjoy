@@ -77,16 +77,16 @@ class EchoWebSocketHandler <: JoyWebSocketHandler {
     }
     
     public func onMessage(session: JoyWebSocketSession, message: JoyWebSocketMessage): Unit {
-        match (message) {
-            case JoyWebSocketMessage.Text(text) => {
-                println("收到文本消息: ${text}")
+        match (message.msgType) {
+            case WsText => {
+                println("收到文本消息: ${message.asText()}")
                 // 原样返回
-                session.send(text)
+                session.send(message)
             }
-            case JoyWebSocketMessage.Binary(data) => {
-                println("收到二进制消息，大小: ${data.size}")
+            case WsBinary => {
+                println("收到二进制消息，大小: ${message.data().size}")
                 // 原样返回二进制数据
-                session.send(data)
+                session.send(message)
             }
         }
     }
@@ -100,7 +100,7 @@ class EchoWebSocketHandler <: JoyWebSocketHandler {
     }
     
     private func getClientInfo(session: JoyWebSocketSession): String {
-        let userId = session.getPathParam("userId") ?? "anonymous"
+        let userId = session.getParam("userId") ?? "anonymous"
         let userAgent = session.getHeader("User-Agent") ?? "unknown"
         return "用户=${userId}, UserAgent=${userAgent}"
     }
@@ -113,11 +113,11 @@ class EchoWebSocketHandler <: JoyWebSocketHandler {
 class SessionInfoWebSocketHandler <: JoyWebSocketHandler {
     public func onOpen(session: JoyWebSocketSession): Unit {
         // 获取路径参数
-        let roomId = session.getPathParam("roomId")
-        let userId = session.getQueryParam("userId")
+        let roomId = session.getParam("roomId")
+        let userId = session.getQuery("userId")
         
         // 获取查询参数
-        let token = session.getQueryParam("token")
+        let token = session.getQuery("token")
         
         // 获取HTTP头
         let userAgent = session.getHeader("User-Agent")
@@ -141,7 +141,7 @@ class SessionInfoWebSocketHandler <: JoyWebSocketHandler {
     
     public func onMessage(session: JoyWebSocketSession, message: JoyWebSocketMessage): Unit {
         // 使用连接信息处理消息
-        let roomId = session.getPathParam("roomId")
+        let roomId = session.getParam("roomId")
         if (message is JoyWebSocketMessage.Text) {
             broadcastToRoom(roomId, message.text)
         }
@@ -379,7 +379,7 @@ class SecureWebSocketHandler <: JoyWebSocketHandler {
         }
         
         // 验证Token（如果有）
-        let token = session.getQueryParam("token")
+        let token = session.getQuery("token")
         if (!isValidToken(token)) {
             println("无效的Token: ${token}")
             session.close(4001, "Invalid token")

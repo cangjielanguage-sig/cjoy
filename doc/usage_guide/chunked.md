@@ -25,19 +25,13 @@ CJoy 分块传输系统基于以下核心概念设计：
 ```cangjie
 public interface JoyChunkedWriter <: ChunkedWriter {
     // 写入字符串
-    func string(s: String): JoyChunkedWriter
-
-    // 写入字节数组
-    func strings(ss: Array<String>): JoyChunkedWriter
+    func write(s: String): JoyChunkedWriter
 
     // 写入字节数
-    func bytes(b: Array<Byte>): JoyChunkedWriter
+    func write(b: Array<Byte>): JoyChunkedWriter
 
     // 写入 JSON 对象
-    func json<T>(obj: T): JoyChunkedWriter where T <: JsonSerializable
-
-    // 写入字节流
-    func data(stream: InputStream): JoyChunkedWriter
+    func writeJson<T>(obj: T): JoyChunkedWriter where T <: JsonSerializable
 }
 ```
 
@@ -52,35 +46,18 @@ let writer = ctx.chunkedWriter()
 
 ```cangjie
 // 写入字符串
-writer.string("Hello, World!")
+writer.write("Hello, World!")
 
-// 写入字符串数组
-writer.strings(["line1", "line2", "line3"])
-
-// 写入字节数组
-writer.writeStrings(["Hello", "World!"])
-
-// 写入单个字节数组
-let chunk = writer.writeStrings(["single"])
-writer.flush()
 ```
 
 ### 1.4 链式调用
 
 ```cangjie
-// 设置响应头、状态码
-writer.header("X-Custom-Header", "value")
-writer.status(200)
-
 // 写入 JSON（自动序列化）
-writer.json(UserInfo())
+writer.writeJson(UserInfo())
 
-// 设置 Content-Type
-writer.contentType("application/json")
-writer.json(object).header("Content-Type", "application/json")
-
-// 结束发送并刷新
-writer.end()
+// 写入 JSON 与Header
+writer.writeJson(object).header("Some-Header", "xxxx")
 ```
 
 ### 1.5 写入字节流
@@ -88,12 +65,11 @@ writer.end()
 ```cangjie
 // 写入字节数组并刷新
 let bytes = [72u, 101u, 108u]
-writer.bytes(bytes).flush()
+writer.write(bytes).flush()
 
 // 写入字节流
 let fileStream = File("/path/to/file.txt").openRead()
 writer.data(fileStream)
-writer.end()
 ```
 
 ---
@@ -104,9 +80,7 @@ writer.end()
 
 ```cangjie
 public interface JoySseEmitter <: ChunkedWriter {
-    // 写入 SSE 数据行
-    func line(line: String): JoySseEmitter
-    func data(data: String): JoySseEmitter
+    // 写入 SSE 数据
     func sendEvent(data: String): JoySseEmitter
 }
 ```
@@ -121,22 +95,9 @@ let emitter = ctx.eventEmitter()
 ### 2.3 基本用法
 
 ```cangjie
-// 写入 SSE 数据行
-emitter.line("data: ${timestamp}")
-
-// 写入数据行并刷新
-emitter.data("some data").flush()
-
 // 发送事件
-emitter.sendEvent("event: user.created", "{\"id\": \"123\"}")
+emitter.sendEvent(JoyServerEventBuilder().data("{\"num\":\"${num}\"}"))
 ```
-
-// 链式调用
-emitter.header("Retry-After", "120")
-emitter.data("retrying...").status(200).end()
-```
-
----
 
 ## 三、JoyContext 扩展方法
 
@@ -146,9 +107,7 @@ emitter.data("retrying...").status(200).end()
 |---|---|---|
 | `chunkedWriter()` | 创建 ChunkedWriter 实例 |
 | `eventEmitter()` | 创建 SSE 事件发送器实例 |
-| `chunked()` | 便捷方法，等价于 `chunkedWriter()` |
 
----
 
 ## 四、路由注册
 
@@ -158,7 +117,7 @@ emitter.data("retrying...").status(200).end()
 // 注册 /chunked 路由
 router.get("/stream", { ctx: JoyContext =>
     let writer = ctx.chunkedWriter()
-    writer.strings(["line1", "line2"]).end()
+    writer.writeJson(["line1", "line2"]).end()
 })
 ```
 
@@ -168,12 +127,18 @@ router.get("/stream", { ctx: JoyContext =>
 // 注册 /sse 路由
 router.get("/events", { ctx: JoyContext =>
     let emitter = ctx.eventEmitter()
-    emitter.line("event: connected")
-    emitter.data("{\"connected\": true}").end()
+    let counter = SyncCounter(1)
+    spawn {
+        for (num in 1..10) {
+            emitter.sendEvent(JoyServerEventBuilder().data("{\"num\":\"${num}\"}"))
+            sleep(Duration.millisecond*200)
+        }
+        counter.dec()
+    }
+    counter.waitUntilZero()
+    emitter.end()
 })
 ```
-
----
 
 ## 五、完整示例
 
@@ -188,14 +153,10 @@ func streamFile(ctx: JoyContext): String {
     // 创建 ChunkedWriter
     let writer = ctx.chunkedWriter()
 
-    // 设置响应
-    ctx.contentType("text/event-stream")
-        .status(HttpStatusCode.STATUS_OK)
-
     try {
         let fileStream = File("/path/to/file.txt").openRead()
         // 写入文件流
-        writer.data(fileStream)
+        writer.write(fileStream)
         fileStream.close()
     writer.end()
         return "stream complete"
@@ -222,7 +183,7 @@ func uploadFile(ctx: JoyContext): String {
 
         // 写入文件流
         let fileStream = File("/path/to/file.txt").openWrite()
-        writer.data(fileStream).end()
+        writer.write(fileStream)
         fileStream.close()
         writer.end()
         return "Upload successful"
@@ -235,17 +196,11 @@ func uploadFile(ctx: JoyContext): String {
 @Get[path = "/sse", produce = "json"]
 func sseHandler(ctx: JoyContext): String {
     let writer = ctx.eventEmitter()
-    let lines = ArrayList<String>()
-    for (i in 0..10) {
-        lines.add("data: ${i}")
-    }
-
     // 写入多行 SSE 数据
     for (line in lines) {
-        writer.line(line).flush()
-    writer.data(line).flush()
-    // 矍式调用，设置重试间隔
-        writer.header("Retry-After", "5000")
+        for (i in 0..10) {
+            writer.sendEvent(JoyServerEventBuilder().data("{\"num\":\"${num}\"}"))
+        }
     }
     writer.end()
     return "SSE complete"
@@ -268,29 +223,17 @@ main(): Int64 {
 
 ## 六、注意事项
 
-1. **流式关闭**：使用 `data(stream)` 或 `data(bytes)` 方法后，必须调用 `end()` 或 `flush()` 关闭流
+1. **JSON 序列化**：使用 `writeJson<T>()` 方法时，对象必须实现 `JsonSerializable` 接口
 
-2. **文件流**：使用 `data(fileStream)` 时，注意在 `end()` 或 `flush()` 后关闭文件流
+2. **SSE 发送**：使用 `sendEvent()` 时，数据行会自动添加 `data: ` `event: `data: "` 前缀
 
-3. **流式写入**：数据写入是自动刷新的，但建议在关键节点后手动调用 `flush()` 确保数据及时发送
+3. **重试机制**：`JoySseEmitter` 支持通过 `Retry-After` 响应头设置重试间隔，网络错误时自动重试
 
-4. **内存拷贝**：`bytes()` 和 `strings()` 方法会先在内存中缓存数据，然后一次性写入
+4. **响应头设置**：使用 `header()` 方法时，会设置响应头（如 Content-Type、Retry-After）
 
-5. **JSON 序列化**：使用 `json<T>()` 方法时，对象必须实现 `JsonSerializable` 接口
+5. **Writer 生命周期**：`ChunkedWriter` 实例的生命周期与请求响应绑定，请求结束后 Writer 自动失效
 
-6. **SSE 发送**：使用 `sendEvent()` 时，数据行会自动添加 `data: ` `event: `data: "` 前缀
-
-7. **重试机制**：`JoySseEmitter` 支持通过 `Retry-After` 响应头设置重试间隔，网络错误时自动重试
-
-8. **响应头设置**：使用 `header()` 方法时，会设置响应头（如 Content-Type、Retry-After）
-
-9. **Content-Type**：使用 `json()` 或 `json()` 时，默认 Content-Type 为 `text/event-stream` 或 `application/json`
-
-10. **大文件限制**：建议在处理大文件时使用 `data()` 流式写入，避免一次性加载到内存
-
-11. **Writer 生命周期**：`ChunkedWriter` 实例的生命周期与请求响应绑定，请求结束后 Writer 自动失效
-
-12. **并发安全**：`JoyChunkedWriter` 是线程不安全的，但底层的流和连接需要并发安全考虑
+6. **并发安全**：`JoyChunkedWriter` 是线程不安全的，但底层的流和连接需要并发安全考虑
 
 
 ----
