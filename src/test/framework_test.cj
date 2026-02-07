@@ -140,14 +140,19 @@ func testMulti(
     HashMap<String, String>([("id", id), ("q", q), ("token", token)])
 }
 
-@Get[path = "/test_group1"]
+@Get[path = "/group1/test_group1"]
 func testGroup1(): String {
     "group1"
 }
 
-@Get[path = "/test_group2"]
+@Get[path = "/group2/test_group2"]
 func testGroup2(): String {
     "group2"
+}
+
+@Middleware[groups="/group1,/group2"]
+func group1Mw(ctx: JoyContext, chain: JoyRequestHandlerChain): Unit {
+    chain.next(ctx)
 }
 
 @Test
@@ -350,10 +355,10 @@ public class FrameworkTestCaseSuit {
 
     @TestCase
     public func testGroupRoutes() {
-        let rsp1 = _client.get(_ctx, "/test_group1")
+        let rsp1 = _client.get(_ctx, "/group1/test_group1")
         assertResponse(rsp1, "group1")
 
-        let rsp2 = _client.get(_ctx, "/test_group2")
+        let rsp2 = _client.get(_ctx, "/group2/test_group2")
         assertResponse(rsp2, "group2")
     }
 }

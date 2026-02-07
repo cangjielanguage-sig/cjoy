@@ -135,13 +135,17 @@ public class Cors <: JoyMiddlewareHandler {
             _allowedHeaders = ArrayList(
                 [JoyHttpConsts.HEADER_ORIGIN, JoyHttpConsts.HEADER_ACCEPT, JoyHttpConsts.HEADER_CONTENT_TYPE])
         } else {
-            _allowedHeaders = ArrayList(allowedHeaders)
-            _allowedHeaders.add(JoyHttpConsts.HEADER_ORIGIN)
+            _allowedHeaders = ArrayList()
             for (it in allowedHeaders) {
                 if ("*" == it) {
                     _allowedHeadersAll = true
                     _allowedHeaders.clear()
+                    break
                 }
+                _allowedHeaders.add(parseHeaders(it)[0])
+            }
+            if (!_allowedHeadersAll) {
+                _allowedHeaders.add(JoyHttpConsts.HEADER_ORIGIN)
             }
         }
 
@@ -155,8 +159,8 @@ public class Cors <: JoyMiddlewareHandler {
         let hasOriginHeader = ctx.getHeader(JoyHttpConsts.HEADER_ORIGIN).isSome()
         if (ctx.method == JoyHttpConsts.METHOD_OPTIONS &&
             ctx.getHeader(JoyHttpConsts.HEADER_ACCESS_CONTROL_REQUEST_METHOD).isSome() && hasOriginHeader) {
+            handlePreflight(ctx)
             if (_optionsPassthrough) {
-                handlePreflight(ctx)
                 chain.next(ctx)
             } else {
                 ctx.ok()
@@ -275,7 +279,8 @@ public class Cors <: JoyMiddlewareHandler {
             return true
         }
 
-        (_allowedOrigins |> any {it => it == origin}) && (_allowedWOrigins |> any {it => it.canMatch(origin)})
+        let lowerOrigin = origin.toAsciiLower()
+        (_allowedOrigins |> any {it => it == lowerOrigin}) || (_allowedWOrigins |> any {it => it.canMatch(lowerOrigin)})
     }
 
     private func areHeadersAllowed(headers: Collection<String>): Bool {
@@ -294,6 +299,20 @@ public class Cors <: JoyMiddlewareHandler {
 
 private const TO_LOWER = b'a' - b'A'
 
+private func toUpper(b: Byte): Byte {
+    if (b >= b'a' && b <= b'z') {
+        return b - TO_LOWER
+    }
+    b
+}
+
+private func toLower(b: Byte): Byte {
+    if (b >= b'A' && b <= b'Z') {
+        return b + TO_LOWER
+    }
+    b
+}
+
 func parseHeaders(headers: String): ArrayList<String> {
     if (headers.isEmpty()) {
         return ArrayList()
@@ -306,29 +325,38 @@ func parseHeaders(headers: String): ArrayList<String> {
     let res: ArrayList<String> = ArrayList(num)
 
     for (b in harr) {
-        match {
-            case b >= b'a' && b <= b'z' => if (upper) {
-                h.add(b - TO_LOWER)
+        if (b >= b'a' && b <= b'z') {
+            if (upper) {
+                h.add(toUpper(b))
+                upper = false
             } else {
                 h.add(b)
             }
-            case b >= b'A' && b <= b'Z' => if (!upper) {
-                h.add(b + TO_LOWER)
+        } else if (b >= b'A' && b <= b'Z') {
+            if (!upper) {
+                h.add(toLower(b))
             } else {
                 h.add(b)
+                upper = false
             }
-            case b == b'-' || b == b'_' || b == b'.' || (b >= b'0' && b <= b'9') => h.add(b)
-            case _ => ()
+        } else if (b == b'-') {
+            h.add(b)
+            upper = true
+        } else if (b == b'_' || b == b'.' || (b >= b'0' && b <= b'9')) {
+            h.add(b)
         }
 
-        match {
-            case b == b' ' || b == b',' || b == harr[harr.size - 1] => if (h.size > 0) {
+        if (b == b' ' || b == b',') {
+            if (h.size > 0) {
                 res.add(String.fromUtf8(h.toArray()))
                 h.clear()
                 upper = true
             }
-            case _ => upper = b == b'-'
         }
+    }
+
+    if (h.size > 0) {
+        res.add(String.fromUtf8(h.toArray()))
     }
 
     res

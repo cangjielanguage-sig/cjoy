@@ -1,77 +1,165 @@
 # 调度任务
 
-## Crontab
+CJoy 提供完整的定时任务调度系统，支持crontab表达式和动态任务管理。
 
-CJoy提供Linux风格的crontab定时调度任务管理。
+## 概述
 
-支持两种风格：
+CJoy 调度系统基于以下核心概念设计：
 
- - 六段式：second minute hour day month week
- - 五段式：minute hour day month week
+- **Crontab表达式**：支持标准Linux crontab语法
+- **宏驱动**：通过`@Scheduled`宏自动注册任务
+- **IoC集成**：完美集成IoC容器的Bean管理
+- **上下文传递**：支持任务执行上下文信息传递
+- **异常处理**：完整的任务异常处理和日志记录
 
-取值范围：
-  - second: 0~59
-  - minute: 0~59
-  - hour: 0~23
-  - day: 1~31
-  - month: 1~12
-  - week: 0~6
+### Crontab表达式支持
 
-示例：
+| 字段 | 取值范围 | 说明 |
+|------|-----------|------|
+| 秒(可选) | 0-59 | 秒级精度 |
+| 分 | 0-59 | 分钟 |
+| 小时 | 0-23 | 24小时制 |
+| 日 | 1-31 | 月份中的日期 |
+| 月 | 1-12 | 月份 |
+| 周 | 0-6 | 星期日(0)到星期六(6) |
 
- - `* * * * * *`: 每 1 秒钟执行一次
- - `* * * * *`: 每 1 分钟执行一次 
- - `0,15,30,45,8-12 * * *`:  在 8 点 到12 点每隔 15 分钟执行
- - `3,15 8-11 * * *`: 在上午 8 点到 11 点的第 3 和第 15 分钟执行
- - `3,15 8-11 */2 * *` : 每隔两天的上午 8 点到 11 点的第 3 和第 15 分钟执行
-  
+### 时间单位符号
 
-任务回调函数原型：
+| 符号 | 说明 | 示例 |
+|------|------|------|
+| `*` | 任意值 | `*` 表示每分钟 |
+| `,` | 多个值 | `0,15,30,45` 表示每15分钟 |
+| `-` | 范围 | `8-12` 表示8到12点 |
+| `/` | 步长 | `*/2` 表示每2个单位 |
+| `?` | 特定时间 | `0 8 * * 5` 表示每周五8点 |
+
+---
+
+## 四、性能优化与注意事项
+
+### 4.1 Cron表达式优化
+
+| 表达式类型 | 示例 | 说明 | 性能考虑 |
+|------------|------|------|-----------|
+| 固定时间 | `0 12 * * *` | 每天中午12点 | 性能最优 |
+| 间隔执行 | `*/15 * * * *` | 每15分钟 | 性能良好 |
+| 范围限制 | `0 9-17 * * 1-5` | 工作日9-17点 | 避免非工作时间 |
+| 复杂组合 | `0,30 8-12,14-17 * * 1-5` | 复杂业务规则 | 合理使用 |
+
+### 4.2 任务执行优化
 
 ```cangjie
-public type ScheduleFunc = (ctx: ScheduleContext) -> Unit
-```
+// 异步执行长时间任务
+@Scheduled[name = "asyncTask", cron = "0 2 * * *"]
+func asyncScheduledTask(ctx: ScheduleContext): Unit {
+    // 使用spawn异步执行，避免阻塞调度器
+    spawn {
+        let startTime = DateTime.now()
+        
+        try {
+            // 长时间任务
+            performLongRunningOperation()
+            
+            let duration = startTime.elapsedMilliseconds()
+            ctx.put("executionTime", "${duration}ms")
+            println("异步任务完成，耗时: ${duration}ms")
+            
+        } catch (e: Exception) {
+            ctx.put("error", e.message)
+            println("异步任务失败: ${e.message}")
+        }
+    }
+}
 
- - 只有一个入参：ScheduleContext，调度任务多次执行时，您可以在上下文中记录一些信息在下次回调时再使用。
-
-## 使用方式1：
-
-使用示例：[examples/schedule](../../examples/src/schedule/main.cj) 。
-
-采用宏标注，CJoy框架会自动把回调函数注册给全局的Crontab服务。
-
-```cangjie
-@Scheduled[name = "metric job", cron = "*/2 * * * * *"]
-func logMetric(ctx: ScheduleContext): Unit {
-    LogTool.info("log metric in crontab ...")
+// 批量处理优化
+@Scheduled[name = "batchProcessor", cron = "*/30 * * * *"]
+func batchProcessor(ctx: ScheduleContext): Unit {
+    let batchSize = 100
+    let processedCount = 0
+    
+    try {
+        // 分批处理大量数据
+        while (true) {
+            let batch = getPendingDataBatch(batchSize)
+            if (batch.isEmpty) {
+                break
+            }
+            
+            processBatch(batch)
+            processedCount += batch.size
+            
+            // 短暂休息，避免资源占用过高
+            if (processedCount % 10 == 0) {
+                Thread.sleep(Duration.millisecond * 100)
+            }
+        }
+        
+        ctx.put("processedCount", "${processedCount}")
+        
+    } catch (e: Exception) {
+        ctx.put("error", e.message)
+        println("批量处理失败: ${e.message}")
+    }
 }
 ```
 
-|宏属性参数|默认值|是否可选|说明|
-|---|---|---|---|
-|`name`|函数名|是|Job名称，要求全局唯一|
-|`cron`||否|crontab表达式|
-
-注：宏`@Scheduled`也可以配合IoC框架，在Bean上的函数上使用。
-
-## 使用方式2：
-
-在Http Handler或Middleware中使用，适合于收到Http请求时再创建调度任务
+### 4.3 错误处理策略
 
 ```cangjie
-@Post[path = "/crontab"]
-func addCrontab(ctx: JoyContext): Unit {
-    // 先根据服务名获取服务
-    let crontab = ctx.getService<Crontab>("crontab").getOrThrow()
-    crontab.addJobIfAbsent("the name", "*/5 * * * * *",
-        {
-            schedCtx: ScheduleContext => LogTool.info("another crontab ...")
-        })
+// 任务执行超时控制
+@Scheduled[name = "timeoutTask", cron = "*/10 * * * *"]
+func timeoutTask(ctx: ScheduleContext): Unit {
+    let timeout = Duration.second * 60  // 60秒超时
+    
+    // 使用spawn配合超时控制
+    let task = spawn {
+        try {
+            executeWithTimeout(timeout, {
+                // 可能长时间运行的任务
+                performTimeoutOperation()
+            })
+            
+        } catch (e: TimeoutException) {
+            ctx.put("status", "timeout")
+            ctx.put("error", "任务执行超时")
+            println("任务执行超时")
+            
+        } catch (e: Exception) {
+            ctx.put("status", "error")
+            ctx.put("error", e.message)
+            println("任务执行失败: ${e.message}")
+        }
+    }
+    
+    // 等待任务完成（带超时）
+    task.join()
 }
+
 ```
 
-注：每个Joy实例会默认存在一个名为`crontab`的Crontab服务。
+### 4.4 注意事项
 
+| 注意事项 | 说明 | 最佳实践 |
+|----------|------|----------|
+| **资源竞争** | 多个任务同时访问共享资源 | 使用锁或事务机制 |
+| **异常隔离** | 一个任务异常不应影响调度器 | 完善的异常处理和日志记录 |
+| **内存管理** | 长时间任务可能导致内存泄漏 | 及时释放资源，避免循环引用 |
+| **时钟同步** | 依赖系统时间的准确性 | 使用NTP同步，考虑时区问题 |
+| **任务依赖** | 复杂任务可能有依赖关系 | 设计合理的任务执行顺序或使用状态机 |
 
-----
-<< [返回](../../README.md#使用指导)
+### 4.5 常见问题解决
+
+**Q: Cron表达式不生效？**
+A: 检查表达式语法、时区设置、系统时间
+
+**Q: 任务执行延迟？**
+A: 检查任务执行时间、系统负载、调度器队列状态
+
+**Q: 任务突然停止执行？**
+A: 检查异常处理、内存使用、日志中的错误信息
+
+**Q: 如何处理任务堆积？**
+A: 优化任务执行时间、增加并发处理能力、考虑任务优先级
+
+---
+ << [返回](../../README.md#使用指导)

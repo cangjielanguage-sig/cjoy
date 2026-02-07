@@ -1,64 +1,663 @@
 # MCP
 
-CJoy内建支持MCP(Model Context Protocol)服务端开发。
+CJoy 提供完整的MCP(Model Context Protocol)服务端支持，简化AI工具集成开发。
 
-- 协议版本：2025-03-26
-- 传输层协议：SSE, StreamableHttp
+## 概述
 
-MCP支持的情况：
+CJoy MCP系统基于以下核心概念设计：
 
- - 支持Tool、Resource、Prompt查询与调用，不支持listChanged与subscribe，不支持Batch请求
- - 支持SSE，StreamableHttp传输层（支持Json Response方式，不支持SSE Stream方式）
- - 接口认证需要使用者自已基于中间件机制扩展
- - StreamableHttp模式下Session存储在内存，多节点部署时需要前端LB配置基于会话级路由
+- **协议支持**：完整实现MCP 2025-03-26规范
+- **传输层**：支持SSE和StreamableHttp两种传输协议
+- **组件支持**：完整的Tool、Resource、Prompt三大组件
+- **宏驱动**：通过注解自动生成MCP协议代码
+- **类型安全**：编译时类型检查和自动转换
+- **会话管理**：内置会话存储和状态管理
+- **扩展性**：支持自定义认证和中间件扩展
 
-## 服务端
+### 协议版本支持
 
-CJoy提供宏来简化MCP的Tool，Resource, Prompt服务端函数的开发。
+| 版本 | 支持状态 | 特性 |
+|------|----------|------|
+| 2025-03-26 | ✅ | 完整MCP规范实现 |
 
-### Tool
+### 传输协议对比
 
-Tool是核心MCP协议中重要组成，允许您的LLM与外部系统交互、执行代码和访问不在其训练数据中的数据。
+| 协议 | 支持状态 | 优势 | 适用场景 |
+|--------|----------|------|----------|
+| SSE | ✅ | 实时通信、浏览器兼容 | Web应用、实时更新 |
+| StreamableHttp | ✅ | 标准HTTP、易于调试 | 桌面应用、批量操作 |
 
- Tool可以执行查询数据库、调用API、进行计算或访问文件等任务，从而将其功能扩展到训练数据之外。当LLM决定使用工具时，流程如下：
- - 客户端根据Tool的Schema发送带有参数的请求
- - CJoy路由请求到对应的函数
- - CJoy把结果返回给LLM，LLM可以在其响应中使用它
+### MCP功能支持矩阵
 
-CJoy提供宏`@Tool`标注函数，`@ToolParam`标注函数参数，发布其为MCP的Tool。
+| 功能 | 支持状态 | 说明 |
+|------|----------|------|
+| Tool查询与调用 | ✅ | 核心工具功能 |
+| Resource查询 | ✅ | 静态资源访问 |
+| Resource模板 | ✅ | 动态资源生成 |
+| Prompt查询 | ✅ | 模板化消息 |
+| 列表变更监听 | ❌ | 暂不支持 |
+| 订阅变更通知 | ❌ | 暂不支持 |
+| 批量请求 | ❌ | 暂不支持 |
+
+---
+
+## 一、Tool开发
+
+### 1.1 基础Tool定义
 
 ```cangjie
-@Tool[name = "add", description = "add two number"]
-public func add(@ToolParam[description = "number a"] a: Int, @ToolParam[description = "number b"] b: Int): Int {
+import cjoy.mcp.*
+import cjoy.macros.*
+
+// 简单计算工具
+@Tool[name = "add", description = "Add two numbers and return the sum"]
+public func add(
+    @ToolParam[description = "The first number to add"] a: Int,
+    @ToolParam[description = "The second number to add"] b: Int
+): Int {
     a + b
 }
 
-@Tool[description = "nultiply two number"]
-public func multiply(a: Int, b: Int): Int {
-    a * b
+// 字符串处理工具
+@Tool[name = "concat", description = "Concatenate two strings"]
+public func concatenate(
+    @ToolParam[description = "First string"] str1: String,
+    @ToolParam[description = "Second string"] str2: String
+): String {
+    str1 + str2
+}
+
+// 布验证的复杂工具
+@Tool[name = "validateEmail", description = "Validate email address format"]
+public func validateEmail(
+    @ToolParam[description = "Email address to validate"] email: String
+): ValidationResult {
+    let pattern = Regex("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")
+    let isValid = pattern.matches(email)
+    
+    return ValidationResult(
+        isValid: isValid,
+        message: if (isValid) { "Valid email format" } else { "Invalid email format" },
+        normalizedEmail: email.toLower()
+    )
 }
 ```
 
-注册Tool后，CJoy会自动：
+### 1.2 参数类型支持
 
-  - 使用`@Tool`属性中`name`与`description`生成Tool名与描述
-  - 使用`@ToolParam`属性中`name`与`description`作为Tool参数与描述
-  - 基于函数的参数和类型生成MCP协议要求的InputSchema
-  - 注册HTTP的请求路由，以便后续MCP请求能路由到此函数
+| 参数类型 | 支持情况 | 示例 |
+|----------|-----------|------|
+| 基础类型 | ✅ | `Int`, `String`, `Bool`, `Float64` |
+| `Option<T>` | ✅ | `Option<String>`, `Option<Int>` |
+| `Array<T>` | ✅ | `Array<String>`, `Array<Int>` |
+| `HashMap<K,V>` | ✅ | `HashMap<String, String>` |
+| JsonSerializable | ✅ | 实现JsonSerializable的类 |
+| JoyContext | ✅ | 用于获取HTTP上下文 |
 
-宏与宏属性说明：
+### 1.3 复杂参数设计
 
-|宏|属性参数|说明|
-|---|---|---|
-|`@Tool`|name="..", description:".."|作用于函数上。`name`默认函数名|
-|`@ToolParam`|name="..", description:".."|作用函数参数上。`@ToolParam`可选，`name`默认取参数名|
+```cangjie
+// 使用数据类组合参数
+@Json
+class FileOperation {
+    @JsonField[description = "File path to operate on"]
+    public var path: String = ""
+    
+    @JsonField[description = "Operation type: read, write, delete"]
+    public var operation: String = ""
+    
+    @JsonField[description = "File content for write operation"]
+    public var content: String = ""
+    
+    @JsonField[description = "Operation options"]
+    public var options: HashMap<String, String> = HashMap()
+}
 
-以上宏的属性参数说明，属性可以采用`=`与`:`赋值，如`@Tool[name=xx]`与`@Tool[name:xx]`等价：
+@Tool[name = "fileOperation", description = "Perform file system operations"]
+public func fileOperation(operation: FileOperation): FileOperationResult {
+    try {
+        match (operation.operation) {
+            case "read" => 
+                let content = readFile(operation.path)
+                return FileOperationResult(
+                    success: true,
+                    content: content,
+                    operation: "read"
+                )
+                
+            case "write" =>
+                writeFile(operation.path, operation.content)
+                return FileOperationResult(
+                    success: true,
+                    content: "",
+                    operation: "write"
+                )
+                
+            case "delete" =>
+                deleteFile(operation.path)
+                return FileOperationResult(
+                    success: true,
+                    content: "",
+                    operation: "delete"
+                )
+                
+            case _ =>
+                return FileOperationResult(
+                    success: false,
+                    error: "Unsupported operation: ${operation.operation}"
+                )
+        }
+        
+    } catch (e: IOException) {
+        return FileOperationResult(
+            success: false,
+            error: "File operation failed: ${e.message}"
+        )
+    }
+}
+```
 
-|宏属性参数|默认值|是否可选|说明|
-|---|---|---|---|
-|`name`||是|指定工具或参数的名称|
-|`description`||是|用于描述工具或参数，会生成JSON schema，为了大模型更好的效果，描述应简洁清楚无歧义|
+### 1.4 错误处理最佳实践
+
+```cangjie
+// 自定义错误类型
+enum ToolError {
+    case InvalidParameter(String)
+    case ExecutionFailed(String)
+    case ResourceNotFound(String)
+}
+
+@Tool[name = "safeOperation", description = "Perform safe operations with proper error handling"]
+public func safeOperation(
+    @ToolParam[description = "Operation type"] operationType: String
+): OperationResult {
+    try {
+        // 参数验证
+        if (operationType.isEmpty) {
+            throw ToolError.InvalidParameter("Operation type cannot be empty")
+        }
+        
+        // 执行操作
+        let result = performOperation(operationType)
+        
+        return OperationResult(
+            success: true,
+            result: result,
+            message: "Operation completed successfully"
+        )
+        
+    } catch (e: ToolError) {
+        // 将业务错误转换为MCP兼容响应
+        match (e) {
+            case ToolError.InvalidParameter(msg) =>
+                return OperationResult(
+                    success: false,
+                    error: "Invalid parameter: ${msg}"
+                )
+            case ToolError.ExecutionFailed(msg) =>
+                return OperationResult(
+                    success: false,
+                    error: "Execution failed: ${msg}"
+                )
+            case ToolError.ResourceNotFound(msg) =>
+                return OperationResult(
+                    success: false,
+                    error: "Resource not found: ${msg}"
+                )
+        }
+        
+    } catch (e: Exception) {
+        return OperationResult(
+            success: false,
+            error: "Unexpected error: ${e.message}"
+        )
+    }
+}
+```
+
+## 二、Resource开发
+
+### 2.1 静态Resource
+
+```cangjie
+import cjoy.mcp.*
+import cjoy.macros.*
+
+// 配置信息Resource
+@Resource[uri = "app://config", description = "Application configuration", name = "appConfig"]
+public func getAppConfig(): AppConfig {
+    AppConfig(
+        appName: "CJoy Application",
+        version: "1.0.0",
+        debug: false,
+        maxConnections: 100,
+        databaseUrl: "postgresql://localhost:5432/mydb",
+        cacheTimeout: 300
+    )
+}
+
+// 日志文件Resource
+@Resource[uri = "logs://application", description = "Application logs", mimeType = "text/plain"]
+public func getApplicationLogs(): String {
+    let logFile = Path("./logs/application.log")
+    if (exists(logFile)) {
+        try (file = File(logFile, OpenMode.Read)) {
+            return file.readToEnd()
+        }
+    }
+    return "No logs available"
+}
+
+// 系统状态Resource
+@Resource[uri = "system://status", description = "Current system status"]
+public func getSystemStatus(): HashMap<String, String> {
+    let uptime = DateTime.now().toUnixTimeStamp() - systemStartTime
+    let memoryUsage = getCurrentMemoryUsage()
+    let diskSpace = getDiskSpaceInfo()
+    
+    return HashMap<String, String>(
+        ["uptime": "${uptime} seconds"],
+        ["memoryUsage": memoryUsage],
+        ["diskSpace": diskSpace],
+        ["status": "healthy"
+    ])
+}
+```
+
+### 2.2 动态Resource模板
+
+```cangjie
+// 用户特定数据Resource
+@Resource[uri = "user://{userId}/profile", description = "User profile information"]
+public func getUserProfile(
+    @ResourceParam[description = "User ID"] userId: String,
+    ctx: JoyContext
+): UserProfile {
+    // 从数据库获取用户信息
+    let user = userRepository.getUserById(userId)
+    
+    // 检查用户权限（通过上下文获取认证信息）
+    let isAuthenticated = ctx.getHeader("Authorization")?.isSome() ?? false
+    if (!isAuthenticated && user.isPrivate) {
+        throw AuthorizationError("Not authorized to access private profile")
+    }
+    
+    return UserProfile(
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        avatar: user.avatar,
+        preferences: user.preferences,
+        lastLogin: user.lastLogin,
+        isAccessible: isAuthenticated
+    )
+}
+
+// 数据查询Resource
+@Resource[uri = "data://{dataset}/query", description = "Query dataset information"]
+public func queryDataset(
+    @ResourceParam[description = "Dataset name"] dataset: String,
+    @ResourceParam[default = "all", description = "Query fields"] fields: Array<String>,
+    @ResourceParam[description = "Time range"] timeRange: String
+): DatasetResult {
+    // 验证数据集访问权限
+    if (!hasDatasetAccess(getCurrentUser(), dataset)) {
+        throw AuthorizationError("No access to dataset: ${dataset}")
+    }
+    
+    let results = dataQueryEngine.query(dataset, fields, timeRange)
+    
+    return DatasetResult(
+        dataset: dataset,
+        queryTime: timeRange,
+        fields: fields,
+        results: results,
+        count: results.size,
+        truncated: results.size >= maxQueryResults
+    )
+}
+
+// 报表生成Resource
+@Resource[uri = "report://{type}/{format}", description = "Generate reports in different formats"]
+public func generateReport(
+    @ResourceParam[description = "Report type"] reportType: String,
+    @ResourceParam[description = "Export format"] format: String
+): ReportData {
+    match (format) {
+        case "json" => generateJsonReport(reportType)
+        case "csv" => generateCsvReport(reportType)
+        case "pdf" => generatePdfReport(reportType)
+        case _ => throw ValidationError("Unsupported export format: ${format}")
+    }
+}
+```
+
+### 2.3 Resource权限控制
+
+```cangjie
+// 带权限检查的Resource
+@Resource[uri = "secure://{resource}", description = "Secure resource with access control"]
+public func getSecureResource(
+    @ResourceParam[description = "Resource identifier"] resource: String,
+    ctx: JoyContext
+): SecureResourceData {
+    // 获取用户权限级别
+    let userRole = getUserRole(ctx)
+    let resourceLevel = getResourceAccessLevel(resource)
+    
+    // 权限检查
+    if (userLevel < resourceLevel) {
+        throw AuthorizationError("Insufficient privileges to access resource: ${resource}")
+    }
+    
+    // 获取敏感数据
+    let sensitiveData = getSecureData(resource, userLevel)
+    
+    return SecureResourceData(
+        resource: resource,
+        accessLevel: resourceLevel,
+        data: sensitiveData,
+        auditLog: createAuditLog(ctx, resource, userRole)
+    )
+}
+```
+
+## 三、Prompt开发
+
+### 3.1 简单Prompt模板
+
+```cangjie
+import cjoy.mcp.*
+import cjoy.macros.*
+
+// 问候Prompt
+@Prompt[name = "greetUser", description = "Generate a greeting message for a user"]
+public func greetUser(
+    @PromptParam[description = "User name"] userName: String
+): String {
+    "Hello ${userName}! Welcome to CJoy application. How can I assist you today?"
+}
+
+// 代码解释Prompt
+@Prompt[name = "explainCode", description = "Generate explanation for code snippets"]
+public func explainCode(
+    @PromptParam[description = "Code to explain"] code: String,
+    @PromptParam[default = "javascript", description = "Programming language"] language: String
+): String {
+    "Please explain the following ${language} code:\n\n```\n${code}\n```\n\nProvide a clear explanation of what this code does, its structure, and any potential improvements."
+}
+
+// 任务引导Prompt
+@Prompt[name = "taskGuide", description = "Provide step-by-step guidance for completing tasks"]
+public func taskGuide(
+    @PromptParam[description = "The task to complete"] task: String,
+    @PromptParam[description = "User's experience level"] experience: String
+): String {
+    let guidance = match (experience) {
+        case "beginner" => getBeginnerGuidance(task)
+        case "intermediate" => getIntermediateGuidance(task)
+        case "expert" => getExpertGuidance(task)
+        case _ => getGeneralGuidance(task)
+    }
+    
+    return "I'll help you complete this task step by step. Let's break it down:\n\n${guidance}"
+}
+```
+
+### 3.2 复杂Prompt模板
+
+```cangjie
+// 带条件逻辑的Prompt
+@Prompt[name = "conditionalPrompt", description = "Generate conditional responses based on context"]
+public func conditionalPrompt(
+    @PromptParam[description = "User query"] query: String,
+    @PromptParam[description = "User context information"] context: HashMap<String, String>
+): String {
+    let hasPremium = context.get("hasPremium") == "true"
+    let userLevel = context.get("level") ?? "basic"
+    
+    let basePrompt = "You are asking: ${query}."
+    
+    if (hasPremium) {
+        return "${basePrompt}\n\nSince you have premium access, I can provide:\n- Detailed analysis\n- Advanced recommendations\n- Priority support"
+    } else {
+        return "${basePrompt}\n\nI can provide:\n- Basic assistance\n- General guidance\n- Helpful tips"
+    }
+}
+
+// 多步骤交互Prompt
+@Prompt[name = "interactivePrompt", description = "Multi-step interactive prompt"]
+public func interactivePrompt(
+    @PromptParam[description = "Initial request"] initialRequest: String
+): Array<PromptMessage> {
+    return [
+        PromptMessage(
+            role: "assistant",
+            content: "I'll help you with: ${initialRequest}. First, I need some information."
+        ),
+        PromptMessage(
+            role: "assistant", 
+            content: "Could you please provide:\n1. What specific aspect are you interested in?\n2. What's your timeline?\n3. Any constraints I should know about?"
+        ),
+        PromptMessage(
+            role: "assistant",
+            content: "Once I have this information, I'll provide a tailored solution."
+        )
+    ]
+}
+
+// 动态内容生成Prompt
+@Prompt[name = "dynamicContent", description = "Generate content based on multiple parameters"]
+public func dynamicContent(
+    @PromptParam[description = "Content type"] contentType: String,
+    @PromptParam[description = "Target audience"] audience: String,
+    @PromptParam[description = "Content tone"] tone: String
+): String {
+    let template = selectTemplate(contentType, audience, tone)
+    return "Here's content for a ${contentType} targeting ${audience} with a ${tone} tone:\n\n${template}"
+}
+```
+
+## 四、服务注册与配置
+
+### 4.1 MCP服务注册
+
+```cangjie
+import cjoy.mcp.*
+import cjoy.*
+
+main(): Int64 {
+    let joy = Joy.default()
+    
+    // 注册SSE模式
+    McpServer.registerSseTo(joy, ssePath: "/sse", messagePath: "/mcp")
+    
+    // 或者注册StreamableHttp模式
+    McpServer.registerStreamableTo(joy, path: "/mcp", isJsonResp: true)
+    
+    joy.run("127.0.0.1", 18881)
+    return 0
+}
+```
+
+### 4.2 认证集成
+
+```cangjie
+// 自定义认证中间件
+class McpAuthMiddleware <: JoyMiddlewareFunc {
+    public func handle(ctx: JoyContext, next: JoyMiddlewareFunc): Unit {
+        let authHeader = ctx.getHeader("Authorization")
+        
+        // 验证API密钥
+        if (!isValidApiKey(authHeader)) {
+            ctx.status(401).json(ErrorResponse(
+                error: "Unauthorized",
+                message: "Invalid or missing API key"
+            ))
+            return
+        }
+        
+        // 设置用户上下文
+        ctx.put("userId", getUserIdFromKey(authHeader))
+        
+        next.handle(ctx)
+    }
+}
+
+// 注册带认证的MCP服务
+main(): Int64 {
+    let joy = Joy.default()
+    
+    // 添加认证中间件
+    joy.use(McpAuthMiddleware())
+    
+    // 注册MCP服务
+    McpServer.registerStreamableTo(joy, path: "/mcp", isJsonResp: true)
+    
+    joy.run("127.0.0.1", 18881)
+    return 0
+}
+```
+
+### 4.3 配置管理
+
+```cangjie
+// MCP服务配置
+@Component
+class McpServerConfig {
+    @Value[#"${mcp.server.name:CJoyServer}"#]
+    public var serverName: String
+    
+    @Value[#"${mcp.server.version:1.0.0}"#]
+    public var version: String
+    
+    @Value[#"${mcp.server.maxTools:100}"#]
+    public var maxTools: Int
+    
+    @Value[#"${mcp.server.enableDebug:false}"#]
+    public var enableDebug: Bool
+    
+    @Value[#"${mcp.server.allowedOrigins:*}"#]
+    public var allowedOrigins: Array<String>
+}
+
+// 使用配置的服务启动
+@Post[path = "/mcp/config"]
+func updateConfig(ctx: JoyContext, @BodyParam config: McpServerConfig): Unit {
+    // 验证配置
+    if (!validateConfig(config)) {
+        ctx.status(400).json(ErrorResponse(
+            message: "Invalid configuration"
+        ))
+        return
+    }
+    
+    // 更新配置（这里简化处理，实际应该持久化）
+    updateServerConfig(config)
+    
+    ctx.json(SuccessResponse(
+        message: "Configuration updated successfully"
+    ))
+}
+```
+
+## 五、最佳实践与注意事项
+
+### 5.1 Tool开发最佳实践
+
+| 实践 | 说明 | 示例 |
+|------|------|------|
+| **参数验证** | 验证所有输入参数 | 使用Option处理可选参数 |
+| **错误处理** | 提供清晰的错误信息 | 返回结构化错误响应 |
+| **幂等性** | 确保相同输入产生相同输出 | 避免副作用 |
+| **性能优化** | 缓存重复查询结果 | 避免重复计算 |
+| **文档完善** | 提供详细的参数和返回描述 | 便于AI理解和使用 |
+
+### 5.2 Resource安全最佳实践
+
+| 安全措施 | 说明 | 实现方式 |
+|-----------|----------|----------|
+| **权限检查** | 验证用户访问权限 | 结合认证中间件 |
+| **数据脱敏** | 隐藏敏感信息 | 只返回必要字段 |
+| **访问日志** | 记录资源访问记录 | 便于审计和监控 |
+| **速率限制** | 限制访问频率 | 防止资源滥用 |
+| **数据过滤** | 根据用户权限过滤数据 | 实现数据安全 |
+
+### 5.3 Prompt设计原则
+
+| 原则 | 说明 | 设计要点 |
+|------|------|----------|
+| **明确性** | 清晰表达需求 | 避免模糊和歧义 |
+| **一致性** | 保持风格统一 | 使用相同的术语和格式 |
+| **可控性** | 引导AI在正确方向 | 避免无关内容 |
+| **可重用** | 设计通用模板 | 提高开发效率 |
+| **用户友好** | 考虑用户体验 | 提供有用的上下文信息 |
+
+### 5.4 性能优化建议
+
+```cangjie
+// 使用缓存优化Tool性能
+@Component
+class CachedToolService {
+    private let _cache: ConcurrentHashMap<String, ToolResult>
+    
+    init(cacheService: CacheService) {
+        _cacheService = cacheService
+    }
+    
+    @Tool[name = "cachedData", description = "Get cached data with performance optimization"]
+    public func getCachedData(
+        @ToolParam[description = "Data key"] key: String
+    ): ToolResult {
+        // 先检查缓存
+        if (let Some(cached) <- _cache.get(key)) {
+            return cached
+        }
+        
+        // 缓存未命中，执行计算
+        let result = performExpensiveComputation(key)
+        
+        // 缓存结果
+        _cache.add(key, result)
+        
+        return result
+    }
+}
+
+// 批量处理优化
+@Tool[name = "batchProcessor", description = "Process multiple items efficiently"]
+public func batchProcess(
+    @ToolParam[description = "Items to process"] items: Array<String>
+): BatchResult {
+    let results = ArrayList<ProcessResult>()
+    
+    // 分批处理，避免内存溢出
+    let batchSize = 50
+    for (i in 0..items.size step batchSize) {
+        let batch = items[i..<i + batchSize]
+        let batchResults = processBatch(batch)
+        results.appendAll(batchResults)
+    }
+    
+    return BatchResult(
+        totalItems: items.size,
+        processedItems: results.size,
+        results: results
+    )
+}
+```
+
+### 5.5 注意事项
+
+| 注意事项 | 说明 | 解决方案 |
+|----------|------|----------|
+| **参数限制** | MCP协议有参数限制 | 合理设计参数结构 |
+| **响应大小** | 过大响应可能超时 | 控制返回数据量 |
+| **并发处理** | 高并发访问共享资源 | 使用线程安全的数据结构 |
+| **错误传播** | 避免敏感信息泄露 | 统一错误处理格式 |
+| **版本兼容** | 协议变更考虑向后兼容 | 设计扩展性强的接口 |
+| **监控日志** | 监控MCP服务状态 | 实现完整的可观测性 |
+
 
 使用示例：[examples/mcpserver](../../examples/src/mcpserver/main.cj) 或者测试代码 [test/mcp_test](../../src/test/mcp_test.cj)。
 

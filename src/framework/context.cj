@@ -286,6 +286,20 @@ public interface JoyContext <: Context {
     func string(body: String): JoyContext
 
     /**
+     * reply response with text plain body and status code OK(200)
+     *
+     * @param body: string body
+     */
+    func text(body: String): JoyContext
+
+    /**
+     * reply response with html body and status code OK(200)
+     *
+     * @param body: string body
+     */
+    func html(body: String): JoyContext
+
+    /**
      * reply response with the body of content type and status code
      *
      * @param contentType: the content type
@@ -742,6 +756,28 @@ class JoyHttpContext <: JoyContext {
     public func string(body: String): JoyContext {
         _respBody = body
         string(JoyHttpConsts.MIME_TEXT_PLAIN_UTF8, body)
+        this
+    }
+
+    /**
+     * reply response with text plain body and status code OK(200)
+     *
+     * @param body: string body
+     */
+    public func text(body: String): JoyContext {
+        _respBody = body
+        string(JoyHttpConsts.MIME_TEXT_PLAIN_UTF8, body)
+        this
+    }
+
+    /**
+     * reply response with html body and status code OK(200)
+     *
+     * @param body: string body
+     */
+    public func html(body: String): JoyContext {
+        _respBody = body
+        string("text/html; charset=utf-8", body)
         this
     }
 
