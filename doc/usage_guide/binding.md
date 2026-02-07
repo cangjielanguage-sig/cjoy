@@ -2,16 +2,25 @@
 
 CJoy 提供了灵活的参数绑定机制，支持从 Query、Form、Header 等来源自动将参数绑定到类或结构体。
 
+---
+
 ## 概述
 
-通过 `@Bind` 宏标记，可以在类或结构体中声明字段映射。绑定时会自动从指定源获取值并进行类型转换。
+CJoy参数绑定系统基于以下核心概念设计：
 
-- 与 `@Valid` 宏结合使用，实现绑定 + 校验
-- 支持多种数据源：Query、Form、Header、自定义 Map
-- 自动类型转换：字符串到各种目标类型
-- 支持默认值
+- **@Bind宏**：通过编译时宏生成绑定代码，实现零反射
+- **多数据源支持**：支持 Query、Form、Header、自定义 Map 等数据源
+- **自动类型转换**：支持字符串到各种目标类型的自动转换
+- **默认值支持**：可字段设置默认值
+- **与校验集成**：可与 `@Valid` 宏结合使用，实现绑定 + 校验
 
-## JoyBindSource 接口
+核心接口：
+- `JoyBindSource`：数据源接口，参见 [bind.cj](../../src/bind/bind.cj)
+- `JoyBindable`：可绑定类型接口，参见 [bindable.cj](../../src/bind/bindable.cj)
+
+---
+
+## 一、JoyBindSource 接口
 
 `JoyBindSource` 是数据源接口，用于从不同位置获取参数值，下面是一些内置实现扩展：
 
@@ -22,7 +31,7 @@ CJoy 提供了灵活的参数绑定机制，支持从 Query、Form、Header 等�
 | `HttpHeaders` | HTTP Headers 数据 | `String`、`Collection` |
 | `HashMap<String, String>` | 简化的 HashMap 数据源 | `String` |
 
-### MapContainer
+### 1.1 MapContainer
 
 使用 Map 作为数据源：
 
@@ -37,11 +46,13 @@ data.add("age", 25)
 let container = MapContainer(data)
 ```
 
-## JoyBindable 接口
+---
+
+## 二、JoyBindable 接口
 
 `JoyBindable` 是可绑定类型的接口，支持类型绑定和默认值。
 
-### 支持的类型
+### 2.1 支持的类型
 
 | 类型 | 说明 |
 |------|------|
@@ -63,7 +74,9 @@ let container = MapContainer(data)
 | `ArrayList<T>` | 数组列表 |
 | `Option<T>` | 可选值（嵌套绑定需要元素也实现 `JoyBindable`） |
 
-## @Bind 宏
+---
+
+## 三、@Bind 宏
 
 使用 `@Bind` 宏标记字段映射：
 
@@ -83,7 +96,7 @@ public struct UserQuery {
 }
 ```
 
-### @BindField 参数
+### 3.1 @BindField 参数
 
 | 参数 | 类型 | 默认值 | 说明 |
 |------|------|--------|------|
@@ -91,11 +104,13 @@ public struct UserQuery {
 | `default` | `String` | `""` | 默认值，字符串形式 |
 | `timeformat` | `String` | 无 | DateTime 格式字符串，如 `"yyyy-MM-dd HH:mm:ss"` |
 
-## JoyContext 绑定方法
+---
+
+## 四、JoyContext 绑定方法
 
 `JoyContext` 提供了多个便捷的绑定方法：
 
-### bindQuery - 绑定 Query 参数
+### 4.1 bindQuery - 绑定 Query 参数
 
 从 URL 查询参数绑定：
 
@@ -126,7 +141,7 @@ func search(ctx: JoyContext): Unit {
 
 请求：`GET /search?keyword=cjoy&page=2&size=10`
 
-### bindPostForm - 绑定 Form 参数
+### 4.2 bindPostForm - 绑定 Form 参数
 
 从 POST 表单数据绑定：
 
@@ -151,7 +166,7 @@ func login(ctx: JoyContext): Unit {
 }
 ```
 
-### bindHeader - 绑定 Header 参数
+### 4.3 bindHeader - 绑定 Header 参数
 
 从 HTTP Header 绑定：
 
@@ -176,9 +191,11 @@ func info(ctx: JoyContext): Unit {
 }
 ```
 
-## 完整示例
+---
 
-### 查询参数绑定
+## 五、完整示例
+
+### 5.1 查询参数绑定
 
 ```cangjie
 import cjoy.Joy
@@ -210,7 +227,7 @@ func listUsers(ctx: JoyContext): Unit {
 }
 ```
 
-### 表单绑定
+### 5.2 表单绑定
 
 ```cangjie
 import cjoy.Joy
@@ -247,7 +264,7 @@ func register(ctx: JoyContext): Unit {
 }
 ```
 
-### 数组绑定
+### 5.3 数组绑定
 
 ```cangjie
 import cjoy.Joy
@@ -276,7 +293,7 @@ func filter(ctx: JoyContext): Unit {
 
 请求：`GET /filter?ids=1,2,3&tags=a,b,c`
 
-### DateTime 绑定
+### 5.4 DateTime 绑定
 
 ```cangjie
 import cjoy.Joy
@@ -303,7 +320,7 @@ func schedule(ctx: JoyContext): Unit {
 }
 ```
 
-### 自定义数据源
+### 5.5 自定义数据源
 
 ```cangjie
 import cjoy.Joy
@@ -336,7 +353,7 @@ func getConfig(ctx: JoyContext): Unit {
 }
 ```
 
-### 绑定 + 校验
+### 5.6 绑定 + 校校
 
 结合 `@Bind` 和 `@Valid` 宏：
 
@@ -374,14 +391,23 @@ func login(ctx: JoyContext): Unit {
 }
 ```
 
-## 注意事项
+---
+
+## 六、注意事项
 
 1. **类型转换**：Bind 会自动将源数据转换为目标类型，失败时返回 `None`
+
 2. **默认值**：可以通过 `default` 参数设置默认值
+
 3. **DateTime 格式**：使用 `timeformat` 参数指定日期时间格式
+
 4. **嵌套绑定**：`Array<T>` 和 `ArrayList<T>` 会尝试对每个元素进行绑定
+
 5. **可选值**：`Option<T>` 支持可选值的绑定
+
 6. **组合使用**：与 `@Valid` 宏结合使用实现完整的数据处理流程
 
-----
+7. **@Bind 和 @Json**：可同时使用，同时启用 JSON 序列化和参数绑定
+
+---
 << [返回](../../README.md#使用指导)

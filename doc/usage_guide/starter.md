@@ -1,10 +1,16 @@
 # 服务启动
 
+---
+
 ## 概述
 
 CJoy 使用 `Joy` 类来创建和启动 HTTP 服务器。`Joy` 类封装了底层 Cangjie SDK 的 `Server`，提供了更简洁的 API 和默认配置。
 
-## 基本启动
+核心类：`Joy`，参见 [engine.cj](../../src/framework/engine.cj)
+
+---
+
+## 一、基本启动
 
 使用默认配置创建并启动服务实例：
 
@@ -20,11 +26,13 @@ main(): Int64 {
 }
 ```
 
-## JoyConfig 配置
+---
+
+## 二、JoyConfig 配置
 
 `JoyConfig` 结构体提供对服务实例一些个性化配置参数：
 
-### 配置选项
+### 2.1 配置选项
 
 | 参数 | 类型 | 默认值 | 说明 |
 |------|------|--------|------|
@@ -35,7 +43,7 @@ main(): Int64 {
 | `methodNotAllowedHandler` | `JoyRequestHandler` | `JoyMethodNotAllowedHandler()` | 方法不允许的 Handler |
 | `maxRequestBodySize` | `Int` | `32 * 1024 * 1024` (32MB) | 最大请求体大小 |
 
-### 使用配置
+### 2.2 使用配置
 
 ```cangjie
 import cjoy.Joy
@@ -53,7 +61,7 @@ main(): Int64 {
 }
 ```
 
-### 自定义 404 Handler
+### 2.3 自定义 404 Handler
 
 ```cangjie
 import cjoy.Joy
@@ -70,7 +78,7 @@ let notFoundHandler: JoyRequestHandler = {
 }
 
 let methodNotAllowedHandler: JoyRequestHandler = {
-    ctx: JoyContextContext =>
+    ctx: JoyContext =>
         ctx.status(405).json(@ToJson({
             "code": 405,
             "message": "方法不允许",
@@ -90,9 +98,11 @@ main(): Int64 {
 }
 ```
 
-## 创建 Joy 实例
+---
 
-### default() - 默认实例
+## 三、创建 Joy 实例
+
+### 3.1 default() - 默认实例
 
 调用 `Joy.default()` 创建的实例，配置都采用默认值：
 
@@ -100,7 +110,7 @@ main(): Int64 {
 let joy = Joy.default()
 ```
 
-### create() - 指定配置
+### 3.2 create() - 指定配置
 
 `Joy` 类提供 `create` 方法，支持创建多个不同配置的实例，启动绑定在不同的 IP 与 Port：
 
@@ -118,9 +128,11 @@ let joy2 = Joy.create(cfg, name: "inst2")
 
 **注意**：实例名称必须唯一，重复的名称会抛出 `IllegalArgumentException`。
 
-## 启动服务
+---
 
-### run() - HTTP 服务器
+## 四、启动服务
+
+### 4.1 run() - HTTP 服务器
 
 `Joy` 类提供 `run` 方法支持不同的启动方法，一旦调用 `run` 方法会阻塞当前线程：
 
@@ -129,7 +141,7 @@ let joy2 = Joy.create(cfg, name: "inst2")
 joy.run("127.0.0.1", 8080)
 ```
 
-### run() - HTTPS 服务器
+### 4.2 run() - HTTPS 服务器
 
 使用证书文件启动 HTTPS 服务器：
 
@@ -140,7 +152,7 @@ let keyPath = "./cert/server_key.pem"
 joy.run("0.0.0.0", 8443, certFilePath: certPath, keyFilePath: keyPath)
 ```
 
-### run() - HTTP/2
+### 4.3 run() - HTTP/2
 
 使用 HTTP/2 协议：
 
@@ -155,7 +167,7 @@ joy.run("0.0.0.0", 8443,
 )
 ```
 
-### run() - 自定义 ServerBuilder
+### 4.4 run() - 自定义 ServerBuilder
 
 直接使用官方 SDK 的 `ServerBuilder`，指定其参数：
 
@@ -172,7 +184,9 @@ let serverBuilder = ServerBuilder()
 joy.run(serverBuilder)
 ```
 
-## 异步启动与优雅关闭
+---
+
+## 五、异步启动与优雅关闭
 
 可以在其他线程中异步启动实例，在另一个线程主动关闭实例：
 
@@ -207,11 +221,13 @@ func shutdownServer(joy: Joy): Unit {
 }
 ```
 
-## 服务注册
+---
+
+## 六、服务注册
 
 Joy 实例提供服务注册功能，可以在多个 Joy 实例之间共享服务：
 
-### addService - 添加服务
+### 6.1 addService - 添加服务
 
 ```cangjie
 import cjoy.Joy
@@ -228,7 +244,7 @@ main(): Int64 {
 }
 ```
 
-### getService - 获取服务
+### 6.2 getService - 获取服务
 
 ```cangjie
 @Get[path = "/api/data"]
@@ -243,9 +259,11 @@ func handleData(ctx: JoyContext): Unit {
 }
 ```
 
-## 完整示例
+---
 
-### 基本 HTTP 服务器
+## 七、完整示例
+
+### 7.1 基本 HTTP 服务器
 
 ```cangjie
 import cjoy.Joy
@@ -285,7 +303,7 @@ main(): Int64 {
 }
 ```
 
-### HTTPS 服务器
+### 7.2 HTTPS 服务器
 
 ```cangjie
 import cjoy.Joy
@@ -313,7 +331,7 @@ main(): Int64 {
 }
 ```
 
-### 多实例示例
+### 7.3 多实例示例
 
 ```cangjie
 import cjoy.Joy
@@ -352,14 +370,21 @@ main(): Int64 {
 }
 ```
 
-## 注意事项
+---
+
+## 八、注意事项
 
 1. **阻塞启动**：`run` 方法会阻塞当前线程，直到服务器关闭
+
 2. **实例名称**：使用 `create` 方法时，实例名称必须唯一
+
 3. **路由注册**：必须在调用 `run` 之前完成所有路由注册
+
 4. **服务共享**：使用 `addService` 添加的服务可以在不同实例间共享（通过 ServiceContainer.GLOBAL）
+
 5. **优雅关闭**：使用 `shutdown(true)` 进行优雅关闭，等待当前请求完成
+
 6. **请求大小限制**：默认限制为 32MB，可根据需要调整 `maxRequestBodySize`
 
-----
+---
 << [返回](../../README.md#使用指导)

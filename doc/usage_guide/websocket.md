@@ -78,16 +78,14 @@ class EchoWebSocketHandler <: JoyWebSocketHandler {
     
     public func onMessage(session: JoyWebSocketSession, message: JoyWebSocketMessage): Unit {
         match (message.msgType) {
-            case WsText => {
+            case WsText => 
                 println("收到文本消息: ${message.asText()}")
                 // 原样返回
                 session.send(message)
-            }
-            case WsBinary => {
+            case WsBinary => 
                 println("收到二进制消息，大小: ${message.data().size}")
                 // 原样返回二进制数据
                 session.send(message)
-            }
         }
     }
     
@@ -293,12 +291,10 @@ class BinaryWebSocketHandler <: JoyWebSocketHandler {
     
     public func onMessage(session: JoyWebSocketSession, message: JoyWebSocketMessage): Unit {
         match (message.msgType) {
-            case WsText => {
+            case WsText => 
                 handleTextMessage(message.asText())
-            }
-            case WsBinary => {
+            case WsBinary => 
                 handleBinaryMessage(message.asBinary())
-            }
         }
     }
     
@@ -413,7 +409,7 @@ class OptimizedWebSocketHandler <: JoyWebSocketHandler {
     
     public func onMessage(session: JoyWebSocketSession, message: JoyWebSocketMessage): Unit {
         match (message.msgType) {
-            case WsText => {
+            case WsText => 
                 let text = message.asText()
                 
                 // 消息缓冲优化
@@ -429,8 +425,7 @@ class OptimizedWebSocketHandler <: JoyWebSocketHandler {
                     messageBuffer.clear()
                     lastFlushTime = DateTime.now()
                 }
-            }
-            case _ => {}
+            case _ => ()
         }
     }
     

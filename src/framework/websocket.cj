@@ -338,6 +338,33 @@ public class JoyWebSocketSession <: Context {
             case WsPing => _ws.writePingFrame(message.data())
         }
     }
+
+    /**
+     * send text message to websocket
+     *
+     * @param text: the text message
+     */
+    public func send(text: String): Unit {
+        send(JoyWebSocketMessage.createText(text))
+    }
+
+    /**
+     * send binary message to websocket
+     *
+     * @param data: the binary message
+     */
+    public func send(data: Array<Byte>): Unit {
+        send(JoyWebSocketMessage.createBinary(data))
+    }
+
+    /**
+     * send json message to websocket
+     *
+     * @param data: the json message
+     */
+    public func send<T>(json: T): Unit where T <: JsonSerializable {
+        send(JoyWebSocketMessage.createText(json))
+    }
 }
 
 class JoyWebSocketUpgradeHandler <: JoyRequestHandler {

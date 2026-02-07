@@ -2,7 +2,23 @@
 
 RequestId 中间件为每个 HTTP 请求生成或分配一个唯一的请求 ID。这对于日志追踪、问题排查和分布式系统中的请求链路追踪非常有用。
 
-## 基本用法
+---
+
+## 概述
+
+CJoy RequestId中间件基于以下核心概念设计：
+
+- **请求ID生成**：为每个请求生成唯一标识
+- **自动传递**：自动设置到请求头和响应头
+- **上下文存储**：将请求 ID 存储到上下文中，方便获取
+- **格式化输出**：支持 `<prefix>-<sequence>` 格式
+- **链路追踪**：支持分布式系统中的请求链路追踪
+
+核心类：`RequestId`，参见 [request_id.cj](../../src/middleware/request_id.cj)
+
+---
+
+## 一、基本用法
 
 ```cangjie
 import cjoy.middleware.{RequestId, getRequestId}
@@ -24,16 +40,18 @@ main(): Int64 {
 }
 ```
 
-## 配置选项
+---
 
-### 构造函数参数
+## 二、配置选项
+
+### 2.1 构造函数参数
 
 | 参数 | 类型 | 默认值 | 说明 |
 |------|------|--------|------|
 | prefix | String | 随机4位字符串 | 请求 ID 的前缀 |
 | headerName | String | "X-Request-Id" | 请求头名称，用于获取或设置请求 ID |
 
-### prefix
+### 2.2 prefix
 
 设置请求 ID 的前缀。如果不指定，中间件会生成一个随机的 4 位字符串作为前缀。
 
@@ -49,7 +67,7 @@ let requestId = RequestId(
 
 例如：`app1-0000000001`、`app1-0000000002`
 
-### headerName
+### 2.3 headerName
 
 指定用于获取或设置请求 ID 的请求头名称。
 
@@ -61,7 +79,9 @@ let requestId = RequestId(
 )
 ```
 
-## 工作原理
+---
+
+## 三、工作原理
 
 1. **检查请求头**：中间件首先检查请求中是否已包含指定的请求头
 2. **使用现有 ID**：如果请求头中存在请求 ID，则使用该 ID
@@ -69,7 +89,9 @@ let requestId = RequestId(
 4. **设置响应头**：将请求 ID 设置到响应头中
 5. **存储到上下文**：将请求 ID 存储到上下文中，可通过 `getRequestId` 获取
 
-## 获取请求 ID
+---
+
+## 四、获取请求 ID
 
 使用 `getRequestId` 函数从上下文中获取请求 ID：
 
@@ -87,9 +109,11 @@ func handleData(ctx: JoyContext): Unit {
 }
 ```
 
-## 完整示例
+---
 
-### 基本示例
+## 五、完整示例
+
+### 5.1 基本示例
 
 ```cangjie
 import cjoy.Joy
@@ -106,7 +130,6 @@ main(): Int64 {
 
     joy.router.get("/hello", {ctx: JoyContext =>
         if (let Some(reqId) <- getRequestId(ctx)) {
-            ctx.header("X-Request-Id", reqId)
             ctx.json(@ToJson({
                 "message": "Hello!",
                 "requestId": reqId
@@ -119,7 +142,7 @@ main(): Int64 {
 }
 ```
 
-### 配合 AccessLog 使用
+### 5.2 配合 AccessLog 使用
 
 ```cangjie
 import cjoy.Joy
@@ -151,7 +174,7 @@ main(): Int64 {
 }
 ```
 
-### 链路追踪
+### 5.3 链路追踪
 
 在分布式系统中，通过请求 ID 追踪请求链路：
 
@@ -189,7 +212,9 @@ main(): Int64 {
 }
 ```
 
-## 客户端传递请求 ID
+---
+
+## 六、客户端传递请求 ID
 
 客户端可以在请求头中传递请求 ID，用于链路追踪：
 
@@ -219,7 +244,9 @@ fetch('/api/data', {
 });
 ```
 
-## 使用场景
+---
+
+## 七、使用场景
 
 - **日志追踪**：在日志中关联同一请求的所有日志记录
 - **问题排查**：通过请求 ID 快速定位特定请求的处理过程
@@ -227,13 +254,19 @@ fetch('/api/data', {
 - **性能分析**：统计特定请求 ID 的处理时间
 - **安全审计**：记录每个请求的唯一标识，用于安全审计
 
-## 注意事项
+---
+
+## 八、注意事项
 
 1. **请求 ID 格式**：格式为 `<prefix>-<sequence>`，sequence 是自增的数字（10位，前导零填充）
+
 2. **前缀选择**：使用有意义的前缀便于区分不同服务或环境
+
 3. **线程安全**：自增序列号使用原子操作，确保线程安全
+
 4. **序列重置**：服务重启后序列号会重置，但前缀是随机生成或指定的，可避免冲突
+
 5. **日志格式**：建议在日志中统一使用 `[请求ID]` 前缀格式
 
-----
+---
 << [返回](../../README.md#使用指导)

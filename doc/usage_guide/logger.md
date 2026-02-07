@@ -1,10 +1,26 @@
 # 日志
 
-## 概述
-
 CJoy 内置日志工具 `JoyLoggerFactory`，用于创建 Logger 对象。默认情况下日志输出到 Console。
 
-### 日志级别
+---
+
+## 概述
+
+CJoy 日志系统基于以下核心概念设计：
+
+- **日志级别**：支持 DEBUG、INFO、WARN、ERROR 四种级别
+- **日志宏**：通过 `@JoyCreateLogger`、`@JoyLogDebug` 等宏自动生成日志代码
+- **格式统一**：自动添加时间、级别、线程、文件名、行号等信息
+- **扩展接口**：支持自定义 Logger 实现，可适配其他日志框架
+- **请求访问日志**：提供 `AccessLog` 中间件记录 HTTP 请求访问
+
+核心类：
+- `JoyLoggerFactory`：日志工厂类，参见 [logger.cj](../../src/log/logger.cj)
+- `AccessLog`：访问日志中间件，参见 [access_log.cj](../../src/middleware/access_log.cj)
+
+---
+
+## 一、日志级别
 
 CJoy 支持以下日志级别（按优先级从低到高）：
 
@@ -15,7 +31,9 @@ CJoy 支持以下日志级别（按优先级从低到高）：
 | `WARN` | 警告信息，表明潜在问题 |
 | `ERROR` | 错误信息，记录错误事件 |
 
-## 使用日志宏
+---
+
+## 二、使用日志宏
 
 CJoy 提供以下日志宏，建议应用优先采用宏打印日志：
 
@@ -27,7 +45,7 @@ CJoy 提供以下日志宏，建议应用优先采用宏打印日志：
 | `@JoyLogWarn` | 打印 WARN 级别日志 |
 | `@JoyLogError` | 打印 ERROR 级别日志 |
 
-### 基本用法
+### 2.1 基本用法
 
 在 package 层创建 Logger，然后在同一 package 下的任何文件中使用日志宏：
 
@@ -54,7 +72,7 @@ func handleData(ctx: JoyContext): Unit {
 }
 ```
 
-### 日志格式
+### 2.2 日志格式
 
 日志宏自动添加以下信息：
 
@@ -72,7 +90,9 @@ func handleData(ctx: JoyContext): Unit {
 2026-01-31T22:18:20.456789123+08:00 DEBUG 2 [myapp/handler.cj:45] 处理请求数据: /api/data
 ```
 
-## 日志级别控制
+---
+
+## 三、日志级别控制
 
 ```cangjie
 import cjoy.log.JoyLoggerFactory
@@ -82,13 +102,15 @@ main(): Int64 {
     let logger = JoyLoggerFactory.createLogger("myapp")
     logger.level = LogLevel.DEBUG  // 设置为调试级别
 
-    let joy = Joy.default()    
+    let joy = Joy.default()
     joy.run("127.0.0.1", 8080)
     return 0
 }
 ```
 
-## 扩展日志框架
+---
+
+## 四、扩展日志框架
 
 可以将 CJoy 的日志输出适配到其他日志框架（如 Log4j、slf4j 等）：
 
@@ -151,11 +173,13 @@ main(): Int64 {
 }
 ```
 
-## 请求访问日志
+---
+
+## 五、请求访问日志
 
 CJoy 内置请求访问日志 `AccessLog` 中间件，用于记录每次 HTTP 请求的访问信息。
 
-### 基本用法
+### 5.1 基本用法
 
 ```cangjie
 import cjoy.middleware.AccessLog
@@ -164,7 +188,7 @@ import cjoy.middleware.AccessLog
 joy.router.use(AccessLog())
 ```
 
-### 使用自定义 Logger
+### 5.2 使用自定义 Logger
 
 ```cangjie
 import cjoy.middleware.AccessLog
@@ -175,7 +199,7 @@ let logger = JoyLoggerFactory.createLogger("myapp.access")
 joy.router.use(AccessLog(logger: Some(logger)))
 ```
 
-### 使用过滤条件
+### 5.3 使用过滤条件
 
 ```cangjie
 // 方式3：指定过滤条件，忽略某些请求
@@ -188,7 +212,7 @@ joy.router.use(AccessLog(
 ))
 ```
 
-### 日志格式
+### 5.4 日志格式
 
 AccessLog 记录的日志包含：
 
@@ -204,41 +228,11 @@ AccessLog 记录的日志包含：
 [AccessLog] 127.0.0.1 GET /api/data 200 15
 ```
 
-### 完整示例
+---
 
-```cangjie
-import cjoy.Joy
-import cjoy.middleware.AccessLog
-import cjoy.log.JoyLoggerFactory
-import cjoy.log.macros.*
+## 六、JoyLoggerFactory API
 
-@JoyCreateLogger("myapp")
-
-main(): Int64 {
-    let joy = Joy.default()
-
-    // 注册访问日志中间件
-    joy.router.use(AccessLog())
-
-    joy.router.get("/api/data", {ctx: JoyContext =>
-        @JoyLogInfo("处理请求: ${ctx.method} ${ctx.url}")
-        ctx.json([("data", "value")])
-    })
-
-    joy.router.post("/api/submit", {ctx: JoyContext =>
-        @JoyLogInfo("收到提交请求")
-        // 处理逻辑...
-        ctx.json([("status", "success")])
-    })
-
-    joy.run("127.0.0.1", 8080)
-    return 0
-}
-```
-
-## JoyLoggerFactory API
-
-### createLogger
+### 6.1 createLogger
 
 创建指定名称的 Logger 对象：
 
@@ -248,7 +242,7 @@ let logger = JoyLoggerFactory.createLogger("myapp")
 
 如果已注册自定义的 Logger 创建器，则使用自定义创建器；否则使用 ConsoleLogger。
 
-### registerCreator
+### 6.2 registerCreator
 
 注册自定义的 Logger 创建函数：
 
@@ -262,11 +256,13 @@ JoyLoggerFactory.registerCreator({
 
 **注意**：必须在 `main` 方法最开始调用 `registerCreator`，确保在所有静态初始化之前完成。
 
-## 使用示例
+---
+
+## 七、使用示例
 
 使用示例：[examples/logger](../../examples/src/logger/main.cj)。
 
-### 示例1：基本日志
+### 7.1 基本日志
 
 ```cangjie
 @JoyCreateLogger("simple")
@@ -278,7 +274,7 @@ func hello(ctx: JoyContext): Unit {
 }
 ```
 
-### 示例2：调试日志
+### 7.2 调试日志
 
 ```cangjie
 @JoyCreateLogger("debug")
@@ -293,7 +289,7 @@ func debug(ctx: JoyContext): Unit {
 }
 ```
 
-### 示例3：错误日志
+### 7.3 错误日志
 
 ```cangjie
 @JoyCreateLogger("error")
@@ -310,14 +306,16 @@ func error(ctx: JoyContext): Unit {
 }
 ```
 
-## 最佳实践
+---
 
-1. **日志级别**：
+## 八、注意事项
+
+1. **日志级别选择**：
    - 开发环境：使用 `DEBUG` 级别
    - 生产环境：使用 `INFO` 或 `WARN` 级别
    - 避免在生产环境输出 `DEBUG` 日志，可能泄露敏感信息
 
-2. **日志内容**：
+2. **日志内容规范**：
    - 使用结构化的日志格式，便于后续解析和分析
    - 记录关键业务操作的输入输出
    - 避免在日志中记录敏感信息（密码、令牌等）
@@ -327,7 +325,7 @@ func error(ctx: JoyContext): Unit {
    - 避免在循环中频繁记录日志
    - 使用字符串拼接而非多次日志调用
 
-4. **访问日志**：
+4. **访问日志管理**：
    - 生产环境建议启用 AccessLog
    - 定期清理或轮转访问日志文件
    - 结合日志分析工具进行监控和统计
@@ -337,5 +335,7 @@ func error(ctx: JoyContext): Unit {
    - 配置日志轮转、归档和压缩策略
    - 将日志输出到集中式日志系统（如 ELK）
 
-----
+6. **Logger注册时机**：`registerCreator` 必须在 `main` 方法最开始调用
+
+---
 << [返回](../../README.md#使用指导)

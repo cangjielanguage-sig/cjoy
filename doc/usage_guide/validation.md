@@ -1,18 +1,27 @@
 # 校验
 
-CJoy 内置校验框架，支持通过宏对类、结构、函数参数进行校验。
+---
 
 ## 概述
 
-校验框架通过编译时宏生成校验代码，在运行时对成员变量或函数参数进行验证。验证失败时抛出 `JoyValidationException` 异常。
+CJoy 内置校验框架，支持通过宏对类、结构、函数参数进行校验。
 
-- 宏展开后，会自动实现 `JoyValidatable` 接口，可以调用其 `validate` 方法对成员属性进行校验
-- 宏可以与 `@Json`、`@Bind` 一起使用
-- 函数参数校验仅为实验性探索，参见 [Issue说明](https://gitcode.com/Cangjie/UsersForum/issues/1924)
+核心概念：
+- **编译时生成代码**：宏在编译时展开，生成校验方法实现
+- **自动接口实现**：`@Valid` 宏展开后自动实现 `JoyValidatable` 接口
+- **组合使用**：校验宏可以与 `@Json`、`@Bind` 等其他宏一起使用
+- **嵌套校验**：通过 `@NestedValid` 支持对容器内元素的嵌套验证
+- **自定义错误消息**：每个校验宏都支持自定义错误消息
 
-## 类与结构体校验
+校验证失败时抛出 `JoyValidationException` 异常。
 
-### 基本用法
+注意：函数参数校验 (`@Validated`) 目前仅为实验性探索，参见 [Issue说明](https://gitcode.com/Cangjie/UsersForum/issues/1924)。
+
+---
+
+## 一、类与结构体校验
+
+### 1.1 基本用法
 
 ```cangjie
 import cjoy.validation.*
@@ -36,7 +45,7 @@ public struct User {
 }
 ```
 
-### 使用示例
+### 1.2 使用示例
 
 ```cangjie
 import cjoy.Joy
@@ -86,18 +95,14 @@ public struct User {
 
 // Handler 中使用校验
 @Post[path = "/users", produce = "json"]
-func createUser(ctx: JoyContext): Unit {
-    // 尝试绑定并验证 JSON Body
-    if (let Some(user) <- ctx.bindJsonBody<User>()) {
-        // 绑定通过，保存用户
-        ctx.json(@ToJson({"message": "用户创建成功"}))
-    } else {
-        ctx.status(400).json(@ToJson({"message": "用户数据校验失败"}))
-    }
+@Validated
+func createUser(ctx: JoyContext, @NestedValid user: User): Unit {
+    // 绑定通过，保存用户
+    ctx.json(@ToJson({"message": "用户创建成功"}))
 }
 ```
 
-### 手动调用校验
+### 1.3 手动调用校验
 
 ```cangjie
 // 创建用户对象
@@ -108,23 +113,21 @@ let user = User(
     age: 25
 )
 
-// 调用 validate 方法进行校验
-user.validate("", false)
-
-// 调用 getViolations 获取校验错误
-if (!user.getViolations().isEmpty()) {
-    // 校验通过
-} else {
-    // 处理校验错误
+try {
+    // 调用 validate 方法进行校验
+    user.validate()
+} catch(e: JoyValidationException) {
+     // 处理校验错误
 }
 ```
 
-## 校验宏
+---
+
+## 二、校验宏
 
 | 宏 | 说明 |
 |------|------|
 | `@Valid` | 作用于类或结构体，生成 `JoyValidatable` 接口的实现 |
-| `@NestedValid` | 表示成员变量需要嵌套校验，验证容器内元素 |
 | `@Size` | 校验 Collection 对象的 Size |
 | `@Length` | 校验字符串长度 |
 | `@NotEmpty` | 校验字符串非空 |
@@ -137,12 +140,14 @@ if (!user.getViolations().isEmpty()) {
 | `@IPV4` | 校验字符串为 IP V4 格式 |
 | `@EnumInt` | 校验数字是枚举值 |
 | `@EnumStr` | 校验字符串是为枚举值 |
-| `@NestedValid` | 作用于类或结构体的成员变量，表示对此成员类与结构嵌套校验 |
+| `@NestedValid` | 表示成员变量需要嵌套校验，验证容器内元素，作用于类或结构体的成员变量 |
 | `@Validated` | 作用于函数上，生成代码会修改函数体增加调用参数的 `validate` 方法 |
 
-## 宏详细说明
+---
 
-### @Size
+## 三、宏详细说明
+
+### 3.1 @Size
 
 校验 Collection 对象（Array、ArrayList、HashMap 等）的 Size：
 
@@ -156,7 +161,7 @@ var tags: Array<String> = []
 - `max`：最大 size（可选）
 - `msg`：自定义错误消息（可选）
 
-### @Length
+### 3.2 @Length
 
 校验字符串的长度：
 
@@ -170,7 +175,7 @@ var username: String = ""
 - `max`：最大长度（可选）
 - `msg`：自定义错误消息（可选）
 
-### @NumberRange
+### 3.3 @NumberRange
 
 校验数字范围：
 
@@ -184,7 +189,7 @@ var amount: UInt64 = 0
 - `max`：最大值（字符串，支持写表达式）
 - `msg`：自定义错误消息（可选）
 
-### @NotEmpty 和 @NotBlank
+### 3.4 @NotEmpty 和 @NotBlank
 
 校验字符串非空或非空白：
 
@@ -196,12 +201,12 @@ var content: String = ""
 var name: String = ""
 ```
 
-### @Pattern
+### 3.5 @Pattern
 
 使用正则表达式校验字符串或数字：
 
 ```cangjie
-@Pattern[regex = "^[a-zA-Z0-9]+$", msg = "只允许字母和数字"]
+@Pattern[regex = "^[a{,A}-z{,Z}0-9]+$", msg = "只允许字母和数字"]
 var code: String = ""
 
 // 使用预定义的常量
@@ -210,7 +215,7 @@ const USERNAME_REGEX = "^[a-z0-9_]{3,16}$"
 var username: String = ""
 ```
 
-### @DateTimeRange
+### 3.6 @DateTimeRange
 
 对 DateTime 范围进行校验：
 
@@ -227,7 +232,7 @@ var hireDate: DateTime = DateTime.now()
 - `after`：边界时间（字符串，支持写表达式，要求值为 DateTime）
 - `msg`：自定义错误消息（可选）
 
-### @ChMobileNumber
+### 3.7 @ChMobileNumber
 
 校验字符串为中国手机号码：
 
@@ -241,7 +246,7 @@ var mobile: String = ""
 - 3 位或 4 位区号
 - `s` 号结尾
 
-### @Email
+### 3.8 @Email
 
 校验字符串为 Email 格式：
 
@@ -250,7 +255,7 @@ var mobile: String = ""
 var email: String = ""
 ```
 
-### @IPV4
+### 3.9 @IPV4
 
 校验字符串为 IP V4 格式：
 
@@ -259,7 +264,7 @@ var email: String = ""
 var ipAddress: String = ""
 ```
 
-### @EnumInt
+### 3.10 @EnumInt
 
 校验数字是枚举值：
 
@@ -268,7 +273,7 @@ var ipAddress: String = ""
 var status: Int32 = 1
 ```
 
-### @EnumStr
+### 3.11 @EnumStr
 
 校验字符串是为枚举值：
 
@@ -277,7 +282,7 @@ var status: Int32 = 1
 var role: String = "user"
 ```
 
-### @NestedValid
+### 3.12 @NestedValid
 
 表示成员变量需要嵌套校验，验证容器内元素：
 
@@ -302,7 +307,9 @@ public struct Order {
 - `HashMap<K, V>`：验证每个值
 - 元素必须是标记 `@Valid` 的类或结构体
 
-## JoyValidatable 接口
+---
+
+## 四、JoyValidatable 接口
 
 `@Valid` 宏展开后，类或结构体会自动实现 `JoyValidatable` 接口：
 
@@ -320,7 +327,9 @@ public interface JoyValidatable {
 }
 ```
 
-## JoyValidationException
+---
+
+## 五、JoyValidationException
 
 校验失败时抛出的异常：
 
@@ -338,7 +347,216 @@ try {
 - `constraint`：校验失败的约束对象
 - `message`：错误消息
 
-## 完整示例
+---
+
+## 六、函数参数校验
+
+`@Validated` 宏用于函数参数校验，在函数调用前自动验证参数值。校验失败时抛出 `JoyValidationException`。
+
+**注意**：函数参数校验目前仅为实验性探索。参见 [Issue说明](https://gitcode.com/Cangjie/UsersForum/issues/1924)。
+
+### 6.1 基本用法
+
+在函数定义前添加 `@Validated` 宏，然后在函数参数上使用校验注解：
+
+```cangjie
+import cjoy.validation.*
+
+// 校验数组大小
+@Validated
+func validateArraySize(@Size[max = 6] arr: Array<Int32>): Unit {
+    // 校验通过后执行函数体
+    println("Array size: ${arr.size}")
+}
+
+// 校验字符串长度
+@Validated
+func validateStringLength(@Length[max = 6] str: String): Unit {
+    println("String: ${str}")
+}
+```
+
+### 6.2 各种参数类型校验
+
+```cangjie
+// @NotEmpty - 校验字符串非空
+@Validated
+func validateNotEmpty(@NotEmpty str: String): Unit {
+}
+
+// @NotBlank - 校验字符串非空白（先 trim 再检查）
+@Validated
+func validateNotBlank(@NotBlank str: String): Unit {
+}
+
+// @NumberRange - 校验数字范围
+@Validated
+func validateNumberRange(@NumberRange[min = 1, max = 100] num: Int): Unit {
+}
+
+// @Pattern - 使用正则表达式校验
+@Validated
+func validatePattern(@Pattern[regex = "^[0-9]+$"] num: String): Unit {
+}
+
+// @DateTimeRange - 校验日期时间范围
+@Validated
+func validateDateTimeRange(
+    @DateTimeRange[after = "DateTime.now().addMinutes(-1)", before = "DateTime.now().addDays(1)"]
+    dt: DateTime
+): Unit {
+}
+
+// @ChMobileNumber - 校验中国手机号码
+@Validated
+func validateMobile(@ChMobileNumber num: String): Unit {
+}
+
+// @Email - 校验邮箱格式
+@Validated
+func validateEmail(@Email email: String): Unit {
+}
+
+// @IPV4 - 校验 IP V4 格式
+@Validated
+func validateIPV4(@IPV4 ip: String): Unit {
+}
+
+// @EnumStr - 校验字符串枚举值
+@Validated
+func validateEnumStr(@EnumStr[values = ["a", "b", "c"]] str: String): Unit {
+}
+
+// @EnumInt - 校验数字枚举值
+@Validated
+func validateEnumInt(@EnumInt[values = [2, 4, 6]] number: Int): Unit {
+}
+```
+
+### 6.3 嵌套对象校验
+
+校验嵌套的对象结构：
+
+```cangjie
+import cjoy.validation.*
+import cjoy.json.*
+
+@Valid
+@Json
+public struct Data {
+    @Length[min = 0, max = 10]
+    @NotBlank
+    @NotEmpty
+    var str: String = "str"
+
+    @NumberRange[min = 0, max = 123456789]
+    var u32: UInt32 = 12345678
+
+    @Size[max = 6]
+    var arr: Array<Int32> = [1, 2, 3, 4]
+
+    @DateTimeRange[before = "DateTime.now().addDays(1)"]
+    var data: DateTime = DateTime.now()
+}
+
+// 校验嵌套的 @Valid 对象
+@Validated
+func validateNestedData(@NestedValid data: Data): Unit {
+}
+```
+
+### 6.4 DateTimeRange 表达式用法
+
+对于复杂的表达式，可以使用闭包形式：
+
+```cangjie
+// 简单表达式
+@Validated
+func simpleDateTime(
+    @DateTimeRange[after = "DateTime.now().addMinutes(-1)", before = "DateTime.now().addDays(1)"]
+    dt: DateTime
+): Unit {
+}
+
+// 使用闭包表达式（更灵活）
+@Validated
+func complexDateTime(
+    @DateTimeRange[
+        after = "{=>DateTime.now().addMinutes(-1)}()",
+        before = "{=>let x=DateTime.now().addDays(1);x}()"
+    ]
+    dt: DateTime
+): Unit {
+}
+```
+
+### 6.5 异常处理
+
+捕获校验失败的异常：
+
+```cangjie
+@Validated
+func validateAge(@NumberRange[min = 0, max = 150] age: Int32): Unit {
+    println("Age: ${age}")
+}
+
+main(): Int64 {
+    try {
+        validateAge(200)  // 校验失败
+    } catch (e: JoyValidationException) {
+        println("校验失败: ${e.message}")
+        // e.message 可能是: "this constraint of value is NumberRange[0, 150]"
+    }
+    return 0
+}
+```
+
+### 6.6 在 Handler 中使用
+
+```cangjie
+import cjoy.Joy
+import cjoy.validation.*
+
+@Valid
+@Json
+public struct UserRequest {
+    @Length[min = 3, max = 20]
+    @NotBlank
+    var username: String = ""
+}
+
+// 使用 @Validated 自动校验参数
+@Post[path = "/users"]
+@Validated
+func createUser(
+    ctx: JoyContext,
+    @NestedValid user: UserRequest  // 自动校验 user 对象
+): Unit {
+    ctx.json(@ToJson({"message": "用户创建成功", "username": user.username}))
+}
+
+// 手动校验 + 处理异常
+@Post[path = "/users/manual"]
+func createUserManual(ctx: JoyContext): Unit {
+    if (let Some(req) <- ctx.bindJsonBody<UserRequest>()) {
+        try {
+            req.validate()  // 手动调用校验
+            ctx.json(@ToJson({"message": "用户创建成功"}))
+        } catch (e: JoyValidationException) {
+            ctx.status(400).json(@ToJson({
+                "error": "校验失败",
+                "message": e.message
+            }))
+        }
+    } else {
+        ctx.status(400).json(@ToJson({"error": "请求数据格式错误"}))
+    }
+}
+```
+
+---
+
+## 七、完整示例
 
 ```cangjie
 import cjoy.Joy
@@ -383,8 +601,13 @@ main(): Int64 {
     joy.router.post("/api/login", {ctx: JoyContext =>
         if (let Some(req) <- ctx.bindJsonBody<LoginRequest>()) {
             // 校验通过，处理登录
-            @JoyLogInfo("用户登录: ${req.username}")
-            ctx.json(@ToJson({"message": "登录成功"}))
+            try {
+                req.validate()
+                @JoyLogInfo("用户登录: ${req.username}")
+                ctx.json(@ToJson({"message": "登录成功"}))
+            } catch (e: JoyValidationException) {
+                ctx.status(400).json(@ToJson({"message": "请求数据格式错误"}))
+            }
         } else {
             ctx.status(400).json(@ToJson({"message": "请求数据格式错误"}))
         }
@@ -394,25 +617,42 @@ main(): Int64 {
     joy.router.post("/api/register", {ctx: JoyContext =>
         if (let Some(req) <- ctx.bindJsonBody<RegisterRequest>()) {
             // 校验通过，处理注册
-            @JoyLogInfo("用户注册: ${req.email}")
-            ctx.json(@ToJson({"message": "注册成功"}))
+            try {
+                @JoyLogInfo("用户注册: ${req.email}")
+                ctx.json(@ToJson({"message": "注册成功"}))
+            } catch (e: JoyValidationException) {
+                ctx.status(400).json(@ToJson({"message": "请求数据格式错误"}))
+            }
         } else {
             ctx.status(400).json(@ToJson({"message": "请求数据格式错误"}))
         }
     })
 
-    joy.run("("127.0.0.1", 8080)
+    joy.run("127.0.0.1", 8080)
     return 0
 }
 ```
 
-## 注意事项
+---
+
+## 八、注意事项
 
 1. **@Valid 与 @Json**：可以一起使用，同时启用 JSON 序列化和校验
+
 2. **嵌套校验**：使用 `@NestedValid` 标记需要嵌套校验的集合成员
+
 3. **错误消息**：每个宏都支持自定义错误消息，未指定时使用默认消息
-4. **函数参数校验**：`@Validated` 宏目前仅为实验性探索，生产环境不建议使用
+
+4. **函数参数校验**：`@Validated` 宏目前仅为实验性探索，生产环境建议使用手动校验（`req.validate()`）和 try-catch 处理异常的方式
+
 5. **表达式支持**：`@NumberRange` 和 `@DateTimeRange` 的 min/max/before/after 参数支持写表达式
 
-----
+6. **验证顺序**：校验按照字段定义顺序进行，遇到第一个验证失败即抛出异常
+
+7. **手机号格式**：`@ChMobileNumber` 支持多种中国手机号格式，包括带 `+` 或 `86` 前缀、3 位或 4 位区号
+
+8. **DateTime 闭包表达式**：对于复杂的 `DateTimeRange` 表达式，可以使用闭包形式 `{=>表达式}()`
+
+---
+
 << [返回](../../README.md#使用指导)

@@ -4,15 +4,32 @@
 
 CJoy提供了多种实现认证机制。
 
-## Basic认证
+---
+
+## 概述
+
+CJoy认证系统基于以下核心概念设计：
+
+- **Basic认证**：简单的HTTP认证方案，用户凭据以Base64编码格式通过请求头传输
+- **Token认证**：API Token验证，适用于机机接口，Token可从Header、Cookie、Query、Form或Path等位置获取
+- **JWT认证**：JSON Web Token认证，支持HS256/HS384/HS512和RS256/RS384/RS512算法
+- **OAuth2认证**：授权框架，允许用户通过授权服务器授予第三方应用程序访问权限
+
+使用示例：
+- Basic认证：[test/basic_auth_test](../../src/test/basic_auth_test.cj)
+- Token认证：[examples/tokenauth](../../examples/src/tokenauth/main.cj)
+- JWT认证：[examples/jwtauth](../../examples/src/jwtauth/main.cj)
+- OAuth2认证：[test/oauth2_test](../../src/test/oauth2_test.cj)
+
+---
+
+## 一、Basic认证
 
 基本认证是一种简单的HTTP认证方案，用户凭据（用户名和密码）以Base64编码格式通过请求头传输。
 
 基本认证是验证API最简单的方式。它基于HTTP协议的认证机制，在标准的Authorization头中发送以"Basic "为前缀的Base64Encode(<用户名>:<密码>)。
 
-使用示例：[test/basic_auth_test](../../src/test/basic_auth_test.cj)。
-
-### 预定义认证凭证
+### 1.1 预定义认证凭证
 
 使用 HashMap 存储用户名和密码的映射关系：
 
@@ -27,7 +44,7 @@ let basicAuth = BasicAuth(
 joy.router.use(basicAuth)
 ```
 
-### 自定义校验函数
+### 1.2 自定义校验函数
 
 实现 `BasicAuthValidationFunc` 函数，创建 BasicAuth 中间件对象时，指定 `validateFunc`，此函数将用户名和密码作为参数，如果有效则返回 true，否则返回 false。
 
@@ -47,7 +64,7 @@ let basicAuth = BasicAuth(
 joy.router.use(basicAuth)
 ```
 
-### 过滤函数
+### 1.3 过滤函数
 
 使用 `filterFunc` 指定哪些请求不需要认证：
 
@@ -63,7 +80,7 @@ let basicAuth = BasicAuth(
 )
 ```
 
-### 参数说明
+### 1.4 参数参数说明
 
 BasicAuth 提供如下参数：
 
@@ -86,7 +103,7 @@ BasicAuth 提供如下参数：
 
 用于判断当前请求是否需要认证。返回 `true` 表示跳过认证（允许访问），返回 `false` 表示需要认证。
 
-### 认证失败响应
+### 1.5 认证失败响应
 
 当认证失败时，中间件会返回 401 Unauthorized 状态码，并添加以下响应头：
 
@@ -94,13 +111,13 @@ BasicAuth 提供如下参数：
 WWW-Authenticate: Basic realm=<realm>
 ```
 
-## Token认证
+---
+
+## 二、Token认证
 
 API Token验证通常用于机机接口，服务给某个应用颁发一次性Token。应用获取Token之后，在HTTP请求的Header、Cookie、Query、Form或Path等指定位置携带Token，服务端对此Token进行校验。
 
-使用示例：[examples/tokenauth](../../examples/src/tokenauth/main.cj)。
-
-### 预定义认证凭证
+### 2.1 预定义认证凭证
 
 使用预定义的 Token 列表进行验证：
 
@@ -111,7 +128,7 @@ let tokenAuth = TokenAuth(["abc", "def", "ghi"])
 joy.use(tokenAuth)
 ```
 
-### 自定义校验函数
+### 2.2 自定义校验函数
 
 实现 `TokenAuthValidatorFunc` 函数，创建 TokenAuth 中间件对象时，指定 `validator`，此函数将 token 作为参数，如果有效则返回 true，否则返回 false。
 
@@ -126,7 +143,7 @@ let tokenAuth = TokenAuth({
 joy.use(tokenAuth)
 ```
 
-### 从不同位置获取 Token
+### 2.3 从不同位置获取 Token
 
 通过 `lookupKey` 参数指定 Token 的获取位置：
 
@@ -156,7 +173,7 @@ let tokenAuth = TokenAuth(
 )
 ```
 
-### 自定义认证 Schema
+### 2.4 自定义认证 Schema
 
 当使用 Header 获取 Token 时，可以自定义认证 Schema：
 
@@ -171,7 +188,7 @@ let tokenAuth = TokenAuth(
 // 请求头格式：Authorization: Token secret
 ```
 
-### 成功和失败回调
+### 2.5 成功和失败回调
 
 ```cangjie
 let tokenAuth = TokenAuth(
@@ -190,7 +207,7 @@ let tokenAuth = TokenAuth(
 )
 ```
 
-### 参数说明
+### 2.6 参数参数说明
 
 TokenAuth 提供如下参数：
 
@@ -222,13 +239,13 @@ TokenAuth 提供如下参数：
 
 用于验证 Token 是否有效。返回 `true` 表示验证通过，`false` 表示验证失败。
 
-## JWT认证
+---
+
+## 三、JWT认证
 
 JWT（JSON Web Token）是一种用于在网络应用中传输信息的开放标准（RFC 7519），通常用于用户身份验证和授权。它由三部分组成：头部（Header）、载荷（Payload）和签名（Signature）。
 
-### JWT框架
-
-#### 签名算法
+### 3.1 签名算法
 
 CJoy内置了JWT的实现，支持如下签名算法：
 
@@ -237,7 +254,7 @@ CJoy内置了JWT的实现，支持如下签名算法：
 
 注：CJoy不支持None算法，因为无签名JWT可能在传输过程中被篡改。
 
-#### 密钥提供者
+### 3.2 密钥提供者
 
 CJoy提供了两种密钥提供者接口：
 
@@ -255,7 +272,7 @@ let publicKey = loadRSAPublicKey("./testdata/rsa_public.pem")
 let keyProvider = RsaSigningkey(privateKey, publicKey)
 ```
 
-#### 生成Token
+### 3.3 生成Token
 
 HS256 示例：
 
@@ -301,7 +318,7 @@ let priv = loadRSAPrivateKey("./testdata/rsa_private.pem")
 let token = jwt.signWith(priv)
 ```
 
-#### 解析Token
+### 3.4 解析Token
 
 HS256 示例：
 
@@ -327,9 +344,7 @@ let pub = loadRSAPublicKey("./testdata/rsa_public.pem")
 let jwt = Jwt.parse(token).verifyWith(pub)
 ```
 
-### JWT中间件
-
-使用示例：[examples/jwtauth](../../examples/src/jwtauth/main.cj)。
+### 3.5 JWT中间件
 
 #### 设置中间件
 
@@ -394,7 +409,7 @@ func someBizHandle(ctx: JoyContext): JsonSerializable {
 }
 ```
 
-#### 参数说明
+#### 参数参数说明
 
 JwtAuth 提供如下参数：
 
@@ -526,11 +541,13 @@ func customLogoutResponse(ctx: JoyContext, code: UInt16): Unit {
 }
 ```
 
-## OAuth2认证
+---
+
+## 四、OAuth2认证
 
 OAuth2是一种授权框架，旨在允许用户通过授权服务器授予第三方应用程序对其资源的访问权限，而无需将用户凭据（用户名和密码）直接暴露给这些应用程序。OAuth2定义了一组角色、授权类型和协议流程，以实现安全的身份验证和授权机制。
 
-核心概念：
+### 4.1 核心概念
 
 - **资源所有者（Resource Owner）**：拥有受保护资源的用户
 - **客户端（Client）**：要访问受保护资源的应用程序
@@ -540,7 +557,7 @@ OAuth2是一种授权框架，旨在允许用户通过授权服务器授予第�
 - **授权范围（Scope）**：指定了访问令牌可访问的资源范围
 - **授权类型（Grant Type）**：定义了客户端获取访问令牌的方式
 
-协议流程：
+### 4.2 协议流程
 
 ```
      +--------+                               +---------------+
@@ -573,9 +590,7 @@ OAuth2是一种授权框架，旨在允许用户通过授权服务器授予第�
 
 理解OAuth2，可以参见[理解OAuth 2.0](https://www.ruanyifeng.com/blog/2014/05/oauth_2_0.html)
 
-### OAuth2框架
-
-#### 关键设计
+### 4.3 关键设计
 
 CJoy内置了OAuth2的实现，关键设计如下：
 
@@ -593,9 +608,7 @@ CJoy内置了OAuth2的实现，关键设计如下：
 - **密码模式**：适用于高信任度的客户端应用
 - **客户端模式**：适用于无用户参与的后端服务
 
-### 使用示例
-
-使用示例：[test/oauth2_test](../../src/test/oauth2_test.cj)。
+### 4.4 使用示例
 
 授权服务器服务端：
 
@@ -694,7 +707,7 @@ let rsp = client.get(
 )
 ```
 
-### 自定义扩展
+### 4.5 自定义扩展
 
 OAuth2模块面向接口编程，您可以实现如下接口，扩展自己的实现：
 
@@ -724,5 +737,23 @@ OAuth2模块面向接口编程，您可以实现如下接口，扩展自己的�
 | RefreshTokenResolveHandleFunc | 获取Refresh Token | `refreshTokenFormResolveHandleFunc` / `refreshTokenCookieResolveHandleFunc` |
 | AccessTokenResolveHandleFunc | 获取Access Token | `accessTokenDefaultResolveHandleFunc` / `accessTokenCookieResolveHandleFunc` |
 
-----
+---
+
+## 五、注意事项
+
+1. **Basic认证安全性**：Basic认证使用Base64编码，不是加密，建议配合HTTPS使用
+
+2. **Token存储位置**：生产环境应避免在URL参数或Form中传递敏感Token
+
+3. **JWT密钥管理**：RSA算法的私钥必须妥善保管，泄露会导致任何人可伪造Token
+
+4. **JWT过期时间**：合理设置Token过期时间，平衡安全性和用户体验
+
+5. **OAuth2回调**：确保redirect_uri与注册的domain匹配，防止授权劫持
+
+6. **Session依赖**：CsrfProtect等中间件需要配合Session使用
+
+7. **自定义错误响应**：建议自定义认证失败响应，统一返回格式
+
+---
 << [返回](../../README.md#使用指导)

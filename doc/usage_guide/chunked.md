@@ -14,7 +14,7 @@ CJoy 分块传输系统基于以下核心概念设计：
 
 核心接口定义：
 - `JoyChunkedWriter`：分块写入接口，参见 [chunked.cj](../../src/framework/chunked.cj)
-- `JoySseEmitter`：SSE 事件发送接口，参见 [sse.cj](../../src/sse/sse.cj)
+- `JoySseEmitter`：SSE 事件发送接口，参见 [chunked.cj](../../src/framework/chunked.cj)
 
 ---
 
@@ -68,8 +68,10 @@ let bytes = [72u, 101u, 108u]
 writer.write(bytes).flush()
 
 // 写入字节流
-let fileStream = File("/path/to/file.txt").openRead()
-writer.data(fileStream)
+try (file = File("/path/to/file.txt", Read)) {
+    writer.write(readToEnd(file))
+}
+
 ```
 
 ---
@@ -96,7 +98,7 @@ let emitter = ctx.eventEmitter()
 
 ```cangjie
 // 发送事件
-emitter.sendEvent(JoyServerEventBuilder().data("{\"num\":\"${num}\"}"))
+emitter.sendEvent(JoyServerEventBuilder().data("message"))
 ```
 
 ## 三、JoyContext 扩展方法
@@ -130,7 +132,7 @@ router.get("/events", { ctx: JoyContext =>
     let counter = SyncCounter(1)
     spawn {
         for (num in 1..10) {
-            emitter.sendEvent(JoyServerEventBuilder().data("{\"num\":\"${num}\"}"))
+            emitter.sendEvent(JoyServerEventBuilder().data("${num}"))
             sleep(Duration.millisecond*200)
         }
         counter.dec()
@@ -154,11 +156,10 @@ func streamFile(ctx: JoyContext): String {
     let writer = ctx.chunkedWriter()
 
     try {
-        let fileStream = File("/path/to/file.txt").openRead()
-        // 写入文件流
-        writer.write(fileStream)
-        fileStream.close()
-    writer.end()
+        try (file = File("/path/to/file.txt", Read)) {
+            // 写入文件流
+            writer.write(readToEnd(file))
+        }
         return "stream complete"
     } catch (e: IOException) {
         e.printStackTrace()
@@ -177,15 +178,14 @@ func uploadFile(ctx: JoyContext): String {
         // 限制大小
         if (contentLength > 10 * 1024 * 1024) {
             ctx.status(HttpStatusCode.STATUS_PAYLOAD_TOO_LARGE)
-            writer.end()
             return "File too large"
         }
 
         // 写入文件流
-        let fileStream = File("/path/to/file.txt").openWrite()
-        writer.write(fileStream)
-        fileStream.close()
-        writer.end()
+        try (file = File("/path/to/file.txt", Read)) {
+            // 写入文件流
+            writer.write(readToEnd(file))
+        }
         return "Upload successful"
     } catch (e: IOException) {
         e.printStackTrace()

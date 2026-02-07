@@ -1,5 +1,7 @@
 # Session
 
+---
+
 ## 概述
 
 HTTP是无状态协议，Session是Web服务端存储特定用户会话所需的属性及配置信息。当用户在应用程序的Web页之间跳转时，存储在Session对象中的变量将不会丢失，而是在整个用户会话中一直存在下去。
@@ -17,11 +19,17 @@ CJoy内置了两个简易Session存储实现：
 | `MemorySessionStorage` | Session存储在内存中，适合开发和测试环境 |
 | `FileSessionStorage` | Session存储在指定目录下，适合小型应用 |
 
+核心接口：
+- `JoySession`：Session接口，参见 [session.cj](../../src/session/session.cj)
+- `JoySessionStorage`：Session存储接口，参见 [session_storage.cj](../../src/session/session_storage.cj)
+
 使用示例：[examples/session](../../examples/src/session/main.cj)。
 
-## 注册SessionManager中间件
+---
 
-### 全局注册
+## 一、注册SessionManager中间件
+
+### 1.1 全局注册
 
 给所有路径注册SessionManager，采用MemorySessionStorage：
 
@@ -42,7 +50,7 @@ main(): Int64 {
 }
 ```
 
-### 路由组注册
+### 1.2 路由组注册
 
 给某个Group注册SessionManager，采用FileSessionStorage：
 
@@ -68,7 +76,7 @@ main(): Int64 {
 }
 ```
 
-### JoySessionConfig
+### 1.3 JoySessionConfig
 
 在注册SessionManager时，可以通过 `JoySessionConfig` 配置Session相关选项：
 
@@ -95,9 +103,11 @@ let sessionManager = SessionManager(MemorySessionStorage(), config: config)
 | cookieDomain | String | "" | 会话Cookie的域名 |
 | idLength | Int | 32 | Session ID长度 |
 
-## 使用Session
+---
 
-### 获取Session对象
+## 二、使用Session
+
+### 2.1 获取Session对象
 
 使用 `getSession` 函数从上下文获取Session对象：
 
@@ -111,7 +121,7 @@ func handleData(ctx: JoyContext): Unit {
 }
 ```
 
-### Session操作
+### 2.2 Session操作
 
 #### set - 存储数据
 
@@ -196,7 +206,9 @@ if (session.isInvalidated) {
 }
 ```
 
-## 完整示例
+---
+
+## 三、完整示例
 
 ```cangjie
 import cjoy.Joy
@@ -252,11 +264,13 @@ main(): Int64 {
 }
 ```
 
-## 扩展
+---
+
+## 四、扩展
 
 开发者可以自己扩展Session存储（如Redis、数据库），只需要实现以下两个接口：
 
-### JoySession接口
+### 4.1 JoySession接口
 
 ```cangjie
 public interface JoySession {
@@ -283,7 +297,7 @@ public interface JoySession {
 }
 ```
 
-### JoySessionStorage接口
+### 4.2 JoySessionStorage接口
 
 ```cangjie
 public interface JoySessionStorage {
@@ -304,7 +318,7 @@ public interface JoySessionStorage {
 }
 ```
 
-### 扩展示例：Redis存储
+### 4.3 扩展示例：Redis存储
 
 ```cangjie
 import cjoy.session.{JoySession, JoySessionStorage}
@@ -350,13 +364,21 @@ class RedisSessionStorage <: AbstractSessionStorage {
 }
 ```
 
-## 注意事项
+---
+
+## 五、注意事项
 
 1. **Session清理**：SessionManager会启动后台任务，每5秒清理一次过期的Session
+
 2. **线程安全**：Session操作是线程安全的，可以在并发环境中安全使用
+
 3. **类型约束**：Session存储的值必须实现 `JsonSerializable` 和 `JsonDeserializable` 接口
+
 4. **内存限制**：MemorySessionStorage会占用应用内存，大量用户时应使用Redis或数据库存储
+
 5. **分布式环境**：多实例部署时，需要使用共享存储（如Redis）而非MemorySessionStorage
 
-----
+6. **Cookie配置**：生产环境建议设置 `cookieSecure: true`，仅通过HTTPS传输
+
+---
 << [返回](../../README.md#使用指导)

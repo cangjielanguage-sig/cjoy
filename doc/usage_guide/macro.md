@@ -133,7 +133,7 @@ func getUserById(@PathParam[name = userId] id: String): String {
 
 // 通配符参数
 @Get[path = "/files/*"]
-func getFiles(@PathParam name = *] path: String): String {
+func getFiles(@PathParam[name = "*"] path: String): String {
     "Files: ${path}"
 }
 

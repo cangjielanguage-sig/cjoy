@@ -2,6 +2,8 @@
 
 CJoy 提供完整的定时任务调度系统，支持crontab表达式和动态任务管理。
 
+---
+
 ## 概述
 
 CJoy 调度系统基于以下核心概念设计：
@@ -16,12 +18,12 @@ CJoy 调度系统基于以下核心概念设计：
 
 | 字段 | 取值范围 | 说明 |
 |------|-----------|------|
-| 秒(可选) | 0-59 | 秒级精度 |
+| 秒(可选） | 0-59 | 秒级精度 |
 | 分 | 0-59 | 分钟 |
 | 小时 | 0-23 | 24小时制 |
 | 日 | 1-31 | 月份中的日期 |
 | 月 | 1-12 | 月份 |
-| 周 | 0-6 | 星期日(0)到星期六(6) |
+| 周 | 0-6 | 星期日(0）到星期六(6） |
 
 ### 时间单位符号
 
@@ -32,6 +34,106 @@ CJoy 调度系统基于以下核心概念设计：
 | `-` | 范围 | `8-12` 表示8到12点 |
 | `/` | 步长 | `*/2` 表示每2个单位 |
 | `?` | 特定时间 | `0 8 * * 5` 表示每周五8点 |
+
+核心类：`ScheduleContext`，参见 [schedule.cj](../../src/schedule/schedule.cj)
+
+---
+
+## 一、基本用法
+
+### 1.1 简单定时任务
+
+```cangjie
+import cjoy.schedule.*
+import cjoy.macros.*
+
+// 每分钟执行一次
+@Scheduled[name = "minuteTask", cron = "* * * * *"]
+func minuteTask(ctx: ScheduleContext): Unit {
+    @JoyLogInfo("每分钟执行的任务")
+}
+```
+
+### 1.2 指定执行时间
+
+```cangjie
+// 每天凌晨2点执行
+@Scheduled[name = "dailyTask", cron = "0 2 * * *"]
+func dailyTask(ctx: ScheduleContext): Unit {
+    @JoyLogInfo("每天凌晨2点执行的任务")
+}
+
+// 每周一到周五的上午9点执行
+@Scheduled[name = "workdayTask", cron = "0 9 * * 1-5"]
+func workdayTask(ctx: ScheduleContext): Unit {
+    @JoyLogInfo("工作日上午9点执行")
+}
+```
+
+---
+
+## 二、Crontab表达式示例
+
+### 2.1 常用表达式
+
+| 表达式 | 说明 |
+|---------|------|
+| `* * * * *` | 每分钟执行 |
+| `*/5 * * * *` | 每5分钟执行 |
+| `0 * * * *` | 每小时的第0分钟执行 |
+| `0 0 * * *` | 每天凌晨执行 |
+| `0 0 * * 0` | 每周日凌晨执行 |
+| `0 0 1 * *` | 每月1号凌晨执行 |
+| `0,30 * * * *` | 每小时的第0和第30分钟执行 |
+| `0 9-17 * * *` | 每天9点到17点每小时执行 |
+| `0 9 * * 1-5` | 周一到周五每天9点执行 |
+
+### 2.2 复杂表达式
+
+```cangjie
+// 每15分钟执行
+@Scheduled[name = "quarterHour", cron = "*/15 * * * *"]
+func quarterHour(ctx: ScheduleContext): Unit {
+    @JoyLogInfo("每15分钟执行")
+}
+
+// 工作日每小时执行
+@Scheduled[name = "workdayHourly", cron = "0 * * * 1-5"]
+func workdayHourly(ctx: ScheduleContext): Unit {
+    @JoyLogInfo("工作日每小时执行")
+}
+
+// 每月最后一天执行
+@Scheduled[name = "monthEnd", cron = "0 0 L * *"]
+func monthEnd(ctx: ScheduleContext): Unit {
+    @JoyLogInfo("每月最后一天执行")
+}
+```
+
+---
+
+## 三、ScheduleContext
+
+`ScheduleContext` 提供任务执行的上下文信息：
+
+```cangjie
+@Scheduled[name = "contextTask", cron = "0 * * * *"]
+func contextTask(ctx: ScheduleContext): Unit {
+    // 获取任务名称
+    @JoyLogInfo("任务名称: ${ctx.name}")
+
+    // 获取任务执行时间
+    @JoyLogInfo("执行时间: ${ctx.executionTime}")
+
+    // 存储自定义数据
+    ctx.put("customKey", "customValue")
+
+    // 获取自定义数据
+    if (let Some(value) <- ctx.get<String>("customKey")) {
+        @JoyLogInfo("自定义数据: ${value}")
+    }
+}
+```
 
 ---
 
@@ -55,15 +157,15 @@ func asyncScheduledTask(ctx: ScheduleContext): Unit {
     // 使用spawn异步执行，避免阻塞调度器
     spawn {
         let startTime = DateTime.now()
-        
+
         try {
             // 长时间任务
             performLongRunningOperation()
-            
+
             let duration = startTime.elapsedMilliseconds()
             ctx.put("executionTime", "${duration}ms")
             println("异步任务完成，耗时: ${duration}ms")
-            
+
         } catch (e: Exception) {
             ctx.put("error", e.message)
             println("异步任务失败: ${e.message}")
@@ -76,7 +178,7 @@ func asyncScheduledTask(ctx: ScheduleContext): Unit {
 func batchProcessor(ctx: ScheduleContext): Unit {
     let batchSize = 100
     let processedCount = 0
-    
+
     try {
         // 分批处理大量数据
         while (true) {
@@ -84,18 +186,18 @@ func batchProcessor(ctx: ScheduleContext): Unit {
             if (batch.isEmpty) {
                 break
             }
-            
+
             processBatch(batch)
             processedCount += batch.size
-            
+
             // 短暂休息，避免资源占用过高
             if (processedCount % 10 == 0) {
                 Thread.sleep(Duration.millisecond * 100)
             }
         }
-        
+
         ctx.put("processedCount", "${processedCount}")
-        
+
     } catch (e: Exception) {
         ctx.put("error", e.message)
         println("批量处理失败: ${e.message}")
@@ -110,7 +212,7 @@ func batchProcessor(ctx: ScheduleContext): Unit {
 @Scheduled[name = "timeoutTask", cron = "*/10 * * * *"]
 func timeoutTask(ctx: ScheduleContext): Unit {
     let timeout = Duration.second * 60  // 60秒超时
-    
+
     // 使用spawn配合超时控制
     let task = spawn {
         try {
@@ -118,23 +220,22 @@ func timeoutTask(ctx: ScheduleContext): Unit {
                 // 可能长时间运行的任务
                 performTimeoutOperation()
             })
-            
+
         } catch (e: TimeoutException) {
             ctx.put("status", "timeout")
             ctx.put("error", "任务执行超时")
             println("任务执行超时")
-            
+
         } catch (e: Exception) {
             ctx.put("status", "error")
             ctx.put("error", e.message)
             println("任务执行失败: ${e.message}")
         }
     }
-    
+
     // 等待任务完成（带超时）
     task.join()
 }
-
 ```
 
 ### 4.4 注意事项
@@ -162,4 +263,21 @@ A: 检查异常处理、内存使用、日志中的错误信息
 A: 优化任务执行时间、增加并发处理能力、考虑任务优先级
 
 ---
- << [返回](../../README.md#使用指导)
+## 五、注意事项
+
+1. **任务名称唯一**：每个任务的 `name` 参数必须唯一
+
+2. **Cron表达式格式**：确保使用标准的 crontab 表达式格式
+
+3. **线程安全**：任务执行函数应该是线程安全的
+
+4. **异常处理**：任务内部应做好异常处理，避免影响调度器
+
+5. **执行时间控制**：长时间任务应使用 `spawn` 异步执行
+
+6. **资源清理**：任务完成后应释放占用的资源
+
+7. **日志记录**：建议记录任务执行的开始、结束和异常信息
+
+---
+<< [返回](../../README.md#使用指导)
