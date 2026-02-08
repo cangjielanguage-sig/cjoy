@@ -252,7 +252,7 @@ protected class TimeoutCache<K, V> where K <: Hashable & Equatable<K> {
                 if (Thread.currentThread.hasPendingCancellation) {
                     return
                 }
-                sleep(2 * Duration.second)
+                sleep(Duration.millisecond*100)
                 let iter = tmap.iterator()
                 let now = DateTime.now()
                 while (let Some((k, v)) <- iter.next()) {

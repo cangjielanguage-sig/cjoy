@@ -25,7 +25,7 @@ import stdx.crypto.crypto.SecureRandom
 protected func randStr(len: Int32): String {
     let r = Random()
     let bs = r.nextBytes(len)
-    let array = bs |> map {b => b.format("x")} |> collectArray
+    let array = bs |> map {b => b.format("02x")} |> collectArray
     String.join(array)
 }
 
@@ -38,6 +38,6 @@ protected func randStr(len: Int32): String {
 protected func secureRandStr(len: Int32): String {
     let r = SecureRandom()
     let bs = r.nextBytes(len)
-    let array = bs |> map {b => b.format("x")} |> collectArray
+    let array = bs |> map {b => b.format("02x")} |> collectArray
     String.join(array)
 }
