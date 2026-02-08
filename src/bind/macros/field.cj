@@ -102,8 +102,12 @@ class BindFieldGenerator {
             return quote(
                 $(varId): $(vType).bind(source, $(info.keyName()), $(info.getDefValue()), $(info.getTimeformat())).getOrDefault({=>$dv}))
         } else {
+            if (vType.toString() == "DateTime") {
+                return quote(
+                   $(varId): $(vType).bind(source, $(info.keyName()), $(info.getDefValue()), $(info.getTimeformat())).getOrThrow())
+            }
             return quote(
-                $(varId): $(vType).bind(source, $(info.keyName()), $(info.getDefValue()), $(info.getTimeformat())).getOrThrow())
+                $(varId): $(vType).bind(source, $(info.keyName()), $(info.getDefValue()), $(info.getTimeformat())) ?? $(vType)())
         }
     }
 }

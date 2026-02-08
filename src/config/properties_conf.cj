@@ -18,7 +18,7 @@ import std.io.StringReader
  * properties file config
  */
 public class PropertiesConfigLoader <: ConfigLoader {
-    public PropertiesConfigLoader(let filePath: String) {}
+    public PropertiesConfigLoader(let filePath: String, let priorityNum!: Int = 0) {}
 
     public func load(): Map<String, Any> {
         let data = HashMap<String, Any>()
@@ -40,7 +40,7 @@ public class PropertiesConfigLoader <: ConfigLoader {
 
     public prop priority: Int {
         get() {
-            0
+            priorityNum
         }
     }
 }

@@ -20,7 +20,7 @@ import cjoy.json.JsonTool
  * json file config
  */
 public class JsonConfigLoader <: ConfigLoader {
-    public JsonConfigLoader(let filePath: String) {}
+    public JsonConfigLoader(let filePath: String, let priorityNum!: Int = 1) {}
 
     public func load(): Map<String, Any> {
         let data = HashMap<String, Any>()
@@ -40,7 +40,7 @@ public class JsonConfigLoader <: ConfigLoader {
 
     public prop priority: Int {
         get() {
-            1
+            priorityNum
         }
     }
 }

@@ -16,7 +16,7 @@ import std.collection.{HashMap, Map}
  * application program cli arguments config
  */
 public class ArgConfigLoader <: ConfigLoader {
-    public ArgConfigLoader(let args: Array<String>) {}
+    public ArgConfigLoader(let args: Array<String>, let priorityNum!: Int = 50) {}
 
     /**
      * @throws ConfigException if the config express is invalid
@@ -42,7 +42,7 @@ public class ArgConfigLoader <: ConfigLoader {
 
     public prop priority: Int {
         get() {
-            50
+            priorityNum
         }
     }
 }

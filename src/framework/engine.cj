@@ -52,10 +52,10 @@ public class JoyConfig {
         public let escapeAddedRoutes!: Bool = false,
 
         // set not found handler
-        public let notFoundHandler!: JoyRequestHandler = JoyNotFoundHandler(),
+        public var notFoundHandler!: JoyRequestHandler = JoyNotFoundHandler(),
 
         // set method not allowed handler
-        public let methodNotAllowedHandler!: JoyRequestHandler = JoyMethodNotAllowedHandler(),
+        public var methodNotAllowedHandler!: JoyRequestHandler = JoyMethodNotAllowedHandler(),
 
         // max requestBodySize, 32M
         public let maxRequestBodySize!: Int = 32 * 1024 * 1024

@@ -24,6 +24,35 @@ class ConfigData <: ToString {
     public func toString(): String {
         "{data:${MapContainer.mapToString(data)},priority:${priority}}"
     }
+
+    func copy(other: ConfigData): Unit {
+        copy(other.data, data)
+    }
+
+    func copy(src: Map<String, Any>, dest: Map<String, Any>): Unit {
+        for ((k, v) in src) {
+            match (v) {
+                case x: Map<String, Any> => match (dest.get(k)) {
+                    case Some(y) => match (y) {
+                        case y: Map<String, Any> =>
+                            let m = HashMap<String, Any>()
+                            m.add(all: y)
+                            dest[k] = m
+                            copy(x, m)
+                        case _ =>
+                            let m = HashMap<String, Any>()
+                            dest[k] = m
+                            copy(x, m)
+                    }
+                    case _ =>
+                        let m = HashMap<String, Any>()
+                        dest[k] = m
+                        copy(x, m)
+                }
+                case _ => dest[k] = v
+            }
+        }
+    }
 }
 
 /**
@@ -46,6 +75,8 @@ public class ConfigManager <: Config {
         for ((key, value) in envVars) {
             envData.add(key, value)
         }
+        // 第一个为合并所有配置源的配置集
+        data.add(ConfigData(HashMap<String, Any>(), Int64.Max))
     }
 
     public func hashKey(key: String): Bool {
@@ -109,7 +140,7 @@ public class ConfigManager <: Config {
         for (d in data) {
             if (let Some(val) <- getDataValue(d.data, cfgKey)) {
                 map["obj"] = val
-                @JoyLogDebug("[Config] bind data is ${container}")
+                @JoyLogInfo("[Config] bind data is ${container}")
                 let obj = T.bind(container, "obj", None, None)
                 if (let Some(y) <- obj) {
                     return y
@@ -130,7 +161,14 @@ public class ConfigManager <: Config {
             @JoyLogDebug("[Config] load data ${cd}")
             data.add(cd)
         }
-        sort(data, by: {a, b => b.priority.compare(a.priority)}, stable: true)
+
+        if (data.size > 1) {
+            sort(data, by: {a, b => b.priority.compare(a.priority)}, stable: true)
+            // 依次把级别低到最高的容器中
+            for (i in (data.size - 1)..0 : -1) {
+                data[0].copy(data[i])
+            }
+        }
     }
 }
 
