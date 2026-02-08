@@ -109,9 +109,6 @@ cjpm build
 
 # 运行示例
 cd examples
-cjpm run --name examples.simple
-cjpm run --name examples.macros
-cjpm run --name examples.rest
 cjpm run --name examples.tls
 ```
 
@@ -127,8 +124,6 @@ cjoy = { git = "https://gitcode.com/Cangjie-SIG/cjoy.git", branch = "main" }
 ---
 
 ## 快速了解
-
-### 使用 API
 
 ```cangjie
 import cjoy.*
@@ -154,53 +149,13 @@ main(): Int64 {
 }
 ```
 
-### 使用宏
-
-```cangjie
-import cjoy.*
-import cjoy.macros.*
-import cjoy.json.*
-
-@Json
-class UserInfo {
-    var id: String = ""
-    var name: String = ""
-    var address: String = ""
-    var gender: Int = 0
-}
-
-// 处理 GET /users/{name}
-@Get[path = "/users/{name}", produce="json"]
-func getUser(@PathParam name: String): (UInt16, UserInfo) {
-    let usr = UserInfo()
-    usr.id = "00009527"
-    usr.name = name
-    usr.address = "shenzhen"
-    (200, usr)
-}
-
-// 处理 GET /users
-@Get[path = "/users", produce="json"]
-func listUsers(@QueryParam[name = id, default = "0000959527"] id: String): Array<UserInfo> {
-    let usr = UserInfo()
-    usr.id = id
-    usr.name = "xiao"
-    usr.address = "shenzhen"
-    [usr]
-}
-
-main(): Int64 {
-    let joy = Joy.default()
-    // 注册生成的 handlers
-    JoyHandlers.registerTo(joy)
-    joy.run("127.0.0.1", 18881)
-    return 0
-}
-```
-
 ---
 
 ## 使用指导
+
+### 快快通
+
+- [20分钟掌握CJoy](doc/usage_guide/README.md)
 
 ### 核心功能
 
