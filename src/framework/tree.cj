@@ -26,6 +26,9 @@ class Endpoint<T> <: ToString {
 
 type Endpoints<T> = HashMap<String, Endpoint<T>>
 
+/**
+ * routing info
+ */
 public class RouteInfo<T> {
     public RouteInfo(
         public var pattern!: String = "",

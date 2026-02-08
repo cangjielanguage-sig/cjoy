@@ -12,6 +12,10 @@ macro package cjoy.json.macros
 
 import std.ast.*
 
+/**
+ * JSON field generator for Any type fields
+ * Handles serialization and deserialization of Any-typed fields
+ */
 class AnyJsonFieldGenerator <: JsonFieldGenerator {
     init(vd: VarDecl, info: JsonFieldInfo) {
         super(vd, info)

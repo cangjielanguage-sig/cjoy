@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2025 lanlingx(xiaotengfei) All rights reserved.
  * CJoy is licensed under Mulan PSL v2.
- * You can use this software according to the terms and conditions of the Mulan PSL v2.
+ * You can use this software according to terms and conditions of Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
  *          http://license.coscl.org.cn/MulanPSL2
  * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
@@ -15,21 +15,25 @@ import stdx.net.http.{notFound, HttpStatusCode, OptionsHandler}
 import cjoy.ioc.{BeanFactoryManager}
 
 /**
- * the interface of request handler
+ * interface of request handler
  */
 public interface JoyRequestHandler {
     /**
-     * process the request and reply response using context api
+     * process request and reply response using context api
      *
-     * @param ctx: the context
+     * @param param ctx: context
      */
     func handle(ctx: JoyContext): Unit
 }
 
-// the request handler function
+/**
+ * Type alias for request handler function
+ */
 public type JoyRequestHandlerFunc = (ctx: JoyContext) -> Unit
 
-// the request filter function 
+/**
+ * Type alias for request filter function that returns true to continue chain
+ */
 public type JoyRequestFilterFunc = (ctx: JoyContext) -> Bool
 
 /**
@@ -39,14 +43,14 @@ public class JoyFuncHandler <: JoyRequestHandler {
     /**
      * create a new JoyFuncHandler
      *
-     * @param handler: the handler function
+     * @param handler: handler function
      */
     public JoyFuncHandler(let handler: JoyRequestHandlerFunc) {}
 
     /**
      * process request using handler function
      *
-     * @param ctx: the context
+     * @param ctx: context
      */
     public func handle(ctx: JoyContext): Unit {
         this.handler(ctx)
@@ -91,11 +95,11 @@ public class JoyHandlers {
     private static let HANDLERS: ArrayList<(String, Array<String>, JoyRequestHandler)> = ArrayList()
 
     /**
-     * add the handler for generate code by macros
+     * add handler for generate code by macros
      *
-     * @param path: the path
-     * @param methods: the methods
-     * @param handler: the handler
+     * @param path: path
+     * @param methods: methods
+     * @param handler: handler
      */
     public static func addHandler(path: String, methods: Array<String>, handler: JoyRequestHandler): Unit {
         HANDLERS.add((path, methods, handler))
@@ -104,23 +108,23 @@ public class JoyHandlers {
     /**
      * add handler function for generate code by macros
      *
-     * @param path: the path
-     * @param methods: the http methods
-     * @param handler: the handler function
+     * @param path: path
+     * @param methods: http methods
+     * @param handler: handler function
      */
     public static func addHandler(path: String, methods: Array<String>, handler: JoyRequestHandlerFunc): Unit {
         HANDLERS.add((path, methods, JoyFuncHandler(handler)))
     }
 
     /**
-     * register the handlers to joy instance
+     * register handlers to joy instance
      *
-     * @param joy: the instance of joy
+     * @param joy: instance of joy
      */
     public static func registerTo(joy: Joy): Unit {
         // 依赖注入类需要先初始化
         BeanFactoryManager.initAllBeans()
-        
+
         for (it in HANDLERS) {
             let (path, methods, handler) = it
             let rg = joy.router.findGroup(path)

@@ -25,6 +25,9 @@ public interface EventSubscriber {
     func handle(ctx: Context, evt: Event): Unit
 }
 
+/**
+ * Type alias for event subscriber function
+ */
 public type EventSubscriberFunc = (ctx: Context, evt: Event) -> Unit
 
 /**
@@ -167,15 +170,37 @@ public class EventBusException <: Exception {
     }
 }
 
+/**
+ * Constants for event bus configuration
+ */
 public struct EventConsts {
-    // Priority
+    /**
+     * Minimum priority level (-1000)
+     */
     public static const PRIORITY_MIN: Int = -1000
+    /**
+     * Low priority level (-500)
+     */
     public static const PRIORITY_LOW: Int = -500
+    /**
+     * Normal priority level (0)
+     */
     public static const PRIORITY_NORMAL: Int = 0
+    /**
+     * High priority level (500)
+     */
     public static const PRIORITY_HIGH: Int = 500
+    /**
+     * Maximum priority level (1000)
+     */
     public static const PRIORITY_MAX: Int = 1000
 
-    // Wildcard
+    /**
+     * Wildcard matching any single node (*)
+     */
     public static const ANY_NODE: String = "*"
+    /**
+     * Wildcard matching all nodes to end (**)
+     */
     public static const ALL_NODE: String = "**"
 }

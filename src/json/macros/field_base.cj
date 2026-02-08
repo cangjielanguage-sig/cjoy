@@ -17,6 +17,18 @@ import stdx.encoding.json.stream.{JsonSerializable, JsonWriter}
 import cjoy.utils.{MapToString, MapListGetFunc, converterMap}
 import cjoy.utils.ast.parserAttrs
 
+/**
+ * JSON field metadata for macro processing
+ * - originName: original field name
+ * - newName: custom JSON key name
+ * - ignore: whether to skip this field
+ * - omitempty: whether to omit empty values
+ * - timeformat: datetime format string
+ * - raw: deserialize as raw bytes
+ * - description: field description for schema
+ * - required: whether field is required in schema
+ * - schema: custom schema string
+ */
 class JsonFieldInfo {
     let originName: String
     var newName: String = ""
@@ -90,6 +102,15 @@ class JsonFieldInfo {
     }
 }
 
+/**
+ * Base class for generating JSON serialization/deserialization tokens for fields
+ *
+ * - varId: field identifier token
+ * -  varType: field type node
+ * -  info: JSON field metadata
+ * -  isOption: whether field type is Option
+ * -  notSchema: whether field type has no schema (Any, HashMap)
+ */
 open class JsonFieldGenerator {
     protected let varId: Token
     protected let varType: TypeNode

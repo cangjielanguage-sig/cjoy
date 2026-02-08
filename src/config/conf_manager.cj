@@ -26,7 +26,15 @@ class ConfigData <: ToString {
     }
 }
 
+/**
+ * Central configuration manager that loads and provides access to configuration values
+ * Supports multiple configuration sources with priority-based override
+ * Environment variables have the highest priority
+ */
 public class ConfigManager <: Config {
+    /**
+     * Singleton instance of the config manager
+     */
     public static let INSTANCE: Config = ConfigManager()
 
     private let envData = HashMap<String, String>()

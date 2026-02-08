@@ -16,7 +16,14 @@ import std.sync.{SyncCounter, AtomicBool}
 import cjoy.context.{Context, MapContext, ServiceContainer}
 import cjoy.log.macros.*
 
+/**
+ * A thread-safe local event bus implementation
+ * Supports async event processing with a blocking queue and consumer threads
+ */
 public class LocalEventBus <: EventBus {
+    /**
+     * Singleton instance of the event bus
+     */
     public static let INSTANCE: EventBus = LocalEventBus()
 
     private let _queueSize: Int
@@ -29,6 +36,12 @@ public class LocalEventBus <: EventBus {
     private let _waitCounter: SyncCounter
     private let _inited: AtomicBool = AtomicBool(false)
 
+    /**
+     * Creates a new LocalEventBus
+     *
+     * @param queueSize: the capacity of the internal event queue (default: 500)
+     * @param consumerNum: the number of consumer threads (default: 20)
+     */
     public init(
         queueSize!: Int = 500,
         consumerNum!: Int = 20
@@ -113,6 +126,10 @@ public class LocalEventBus <: EventBus {
         }
     }
 
+    /**
+     * Closes the event bus and waits for all async events to complete
+     * Cancels all consumer threads and waits for them to finish
+     */
     public func closeAndWait(): Unit {
         for (f in _consumers) {
             f.cancel()

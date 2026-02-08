@@ -12,10 +12,14 @@ package cjoy.eventbus
 
 import std.collection.{HashMap}
 
+/**
+ * Type alias for event data container
+ */
 type EventData = HashMap<String, Any>
 
 /**
- * the event data
+ * Represents an event that can be published to an event bus
+ * Events contain a name, arbitrary data, and an abort flag to stop further processing
  */
 public class Event {
     private let _name: String
@@ -23,7 +27,7 @@ public class Event {
     private var _aborted: Bool = false
 
     /**
-     * return the event name
+     * Gets the event name
      */
     public prop name: String {
         get() {
@@ -32,7 +36,7 @@ public class Event {
     }
 
     /**
-     * return the all event data
+     * Gets the event data as a key-value map
      */
     public prop data: EventData {
         get() {
@@ -41,7 +45,8 @@ public class Event {
     }
 
     /**
-     * return the event abort state
+     * Gets whether the event has been aborted
+     * When true, no further subscribers will process this event
      */
     public prop isAborted: Bool {
         get() {
@@ -54,14 +59,21 @@ public class Event {
     }
 
     /**
-     * create a event by name
+     * Creates a new event with the specified name
+     *
+     * @param name: the event name
+     * @return a new Event instance
      */
     public static func of(name: String): Event {
         Event(name)
     }
 
     /**
-     * add event data
+     * Adds data to the event
+     *
+     * @param name: the data key
+     * @param value: the data value
+     * @return this event for method chaining
      */
     public func addData(name: String, value: Any): Event {
         _data.add(name, value)
@@ -69,7 +81,9 @@ public class Event {
     }
 
     /**
-     * abort it then skip all next subscribers
+     * Aborts the event, preventing all subsequent subscribers from processing it
+     *
+     * @return this event for method chaining
      */
     public func abort(): Event {
         _aborted = true
@@ -77,7 +91,11 @@ public class Event {
     }
 
     /**
-     * get event data
+     * Gets event data by key
+     *
+     * @param T: the expected type of the data
+     * @param name: the data key
+     * @return the data value if present and can be cast to type T, otherwise null
      */
     public func getData<T>(name: String): ?T {
         (_data.get(name) ?? Option<Any>.None) as T

@@ -15,10 +15,20 @@ import std.convert.Parsable
 import cjoy.utils.snakeCase
 import cjoy.log.macros.*
 
+/**
+ * Represents a parsed configuration key with support for nested keys and array indices
+ *
+ * @param key: the key segment name
+ * @param arrIdx: the array index, -1 if not an array
+ * @param sub: the next key segment for nested keys
+ */
 public class ConfigKey <: ToString {
     ConfigKey(public let key: String, public let arrIdx: Int, public var sub: ?ConfigKey) {
     }
 
+    /**
+     * Returns a string representation of this config key
+     */
     public func toString(): String {
         var str = "(${key},${arrIdx})"
         if (let Some(ck) <- sub) {
@@ -32,6 +42,12 @@ func convertKey(key: String): String {
     snakeCase(key)
 }
 
+/**
+ * Converts all keys in a config map to snake_case format recursively
+ * This converts camelCase keys to snake_case (e.g., "userName" -> "user_name")
+ *
+ * @param data: the config map to convert keys in
+ */
 public func convertKeys(data: Map<String, Any>): Unit {
     let iter = data.iterator()
     let map = HashMap<String, Any>()

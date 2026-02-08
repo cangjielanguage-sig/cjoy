@@ -16,7 +16,8 @@ import std.convert.Parsable
 import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonReader, JsonWriter, JsonToken}
 
 /**
- * json util tool
+ * JSON utility tool for serialization and deserialization
+ * Provides static methods for converting between JSON strings/bytes and Cangjie objects
  */
 public class JsonTool {
     /**

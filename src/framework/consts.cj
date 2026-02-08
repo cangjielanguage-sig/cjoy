@@ -10,6 +10,9 @@
 
 package cjoy.framework
 
+/**
+ * HTTP constants including method names, content types, and header names
+ */
 public struct JoyHttpConsts {
     // method
     public static const METHOD_POST: String = "POST"

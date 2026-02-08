@@ -15,7 +15,20 @@ import std.collection.{HashMap, ArrayList}
 import std.time.DateTime
 import std.math.numeric.{BigInt, Decimal}
 
+/**
+ * JSON schema field information
+ *
+ */
 public class JsonSchemaInfo {
+    /**
+     * create JsonSchemaInfo instance
+     *
+     * @param name: field name
+     * @param schemaType: JSON schema type
+     * @param description: field description
+     * @param required: whether the field is required (default: true)
+     * @param schema: custom schema string
+     */
     public JsonSchemaInfo(
         public let name: String,
         public let schemaType!: JsonSchemaType = JsonSchemaType.Str,
@@ -37,6 +50,16 @@ public class JsonSchemaInfo {
     }
 }
 
+/**
+ * JSON schema type enum for JSON schema specification
+ *
+ * - Str: string type
+ * - Int: integer type
+ * - Number: number type (includes floats)
+ * - Boolean: boolean type
+ * - Arr: array type with item schema
+ * - Obj: object type with field schemas
+ */
 public enum JsonSchemaType {
     | Str
     | Int
@@ -93,6 +116,10 @@ public enum JsonSchemaType {
     }
 }
 
+/**
+ * Interface for types that can generate JSON schemas
+ * Provides methods to convert to JSON Schema format
+ */
 public interface Jsonable {
     /**
      * get json schema type

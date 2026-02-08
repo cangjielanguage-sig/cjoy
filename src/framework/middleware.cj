@@ -10,7 +10,7 @@
 
 package cjoy.framework
 
-import std.collection.{forEach, ArrayList, HashMap}
+import std.collection.{forEach, HashMap}
 
 /**
  * the interface of request handler chain
@@ -37,8 +37,16 @@ public interface JoyMiddlewareHandler {
     func handle(ctx: JoyContext, chain: JoyRequestHandlerChain): Unit
 }
 
+/**
+ * Type alias for middleware function
+ */
 public type JoyMiddlewareFunc = (ctx: JoyContext, chain: JoyRequestHandlerChain) -> Unit
 
+/**
+ * Function-based middleware handler implementation
+ *
+ * @param handler: the middleware function
+ */
 public class JoyMiddlewareFuncHandler <: JoyMiddlewareHandler {
     public JoyMiddlewareFuncHandler(let handler: JoyMiddlewareFunc) {}
 
@@ -47,6 +55,9 @@ public class JoyMiddlewareFuncHandler <: JoyMiddlewareHandler {
     }
 }
 
+/**
+ * middleware handler registry for registering route handlers
+ */
 public class JoyMiddlewares {
     private static let MIDDLEWARES: HashMap<String, JoyMiddlewareHandler> = HashMap()
 

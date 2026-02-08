@@ -3,7 +3,7 @@
  * CJoy is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
- *          http://license.coscl.org.cn/MulanPSL2
+ *          http://license.coscl.org.cn/MulansPSL2
  * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  */
@@ -24,27 +24,37 @@ import cjoy.version.printBanner
 @JoyCreateLogger("cjoy.framework")
 
 /**
- * joy config
+ * Configuration options for CJoy web server
+ *
  */
 public class JoyConfig {
-    // the trust remote ip headers
+    /**
+     *  create JoyConfig instance
+     *
+     * @param remoteIPHeaders: list of header names to check for real client IP (e.g., "X-Forwarded-For")
+     * @param enableDebugLog: enable debug logging (deprecated, use JoyLoggerFactory instead)
+     * @param caseInsensitive: case-insensitive route matching
+     * @param escapeAddedRoutes: escape special characters in route patterns
+     * @param notFoundHandler: handler for 404 Not Found responses
+     * @param methodNotAllowedHandler: handler for 405 Method Not Allowed responses
+     * @param maxRequestBodySize: maximum request body size in bytes (default: 32MB)
+     */
     public JoyConfig(
         public let remoteIPHeaders!: Array<String> = [],
 
         // enable debug log
-        @Deprecated["Use JoyLoggerFactory", since: "v0.90.0"]
-        public var enableDebugLog!: Bool = true,
+        @Deprecated["Use JoyLoggerFactory", since: "v0.90.0"] public var enableDebugLog!: Bool = true,
 
         // whether case insensitive when add route handler
         public let caseInsensitive!: Bool = false,
 
-        // whether escape the path when add route handler
+        // whether escape path when add route handler
         public let escapeAddedRoutes!: Bool = false,
 
-        // set not found handler 
+        // set not found handler
         public let notFoundHandler!: JoyRequestHandler = JoyNotFoundHandler(),
 
-        // set method not allowed handler 
+        // set method not allowed handler
         public let methodNotAllowedHandler!: JoyRequestHandler = JoyMethodNotAllowedHandler(),
 
         // max requestBodySize, 32M
@@ -73,7 +83,7 @@ public class Joy {
     }
 
     /**
-     * return the net.http.Server
+     * return net.http.Server
      */
     public prop server: Server {
         get() {
@@ -82,11 +92,11 @@ public class Joy {
     }
 
     /**
-     * return the default Joy engine instance
+     * return default Joy engine instance
      */
     public static func default(): Joy {
         // ~_~，bad sdk api, not have comptueIfAbsent func in map
-        // the func is not atomic
+        // func is not atomic
         if (_INSTANCES.contains("default")) {
             return _INSTANCES.get("default").getOrThrow()
         }
@@ -96,8 +106,8 @@ public class Joy {
     /**
      * create Joy engine instance by default config
      *
-     * @parame name: the instance name
-     * @return the instance of Joy
+     * @parame name: instance name
+     * @return instance of Joy
      */
     public static func create(name!: String = "default"): Joy {
         create(JoyConfig(), name: name)
@@ -106,10 +116,10 @@ public class Joy {
     /**
      * create Joy engine instance by config
      *
-     * @parame name: the instance name
-     * @param config: the global config
-     * @return the instance of Joy
-     * @throws IllegalArgumentException if the name is existed
+     * @parame name: instance name
+     * @param config: global config
+     * @return instance of Joy
+     * @throws IllegalArgumentException if name is existed
      */
     public static func create(config: JoyConfig, name!: String = "default"): Joy {
         if (_INSTANCES.contains(name)) {
@@ -125,21 +135,21 @@ public class Joy {
     /**
      * run http server at address:port
      *
-     * @param addr: the listen address
-     * @param port: the listen port
+     * @param addr: listen address
+     * @param port: listen port
      */
     public func run(addr: String, port: UInt16): Unit {
         run(ServerBuilder().addr(addr).port(port))
     }
 
     /**
-     * run https server at address:port with certificate files
+     * run https https server at address:port with certificate files
      *
-     * @param addr: the listen address
-     * @param port: the listen port
-     * @param certFilePath: the certificate server file path
-     * @param keyFilePath: the certificate server key file path
-     * @param password: the password of certificate server key
+     * @param addr: listen address
+     * @param port: listen port
+     * @param certFilePath: certificate server file path
+     * @param keyFilePath: certificate server key file path
+     * @param password: password of certificate server key
      * @param h2: run as http2
      */
     public func run(addr: String, port: UInt16, certFilePath: String, keyFilePath: String, password!: ?String = None,
@@ -154,7 +164,7 @@ public class Joy {
     /**
      * run http(s) server by ServerBuilder
      *
-     * @param serverBuidler: the server buidler
+     * @param serverBuidler: server buidler
      */
     public func run(serverBuidler: ServerBuilder): Unit {
         let server = serverBuidler
@@ -171,7 +181,7 @@ public class Joy {
     }
 
     /**
-     * shutdown the server
+     * shutdown server
      *
      * @param gracefully: whether gracefully shutdown
      */
@@ -187,11 +197,11 @@ public class Joy {
     }
 
     /**
-     * add a service to the joy instance
+     * add a service to joy instance
      *
-     * @param name: the service unqiue name
-     * @param service : the service instance object
-     * @return the joy instance
+     * @param name: service unqiue name
+     * @param service : service instance object
+     * @return joy instance
      */
     public func addService(name: String, service: Any): Joy {
         _services.addService(name, service)
@@ -201,8 +211,8 @@ public class Joy {
     /**
      * get service by name from service container
      *
-     * @param name: the service name
-     * @return: the service instance or None if not found
+     * @param name: service name
+     * @return: service instance or None if not found
      */
     public func getService<T>(name: String): ?T {
         _services.getService<T>(name)
