@@ -66,5 +66,21 @@ public interface JoyFileHandlerFactory {
      * @param confg: the joy configuration
      * @return the file system serve handler
      */
-    func createFileSystemServeHandler( root: Path, confg: JoyConfig): JoyRequestHandler
+    func createFileSystemServeHandler(root: Path, confg: JoyConfig): JoyRequestHandler
+
+    /**
+     * serve a file to the client
+     *
+     * @param ctx: the request context
+     * @param filePath: the path of the file to serve
+     */
+    func serveFile(ctx: JoyContext, filePath: Path): Unit
+
+    /**
+     * serve a file as attachment for download
+     *
+     * @param ctx: the request context
+     * @param filePath: the path of the file to download
+     */
+    func downloadFile(ctx: JoyContext, filePath: Path): Unit
 }

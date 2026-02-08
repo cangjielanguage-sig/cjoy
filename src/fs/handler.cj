@@ -29,6 +29,14 @@ class DefaultJoyFileHandlerFactory <: JoyFileHandlerFactory {
     public func createFileSystemServeHandler(root: Path, confg: JoyConfig): JoyRequestHandler {
         JoyFileSystemServeHandler(root, confg)
     }
+
+    public func serveFile(ctx: JoyContext, filePath: Path): Unit {
+        JoyFileServer.serveFile(ctx, filePath)
+    }
+
+    public func downloadFile(ctx: JoyContext, filePath: Path): Unit {
+        downloadAttachment(ctx, filePath)
+    }
 }
 
 class JoyFileServeHandler <: JoyRequestHandler {

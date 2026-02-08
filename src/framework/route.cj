@@ -33,6 +33,9 @@ public interface JoyRouters {
      * The middleware stack for any router will execute before searching for a matching
      * route to a specific handler, which provides opportunity to respond early,
      * change the course of the request execution.
+     *
+     * @param mws: the array of middleware handlers to add
+     * @return the current router instance for method chaining
      */
     func use(mws: Array<JoyMiddlewareHandler>): JoyRouters
     func use(mw: JoyMiddlewareFunc): JoyRouters {
@@ -41,6 +44,9 @@ public interface JoyRouters {
 
     /**
      * adds inline middlewares for an endpoint handler.
+     *
+     * @param mws: the array of middleware handlers to add
+     * @return the current router instance for method chaining
      */
     func apply(mws: Array<JoyMiddlewareHandler>): JoyRouters
     func apply(mw: JoyMiddlewareFunc): JoyRouters {
@@ -51,23 +57,36 @@ public interface JoyRouters {
      * creates a new inline router with a copy of middleware stack. it's useful
      * for a group of handlers along the same routing path that use an additional
      * set of middlewares.
+     *
+     * @param relativePath: the relative path for the new group
+     * @return the new router group instance
      */
     func group(relativePath: String): JoyRouters
 
     /**
      * find group by the full path
+     *
+     * @param path: the full path of the group to find
+     * @return the matching router group
      */
     func findGroup(path: String): JoyRouters
 
     /**
      * recursive creates a set of routes split by '/', invoke createGroups("/a/b/c") method is same as
      * invoke group("/a").group("/b").group("/c")
+     *
+     * @param path: the path to create groups from
+     * @return the last created router group
      */
     func createGroups(path: String): JoyRouters
 
     /**
      * used to define routes with a common prefix inside the supplied function.
      * it reuses the group method to create a sub-router.
+     *
+     * @param relativePath: the relative path for the route group
+     * @param fn: the function to define routes within the group
+     * @return the created router group
      */
     func route(relativePath: String, fn: (router: JoyRouters) -> Unit): JoyRouters {
         let g = group(relativePath)
@@ -77,11 +96,17 @@ public interface JoyRouters {
 
     /**
      * return the route base prefix path
+     *
+     * @return the base prefix path
      */
     func basePath(): String
 
     /**
      * adds the route `pattern` that matches `GET` http method to execute the `handler`.
+     *
+     * @param pattern: the route pattern
+     * @param handler: the request handler
+     * @return the current router instance for method chaining
      */
     func get(pattern: String, handler: JoyRequestHandler): JoyRouters
     func get(pattern: String, handler: JoyRequestHandlerFunc): JoyRouters {
@@ -90,6 +115,10 @@ public interface JoyRouters {
 
     /**
      * adds the route `pattern` that matches `POST` http method to execute the `handler`.
+     *
+     * @param pattern: the route pattern
+     * @param handler: the request handler
+     * @return the current router instance for method chaining
      */
     func post(pattern: String, handler: JoyRequestHandler): JoyRouters
     func post(pattern: String, handler: JoyRequestHandlerFunc): JoyRouters {
@@ -98,6 +127,10 @@ public interface JoyRouters {
 
     /**
      * adds the route `pattern` that matches `PUT` http method to execute the `handler`.
+     *
+     * @param pattern: the route pattern
+     * @param handler: the request handler
+     * @return the current router instance for method chaining
      */
     func put(pattern: String, handler: JoyRequestHandler): JoyRouters
     func put(pattern: String, handler: JoyRequestHandlerFunc): JoyRouters {
@@ -106,6 +139,10 @@ public interface JoyRouters {
 
     /**
      * adds the route `pattern` that matches `DELETE` http method to execute the `handler`.
+     *
+     * @param pattern: the route pattern
+     * @param handler: the request handler
+     * @return the current router instance for method chaining
      */
     func delete(pattern: String, handler: JoyRequestHandler): JoyRouters
     func delete(pattern: String, handler: JoyRequestHandlerFunc): JoyRouters {
@@ -114,6 +151,10 @@ public interface JoyRouters {
 
     /**
      * adds the route `pattern` that matches `PATCH` http method to execute the `handler`.
+     *
+     * @param pattern: the route pattern
+     * @param handler: the request handler
+     * @return the current router instance for method chaining
      */
     func patch(pattern: String, handler: JoyRequestHandler): JoyRouters
     func patch(pattern: String, handler: JoyRequestHandlerFunc): JoyRouters {
@@ -122,6 +163,10 @@ public interface JoyRouters {
 
     /**
      * adds the route `pattern` that matches `OPTIONS` http method to execute the `handler`.
+     *
+     * @param pattern: the route pattern
+     * @param handler: the request handler
+     * @return the current router instance for method chaining
      */
     func options(pattern: String, handler: JoyRequestHandler): JoyRouters
     func options(pattern: String, handler: JoyRequestHandlerFunc): JoyRouters {
@@ -130,6 +175,10 @@ public interface JoyRouters {
 
     /**
      * adds the route `pattern` that matches `HEAD` http method to execute the `handler`.
+     *
+     * @param pattern: the route pattern
+     * @param handler: the request handler
+     * @return the current router instance for method chaining
      */
     func head(pattern: String, handler: JoyRequestHandler): JoyRouters
     func head(pattern: String, handler: JoyRequestHandlerFunc): JoyRouters {
@@ -138,6 +187,11 @@ public interface JoyRouters {
 
     /**
      * adds the route `pattern` that matches `method` http method to execute the `handler`.
+     *
+     * @param methods: the array of http methods
+     * @param pattern: the route pattern
+     * @param handler: the request handler
+     * @return the current router instance for method chaining
      */
     func handle(methods: Array<String>, pattern: String, handler: JoyRequestHandler): JoyRouters
     func handle(methods: Array<String>, pattern: String, handler: JoyRequestHandlerFunc): JoyRouters {
@@ -146,21 +200,35 @@ public interface JoyRouters {
 
     /**
      * serves files with url path `relativePath` from the given file system `root`.
+     *
+     * @param relativePath: the relative url path
+     * @param root: the local filesystem root directory
+     * @return the current router instance for method chaining
      */
     func staticFs(relativePath: String, root: String): JoyRouters
 
-    /*
+    /**
      * registers a single route with url path `relativePath` to serve a single file of the local filesystem.
+     *
+     * @param relativePath: the relative url path
+     * @param filepath: the local filesystem file path
+     * @return the current router instance for method chaining
      */
     func staticFile(relativePath: String, filepath: String): JoyRouters
 
     /**
      * adds the route `pattern` that matches `GET` http method to process websocket reqeuest.
+     *
+     * @param pattern: the route pattern
+     * @param handler: the websocket handler
+     * @return the current router instance for method chaining
      */
     func websocket(pattern: String, handler: JoyWebSocketHandler): JoyRouters
 
     /**
      * dump the route tree
+     *
+     * @return the string representation of the route tree
      */
     func dump(): String
 }
@@ -177,17 +245,32 @@ class TreeRouteDistributor <: HttpRequestDistributor & HttpRequestHandler {
     }
 
     /**
-     * @throws UnsupportedException not supportd register any handler using the func
+     * registers a handler with the given name and handler instance
+     *
+     * @param _: the handler name
+     * @param _: the handler instance
+     * @throws UnsupportedException always thrown, as this method is not supported
      */
     public func register(_: String, _: HttpRequestHandler): Unit {
         throw UnsupportedException("unsupported this method")
     }
 
+    /**
+     * distributes the request to the appropriate handler
+     *
+     * @param _: the request path
+     * @return this instance as the handler
+     */
     public func distribute(_: String): HttpRequestHandler {
         // redirect to handle method
         this
     }
 
+    /**
+     * handles the incoming HTTP request
+     *
+     * @param ctx: the HTTP context
+     */
     public func handle(ctx: HttpContext): Unit {
         let target: RouteInfo<JoyRequestHandler> = lookup(ctx.request)
         let ctxParamMap = if (target.methodNotAllowed) {
@@ -274,17 +357,33 @@ class JoyRouteGroup <: JoyRouters {
         _distributor._root.dumpTree()
     }
 
+    /**
+     * appends middleware handlers to the middleware stack
+     *
+     * @param mws: the array of middleware handlers to add
+     * @return the current router instance for method chaining
+     */
     public func use(mws: Array<JoyMiddlewareHandler>): JoyRouters {
         mws |> forEach {mw => _middlewares.add(mw)}
         this
     }
 
+    /**
+     * adds inline middleware handlers for subsequent route registrations
+     *
+     * @param mws: the array of middleware handlers to add
+     * @return the current router instance for method chaining
+     */
     public func apply(mws: Array<JoyMiddlewareHandler>): JoyRouters {
         mws |> forEach {mw => _applyMWs.add(mw)}
         this
     }
 
     /**
+     * creates a new router group with a copy of the current middleware stack
+     *
+     * @param relativePath: the relative path for the new group
+     * @return the new router group instance
      * @throws IllegalArgumentException if the relative path is empty
      */
     public func group(relativePath: String): JoyRouters {
@@ -311,6 +410,12 @@ class JoyRouteGroup <: JoyRouters {
         _distributor._groups.get(path)
     }
 
+    /**
+     * finds the router group that matches the given path
+     *
+     * @param path: the path to search for
+     * @return the matching router group, or the current router if no match is found
+     */
     public func findGroup(path: String): JoyRouters {
         var router: JoyRouters = this
         var search = path
@@ -333,6 +438,12 @@ class JoyRouteGroup <: JoyRouters {
         router
     }
 
+    /**
+     * recursively creates a set of nested router groups from the given path
+     *
+     * @param path: the path to create groups from (e.g., "/a/b/c" creates three nested groups)
+     * @return the last created router group
+     */
     public func createGroups(path: String): JoyRouters {
         checkPath(path)
         if (path.size == 1) {

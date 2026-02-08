@@ -12,6 +12,7 @@ package cjoy.framework
 
 import std.collection.{HashMap, ArrayList}
 import std.io.{InputStream, ByteBuffer, copy, StringReader, BufferedInputStream, SeekPosition}
+import std.fs.{canonicalize, exists, Path}
 import std.net.IPAddress
 import stdx.net.http.{HttpContext, RedirectHandler, HttpStatusCode, HttpResponseBuilder, Cookie}
 import stdx.encoding.url.URL
@@ -19,6 +20,7 @@ import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonRead
 import stdx.encoding.base64.fromBase64String
 import cjoy.bind.JoyBindable
 import cjoy.context.{Context, ServiceContainer}
+import cjoy.ioc.BeanFactoryManager
 import cjoy.log.macros.*
 
 /**
@@ -50,22 +52,22 @@ public interface JoyContext <: Context {
      */
     prop method: String
 
-    /*
+    /**
      * return the http response status
      */
     prop respStatus: UInt16
 
-    /*
+    /**
      * return the http response body
      */
     prop respBody: String
 
-    /*
+    /**
      * return the http request path
      */
     prop path: String
 
-    /*
+    /**
      * return the http request url
      */
     prop url: URL
@@ -258,14 +260,15 @@ public interface JoyContext <: Context {
      * reply response with serialized json body and status code
      *
      * @param body: the object of T
+     * @return the current context instance for method chaining
      */
     func json<T>(body: T): JoyContext where T <: JsonSerializable
 
     /**
      * reply response with json body and status code
      *
-     * @param status: the http status code
      * @param body: the string body
+     * @return the current context instance for method chaining
      */
     func json(body: String): JoyContext
 
@@ -273,8 +276,8 @@ public interface JoyContext <: Context {
      * reply response with the body of content type and status code
      *
      * @param contentType: the content type
-     * @param status: the http status code
      * @param body: the string body
+     * @return the current context instance for method chaining
      */
     func string(contentType: String, body: String): JoyContext
 
@@ -282,6 +285,7 @@ public interface JoyContext <: Context {
      * reply response with text plain body and status code OK(200)
      *
      * @param body: the string body
+     * @return the current context instance for method chaining
      */
     func string(body: String): JoyContext
 
@@ -289,6 +293,7 @@ public interface JoyContext <: Context {
      * reply response with text plain body and status code OK(200)
      *
      * @param body: string body
+     * @return the current context instance for method chaining
      */
     func text(body: String): JoyContext
 
@@ -296,29 +301,47 @@ public interface JoyContext <: Context {
      * reply response with html body and status code OK(200)
      *
      * @param body: string body
+     * @return the current context instance for method chaining
      */
     func html(body: String): JoyContext
 
     /**
      * reply response with the body of content type and status code
      *
-     * @param contentType: the content type
      * @param body: the bytes body
+     * @return the current context instance for method chaining
      */
     func data(body: Array<Byte>): JoyContext
 
     /**
-     * reply response with the body of content type and status code
+     * reply response with data bytes body
      *
-     * @param contentType: the content type
      * @param body: the stream body
+     * @return the current context instance for method chaining
      */
     func data(body: InputStream): JoyContext
+
+    /**
+     * reply response with file data bytes body
+     *
+     * @param filePath: the file path
+     * @return the current context instance for method chaining
+     */
+    func file(filePath: String): JoyContext
+
+    /**
+     * reply response with file data bytes attachment
+     *
+     * @param filePath: the file path
+     * @return the current context instance for method chaining
+     */
+    func attachment(filePath: String): JoyContext
 
     /**
      * set the content type
      *
      * @param contentType: the content type
+     * @return the current context instance for method chaining
      */
     func contentType(contentType: String): JoyContext
 
@@ -377,25 +400,23 @@ public interface JoyContext <: Context {
      *
      * @param name: the header name
      * @param value: the header value
-     *
+     * @return the current context instance for method chaining
      */
     func header(name: String, value: String): JoyContext
 
     /**
      * read a cookie value from request
      *
-     * @param name: the header name
+     * @param name: the cookie name
      * @return the cookie value
-     *
      */
     func getCookie(name: String): ?String
 
     /**
      * write a cookie value from request
      *
-     * @param name: the header name
-     * @return the cookie value
-     *
+     * @param cookie: the cookie object
+     * @return the current context instance for method chaining
      */
     func cookie(cookie: Cookie): JoyContext
 
@@ -403,29 +424,33 @@ public interface JoyContext <: Context {
      * redirect to the new url with status code
      *
      * @param status: the http status code
+     * @param location: the redirect location url
      */
     func redirect(status: UInt16, location: String): Unit
 
     /**
      * reply response with status code 404
-     *
      */
     func notFound(): Unit
 
     /**
      * create a chunked writer
+     *
+     * @return the chunked writer instance
      */
     func chunkedWriter(): JoyChunkedWriter
 
     /**
      * create a SseEmitter
+     *
+     * @return the SSE emitter instance
      */
     func eventEmitter(): JoySseEmitter
 
     /**
      * get basic auth info
      *
-     * return the username and password
+     * @return the username and password tuple, or None if basic auth is not provided or invalid
      */
     func basicAuth(): ?(String, String)
 
@@ -797,9 +822,31 @@ class JoyHttpContext <: JoyContext {
         this
     }
 
+    public func file(filePath: String): JoyContext {
+        let fp = canonicalize(filePath)
+        if (!exists(fp)) {
+            notFound()
+        } else {
+            let factory = getJoyFileHandlerFactory()
+            factory.serveFile(this, Path(filePath))
+        }
+        this
+    }
+
+    public func attachment(filePath: String): JoyContext {
+        let fp = canonicalize(filePath)
+        if (!exists(fp)) {
+            notFound()
+        } else {
+            let factory = getJoyFileHandlerFactory()
+            factory.downloadFile(this, Path(filePath))
+        }
+        this
+    }
+
     public func contentType(contentType: String): JoyContext {
         if (_respContentType.isNone()) {
-             _respContentType = contentType
+            _respContentType = contentType
             _httpContext.responseBuilder.header(JoyHttpConsts.HEADER_CONTENT_TYPE, contentType)
         }
         this
@@ -908,5 +955,9 @@ class JoyHttpContext <: JoyContext {
      */
     public func getService<T>(name: String): ?T {
         _services.getService<T>(name)
+    }
+
+    private func getJoyFileHandlerFactory(): JoyFileHandlerFactory {
+        BeanFactoryManager.getApplicationContext().getBean<JoyFileHandlerFactory>().getOrThrow()
     }
 }
