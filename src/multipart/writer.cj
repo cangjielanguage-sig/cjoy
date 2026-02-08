@@ -67,6 +67,10 @@ public class JoyMultiPartWriter <: Resource {
     }
 
     public func createPart(headers: HttpHeaders): JoyMultiPartWriter {
+        if (_closed) {
+            throw IllegalArgumentException("can't create part after close")
+        }
+
         if (let Some(p) <- _lastPart) {
             p.close()
         }
@@ -198,8 +202,8 @@ public class JoyMultiPartWriter <: Resource {
 
         if (let Some(p) <- _lastPart) {
             p.close()
-            _lastPart = None
         }
+        _lastPart = None
         _buffer.write("\r\n--${_boundary}--\r\n".toArray())
         _buffer.flush()
         _closed = true

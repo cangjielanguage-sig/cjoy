@@ -11,7 +11,8 @@
 package cjoy.multipart
 
 import std.io.ByteBuffer
-import std.fs.remove
+import std.fs.{remove, Path, exists}
+import std.collection.ArrayList
 import std.unittest.testmacro.*
 import stdx.net.http.*
 
@@ -52,7 +53,136 @@ PNG ... content of abc.png
                 @Fail("the file is not match")
             }
         } finally {
-            remove(config.fileCacheDir, recursive: true)
+            if (exists(Path(config.fileCacheDir))) {
+                remove(config.fileCacheDir, recursive: true)
+            }
+        }
+    }
+
+    @TestCase
+    public func testNonMultipartForm() {
+        let byteBuffer = ByteBuffer()
+        byteBuffer.write("name=value&key=test".toArray())
+        let request = HttpRequestBuilder()
+            .post()
+            .url("http://127.0.0.1:18881/test")
+            .body(byteBuffer)
+            .header("Content-type", "application/x-www-form-urlencoded")
+            .build()
+        let config = JoyMultiPartConfig()
+        let form = JoyMultiPartForm.create(request, config)
+
+        if (form.isFormData) {
+            @Fail("should not be form data when content type is application/x-www-form-urlencoded")
+        }
+    }
+
+    @TestCase
+    public func testMissingBoundary() {
+        let byteBuffer = ByteBuffer()
+        byteBuffer.write("content".toArray())
+        let request = HttpRequestBuilder()
+            .post()
+            .url("http://127.0.0.1:18881/test")
+            .body(byteBuffer)
+            .header("Content-type", "multipart/form-data")
+            .build()
+        let config = JoyMultiPartConfig()
+
+        try {
+            let form = JoyMultiPartForm.create(request, config)
+            @Fail("should throw MultiPartParseException when boundary is missing")
+        } catch (e: MultiPartParseException) {
+        }
+    }
+
+    @TestCase
+    public func testCustomPartHandler() {
+        let str = #"
+--WebKitFormBoundaryrGKCBY7qhFd3TrwA
+Content-Disposition: form-data; name="custom"
+
+custom value
+--WebKitFormBoundaryrGKCBY7qhFd3TrwA--
+"#
+        let byteBuffer = ByteBuffer()
+        byteBuffer.write(str.replace("\n", "\r\n").toArray())
+        let request = HttpRequestBuilder()
+            .post()
+            .url("http://127.0.0.1:18881/test")
+            .body(byteBuffer)
+            .header("Content-type", "multipart/form-data; boundary=WebKitFormBoundaryrGKCBY7qhFd3TrwA")
+            .build()
+        var config = JoyMultiPartConfig()
+        config.fileCacheDir = "./test_tmp"
+
+        let capturedValue = StringBuilder()
+        try (form = JoyMultiPartForm.create(request, config)) {
+            form.handlePart("custom", {
+                part: JoyMultiPart, data: Array<Byte> => capturedValue.append(String.fromUtf8(data))
+            })
+            form.parse()
+
+            if (capturedValue.toString() != "custom value") {
+                @Fail("custom handler should capture the part value")
+            }
+        } finally {
+            if (exists(Path(config.fileCacheDir))) {
+                remove(config.fileCacheDir, recursive: true)
+            }
+        }
+    }
+
+    @TestCase
+    public func testFormIteration() {
+        let str = #"
+--WebKitFormBoundaryrGKCBY7qhFd3TrwA
+Content-Disposition: form-data; name="field1"
+
+value1
+--WebKitFormBoundaryrGKCBY7qhFd3TrwA
+Content-Disposition: form-data; name="field2"
+
+value2
+--WebKitFormBoundaryrGKCBY7qhFd3TrwA
+Content-Disposition: form-data; name="field3"
+
+value3
+--WebKitFormBoundaryrGKCBY7qhFd3TrwA--
+"#
+        let byteBuffer = ByteBuffer()
+        byteBuffer.write(str.replace("\n", "\r\n").toArray())
+        let request = HttpRequestBuilder()
+            .post()
+            .url("http://127.0.0.1:18881/test")
+            .body(byteBuffer)
+            .header("Content-type", "multipart/form-data; boundary=WebKitFormBoundaryrGKCBY7qhFd3TrwA")
+            .build()
+        var config = JoyMultiPartConfig()
+        config.fileCacheDir = "./test_tmp"
+
+        try (form = JoyMultiPartForm.create(request, config)) {
+            form.parse()
+
+            let parts = ArrayList<JoyMultiPart>()
+            for (p in form) {
+                parts.add(p)
+            }
+
+            if (parts.size != 3) {
+                @Fail("should have 3 parts, got ${parts.size}")
+            }
+
+            let expectedNames = ["field1", "field2", "field3"]
+            for (i in 0..parts.size) {
+                if (parts[i].name != expectedNames[i]) {
+                    @Fail("part name mismatch at index ${i}, expected ${expectedNames[i]}, got ${parts[i].name}")
+                }
+            }
+        } finally {
+            if (exists(Path(config.fileCacheDir))) {
+                remove(config.fileCacheDir, recursive: true)
+            }
         }
     }
 }

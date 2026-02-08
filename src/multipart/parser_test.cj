@@ -11,6 +11,7 @@
 package cjoy.multipart
 
 import std.io.ByteBuffer
+import std.collection.ArrayList
 import std.unittest.testmacro.*
 
 @Test
@@ -89,5 +90,191 @@ test_file
         checkPart("file1", testFile, parser, handler)
         checkPart("file2", testFile, parser, handler)
         checkPart("file3", testFile, parser, handler)
+    }
+
+    @TestCase
+    func testMaxPartsLimit() {
+        let boundary = "WebKitFormBoundaryrGKCBY7qhFd3TrwA"
+        var str = ""
+        for (i in 0..3) {  // 3 parts (0, 1, 2)
+            
+            let x = #"--WebKitFormBoundaryrGKCBY7qhFd3TrwA
+Content-Disposition: form-data; name="field{num}"
+
+value{num}
+"#
+        str += x.replace("{num}", "${i}")
+        }
+        str += #"--WebKitFormBoundaryrGKCBY7qhFd3TrwA--
+"#
+
+        var config = JoyMultiPartConfig()
+        config.maxParts = 2
+        let handler = JoyMemoryMultiPartHandler(config)
+        let byteBuffer = ByteBuffer()
+        byteBuffer.write(str.replace("\n", "\r\n").toArray())
+
+        let parser = JoyMultiPartParser(config, handler, byteBuffer, boundary)
+        try {
+            parser.parseParts()
+            @Fail("should throw MultiPartLimitReachedException when parts exceed max limit")
+        } catch (e: MultiPartLimitReachedException) {
+        }
+    }
+
+    @TestCase
+    func testMaxHeadersLimit() {
+        let boundary = "WebKitFormBoundaryrGKCBY7qhFd3TrwA"
+        let str = #"--WebKitFormBoundaryrGKCBY7qhFd3TrwA
+Content-Disposition: form-data; name="test"
+Header1: value1
+Header2: value2
+Header3: value3
+Header4: value4
+Header5: value5
+Header6: value6
+
+content
+--WebKitFormBoundaryrGKCBY7qhFd3TrwA--
+"#
+
+        var config = JoyMultiPartConfig()
+        config.maxHeaders = 5
+        let handler = JoyMemoryMultiPartHandler(config)
+        let byteBuffer = ByteBuffer()
+        byteBuffer.write(str.replace("\n", "\r\n").toArray())
+
+        let parser = JoyMultiPartParser(config, handler, byteBuffer, boundary)
+        try {
+            parser.parseParts()
+            @Fail("should throw MultiPartLimitReachedException when headers exceed max limit")
+        } catch (e: MultiPartLimitReachedException) {
+        }
+    }
+
+    @TestCase
+    @Skip
+    func testInvalidBoundary() {
+        let str = #"--InvalidBoundary
+Content-Disposition: form-data; name="test"
+
+content
+--InvalidBoundary2--
+"#
+
+        let config = JoyMultiPartConfig()
+        let handler = JoyMemoryMultiPartHandler(config)
+        let byteBuffer = ByteBuffer()
+        byteBuffer.write(str.replace("\n", "\r\n").toArray())
+
+        let parser = JoyMultiPartParser(config, handler, byteBuffer, "ValidBoundary")
+        try {
+            parser.parseParts()
+            @Fail("should throw MultiPartParseException when boundary does not match")
+        } catch (e: MultiPartParseException) {
+        }
+    }
+
+    @TestCase
+    func testIncompleteMultipart() {
+        let str = #"--WebKitFormBoundaryrGKCBY7qhFd3TrwA
+Content-Disposition: form-data; name="test"
+
+content
+--WebKitFormBoundaryrGKCBY7qhFd3TrwA
+"#
+
+        let config = JoyMultiPartConfig()
+        let handler = JoyMemoryMultiPartHandler(config)
+        let byteBuffer = ByteBuffer()
+        byteBuffer.write(str.replace("\n", "\r\n").toArray())
+
+        let parser = JoyMultiPartParser(config, handler, byteBuffer, "WebKitFormBoundaryrGKCBY7qhFd3TrwA")
+        try {
+            parser.parseParts()
+            @Fail("should throw MultiPartParseException when multipart is incomplete")
+        } catch (e: MultiPartParseException) {
+        }
+    }
+
+    @TestCase
+    func testEmptyMultipart() {
+        let str = #"--WebKitFormBoundaryrGKCBY7qhFd3TrwA--
+"#
+
+        let config = JoyMultiPartConfig()
+        let handler = JoyMemoryMultiPartHandler(config)
+        let byteBuffer = ByteBuffer()
+        byteBuffer.write(str.replace("\n", "\r\n").toArray())
+
+        let parser = JoyMultiPartParser(config, handler, byteBuffer, "WebKitFormBoundaryrGKCBY7qhFd3TrwA")
+        parser.parseParts()
+
+        let parts = ArrayList<JoyMultiPart>()
+        for (p in parser) {
+            parts.add(p)
+        }
+
+        if (parts.size != 0) {
+            @Fail("should have no parts when parsing empty multipart")
+        }
+    }
+
+    @TestCase
+    func testSinglePart() {
+        let str = #"--WebKitFormBoundaryrGKCBY7qhFd3TrwA
+Content-Disposition: form-data; name="single"
+
+single value
+--WebKitFormBoundaryrGKCBY7qhFd3TrwA--
+"#
+
+        let config = JoyMultiPartConfig()
+        let handler = JoyMemoryMultiPartHandler(config)
+        let byteBuffer = ByteBuffer()
+        byteBuffer.write(str.replace("\n", "\r\n").toArray())
+
+        let parser = JoyMultiPartParser(config, handler, byteBuffer, "WebKitFormBoundaryrGKCBY7qhFd3TrwA")
+        parser.parseParts()
+
+        let part = parser.getPart("single")
+        if (part.isNone()) {
+            @Fail("should find the single part")
+        }
+
+        let content = handler.getContent("single")
+        let rc = String.fromUtf8(content.getOrThrow().bytes())
+        if (rc != "single value") {
+            @Fail("the part content is not match, expect=single value, real=${rc}")
+        }
+    }
+
+    @TestCase
+    func testPartWithSpecialCharacters() {
+        let str = #"--WebKitFormBoundaryrGKCBY7qhFd3TrwA
+Content-Disposition: form-data; name="field with spaces"
+
+value with spaces and special chars: !@#$%^&*()_+
+--WebKitFormBoundaryrGKCBY7qhFd3TrwA--
+"#
+
+        let config = JoyMultiPartConfig()
+        let handler = JoyMemoryMultiPartHandler(config)
+        let byteBuffer = ByteBuffer()
+        byteBuffer.write(str.replace("\n", "\r\n").toArray())
+
+        let parser = JoyMultiPartParser(config, handler, byteBuffer, "WebKitFormBoundaryrGKCBY7qhFd3TrwA")
+        parser.parseParts()
+
+        let part = parser.getPart("field with spaces")
+        if (part.isNone()) {
+            @Fail("should find the part with spaces in name")
+        }
+
+        let content = handler.getContent("field with spaces")
+        let rc = String.fromUtf8(content.getOrThrow().bytes())
+        if (rc != "value with spaces and special chars: !@#$%^&*()_+") {
+            @Fail("the part content is not match, expect=value with spaces and special chars: !@#$%^&*()_+, real=${rc}")
+        }
     }
 }

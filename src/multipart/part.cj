@@ -55,6 +55,13 @@ public class JoyMultiPart {
     }
 
     /**
+     * set the name for test
+     */
+    func setName(name: String): Unit {
+        _dispositionParams["name"] = name
+    }
+
+    /**
      * return the file name
      */
     public prop fileName: String {

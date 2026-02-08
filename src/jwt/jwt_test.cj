@@ -357,4 +357,246 @@ public class JwtTestCaseSuit {
         let jwt2 = Jwt.parse(token).verifyWith(pub)
         assertJwt(jwt2)
     }
+
+    @TestCase
+    public func testSignRS384() {
+        let priv = RSAPrivateKey(2048)
+        let pub = RSAPublicKey(priv)
+        let jwt = createJwt("RS384")
+        let token = jwt.signWith(priv)
+        let jwt2 = Jwt.parse(token).verifyWith(pub)
+        assertJwt(jwt2)
+    }
+
+    @TestCase
+    public func testSignRS512() {
+        let priv = RSAPrivateKey(2048)
+        let pub = RSAPublicKey(priv)
+        let jwt = createJwt("RS512")
+        let token = jwt.signWith(priv)
+        let jwt2 = Jwt.parse(token).verifyWith(pub)
+        assertJwt(jwt2)
+    }
+
+    @TestCase
+    public func testSignPS384() {
+        let priv = RSAPrivateKey(2048)
+        let pub = RSAPublicKey(priv)
+        let jwt = createJwt("PS384")
+        let token = jwt.signWith(priv)
+        let jwt2 = Jwt.parse(token).verifyWith(pub)
+        assertJwt(jwt2)
+    }
+
+    @TestCase
+    public func testSignPS512() {
+        let priv = RSAPrivateKey(2048)
+        let pub = RSAPublicKey(priv)
+        let jwt = createJwt("PS512")
+        let token = jwt.signWith(priv)
+        let jwt2 = Jwt.parse(token).verifyWith(pub)
+        assertJwt(jwt2)
+    }
+
+    @TestCase
+    public func testParseInvalidTokenFormat() {
+        try {
+            Jwt.parse("invalid.token.format")
+            @Fail("should throw jwt exception for invalid token format")
+        } catch (ex: JwtException) {
+            @Assert(ex.message.contains("token is malformed"))
+        }
+    }
+
+    @TestCase
+    public func testParseInvalidBase64() {
+        try {
+            Jwt.parse("invalidbase64.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.invalidbase64")
+            @Fail("should throw jwt exception for invalid base64")
+        } catch (ex: JwtException) {
+            @Assert(ex.message.contains("could not base64 decode"))
+        }
+
+        try {
+            Jwt.parse("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.invalidjson.invalidbase64")
+            @Fail("should throw jwt exception for invalid json")
+        } catch (ex: JwtException) {
+            @Assert(ex.message.contains("could not JSON decode"))
+        }
+    }
+
+    @TestCase
+    public func testParseUnknownAlgorithm() {
+        // 直接创建一个包含未知算法的 token 字符串，而不使用 Jwt 类的方法
+        // 这样可以避免调用 signWith() 时的 alg 检查
+        let token = "eyJhbGciOiJVTktOT1dOIiwidHlwIjoiSldUIn0.eyJpc3MiOiJjYW5nZSIsImF1ZCI6ImF1ZCIsImlhdCI6MTczNjk5ODAwMCwiZXhwIjoxNzM3MDg0NDAwLCJuYmYiOjE3MzY5OTc5OTcsInN1YiI6InN1YiJ9.invalid signature"
+        try {
+            Jwt.parse(token)
+            @Fail("should throw jwt exception for unknown algorithm")
+        } catch (ex: JwtException) {
+            @Assert(ex.message.contains("signing method (alg) is unavailable"))
+        }
+    }
+
+    @TestCase
+    public func testLeewayExpiration() {
+        let key = "abcd".toArray()
+        let jwt = Jwt.create()
+        jwt.alg("HS256")
+        jwt
+            .claims
+            .issuer("cjoy")
+            .audience("aud")
+            .issuedAt(DateTime.now().addSeconds(-5))
+            .expirationTime(DateTime.now().addSeconds(-1))
+            .notBefore(DateTime.now().addSeconds(-3))
+            .subject("sub")
+        let token = jwt.signWith(key)
+        try {
+            Jwt.parse(token, config: ParserConfig(leeway: Duration.second * 2)).verifyWith(key)
+        } catch (ex: JwtException) {
+            @Fail(ex.message)
+        }
+    }
+
+    @TestCase
+    public func testLeewayNotBefore() {
+        let key = "abcd".toArray()
+        let jwt = Jwt.create()
+        jwt.alg("HS256")
+        jwt
+            .claims
+            .issuer("cjoy")
+            .audience("aud")
+            .issuedAt(DateTime.now().addSeconds(-5))
+            .expirationTime(DateTime.now().addSeconds(100))
+            .notBefore(DateTime.now().addSeconds(1))
+            .subject("sub")
+        let token = jwt.signWith(key)
+        try {
+            Jwt.parse(token, config: ParserConfig(leeway: Duration.second * 2)).verifyWith(key)
+        } catch (ex: JwtException) {
+            @Fail(ex.message)
+        }
+    }
+
+    @TestCase
+    public func testLeewayIssuedAt() {
+        let key = "abcd".toArray()
+        let jwt = Jwt.create()
+        jwt.alg("HS256")
+        jwt
+            .claims
+            .issuer("cjoy")
+            .audience("aud")
+            .issuedAt(DateTime.now().addSeconds(1))
+            .expirationTime(DateTime.now().addDays(1))
+            .notBefore(DateTime.now().addSeconds(-3))
+            .subject("sub")
+        let token = jwt.signWith(key)
+        try {
+            Jwt.parse(token, config: ParserConfig(leeway: Duration.second * 2)).verifyWith(key)
+        } catch (ex: JwtException) {
+            @Fail(ex.message)
+        }
+    }
+
+    @TestCase
+    public func testCustomTimeFunc() {
+        let key = "abcd".toArray()
+        let jwt = Jwt.create()
+        jwt.alg("HS256")
+        jwt
+            .claims
+            .issuer("cjoy")
+            .audience("aud")
+            .issuedAt(DateTime.now().addSeconds(-30))
+            .expirationTime(DateTime.now().addDays(1))
+            .notBefore(DateTime.now().addSeconds(-3))
+            .subject("sub")
+        let token = jwt.signWith(key)
+
+        let customTime = DateTime.now().addDays(2)
+        try {
+            Jwt.parse(token, config: ParserConfig(timeFunc: {=> customTime})).verifyWith(key)
+            @Fail("should throw jwt exception for expired token with custom time")
+        } catch (ex: JwtException) {
+            @Assert(ex.message.contains("token is expired"))
+        }
+    }
+
+    @TestCase
+    public func testParseValidateSuccessIssuer() {
+        let key = "abcd".toArray()
+        let jwt = createJwt("HS256")
+        let token = jwt.signWith(key)
+        try {
+            Jwt.parse(token, config: ParserConfig(expectedIss: "cjoy")).verifyWith(key)
+        } catch (ex: JwtException) {
+            @Fail(ex.message)
+        }
+    }
+
+    @TestCase
+    public func testParseValidateFailIssuer() {
+        let key = "abcd".toArray()
+        let jwt = createJwt("HS256")
+        let token = jwt.signWith(key)
+        try {
+            Jwt.parse(token, config: ParserConfig(expectedIss: "invalid")).verifyWith(key)
+            @Fail("should throw jwt exception for invalid issuer")
+        } catch (ex: JwtException) {
+            @Assert(ex.message.contains("token has invalid issuer"))
+        }
+    }
+
+    @TestCase
+    public func testParseValidateSuccessSubject() {
+        let key = "abcd".toArray()
+        let jwt = createJwt("HS256")
+        let token = jwt.signWith(key)
+        try {
+            Jwt.parse(token, config: ParserConfig(expectedSub: "sub")).verifyWith(key)
+        } catch (ex: JwtException) {
+            @Fail(ex.message)
+        }
+    }
+
+    @TestCase
+    public func testParseValidateFailSubject() {
+        let key = "abcd".toArray()
+        let jwt = createJwt("HS256")
+        let token = jwt.signWith(key)
+        try {
+            Jwt.parse(token, config: ParserConfig(expectedSub: "invalid")).verifyWith(key)
+            @Fail("should throw jwt exception for invalid subject")
+        } catch (ex: JwtException) {
+            @Assert(ex.message.contains("token has invalid subject"))
+        }
+    }
+
+    @TestCase
+    public func testCopyClaims() {
+        let key = "abcd".toArray()
+        let jwt1 = createJwt("HS256")
+        let jwt2 = Jwt.create()
+        jwt2.copyClaims(jwt1)
+
+        @Assert(jwt2.claims.getIssuer().getOrThrow() == jwt1.claims.getIssuer().getOrThrow())
+        @Assert(jwt2.claims.getSubject().getOrThrow() == jwt1.claims.getSubject().getOrThrow())
+        @Assert(jwt2.claims.getAudience().getOrThrow().getFirstValue() == jwt1.claims.getAudience().getOrThrow().getFirstValue())
+    }
+
+    @TestCase
+    public func testCustomHeaders() {
+        let key = "abcd".toArray()
+        let jwt = Jwt.create()
+        jwt.alg("HS256")
+        jwt.headers.header("customHeader", "customValue")
+        jwt.claims.issuer("cjoy")
+        let token = jwt.signWith(key)
+
+        let parsed = Jwt.parse(token).verifyWith(key)
+        @Assert(parsed.headers.getString("customHeader").getOrThrow() == "customValue")
+    }
 }

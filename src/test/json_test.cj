@@ -14,6 +14,7 @@ import cjoy.json.*
 import cjoy.json.macros.*
 import std.collection.*
 import std.unittest.testmacro.*
+import std.math.numeric.{BigInt, Decimal}
 
 @Json
 public struct S0 {
@@ -188,6 +189,32 @@ private class BlobResourceContents <: ResourceContents {
 private class ReadResourceResult {
     // 类型为基类，实际根据mimeType的值反序列化为TextResourceContents或BlobResourceContents
     public var contents: ArrayList<ResourceContents> = ArrayList()
+}
+
+@Json
+public struct EmptyData {
+    var arr: Array<Int32> = []
+    var list: ArrayList<String> = ArrayList()
+    var map: HashMap<String, Int64> = HashMap()
+}
+
+@Json
+public struct NumericData {
+    var bigInt: BigInt = BigInt.parse("12345678901234567890")
+    var decimal: Decimal = Decimal.parse("12345.6789")
+}
+
+@Json
+public struct RequiredData {
+    var name: String = "test"
+    @JsonField[required: false]
+    var age: Option<Int32> = None
+}
+
+@Json
+public struct CustomSchemaData {
+    @JsonField[schema: {"type":"string","format":"email","description":"user email address"}]
+    var email: String = "test@example.com"
 }
 
 @Test
@@ -499,11 +526,11 @@ public class JsonTestCaseSuit {
         t1.mimeType = "text"
         let t2 = BlobResourceContents(blob: "b1", blob2: "b2")
         t2.mimeType = "blob"
-        
+
         let s = ReadResourceResult(contents: ArrayList<ResourceContents>([t1, t2]))
         let json = JsonTool.toJson(s)
         println(json)
-        
+
         let r = JsonTool.fromJson<ReadResourceResult>(json)
         @Assert(r.contents.size, 2)
 
@@ -516,5 +543,117 @@ public class JsonTestCaseSuit {
         @Assert(r2.mimeType, t2.mimeType)
         @Assert(r2.blob, t2.blob)
         @Assert(r2.blob2, t2.blob2)
+    }
+
+    @TestCase
+    public func testIndentOutput(): Unit {
+        let s0 = S0()
+        let str = JsonTool.toJson(s0, indent: true)
+        println(str)
+        @Assert(str.contains("\t"), true)
+        @Assert(str.contains("\n"), true)
+    }
+
+    @TestCase
+    public func testEmptyCollections(): Unit {
+        let data = EmptyData()
+        let str = JsonTool.toJson(data)
+        println(str)
+        let expect = #"{"arr":[],"list":[],"map":{}}"#
+        @Assert(str, expect)
+
+        let d = JsonTool.fromJson<EmptyData>(str)
+        @Assert(d.arr.size, 0)
+        @Assert(d.list.size, 0)
+        @Assert(d.map.size, 0)
+    }
+
+    @TestCase
+    public func testBigIntDecimal(): Unit {
+        let data = NumericData()
+        let str = JsonTool.toJson(data)
+        println(str)
+
+        let d = JsonTool.fromJson<NumericData>(str)
+        @Assert(d.bigInt.toString(), "12345678901234567890")
+        @Assert(d.decimal.toString(), "12345.6789")
+    }
+
+    @TestCase
+    public func testFromJsonBytes(): Unit {
+        let s0 = S0()
+        let bytes = JsonTool.toJsonBytes(s0)
+        let d = JsonTool.fromJson<S0>(bytes)
+        @Assert(d.rune, r'x')
+        @Assert(d.str, "str")
+    }
+
+    @TestCase
+    public func testFromJsonToAny(): Unit {
+        let str = ###"{"a": 1, "b": "test", "c": true, "d": 1.5, "e": null, "f": [1, 2, "3"], "g": {"k1": "v1", "k2": 42}}"###
+        let buffer = ByteBuffer()
+        unsafe { buffer.write(str.rawData())}
+        let obj = JsonTool.fromJsonToAny(JsonReader(buffer))
+
+        match (obj) {
+            case map: HashMap<String, Any> =>
+                @Assert(map.size, 7)
+                @Assert((map["a"] as Int64).getOrThrow(), 1)
+                @Assert((map["b"] as String).getOrThrow(), "test")
+                @Assert((map["c"] as Bool).getOrThrow(), true)
+                @Assert((map["d"] as Float64).getOrThrow(), 1.5)
+                @Assert((map["e"] as Option<String>).getOrThrow(), None)
+
+                match (map["f"]) {
+                    case list: ArrayList<Any> =>
+                        @Assert(list.size, 3)
+                        @Assert((list[0] as Int64).getOrThrow(), 1)
+                        @Assert((list[1] as Int64).getOrThrow(), 2)
+                        @Assert((list[2] as String).getOrThrow(), "3")
+                    case _ => @Fail("f should be array")
+                }
+
+                match (map["g"]) {
+                    case subMap: HashMap<String, Any> =>
+                        @Assert(subMap.size, 2)
+                        @Assert((subMap["k1"] as String).getOrThrow(), "v1")
+                        @Assert((subMap["k2"] as Int64).getOrThrow(), 42)
+                    case _ => @Fail("g should be object")
+                }
+            case _ => @Fail("should be object")
+        }
+    }
+
+    @TestCase
+    public func testReadRune(): Unit {
+        let json = ###"{"rune":"x"}"###
+        var stream = ByteBuffer()
+        unsafe { stream.write(json.rawData())}
+        let reader = JsonReader(stream)
+        reader.startObject()
+        let name = reader.readName()
+        @Assert(name, "rune")
+        let rune = JsonTool.readRune(reader)
+        @Assert(rune, r'x')
+        reader.endObject()
+    }
+
+    @TestCase
+    public func testRequiredField(): Unit {
+        let schema = RequiredData.toJsonSchema()
+        let schemaStr = JsonTool.toJson(schema)
+        println(schemaStr)
+
+        @Assert(schemaStr.contains("\"required\":[\"name\"]"), true)
+    }
+
+    @TestCase
+    public func testCustomSchema(): Unit {
+        let schema = CustomSchemaData.toJsonSchema()
+        let schemaStr = JsonTool.toJson(schema)
+        println(schemaStr)
+
+        @Assert(schemaStr.contains("\"format\":\"email\""), true)
+        @Assert(schemaStr.contains("\"description\":\"user email address\""), true)
     }
 }

@@ -68,6 +68,7 @@ public class JsonTool {
         let stream = ByteBuffer()
         let writer = JsonWriter(stream)
         if (indent) {
+            writer.writeConfig.newline = "\n"
             writer.writeConfig.indent = "\t"
         }
         writer.writeValue(val)

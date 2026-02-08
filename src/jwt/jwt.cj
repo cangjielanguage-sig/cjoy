@@ -143,6 +143,8 @@ public class Jwt {
         validateNotBefore(cfg, now)
         validateIssuedAt(cfg, now)
         validateAudience(cfg)
+        validateIssuer(cfg)
+        validateSubject(cfg)
 
         _valid = true
         this
@@ -215,7 +217,7 @@ public class Jwt {
      */
     private func validateIssuedAt(cfg: ParserConfig, now: DateTime): Unit {
         if (let Some(v) <- _claims.getIssuedAt()) {
-            if ((v.value + cfg.leeway) > now) {
+            if ((v.value - cfg.leeway) > now) {
                 throw JwtException("token used before issued")
             }
         } else {
@@ -258,6 +260,24 @@ public class Jwt {
             }
             if (!found) {
                 throw JwtException("token has invalid audience")
+            }
+        }
+    }
+
+    private func validateIssuer(cfg: ParserConfig): Unit {
+        if (!cfg.expectedIss.isEmpty()) {
+            let iss = _claims.getIssuer()
+            if (iss.isNone() || iss.getOrThrow() != cfg.expectedIss) {
+                throw JwtException("token has invalid issuer")
+            }
+        }
+    }
+
+    private func validateSubject(cfg: ParserConfig): Unit {
+        if (!cfg.expectedSub.isEmpty()) {
+            let sub = _claims.getSubject()
+            if (sub.isNone() || sub.getOrThrow() != cfg.expectedSub) {
+                throw JwtException("token has invalid subject")
             }
         }
     }
@@ -317,6 +337,9 @@ public class Jwt {
     }
 }
 
+/**
+ * JWT (JSON Web Token) parser config
+ */
 public struct ParserConfig {
     public ParserConfig(
         // if populated, only these methods will be considered valid.
@@ -325,17 +348,21 @@ public struct ParserConfig {
         let skipClaimsValidation!: Bool = false,
         // specifying the leeway window.
         let leeway!: Duration = Duration.second * 0,
-            // the primary use-case for this is testing. if you are looking for a way to account for clock-skew, specifying leeway should be used instead.
-            let timeFunc!: ?() -> DateTime = None,
+        // the primary use-case for this is testing. if you are looking for a way to account for clock-skew, specifying leeway should be used instead.
+        let timeFunc!: ?() -> DateTime = None,
         // require `iat` claim.
         let issueAtRequired!: Bool = false,
-            // require `exp` claim.
-            let expirationRequired!: Bool = false,
-            // require `nbf` claim.
-            let notBeforeRequired!: Bool = false,
+        // require `exp` claim.
+        let expirationRequired!: Bool = false,
+        // require `nbf` claim.
+        let notBeforeRequired!: Bool = false,
         // require any of the specified audiences in the `aud` claim. it will fail if the audience is not listed in the token or the `aud` claim is missing.
         let expectedAud!: Array<String> = [],
-            // require all the specified audiences 
-            let expectedAllAud!: Bool = false) {
+        // require all the specified audiences
+        let expectedAllAud!: Bool = false,
+        // expected issuer
+        let expectedIss!: String = "",
+        // expected subject
+        let expectedSub!: String = "") {
     }
 }
