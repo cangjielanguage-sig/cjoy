@@ -13,6 +13,6 @@ main(args: Array<String>): Int64 {
     let newArgs = ArrayList<String>(args)
     // 实际是在命令行启动加载profile配置文件
     newArgs.add("-Djoy.profile=full")
-    joyBoot(newArgs.toArray(), cfgPath: "../testdata")
+    JoyBoot.of(newArgs.toArray()).cfgPath("../testdata").run()
     return 0
 }

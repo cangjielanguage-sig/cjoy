@@ -34,53 +34,174 @@ public type JoyFunc = (cfg: JoyConfig, joy: Joy) -> Unit
 public type HttpServerFunc = () -> Unit
 
 /**
- * Main entry function to start a CJoy application
+ * Config extension callback function type, called after config files are loaded
  *
- * This function is responsible for:
+ * @param config Configuration manager instance
+ * @param cfgRootPath Configuration file root directory path
+ */
+public type ConfigExtendFunc = (config: Config, cfgRootPath: String) -> Unit
+
+/**
+ * CJoy application bootstrapper.
+ *
+ * JoyBoot is responsible for:
  * 1. Loading configuration files (command-line arguments, properties, json)
  * 2. Initializing framework configuration
  * 3. Creating Joy engine instance
  * 4. Registering macro-generated middlewares and route handlers
  * 5. Building and starting HTTP server
  *
- * @param args Command-line arguments
- * @param cfgPath Configuration file root path, default is "./config"
- * @param beforeJoyStart Callback function before application starts, can be used for custom configuration
- * @param afterBind Callback function after server binds to port
- * @param onShutdown Callback function before server shuts down
+ * Example usage:
+ * ```
+ * main(): Int64 {
+ *     JoyBoot.of(args).run()
+ *     return 0
+ * }
+ * ```
+ *
+ * With optional callbacks:
+ * ```
+ * JoyBoot.of(args)
+ *     .cfgPath("./config")
+ *     .beforeJoyStart { cfg, joy =>
+ *         // Custom initialization
+ *     }
+ *     .afterBind {
+ *         // After server binds
+ *     }
+ *     .run()
+ * ```
  */
-public func joyBoot(args: Array<String>, cfgPath!: String = "", beforeJoyStart!: ?JoyFunc = None,
-    afterBind!: ?HttpServerFunc = None, onShutdown!: ?HttpServerFunc = None): Unit {
-    let config = loadConfig(args, cfgPath)
+public class JoyBoot {
+    private var _args: Array<String>
+    private var _cfgPath: String
+    private var _extendConfig: ?ConfigExtendFunc
+    private var _beforeJoyStart: ?JoyFunc
+    private var _afterBind: ?HttpServerFunc
+    private var _onShutdown: ?HttpServerFunc
 
-    let properties = config.bind<JoyProperties>("joy") ?? JoyProperties()
-    let name = if (properties.name.isEmpty()) {
-        "default"
-    } else {
-        properties.name
+    /**
+     * Private constructor, use JoyBoot.of() to create instance
+     */
+    private init(args: Array<String>) {
+        this._args = args
+        this._cfgPath = ""
+        this._extendConfig = None
+        this._beforeJoyStart = None
+        this._afterBind = None
+        this._onShutdown = None
     }
 
-    let joyCfg = creatJoyConfig(properties)
-    let joy = Joy.create(name: name)
-
-    // 注册生成的handlers
-    JoyMiddlewares.registerTo(joy)
-    JoyHandlers.registerTo(joy)
-
-    beforeJoyStart?(joyCfg, joy)
-
-    // 构建 ServerBuilder
-    let serverBuidler = createServerBuidler(properties)
-    if (let Some(fn) <- afterBind) {
-        serverBuidler.afterBind(fn)
+    /**
+     * Creates a new JoyBoot instance with the given command-line arguments
+     *
+     * @param args Command-line arguments
+     * @return New JoyBoot instance
+     */
+    public static func of(args: Array<String>): JoyBoot {
+        JoyBoot(args)
     }
-    if (let Some(fn) <- onShutdown) {
-        serverBuidler.onShutdown(fn)
+
+    /**
+     * Sets the configuration file root path
+     *
+     * @param path Configuration file root path, default is "./config"
+     * @return This JoyBoot instance for method chaining
+     */
+    public func cfgPath(path: String): JoyBoot {
+        this._cfgPath = path
+        this
     }
-    joy.run(serverBuidler)
+
+    /**
+     * Sets the callback function to extend configuration
+     *
+     * Called after config files (properties, json) are loaded but before
+     * they are used. Can be used to add custom config loaders or
+     * modify configuration values.
+     *
+     * @param fn Callback function that receives Config instance and config root path
+     * @return This JoyBoot instance for method chaining
+     */
+    public func extendConfig(fn: ConfigExtendFunc): JoyBoot {
+        this._extendConfig = fn
+        this
+    }
+
+    /**
+     * Sets the callback function before application Joy starts
+     *
+     * Called after Joy instance is created and before server starts.
+     * Can be used for custom configuration and initialization.
+     *
+     * @param fn Callback function that receives JoyConfig and Joy instance
+     * @return This JoyBoot instance for method chaining
+     */
+    public func beforeJoyStart(fn: JoyFunc): JoyBoot {
+        this._beforeJoyStart = fn
+        this
+    }
+
+    /**
+     * Sets the callback function after server binds to port
+     *
+     * @param fn Callback function executed after successful port binding
+     * @return This JoyBoot instance for method chaining
+     */
+    public func afterBind(fn: HttpServerFunc): JoyBoot {
+        this._afterBind = fn
+        this
+    }
+
+    /**
+     * Sets the callback function before server shuts down
+     *
+     * @param fn Callback function executed before server shutdown
+     * @return This JoyBoot instance for method chaining
+     */
+    public func onShutdown(fn: HttpServerFunc): JoyBoot {
+        this._onShutdown = fn
+        this
+    }
+
+    /**
+     * Runs the CJoy application
+     *
+     * This method executes the full bootstrap process and starts the HTTP server.
+     * It will block until the server is stopped.
+     */
+    public func run(): Unit {
+        let config = loadConfig(_args, _cfgPath, _extendConfig)
+
+        let properties = config.bind<JoyProperties>("joy") ?? JoyProperties()
+        let name = if (properties.name.isEmpty()) {
+            "default"
+        } else {
+            properties.name
+        }
+
+        let joyCfg = creatJoyConfig(properties)
+        let joy = Joy.create(name: name)
+
+        // 注册生成的handlers
+        JoyMiddlewares.registerTo(joy)
+        JoyHandlers.registerTo(joy)
+
+        _beforeJoyStart?(joyCfg, joy)
+
+        // 构建 ServerBuilder
+        let serverBuilder = createServerBuilder(properties)
+        if (let Some(fn) <- _afterBind) {
+            serverBuilder.afterBind(fn)
+        }
+        if (let Some(fn) <- _onShutdown) {
+            serverBuilder.onShutdown(fn)
+        }
+        joy.run(serverBuilder)
+    }
 }
 
-private func loadConfig(args: Array<String>, cfgPath: String): Config {
+private func loadConfig(args: Array<String>, cfgPath: String, extendConfig: ?ConfigExtendFunc): Config {
     // 配置根目录
     let cfgRootPath = if (cfgPath.isEmpty()) {
         "./config"
@@ -96,9 +217,11 @@ private func loadConfig(args: Array<String>, cfgPath: String): Config {
     let profile = config.getValue("joy.profile", "")
     @JoyLogInfo("joy config profile=${profile}")
 
-    // Properties & Json 
+    // Properties & Json
     loadPropertiesConfig(config, cfgRootPath, profile)
     loadJsonConfig(config, cfgRootPath, profile)
+
+    extendConfig?(config, cfgRootPath)
 
     config
 }
@@ -154,7 +277,7 @@ private func creatJoyConfig(properties: JoyProperties): JoyConfig {
         maxRequestBodySize: maxRequestBodySize)
 }
 
-private func createServerBuidler(properties: JoyProperties): ServerBuilder {
+private func createServerBuilder(properties: JoyProperties): ServerBuilder {
     if (properties.server.http.h2.enabled) {
         properties.server.tls.enabled = true
         if (properties.server.tls.keyFile.isEmpty()) {
