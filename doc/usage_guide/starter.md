@@ -31,7 +31,7 @@ CJoy 提供两种服务启动方式：
 ```cangjie
 import cjoy.boot.JoyBoot
 
-main(): Int64 {
+main(args: Array<String>): Int64 {
     JoyBoot.of(args).run()
     return 0
 }
@@ -44,7 +44,7 @@ main(): Int64 {
 ```cangjie
 import cjoy.boot.JoyBoot
 
-main(): Int64 {
+main(args: Array<String>): Int64 {
     JoyBoot.of(args)
         .cfgPath("./myconfig")
         .run()
@@ -69,7 +69,7 @@ main(): Int64 {
 import cjoy.boot.JoyBoot
 import cjoy.config.Config
 
-main(): Int64 {
+main(args: Array<String>): Int64 {
     JoyBoot.of(args)
         .extendConfig { config, cfgRootPath =>
             // 可以添加自定义配置加载器
@@ -87,7 +87,7 @@ main(): Int64 {
 import cjoy.boot.JoyBoot
 import cjoy.framework.JoyConfig
 
-main(): Int64 {
+main(args: Array<String>): Int64 {
     JoyBoot.of(args)
         .beforeJoyStart { cfg, joy =>
             // 可以在服务器启动前进行自定义配置
@@ -107,7 +107,7 @@ import cjoy.boot.JoyBoot
 import cjoy.config.Config
 import cjoy.framework.JoyConfig
 
-main(): Int64 {
+main(args: Array<String>): Int64 {
     JoyBoot.of(args)
         .cfgPath("./config")
         .{

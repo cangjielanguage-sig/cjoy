@@ -398,9 +398,6 @@ class RegisterForm {
     @NotBlank(message = "密码不能为空")
     @Size(min = 6, message = "密码长度至少6位")
     var password: String = ""
-
-    @EqualsField(field = "password", message = "两次输入的密码不一致")
-    var confirmPassword: String = ""
 }
 
 @Post[path = "/register"]
@@ -448,7 +445,6 @@ nohup cjpm run &
 - 类名使用 PascalCase，方法名和变量名使用 camelCase
 - 类尽可能不要定义为 public，只对外暴露最小的 API
 - 实现一个功能的类与其关联类可以放在一个文件中，但每个类要职责单一
-- 宏定义与实现分离，宏定义文件保持整洁
 
 ### 2. 错误处理
 
