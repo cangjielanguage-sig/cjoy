@@ -16,15 +16,16 @@ import std.convert.Parsable
 import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonReader, JsonWriter, JsonToken}
 
 /**
- * JSON utility tool for serialization and deserialization
- * Provides static methods for converting between JSON strings/bytes and Cangjie objects
+ * JSON utility tool for serialization and deserialization.
+ *
+ * Provides static methods for converting between JSON strings/bytes and Cangjie objects.
  */
 public class JsonTool {
     /**
-     * Deserialize the json string to T
+     * Deserialize JSON string to T.
      *
-     * @param jsonStr: the json string
-     * @return: the object of T
+     * @param jsonStr the JSON string
+     * @return the object of type T
      */
     public static func fromJson<T>(jsonStr: String): T where T <: JsonDeserializable<T> {
         var stream = ByteBuffer()
@@ -34,10 +35,10 @@ public class JsonTool {
     }
 
     /**
-     * deserialize json bytes to T
+     * Deserialize JSON bytes to T.
      *
-     * @param bs: json bytes
-     * @return: object of T
+     * @param bs the JSON bytes
+     * @return the object of type T
      */
     public static func fromJson<T>(bs: Array<Byte>): T where T <: JsonDeserializable<T> {
         var stream = ByteBuffer()
@@ -47,22 +48,22 @@ public class JsonTool {
     }
 
     /**
-     * serialize the object of T to json string
+     * Serialize object of T to JSON string.
      *
-     * @param val: the object of T
-     * @param indent: output indent using '\t'
-     * @return: the json string
+     * @param val the object of type T
+     * @param indent whether to output with indentation using '\t'
+     * @return the JSON string
      */
     public static func toJson<T>(val: T, indent!: Bool = false): String where T <: JsonSerializable {
         String.fromUtf8(toJsonBytes(val, indent: indent))
     }
 
     /**
-     * serialize object of T to json bytes
+     * Serialize object of T to JSON bytes.
      *
-     * @param val: object of T
-     * @param indent: output indent using '\t'
-     * @return: json bytes
+     * @param val the object of type T
+     * @param indent whether to output with indentation using '\t'
+     * @return the JSON bytes
      */
     public static func toJsonBytes<T>(val: T, indent!: Bool = false): Array<Byte> where T <: JsonSerializable {
         let stream = ByteBuffer()
@@ -77,10 +78,10 @@ public class JsonTool {
     }
 
     /**
-     * deserialize json bytes to object
+     * Deserialize JSON bytes to JsonSerializable object.
      *
-     * @param bs: json bytes
-     * @return: object
+     * @param bs the JSON bytes
+     * @return the JsonSerializable object
      */
     public static func fromJsonToSerializable(bs: Array<Byte>): JsonSerializable {
         var buffer = ByteBuffer()
@@ -90,10 +91,10 @@ public class JsonTool {
     }
 
     /**
-     * deserialize json string to object
+     * Deserialize JSON string to JsonSerializable object.
      *
-     * @param jsonStr: the json string
-     * @return: the object
+     * @param jsonStr the JSON string
+     * @return the JsonSerializable object
      */
     public static func fromJsonToSerializable(jsonStr: String): JsonSerializable {
         var buffer = ByteBuffer()
@@ -103,10 +104,10 @@ public class JsonTool {
     }
 
     /**
-     * deserialize json string to object
+     * Deserialize JSON from reader to JsonSerializable object.
      *
-     * @param reader: the json reader
-     * @return: the object
+     * @param reader the JSON reader
+     * @return the JsonSerializable object
      * @throws Exception if the token is invalid
      */
     public static func fromJsonToSerializable(reader: JsonReader): JsonSerializable {
@@ -150,10 +151,10 @@ public class JsonTool {
     }
 
     /**
-     * deserialize json string to object
+     * Deserialize JSON from reader to Any object.
      *
-     * @param reader: the json reader
-     * @return: the object
+     * @param reader the JSON reader
+     * @return the Any object
      * @throws Exception if the token is invalid
      */
     public static func fromJsonToAny(reader: JsonReader): Any {
@@ -197,11 +198,11 @@ public class JsonTool {
     }
 
     /**
-     * deserialize json string feild to rune type
+     * Deserialize JSON string field to Rune type.
      *
-     * @param reader: the json reader
-     * @return: rune
-     * @throws Exception if the value is not Rune
+     * @param reader the JSON reader
+     * @return the Rune value
+     * @throws Exception if the value is not a single Rune
      */
     public static func readRune(reader: JsonReader): Rune {
         let str = reader.readValue<String>()
@@ -212,7 +213,10 @@ public class JsonTool {
     }
 
     /**
-     * return the json schema type of T
+     * Return the JSON schema type of T.
+     *
+     * @param T the type implementing Jsonable
+     * @return the JSON schema type
      */
     public static func getSchema<T>(): JsonSchemaType where T <: Jsonable {
         T.toSchema()

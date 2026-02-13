@@ -14,18 +14,20 @@ import std.collection.{HashMap}
 import cjoy.log.macros.*
 
 /**
- * the interface of binding
+ * The interface for parameter binding.
+ *
+ * Enables binding of HTTP request query parameters, form data, or headers to typed objects.
+ * Supports simple types, arrays, and complex nested structures.
  */
 public interface JoyBindable<T> {
     /**
+     * Bind HTTP request query, post form or header params to object.
      *
-     * bind http request query, postform or header params to object
-     *
-     * @param source: the bind source object
-     * @param name: the name of bind field
-     * @param defaultValue: the default value of field
-     * @param timeformat: the datetime field format
-     * @return: the object
+     * @param source the bind source object
+     * @param name the name of bind field
+     * @param defaultValue the default value of field
+     * @param timeformat the datetime field format
+     * @return the object, or None if binding fails
      */
     static func bind(source: JoyBindSource, name: String, defaultValue: ?String, timeformat: ?String): ?T
     static func bind(source: JoyBindSource, name: String, defaultValue: ?String): ?T {
@@ -35,11 +37,13 @@ public interface JoyBindable<T> {
         bind(source, name, None, None)
     }
     /**
-     * bind http request query, postform or header params to object with complex structure
+     * Bind HTTP request query, post form or header params to object with complex structure.
      *
-     * @param source: the bind source object
-     * @param name: the name of bind field, can be a nested field
-     * @return: the object
+     * Supports nested fields by treating the value as a map or collection and recursively binding.
+     *
+     * @param source the bind source object
+     * @param name the name of bind field, can be a nested field
+     * @return the object, or None if binding fails
      */
     static func bindField(source: JoyBindSource, name: String): ?T {
         let map = source.getOne<HashMap<String, Any>>(name)
@@ -63,16 +67,25 @@ public interface JoyBindable<T> {
 }
 
 /**
- * the interface of bind source, JoyBindable can get value from the source
+ * The interface for bind source, JoyBindable can get value from the source.
+ *
+ * Provides methods to retrieve single or multiple values by name from various sources
+ * such as query parameters, form data, headers, or maps.
  */
 public interface JoyBindSource {
     /**
-     * get one value by name from source
+     * Get one value by name from source.
+     *
+     * @param name the value name
+     * @return the value, or None if not found
      */
     func getOne<T>(name: String): ?T
 
     /**
-     * get all values by name from source
+     * Get all values by name from source.
+     *
+     * @param name the value name
+     * @return the collection of values
      */
     func getList<T>(name: String): Collection<T>
 }

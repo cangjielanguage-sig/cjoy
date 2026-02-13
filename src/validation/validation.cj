@@ -16,39 +16,48 @@ import std.time.DateTime
 import std.unicode.UnicodeStringExtension
 
 /**
- * interface for types that support validation with constraints
+ * Interface for types that support validation with constraints.
  *
- * types implementing this interface can be validated against various constraints
+ * Types implementing this interface can be validated against various constraints
  * such as length, range, pattern, size, date range, etc.
  */
 public interface JoyValidatable {
     /**
-     * validate the field value with the constraints
+     * Validate field value with constraints.
      *
-     * @param field: the field name
-     * @param nestedValid: whether to nested validate
-     * @param constraints: a array of constraints
-     * @throws JoyValidationException if validate failed
+     * @param field field name
+     * @param nestedValid whether to perform nested validation
+     * @param constraints array of constraints to validate against
+     * @throws JoyValidationException if validation fails
      */
     func validate(field: String, nestedValid: Bool, constraints: Array<JoyConstraint>): Unit
 
     /**
-     * validate all fields with constraints
+     * Validate all fields with constraints.
      *
-     * @throws JoyValidationException if validate failed
+     * @throws JoyValidationException if validation fails
      */
     func validate(): Unit {
         validate("", false)
     }
 }
 
+/**
+ * Extend String to implement JoyValidatable.
+ */
 extend String <: JoyValidatable {
     /**
-     * validate string value with constraints
+     * Validate string
+ value with constraints.
      *
-     * @param field: the field name
-     * @param constraints: the validation constraints
-     * @throws JoyValidationException if validate failed
+     * Supports constraints: LengthConstraint, NotEmptyConstraint,
+     * NotBlankConstraint, PatternConstraint, ChMobilePhoneConstraint,
+     * EmailConstraint, IPV4Constraint, EnumStrConstraint
+     *
+     * @param field field name
+     * @param _ nested validation flag (unused)
+     * @param constraints validation constraints
+     * @throws JoyValidationException if validation fails
      */
     public func validate(field: String, _: Bool, constraints: Array<JoyConstraint>): Unit {
         for (condition in constraints) {
@@ -96,14 +105,20 @@ extend String <: JoyValidatable {
     }
 }
 
+/**
+ * Extend Option<T> to implement JoyValidatable.
+ */
 extend<T> Option<T> <: JoyValidatable where T <: JoyValidatable {
     /**
-     * validate optional value with constraints
+     * Validate optional
+ value with constraints.
      *
-     * @param field: the field name
-     * @param nestedValid: whether to nested validate
-     * @param constraints: the validation constraints
-     * @throws JoyValidationException if validate failed
+     * Only validates if the option contains a value.
+     *
+     * @param field field name
+     * @param nestedValid whether to perform nested validation
+     * @param constraints validation constraints
+     * @throws JoyValidationException if validation fails
      */
     public func validate(field: String, nestedValid: Bool, constraints: Array<JoyConstraint>): Unit {
         match (this) {
@@ -114,13 +129,13 @@ extend<T> Option<T> <: JoyValidatable where T <: JoyValidatable {
 }
 
 /**
- * validate number value with constraints
+ * Validate numeric value with constraints.
  *
- * @param value: the number value
- * @param field: the field name
- * @param constraints: the validation constraints
- * @param toFn: the function to convert value to Int64 for enum int validation
- * @throws JoyValidationException if validate failed
+ * @param value numeric value to validate
+ * @param field field name
+ * @param constraints validation constraints
+ * @param toFn optional function to convert value to Int64 for enum validation
+ * @throws JoyValidationException if validation fails
  */
 func validateNumber<T>(value: T, field: String, constraints: Array<JoyConstraint>, toFn: ?() -> Int): Unit where T <: Parsable<T> & Comparable<T> & ToString {
     for (condition in constraints) {
@@ -146,157 +161,113 @@ func validateNumber<T>(value: T, field: String, constraints: Array<JoyConstraint
     }
 }
 
+/**
+ * Extend Int8 to implement JoyValidatable.
+ */
 extend Int8 <: JoyValidatable {
-    /**
-     * validate int8 value with constraints
-     *
-     * @param field: the field name
-     * @param constraints: the validation constraints
-     * @throws JoyValidationException if validate failed
-     */
     public func validate(field: String, _: Bool, constraints: Array<JoyConstraint>): Unit {
         validateNumber(this, field, constraints, {=> Int64(this)})
     }
 }
 
+/**
+ * Extend Int16 to implement JoyValidatable.
+ */
 extend Int16 <: JoyValidatable {
-    /**
-     * validate int16 value with constraints
-     *
-     * @param field: the field name
-     * @param constraints: the validation constraints
-     * @throws JoyValidationException if validate failed
-     */
     public func validate(field: String, _: Bool, constraints: Array<JoyConstraint>): Unit {
         validateNumber(this, field, constraints, {=> Int64(this)})
     }
 }
 
+/**
+ * Extend Int32 to implement JoyValidatable.
+ */
 extend Int32 <: JoyValidatable {
-    /**
-     * validate int32 value with constraints
-     *
-     * @param field: the field name
-     * @param constraints: the validation constraints
-     * @throws JoyValidationException if validate failed
-     */
     public func validate(field: String, _: Bool, constraints: Array<JoyConstraint>): Unit {
         validateNumber(this, field, constraints, {=> Int64(this)})
     }
 }
 
+/**
+ * Extend Int64 to implement JoyValidatable.
+ */
 extend Int64 <: JoyValidatable {
-    /**
-     * validate int64 value with constraints
-     *
-     * @param field: the field name
-     * @param constraints: the validation constraints
-     * @throws JoyValidationException if validate failed
-     */
     public func validate(field: String, _: Bool, constraints: Array<JoyConstraint>): Unit {
         validateNumber(this, field, constraints, {=> this})
     }
 }
 
+/**
+ * Extend UInt8 to implement JoyValidatable.
+ */
 extend UInt8 <: JoyValidatable {
-    /**
-     * validate uint8 value with constraints
-     *
-     * @param field: the field name
-     * @param constraints: the validation constraints
-     * @throws JoyValidationException if validate failed
-     */
     public func validate(field: String, _: Bool, constraints: Array<JoyConstraint>): Unit {
         validateNumber(this, field, constraints, {=> Int64(this)})
     }
 }
 
+/**
+ * Extend UInt16 to implement JoyValidatable.
+ */
 extend UInt16 <: JoyValidatable {
-    /**
-     * validate uint16 value with constraints
-     *
-     * @param field: the field name
-     * @param constraints: the validation constraints
-     * @throws JoyValidationException if validate failed
-     */
     public func validate(field: String, _: Bool, constraints: Array<JoyConstraint>): Unit {
         validateNumber(this, field, constraints, {=> Int64(this)})
     }
 }
 
+/**
+ * Extend UInt32 to implement JoyValidatable.
+ */
 extend UInt32 <: JoyValidatable {
-    /**
-     * validate uint32 value with constraints
-     *
-     * @param field: the field name
-     * @param constraints: the validation constraints
-     * @throws JoyValidationException if validate failed
-     */
     public func validate(field: String, _: Bool, constraints: Array<JoyConstraint>): Unit {
         validateNumber(this, field, constraints, {=> Int64(this)})
     }
 }
 
+/**
+ * Extend UInt64 to implement JoyValidatable.
+ */
 extend UInt64 <: JoyValidatable {
-    /**
-     * validate uint64 value with constraints
-     *
-     * @param field: the field name
-     * @param constraints: the validation constraints
-     * @throws JoyValidationException if validate failed
-     */
     public func validate(field: String, _: Bool, constraints: Array<JoyConstraint>): Unit {
         validateNumber(this, field, constraints, {=> Int64(this)})
     }
 }
 
+/**
+ * Extend Float16 to implement JoyValidatable.
+ */
 extend Float16 <: JoyValidatable {
-    /**
-     * validate float16 value with constraints
-     *
-     * @param field: the field name
-     * @param constraints: the validation constraints
-     * @throws JoyValidationException if validate failed
-     */
-    public func validate(field: String, _: Bool, constraints: Array<JoyConstraint>): Unit {
-        validateNumber(this, field, constraints, None)
-    }
-}
-
-extend Float32 <: JoyValidatable {
-    /**
-     * validate float32 value with constraints
-     *
-     * @param field: the field name
-     * @param constraints: the validation constraints
-     * @throws JoyValidationException if validate failed
-     */
-    public func validate(field: String, _: Bool, constraints: Array<JoyConstraint>): Unit {
-        validateNumber(this, field, constraints, None)
-    }
-}
-
-extend Float64 <: JoyValidatable {
-    /**
-     * validate float64 value with constraints
-     *
-     * @param field: the field name
-     * @param constraints: the validation constraints
-     * @throws JoyValidationException if validate failed
-     */
     public func validate(field: String, _: Bool, constraints: Array<JoyConstraint>): Unit {
         validateNumber(this, field, constraints, None)
     }
 }
 
 /**
- * validate collection value with constraints
+ * Extend Float32 to implement JoyValidatable.
+ */
+extend Float32 <: JoyValidatable {
+    public func validate(field: String, _: Bool, constraints: Array<JoyConstraint>): Unit {
+        validateNumber(this, field, constraints, None)
+    }
+}
+
+/**
+ * Extend Float64 to implement JoyValidatable.
+ */
+extend Float64 <: JoyValidatable {
+    public func validate(field: String, _: Bool, constraints: Array<JoyConstraint>): Unit {
+        validateNumber(this, field, constraints, None)
+    }
+}
+
+/**
+ * Validate collection value with constraints.
  *
- * @param col: the collection
- * @param field: the field name
- * @param nestedValid: whether to nested validate elements
- * @param constraints: the validation constraints
- * @throws JoyValidationException if validate failed
+ * @param col collection to validate
+ * @param field field name
+ * @param nestedValid whether to perform nested validation on elements
+ * @param constraints validation constraints
+ * @throws JoyValidationException if validation fails
  */
 func validateCollection<T>(col: Collection<T>, field: String, nestedValid: Bool, constraints: Array<JoyConstraint>): Unit {
     for (condition in constraints) {
@@ -321,57 +292,38 @@ func validateCollection<T>(col: Collection<T>, field: String, nestedValid: Bool,
     }
 }
 
+/**
+ * Extend Array<T> to implement JoyValidatable.
+ */
 extend<T> Array<T> <: JoyValidatable {
-    /**
-     * validate array value with constraints
-     *
-     * @param field: the field name
-     * @param nestedValid: whether to nested validate elements
-     * @param constraints: the validation constraints
-     * @throws JoyValidationException if validate failed
-     */
     public func validate(field: String, nestedValid: Bool, constraints: Array<JoyConstraint>): Unit {
         validateCollection(this, field, nestedValid, constraints)
     }
 }
 
+/**
+ * Extend ArrayList<T> to implement JoyValidatable.
+ */
 extend<T> ArrayList<T> <: JoyValidatable {
-    /**
-     * validate array list value with constraints
-     *
-     * @param field: the field name
-     * @param nestedValid: whether to nested validate elements
-     * @param constraints: the validation constraints
-     * @throws JoyValidationException if validate failed
-     */
     public func validate(field: String, nestedValid: Bool, constraints: Array<JoyConstraint>): Unit {
         validateCollection(this, field, nestedValid, constraints)
     }
 }
 
+/**
+ * Extend HashMap<K, V> to implement JoyValidatable.
+ */
 extend<K, V> HashMap<K, V> <: JoyValidatable {
-    /**
-     * validate hashmap value with constraints
-     *
-     * @param field: the field name
-     * @param nestedValid: whether to nested validate keys and values
-     * @param constraints: the validation constraints
-     * @throws JoyValidationException if validate failed
-     */
     public func validate(field: String, nestedValid: Bool, constraints: Array<JoyConstraint>): Unit {
         validateCollection(this.keys(), field, nestedValid, constraints)
         validateCollection(this.values(), field, nestedValid, constraints)
     }
 }
 
+/**
+ * Extend DateTime to implement JoyValidatable.
+ */
 extend DateTime <: JoyValidatable {
-    /**
-     * validate datetime value with constraints
-     *
-     * @param field: the field name
-     * @param constraints: the validation constraints
-     * @throws JoyValidationException if validate failed
-     */
     public func validate(field: String, _: Bool, constraints: Array<JoyConstraint>): Unit {
         for (condition in constraints) {
             match (condition) {

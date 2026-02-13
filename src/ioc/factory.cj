@@ -18,16 +18,20 @@ import cjoy.context.ServiceContainer
 import cjoy.log.macros.*
 
 /**
- * Bean factory manager for IoC container
+ * Bean factory manager for IoC container.
+ *
+ * Central factory for managing bean registration, dependency resolution,
+ * and lifecycle management. Automatically registers itself as a service
+ * and ensures cleanup on application exit.
  */
 public class BeanFactoryManager {
     private static let CONTEXT: DefaultApplicationContext = DefaultApplicationContext()
     private static let POST_FUNCS: ArrayList<() -> Unit> = ArrayList()
-
+    
     static let EXECUTED: AtomicBool = AtomicBool(false)
 
     /**
-     * Get application context
+     * Get application context.
      *
      * @return application context instance
      */
@@ -36,7 +40,7 @@ public class BeanFactoryManager {
     }
 
     /**
-     * Register bean factory with dependencies
+     * Register bean factory with dependencies.
      *
      * @param beanType bean type name
      * @param depends array of bean type names this bean depends on
@@ -49,7 +53,7 @@ public class BeanFactoryManager {
     }
 
     /**
-     * Register bean types for interfaces
+     * Register bean types for interfaces.
      *
      * @param beanType bean type name
      * @param interfaces array of interface type names this bean implements
@@ -60,7 +64,7 @@ public class BeanFactoryManager {
     }
 
     /**
-     * Register post initialization function
+     * Register post initialization function.
      *
      * @param name function name
      * @param fn function to execute after bean initialization
@@ -71,7 +75,9 @@ public class BeanFactoryManager {
     }
 
     /**
-     * Execute registered post functions
+     * Execute registered post functions.
+     *
+     * Each function is called exactly once during bean initialization.
      */
     private static func executePostFuncs(): Unit {
         if (EXECUTED.compareAndSwap(false, true)) {
@@ -83,7 +89,10 @@ public class BeanFactoryManager {
     }
 
     /**
-     * Initialize all beans in dependency order
+     * Initialize all beans in dependency order.
+     *
+     * Creates all singleton beans and invokes afterInit callbacks.
+     * Also executes registered post functions.
      */
     public static func initAllBeans(): Unit {
         CONTEXT.createAllBeans()
@@ -91,23 +100,26 @@ public class BeanFactoryManager {
     }
 
     /**
-     * Destroy all beans in reverse order
+     * Destroy all beans in reverse dependency order.
+     *
+     * Invokes beforeDestroy callbacks on all beans and clears the context.
      */
     public static func destroyAllBeans(): Unit {
         CONTEXT.destroyAllBeans()
     }
 
     /**
-     * Get bean factory by type
+     * Get bean factory by type.
      *
      * @param beanType bean type name
-     * @return bean factory or None
+     * @return bean factory, or None if not found
      */
     public static func get(beanType: String): ?BeanFactory {
         CONTEXT._factories.get(beanType)
     }
 }
 
+// Register IoC context as a global service
 private let _: Unit = ServiceContainer.GLOBAL.addService("ioc", BeanFactoryManager.getApplicationContext())
-
+// Register cleanup handler on application exit
 private let _: Unit = atExit {BeanFactoryManager.destroyAllBeans()}

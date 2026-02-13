@@ -13,13 +13,17 @@ package cjoy.eventbus
 import std.collection.{HashMap}
 
 /**
- * Type alias for event data container
+ * Type alias for event data container.
+ *
+ * Events carry arbitrary key-value data.
  */
 type EventData = HashMap<String, Any>
 
 /**
- * Represents an event that can be published to an event bus
- * Events contain a name, arbitrary data, and an abort flag to stop further processing
+ * Represents an event that can be published to an event bus.
+ *
+ * Events contain a name, arbitrary data, and an abort flag
+ * to stop further processing.
  */
 public class Event {
     private let _name: String
@@ -27,7 +31,7 @@ public class Event {
     private var _aborted: Bool = false
 
     /**
-     * Gets the event name
+     * Gets event name.
      */
     public prop name: String {
         get() {
@@ -36,7 +40,7 @@ public class Event {
     }
 
     /**
-     * Gets the event data as a key-value map
+     * Gets event data as a key-value map.
      */
     public prop data: EventData {
         get() {
@@ -45,8 +49,9 @@ public class Event {
     }
 
     /**
-     * Gets whether the event has been aborted
-     * When true, no further subscribers will process this event
+     * Gets whether event has been aborted.
+     *
+     * When true, no further subscribers will process this event.
      */
     public prop isAborted: Bool {
         get() {
@@ -59,9 +64,9 @@ public class Event {
     }
 
     /**
-     * Creates a new event with the specified name
+     * Creates a new event with specified name.
      *
-     * @param name: the event name
+     * @param name event name
      * @return a new Event instance
      */
     public static func of(name: String): Event {
@@ -69,10 +74,10 @@ public class Event {
     }
 
     /**
-     * Adds data to the event
+     * Adds data to event.
      *
-     * @param name: the data key
-     * @param value: the data value
+     * @param name data key
+     * @param value data value
      * @return this event for method chaining
      */
     public func addData(name: String, value: Any): Event {
@@ -81,7 +86,7 @@ public class Event {
     }
 
     /**
-     * Aborts the event, preventing all subsequent subscribers from processing it
+     * Aborts event, preventing all subsequent subscribers from processing it.
      *
      * @return this event for method chaining
      */
@@ -91,11 +96,11 @@ public class Event {
     }
 
     /**
-     * Gets event data by key
+     * Gets event data by key.
      *
-     * @param T: the expected type of the data
-     * @param name: the data key
-     * @return the data value if present and can be cast to type T, otherwise null
+     * @param T expected type of data
+     * @param name data key
+     * @return data value if present and can be cast to type T, otherwise null
      */
     public func getData<T>(name: String): ?T {
         (_data.get(name) ?? Option<Any>.None) as T

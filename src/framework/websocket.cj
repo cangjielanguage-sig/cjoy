@@ -19,23 +19,23 @@ import cjoy.context.{Context, ServiceContainer}
 import cjoy.log.macros.*
 
 /**
- * the websocket message type.
+ * WebSocket message type enumeration
  */
 public enum JoyWebSocketMsgType {
     WsText | WsBinary | WsPing
 }
 
 /**
- * some status code define in RFC 6455 7.4.2
+ * WebSocket close status codes defined in RFC 6455 7.4.2
  */
 public struct JoyWebSocketCloseStatus {
     public static const NORMAL: UInt16 = 1000
     public static const GOING_AWAY: UInt16 = 1001
-    public static const PROTOCAL_ERROR: UInt16 = 1002
+    public static const PROTOCOL_ERROR: UInt16 = 1002
     public static const NOT_ACCEPTABLE: UInt16 = 1003
     public static const NO_BAD_DATA: UInt16 = 1007
     public static const POLICY_VIOLATION: UInt16 = 1008
-    public static const TO_BIG_TO_PROCESS: UInt16 = 1009
+    public static const TOO_BIG_TO_PROCESS: UInt16 = 1009
     public static const REQUIRED_EXTENSION: UInt16 = 1010
     public static const SERVER_ERROR: UInt16 = 1011
     public static const SERVICE_RESTARTED: UInt16 = 1012
@@ -44,71 +44,98 @@ public struct JoyWebSocketCloseStatus {
 }
 
 /**
- * implementate the interface to processes websocket messages.
+ * WebSocket handler interface for processing WebSocket messages
  */
 public interface JoyWebSocketHandler {
-    /*
-     * the sub protocol list configured by the user has a default value of empty,
-     * indicating that it is not supported. If the user has configured it,
-     * the top one in the upgrade request will be selected as the sub protocol of the upgraded WebSocket.
+    /**
+     * Get supported sub-protocols
+     * Default is empty, indicating not supported.
+     * If configured, the top one in the upgrade request will be selected
+     *
+     * @return list of supported sub-protocol names
      */
     func supportedSubProtocols(): ArrayList<String> {
         ArrayList()
     }
 
     /**
-     * the whitelist of the origin of the user configured agreement handshake.
-     * If not configured, all handshakes from the origin will be agreed upon.
-     * If configured, only handshakes from the configured origin will be accepted.
+     * Get whitelist of origins for handshake agreement
+     * If not configured, all handshakes from any origin will be agreed upon
+     * If configured, only handshakes from configured origins will be accepted
+     *
+     * @return list of allowed origin strings
      */
     func supportedOrigins(): ArrayList<String> {
         ArrayList()
     }
 
     /**
-     * accumulated the data when receive non end frame, then call onMessage when receive end frame
+     * Check if frames should be merged
+     * Accumulates data when receiving non-end frames, then calls onMessage when receiving end frame
+     *
+     * @return true to merge frames, false to handle each frame separately
      */
     func mergeFrames(): Bool {
         true
     }
 
     /**
-     * called after the handshake is successful.
+     * Called after handshake is successful
+     *
+     * @param session WebSocket session instance
      */
     func onOpen(session: JoyWebSocketSession): Unit
 
     /**
-     * call when receiving a text or binary message.
+     * Called when receiving a text or binary message
+     *
+     * @param session WebSocket session instance
+     * @param message received WebSocket message
      */
     func onMessage(session: JoyWebSocketSession, message: JoyWebSocketMessage): Unit
 
     /**
-     * call when receiving a close message.
+     * Called when receiving a close message
+     *
+     * @param session WebSocket session instance
+     * @param closeStatus close status code
      */
     func onClose(session: JoyWebSocketSession, closeStatus: UInt16): Unit
 
     /**
-     * call when receiving invalid message or occur exception.
+     * Called when receiving invalid message or an exception occurs
+     *
+     * @param session WebSocket session instance
+     * @param ex exception that occurred
      */
     func onError(session: JoyWebSocketSession, ex: Exception): Unit
 }
 
 /**
- * the websocket message.
+ * WebSocket message wrapper
  */
 public class JoyWebSocketMessage {
     private let _msgType: JoyWebSocketMsgType
     private let _isLast: Bool
     private let _data: Array<Byte>
 
+    /**
+     * Create WebSocket message
+     *
+     * @param msgType message type
+     * @param isLast whether this is the last frame
+     * @param data message payload bytes
+     */
     init(msgType: JoyWebSocketMsgType, isLast: Bool, data: Array<Byte>) {
         _msgType = msgType
         _isLast = isLast
         _data = data
     }
 
-    /*
-     * return is it the last message frame
+    /**
+     * Get whether this is the last message frame
+     *
+     * @return true if this is the last frame
      */
     public prop isLast: Bool {
         get() {
@@ -116,8 +143,10 @@ public class JoyWebSocketMessage {
         }
     }
 
-    /*
-     * return the message type
+    /**
+     * Get message type
+     *
+     * @return message type enumeration
      */
     public prop msgType: JoyWebSocketMsgType {
         get() {
@@ -125,11 +154,11 @@ public class JoyWebSocketMessage {
         }
     }
 
-    /*
-     * convert to text
+    /**
+     * Convert message data to text
      *
-     * @return the text string
-     * @throws IllegalArgumentException if not is text message
+     * @return text string
+     * @throws IllegalArgumentException if not a text message
      */
     public func asText(): String {
         match (_msgType) {
@@ -138,11 +167,11 @@ public class JoyWebSocketMessage {
         }
     }
 
-    /*
-     * convert to json deseriabled object
+    /**
+     * Convert message data to JSON deserialized object
      *
-     * @return the json object
-     * @throws IllegalArgumentException if not is text message
+     * @return JSON object of type T, or None if deserialization fails
+     * @throws IllegalArgumentException if not a text message
      */
     public func asJsonToObj<T>(): ?T where T <: JsonDeserializable<T> {
         match (_msgType) {
@@ -155,11 +184,11 @@ public class JoyWebSocketMessage {
         }
     }
 
-    /*
-     * convert to binary
+    /**
+     * Convert message data to binary
      *
-     * @return the array of bytes
-     * @throws IllegalArgumentException if not is binary message
+     * @return array of bytes
+     * @throws IllegalArgumentException if not a binary message
      */
     public func asBinary(): Array<Byte> {
         match (_msgType) {
@@ -168,49 +197,53 @@ public class JoyWebSocketMessage {
         }
     }
 
+    /**
+     * Get raw message data bytes
+     *
+     * @return array of bytes
+     */
     func data(): Array<Byte> {
         _data
     }
 
     /**
-     * create text message
+     * Create text message
      *
-     * @param playload: message playload
-     * @return: the JoyWebSocketMessage
+     * @param payload message text payload
+     * @return WebSocket message instance
      */
-    public static func createText(playload: String): JoyWebSocketMessage {
-        JoyWebSocketMessage(WsText, true, playload.toArray())
+    public static func createText(payload: String): JoyWebSocketMessage {
+        JoyWebSocketMessage(WsText, true, payload.toArray())
     }
 
     /**
-     * create text message
+     * Create text message from JSON serializable object
      *
-     * @param playload: message playload which can be json seriablizable
-     * @return: the JoyWebSocketMessage
+     * @param payload message payload which can be JSON serializable
+     * @return WebSocket message instance
      */
-    public static func createText<T>(playload: T): JoyWebSocketMessage where T <: JsonSerializable {
+    public static func createText<T>(payload: T): JoyWebSocketMessage where T <: JsonSerializable {
         let buffer = ByteBuffer()
         let writer = JsonWriter(buffer)
-        writer.writeValue(playload)
+        writer.writeValue(payload)
         writer.flush()
         JoyWebSocketMessage(WsText, true, buffer.bytes())
     }
 
     /**
-     * create binay message
+     * Create binary message
      *
-     * @param playload: message playload
-     * @return: the JoyWebSocketMessage
+     * @param payload message binary payload
+     * @return WebSocket message instance
      */
-    public static func createBinary(playload: Array<Byte>): JoyWebSocketMessage {
-        JoyWebSocketMessage(WsBinary, true, playload)
+    public static func createBinary(payload: Array<Byte>): JoyWebSocketMessage {
+        JoyWebSocketMessage(WsBinary, true, payload)
     }
 
     /**
-     * create ping message
+     * Create ping message
      *
-     * @param playload: message playloadWs
-     * @return: the JoyWebSocketMessage
+     * @return WebSocket message instance with empty payload
      */
     public static func createPing(): JoyWebSocketMessage {
         JoyWebSocketMessage(WsPing, true, Array<UInt8>(5, repeat: 0))
@@ -218,7 +251,7 @@ public class JoyWebSocketMessage {
 }
 
 /**
- * the websocket session.
+ * WebSocket session representing a WebSocket connection
  */
 public class JoyWebSocketSession <: Context {
     private let _ws: WebSocket
@@ -229,6 +262,17 @@ public class JoyWebSocketSession <: Context {
     private let _query: Form
     private let _services: ServiceContainer
 
+    /**
+     * Create WebSocket session
+     *
+     * @param ws underlying WebSocket connection
+     * @param config Joy configuration
+     * @param headers handshake HTTP headers
+     * @param query URL query parameters
+     * @param paramMap URL path parameters
+     * @param ctxParamMap context parameters
+     * @param services service container
+     */
     init(ws: WebSocket, config: JoyConfig, headers: HttpHeaders, query: Form, paramMap: HashMap<String, String>,
         ctxParamMap: HashMap<String, Any>, services: ServiceContainer) {
         _ws = ws
@@ -240,8 +284,10 @@ public class JoyWebSocketSession <: Context {
         _services = services
     }
 
-    /*
-     * obtain the sub protocol negotiated with the other party
+    /**
+     * Get negotiated sub-protocol with the other party
+     *
+     * @return sub-protocol string
      */
     public prop subProtocol: String {
         get() {
@@ -249,29 +295,41 @@ public class JoyWebSocketSession <: Context {
         }
     }
 
-    /*
-     * obtain the handleshake header
+    /**
+     * Get handshake header value
+     *
+     * @param name header name
+     * @return header value, or None if not found
      */
     public func getHeader(name: String): ?String {
         _headers.getFirst(name)
     }
 
-    /*
-     * obtain the handleshake headers
+    /**
+     * Get all handshake header values
+     *
+     * @param name header name
+     * @return collection of header values
      */
     public func getHeaderList(name: String): Collection<String> {
         _headers.get(name)
     }
 
-    /*
-     * obtain the handleshake url path parameter
+    /**
+     * Get handshake URL path parameter
+     *
+     * @param name parameter name
+     * @return parameter value, or None if not found
      */
     public func getParam(name: String): ?String {
         _paramMap.get(name)
     }
 
-    /*
-     * obtain the handleshake context param
+    /**
+     * Get handshake context parameter
+     *
+     * @param key parameter key name
+     * @return parameter value, or None if not found
      */
     public func getCtxParam<T>(key: String): ?T {
         get<T>(key)
@@ -293,22 +351,28 @@ public class JoyWebSocketSession <: Context {
         _services.getService<T>(name)
     }
 
-    /*
-     * obtain the handleshake url query parameter
+    /**
+     * Get handshake URL query parameter
+     *
+     * @param name query parameter name
+     * @return parameter value, or None if not found
      */
     public func getQuery(name: String): ?String {
         _query.get(name)
     }
 
-    /*
-     * obtain the handleshake url query parameters
+    /**
+     * Get all handshake URL query parameters
+     *
+     * @param name query parameter name
+     * @return list of query parameter values
      */
     public func getQueryList(name: String): ArrayList<String> {
         _query.getAll(name)
     }
 
     /**
-     * send close frame with satus(1000) and close the connnection
+     * Send close frame with default status (1000) and close connection
      */
     public func close(): Unit {
         _ws.writeCloseFrame(status: JoyWebSocketCloseStatus.NORMAL, reason: "")
@@ -316,10 +380,10 @@ public class JoyWebSocketSession <: Context {
     }
 
     /**
-     * send close frame with satus and close the connnection
+     * Send close frame with specified status and close connection
      *
-     * @param closeStatus: the close status
-     * @param reason: the close reason
+     * @param closeStatus close status code
+     * @param reason close reason string
      */
     public func close(closeStatus: UInt16, reason: String): Unit {
         _ws.writeCloseFrame(status: closeStatus, reason: reason)
@@ -327,9 +391,9 @@ public class JoyWebSocketSession <: Context {
     }
 
     /**
-     * send websocket message
+     * Send WebSocket message
      *
-     * @param message: the message
+     * @param message WebSocket message to send
      */
     public func send(message: JoyWebSocketMessage): Unit {
         match (message.msgType) {
@@ -340,27 +404,27 @@ public class JoyWebSocketSession <: Context {
     }
 
     /**
-     * send text message to websocket
+     * Send text message to WebSocket
      *
-     * @param text: the text message
+     * @param text text message to send
      */
     public func send(text: String): Unit {
         send(JoyWebSocketMessage.createText(text))
     }
 
     /**
-     * send binary message to websocket
+     * Send binary message to WebSocket
      *
-     * @param data: the binary message
+     * @param data binary message bytes to send
      */
     public func send(data: Array<Byte>): Unit {
         send(JoyWebSocketMessage.createBinary(data))
     }
 
     /**
-     * send json message to websocket
+     * Send JSON message to WebSocket
      *
-     * @param data: the json message
+     * @param json JSON serializable object to send
      */
     public func send<T>(json: T): Unit where T <: JsonSerializable {
         send(JoyWebSocketMessage.createText(json))
@@ -384,7 +448,7 @@ class JoyWebSocketUpgradeHandler <: JoyRequestHandler {
         let session = JoyWebSocketSession(websocket, ctx.config, req.headers, req.url.queryForm.clone(),
             ctxHttp.copyParams(), ctxHttp.copyCtxParams(), ctxHttp._services)
 
-        // release the context and http framework thread
+        // release context and http framework thread
         spawn {
             handleReceive(session, websocket)
         }
@@ -459,14 +523,14 @@ class JoyWebSocketUpgradeHandler <: JoyRequestHandler {
     private func handleCloseWebFrame(session: JoyWebSocketSession, frame: WebSocketFrame): Unit {
         match {
             case frame.payload.size == 0 =>
-                @JoyLogDebug("[WebSocket] revceive empty close status")
+                @JoyLogDebug("[WebSocket] receive empty close status")
                 handler.onClose(session, JoyWebSocketCloseStatus.NORMAL)
             case frame.payload.size <= 125 && frame.payload.size > 1 =>
                 let statusCode = toUInt16(frame.payload[0..2])
-                @JoyLogDebug("[WebSocket] revceive close status code, ${statusCode}")
+                @JoyLogDebug("[WebSocket] receive close status code, ${statusCode}")
                 handler.onClose(session, statusCode)
             case _ =>
-                @JoyLogWarn("[WebSocket] revceive invalid close status code")
+                @JoyLogWarn("[WebSocket] receive invalid close status code")
                 handler.onError(session, WebSocketException("invalid close status code"))
         }
     }

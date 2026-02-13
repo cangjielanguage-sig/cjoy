@@ -13,47 +13,49 @@ package cjoy.context
 import std.collection.concurrent.ConcurrentHashMap
 
 /**
- * the contenxt interface
+ * Context interface for key-value storage and service retrieval.
+ *
+ * Provides a mechanism to store and retrieve arbitrary data using string keys,
+ * as well as access registered services from the global service container.
  */
 public interface Context {
     /**
-     * set param in context
+     * Set parameter in context.
      *
-     * @param key: the param key name
-     * @param value: the param value
-     *
+     * @param key parameter key name
+     * @param value parameter value
      */
     func set(key: String, value: Any): Unit
 
     /**
-     * get param from context
+     * Get parameter from context.
      *
-     * @param key: the param key name
-     * @return the param value
+     * @param key parameter key name
+     * @return parameter value, or None if not found
      */
     func get<T>(key: String): ?T
 
     /**
-     * remove param from context
+     * Remove parameter from context.
      *
-     * @param key: the param key name
+     * @param key parameter key name
      */
     func remove(key: String): Unit
 
     /**
-     * get the service from context
+     * Get service from context.
      *
-     * @param name: the name of service
-     * @return the service instance
+     * @param name name of service
+     * @return service instance, or None if not found
      */
     func getService<T>(name: String): ?T
 
     /**
-     * get the service from context, throw exception if not found
+     * Get service from context, throw exception if not found.
      *
-     * @param name: the name of service
-     * @return the service instance
-     * @throws Exception if service not found
+     * @param name name of service
+     * @return service instance
+     * @throws OptionError if service not found
      */
     func mustService<T>(name: String): T {
         getService<T>(name).getOrThrow()
@@ -61,45 +63,48 @@ public interface Context {
 }
 
 /**
- * the map contenxt
+ * Map-based context implementation using ConcurrentHashMap.
+ *
+ * Provides thread-safe storage for key-value pairs and delegates
+ * service lookup to the global ServiceContainer.
  */
 public open class MapContext <: Context {
     private let _data: ConcurrentHashMap<String, Any> = ConcurrentHashMap()
 
     /**
-     * set param in context
+     * Set parameter in context.
      *
-     * @param key: the param key name
-     * @param value: the param value
+     * @param key parameter key name
+     * @param value parameter value
      */
     public func set(key: String, value: Any): Unit {
         _data.add(key, value)
     }
 
     /**
-     * get param from context
+     * Get parameter from context.
      *
-     * @param key: the param key name
-     * @return the param value
+     * @param key parameter key name
+     * @return parameter value, or None if not found
      */
     public func get<T>(key: String): ?T {
         (_data.get(key) ?? Option<Any>.None) as T
     }
 
     /**
-     * remove param from context
+     * Remove parameter from context.
      *
-     * @param key: the param key name
+     * @param key parameter key name
      */
     public func remove(key: String): Unit {
         _data.remove(key)
     }
 
     /**
-     * get the service from context
+     * Get service from context.
      *
-     * @param name: the name of service
-     * @return the service instance
+     * @param name name of service
+     * @return service instance, or None if not found
      */
     public open func getService<T>(name: String): ?T {
         ServiceContainer.GLOBAL.getService<T>(name)

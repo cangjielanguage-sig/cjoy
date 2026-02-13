@@ -58,6 +58,12 @@ public class CronJob <: Equatable<CronJob> & ToString {
     }
 
     /**
+     * Parse cron expression to create cron job
+     *
+     * @param name job name
+     * @param exp cron expression
+     * @param fn task execution function
+     * @return parsed cron job
      * @throws ScheduleException
      */
     public static func parse(name: String, exp: String, fn: ScheduleFunc): CronJob {
@@ -119,6 +125,11 @@ public class CronJob <: Equatable<CronJob> & ToString {
         return true
     }
 
+    /**
+     * Run the scheduled task
+     *
+     * @param start task start time
+     */
     public func run(start: DateTime): Unit {
         @JoyLogInfo("[Schedule] starting cron job: ${_name}")
         try {
@@ -146,6 +157,8 @@ public class CronJob <: Equatable<CronJob> & ToString {
     }
 
     /**
+     * Parse step pattern for cron field
+     *
      * @throws ScheduleException
      */
     private static func parseSteps(str: String, match1: String, match2: String, min: Int, max: Int): HashSet<Int> {
@@ -172,6 +185,8 @@ public class CronJob <: Equatable<CronJob> & ToString {
     }
 
     /**
+     * Parse range pattern for cron field
+     *
      * @throws ScheduleException
      */
     private static func parseRange(str: String, min: Int, max: Int): HashSet<Int> {
@@ -188,6 +203,8 @@ public class CronJob <: Equatable<CronJob> & ToString {
     }
 
     /**
+     * Parse single value or range for cron field
+     *
      * @throws ScheduleException
      */
     private static func parseSingleOrRange(part: String, min: Int, max: Int, res: HashSet<Int>): Unit {

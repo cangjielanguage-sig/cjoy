@@ -10,5 +10,5 @@
 
 package cjoy.validation
 
-// reimport the dependent
+// Re-export commonly used types for validation
 public import std.convert.Parsable

@@ -16,21 +16,23 @@ import stdx.net.http.HttpHeaders
 import cjoy.log.macros.*
 
 /**
- * map container implemments JoyBindSource
+ * Map container that implements JoyBindSource.
+ *
+ * Provides a HashMap-based data source for parameter binding.
  */
 public class MapContainer <: JoyBindSource & ToString {
     /**
-     * create a new MapContainer
+     * Create a new MapContainer.
      *
-     * @param data: the map data
+     * @param data the map data
      */
     public MapContainer(let data: HashMap<String, Any>) {}
 
     /**
-     * get one value by name from source
+     * Get one value by name from source.
      *
-     * @param name: the value name
-     * @return the value or None if not found
+     * @param name the value name
+     * @return the value, or None if not found
      */
     public func getOne<T>(name: String): ?T {
         let v = data.get(name)
@@ -38,9 +40,9 @@ public class MapContainer <: JoyBindSource & ToString {
     }
 
     /**
-     * get all values by name from source
+     * Get all values by name from source.
      *
-     * @param name: the value name
+     * @param name the value name
      * @return the collection of values
      */
     public func getList<T>(name: String): Collection<T> {
@@ -65,7 +67,7 @@ public class MapContainer <: JoyBindSource & ToString {
     }
 
     /**
-     * convert to string
+     * Convert to string.
      *
      * @return the string representation
      */
@@ -74,9 +76,9 @@ public class MapContainer <: JoyBindSource & ToString {
     }
 
     /**
-     * convert map to string
+     * Convert map to string.
      *
-     * @param data: the map data
+     * @param data the map data
      * @return the string representation
      */
     public static func mapToString(data: Map<String, Any>): String {
@@ -104,9 +106,9 @@ public class MapContainer <: JoyBindSource & ToString {
     }
 
     /**
-     * convert collection to string
+     * Convert collection to string.
      *
-     * @param data: the collection data
+     * @param data the collection data
      * @return the string representation
      */
     public static func colToString(data: Collection<Any>): String {
@@ -127,12 +129,15 @@ public class MapContainer <: JoyBindSource & ToString {
     }
 }
 
+/**
+ * Extend Form to implement JoyBindSource for form data binding.
+ */
 extend Form <: JoyBindSource {
     /**
-     * get one value by name from form
+     * Get one value by name from form.
      *
-     * @param name: the value name
-     * @return the value or None if not found
+     * @param name the value name
+     * @return the value, or None if not found
      */
     public func getOne<T>(name: String): ?T {
         let v = this.get(name)
@@ -140,9 +145,9 @@ extend Form <: JoyBindSource {
     }
 
     /**
-     * get all values by name from form
+     * Get all values by name from form.
      *
-     * @param name: the value name
+     * @param name the value name
      * @return the collection of values
      */
     public func getList<T>(name: String): Collection<T> {
@@ -158,12 +163,15 @@ extend Form <: JoyBindSource {
     }
 }
 
+/**
+ * Extend HttpHeaders to implement JoyBindSource for header binding.
+ */
 extend HttpHeaders <: JoyBindSource {
     /**
-     * get one value by name from headers
+     * Get one value by name from headers.
      *
-     * @param name: the header name
-     * @return the header value or None if not found
+     * @param name the header name
+     * @return the header value, or None if not found
      */
     public func getOne<T>(name: String): ?T {
         let v = this.getFirst(name)
@@ -171,9 +179,9 @@ extend HttpHeaders <: JoyBindSource {
     }
 
     /**
-     * get all values by name from headers
+     * Get all values by name from headers.
      *
-     * @param name: the header name
+     * @param name the header name
      * @return the collection of header values
      */
     public func getList<T>(name: String): Collection<T> {
@@ -189,12 +197,15 @@ extend HttpHeaders <: JoyBindSource {
     }
 }
 
+/**
+ * Extend HashMap<String, String> to implement JoyBindSource for map binding.
+ */
 extend HashMap<String, String> <: JoyBindSource {
     /**
-     * get one value by name from hashmap
+     * Get one value by name from hashmap.
      *
-     * @param name: the key name
-     * @return the value or None if not found
+     * @param name the key name
+     * @return the value, or None if not found
      */
     public func getOne<T>(name: String): ?T {
         let v = this.get(name)
@@ -202,9 +213,9 @@ extend HashMap<String, String> <: JoyBindSource {
     }
 
     /**
-     * get list from hashmap (always return empty)
+     * Get list from hashmap (always return empty).
      *
-     * @param _: the key name (not used)
+     * @param _ the key name (not used)
      * @return the empty collection
      */
     public func getList<T>(_: String): Collection<T> {

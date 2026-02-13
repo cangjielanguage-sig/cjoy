@@ -13,85 +13,99 @@ package cjoy.eventbus
 import cjoy.context.{Context, MapContext}
 
 /**
- * implements the EventSubscriber interface to handle event
+ * Event subscriber interface.
+ *
+ * Implement this interface to handle events published to the event bus.
  */
 public interface EventSubscriber {
     /**
-     * handle the event
+     * Handle event.
      *
-     * @param ctx: the context
-     * @param evt: the event
+     * @param ctx application context
+     * @param evt event to handle
      */
     func handle(ctx: Context, evt: Event): Unit
 }
 
 /**
- * Type alias for event subscriber function
+ * Type alias for event subscriber function.
+ *
+ * Function type that can be used as a subscriber directly.
  */
 public type EventSubscriberFunc = (ctx: Context, evt: Event) -> Unit
 
 /**
- * the event subscriber that wraps a function
+ * Event subscriber that wraps a function.
+ *
+ * Allows a function to be used as an event subscriber.
  */
 public class EventFuncSubscriber <: EventSubscriber {
     /**
-     * create a new EventFuncSubscriber
+     * Create a new EventFuncSubscriber.
      *
-     * @param fn: the event subscriber function
+     * @param fn event subscriber function
      */
     public EventFuncSubscriber(let fn: EventSubscriberFunc) {
     }
 
     /**
-     * handle the event by calling the function
+     * Handle event by calling wrapped function.
      *
-     * @param ctx: the context
-     * @param evt: the event
+     * @param ctx application context
+     * @param evt event to handle
      */
     public func handle(ctx: Context, evt: Event): Unit {
         fn(ctx, evt)
     }
 }
 
+/**
+ * Event bus interface.
+ *
+ * Defines the contract for event bus implementations,
+ * providing methods for subscribing to and firing events.
+ */
 public interface EventBus {
     /**
-     * register a subscriber to handle events
+     * Register a subscriber to handle events.
      *
-     * @param pattern：the match pattern，match rule
-     *  - "*" matches any sequence of non . characters
-     *  - "**" match all characters to end, only allow at start or end on pattern.
-     *  like:
-     *  - "evt.some.*.*"       -> match "evt.some.thing.run" "evt.some.thing.do"
-     *  - "evt.some.*.run"     -> match "evt.some.thing.run", but not match "evt.some.thing.do"
-     *  - "evt.some.**"        -> match any start with "evt.some.". eg: "evt.some.thing.run" "evt.some.thing.do"
-     *  - "**.thing.run"       -> match any ends with ".thing.run". eg: "evt.some.thing.run"
-     * @param name: the sucriber name
-     * @param subcriber: the subcriber
-     * @param priority: the priority of handle event
-     * @throws EventBusException if the pattern is invalid
+     * @param pattern the match pattern. Match rules:
+     *   - "*" matches any sequence of non-dot characters
+     *   - "**" matches all characters to end, only allowed at start or end on pattern
+     *   Examples:
+     *     - "evt.some.*.*"       -> matches "evt.some.thing.run", "evt.some.thing.do"
+     *     - "evt.some.*.run"     -> matches "evt.some.thing.run", but not "evt.some.thing.do"
+     *     - "evt.some.**"        -> matches any starting with "evt.some.", e.g., "evt.some.thing.run", "evt.some.thing.do"
+     *     - "**.thing.run"       -> matches any ending with ".thing.run", e.g., "evt.some.thing.run"
+     * @param name subscriber name
+     * @param subscriber event subscriber
+     * @param priority priority for handling events (higher values execute first)
+     * @throws EventBusException if pattern is invalid
      */
-    func onEvent(pattern: String, name: String, subcriber: EventSubscriber, priority: Array<Int>): Unit
+    func onEvent(pattern: String, name: String, subscriber: EventSubscriber, priority: Array<Int>): Unit
 
     /**
-     * register a subscriber function to handle events
+     * Register a subscriber function to handle events.
      *
-     * @param pattern: the match pattern
-     * @param name: the sucriber name
-     * @param subcriber: the subscriber function
-     * @param priority: the priority of handle event
-     * @throws EventBusException if the pattern is invalid
+     * @param pattern the match pattern
+     * @param name subscriber name
+     * @param subscriber event subscriber function
+     * @param priority priority for handling events
+     * @throws EventBusException if pattern is invalid
      */
-    func onEvent(pattern: String, name: String, subcriber: EventSubscriberFunc, priority: Array<Int>): Unit {
-        onEvent(pattern, name, EventFuncSubscriber(subcriber), priority)
+    func onEvent(pattern: String, name: String, subscriber: EventSubscriberFunc, priority: Array<Int>): Unit {
+        onEvent(pattern, name, EventFuncSubscriber(subscriber), priority)
     }
 
     /**
-     * register a subscriber to handle events, only trigger once
+     * Register a subscriber to handle events, only trigger once.
      *
-     * @param pattern: the match pattern
-     * @param name: the sucriber name
-     * @param listener: the subscriber
-     * @param priority: the priority of handle event
+     * Subscriber is automatically removed after first event is handled.
+     *
+     * @param pattern the match pattern
+     * @param name subscriber name
+     * @param listener event subscriber
+     * @param priority priority for handling events
      */
     func onceEvent(pattern: String, name: String, listener: EventSubscriber, priority: Array<Int>): Unit {
         let onceListener = {
@@ -105,45 +119,52 @@ public interface EventBus {
     }
 
     /**
-     * register a subscriber function to handle events, only trigger once
+     * Register a subscriber function to handle events, only trigger once once.
      *
-     * @param pattern: the match pattern
-     * @param name: the sucriber name
-     * @param subcriber: the subscriber function
-     * @param priority: the priority of handle event
+     * @param pattern the match pattern
+     * @param name subscriber name
+     * @param subscriber event subscriber function
+     * @param priority priority for handling events
      */
-    func onceEvent(pattern: String, name: String, subcriber: EventSubscriberFunc, priority: Array<Int>): Unit {
-        onceEvent(pattern, name, EventFuncSubscriber(subcriber), priority)
+    func onceEvent(pattern: String, name: String, subscriber: EventSubscriberFunc, priority: Array<Int>): Unit {
+        onceEvent(pattern, name, EventFuncSubscriber(subscriber), priority)
     }
 
     /**
-     * remove the subscriber by pattern and name
+     * Remove subscriber by pattern and name.
      *
-     * @param pattern: the match pattern
-     * @param name: the subscriber name
+     * @param pattern the match pattern
+     * @param name subscriber name
      */
     func removeSubscriber(pattern: String, name: String): Unit
 
     /**
-     * fire event by queue
+     * Fire events asynchronously by queue.
      *
-     * @param cxt: the context
-     * @param evts: the events to fire
+     * Events are queued and processed by consumer threads.
+     *
+     * @param cxt application context
+     * @param evts events to fire
      */
     func fireEventAsync(cxt: Context, evts: Array<Event>): Unit
 
     /**
-     * fire event sync
+     * Fire events synchronously.
      *
-     * @param cxt: the context
-     * @param evts: the events to fire
+     * Events are processed immediately on calling thread.
+     *
+     * @param cxt application context
+     * @param evts events to fire
      */
     func fireEvent(cxt: Context, evts: Array<Event>): Unit
 
     /**
-     * async fire event by thread
+     * Async fire event by thread.
      *
-     * @param evts: the events to fire
+     * Fires events in a new thread with a new context.
+     *
+     * @param _ context (ignored, creates new MapContext)
+     * @param evts events to fire
      */
     func asyncFireEvent(_: Context, evts: Array<Event>): Unit {
         spawn {
@@ -152,18 +173,25 @@ public interface EventBus {
     }
 
     /**
-     * close queue and wait for all async events done.
+     * Close event bus and wait for all async events to complete.
+     *
+     * Cancels consumer threads and waits for pending events to be processed.
      *
      * @throws InterruptedException if interrupted while waiting
      */
     func closeAndWait(): Unit
 }
 
+/**
+ * Event bus exception.
+ *
+ * Thrown for event bus related errors such as invalid patterns.
+ */
 public class EventBusException <: Exception {
     /**
-     * create a new event bus exception
+     * Create a new event bus exception.
      *
-     * @param message: the error message
+     * @param message error message
      */
     public EventBusException(message: String) {
         super(message)
@@ -171,36 +199,41 @@ public class EventBusException <: Exception {
 }
 
 /**
- * Constants for event bus configuration
+ * Constants for constants configuration.
  */
 public struct EventConsts {
     /**
-     * Minimum priority level (-1000)
+     * Minimum priority level (-1000).
      */
     public static const PRIORITY_MIN: Int = -1000
+
     /**
-     * Low priority level (-500)
+     * Low priority level (-500).
      */
     public static const PRIORITY_LOW: Int = -500
+
     /**
-     * Normal priority level (0)
+     * Normal priority level (0).
      */
     public static const PRIORITY_NORMAL: Int = 0
+
     /**
-     * High priority level (500)
+     * High priority level (500).
      */
     public static const PRIORITY_HIGH: Int = 500
+
     /**
-     * Maximum priority level (1000)
+     * Maximum priority level (1000).
      */
     public static const PRIORITY_MAX: Int = 1000
 
     /**
-     * Wildcard matching any single node (*)
+     * Wildcard matching any single node (*).
      */
     public static const ANY_NODE: String = "*"
+
     /**
-     * Wildcard matching all nodes to end (**)
+     * Wildcard matching all nodes to end (**).
      */
     public static const ALL_NODE: String = "**"
 }

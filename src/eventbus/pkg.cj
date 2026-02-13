@@ -12,4 +12,7 @@ package cjoy.eventbus
 
 import cjoy.log.macros.*
 
+/**
+ * Create logger for EventBus module.
+ */
 @JoyCreateLogger("cjoy.eventbus")

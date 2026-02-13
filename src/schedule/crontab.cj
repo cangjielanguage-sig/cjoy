@@ -55,7 +55,12 @@ public class Crontab <: Resource {
     }
 
     /**
-     * @throws ScheduleException if the name is existed
+     * Add a cron job to the crontab
+     *
+     * @param name job name
+     * @param cronExp cron expression
+     * @param fn task execution function
+     * @throws ScheduleException if the name already exists
      */
     public func addJob(name: String, cronExp: String, fn: ScheduleFunc): Unit {
         if (exists(name)) {
@@ -66,6 +71,13 @@ public class Crontab <: Resource {
         @JoyLogInfo("[Schedule] add crontab job, name=${name}")
     }
 
+    /**
+     * Add a cron job to the crontab if it does not exist
+     *
+     * @param name job name
+     * @param cronExp cron expression
+     * @param fn task execution function
+     */
     public func addJobIfAbsent(name: String, cronExp: String, fn: ScheduleFunc): Unit {
         let job = CronJob.parse(name, cronExp, fn)
         if (_jobs.addIfAbsent(name, job).isNone()) {
@@ -73,6 +85,12 @@ public class Crontab <: Resource {
         }
     }
 
+    /**
+     * Check if a job exists by name
+     *
+     * @param name job name
+     * @return true if job exists
+     */
     public func exists(name: String): Bool {
         _jobs.contains(name)
     }

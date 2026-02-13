@@ -15,15 +15,30 @@ import std.time.DateTime
 import std.collection.HashMap
 
 /**
- * base interface for validation constraints
+ * Base interface for validation constraints.
+ *
+ * All constraint types implement this interface.
  */
 public interface JoyConstraint {}
 
 /**
- * size constraint for collection
+ * Size constraint for collection types.
+ *
+ * Validates that collection size is within [min, max] range (inclusive).
  */
 public class SizeConstraint <: JoyConstraint {
+    /**
+     * Error message describing constraint violation.
+     */
     public let message: String
+
+    /**
+     * Create SizeConstraint.
+     *
+     * @param min minimum size (inclusive)
+     * @param max maximum size (inclusive)
+     * @param msg custom error message (supports {min} and {max} placeholders)
+     */
     public SizeConstraint(public let min: Int, public let max: Int, let msg: String) {
         if (msg.isEmpty()) {
             this.message = "this constraint of value is Size[${min}, ${max}]"
@@ -34,10 +49,23 @@ public class SizeConstraint <: JoyConstraint {
 }
 
 /**
- * length constraint for string
+ * Length constraint for string types.
+ *
+ * Validates that string length is within [min, max] range (inclusive).
  */
 public class LengthConstraint <: JoyConstraint {
+    /**
+     * Error message describing constraint violation.
+     */
     public let message: String
+
+    /**
+     * Create LengthConstraint.
+     *
+     * @param min minimum length (inclusive)
+     * @param max maximum length (inclusive)
+     * @param msg custom error message (supports {min} and {max} placeholders)
+     */
     public LengthConstraint(public let min: Int, public let max: Int, let msg: String) {
         if (msg.isEmpty()) {
             this.message = "this constraint of value is Length[${min}, ${max}]"
@@ -48,10 +76,21 @@ public class LengthConstraint <: JoyConstraint {
 }
 
 /**
- * not empty constraint for string
+ * Not empty constraint for string types.
+ *
+ * Validates that string is not empty.
  */
 public class NotEmptyConstraint <: JoyConstraint {
+    /**
+     * Error message describing constraint violation.
+     */
     public let message: String
+
+    /**
+     * Create NotEmptyConstraint.
+     *
+     * @param msg custom error message
+     */
     public NotEmptyConstraint(let msg: String) {
         if (msg.isEmpty()) {
             this.message = "this constraint of value is NOT EMPTY"
@@ -62,10 +101,21 @@ public class NotEmptyConstraint <: JoyConstraint {
 }
 
 /**
- * not blank constraint for string
+ * Not blank constraint for string types.
+ *
+ * Validates that trimmed string is not blank.
  */
 public class NotBlankConstraint <: JoyConstraint {
+    /**
+     * Error message describing constraint violation.
+     */
     public let message: String
+
+    /**
+     * Create NotBlankConstraint.
+     *
+     * @param msg custom error message
+     */
     public NotBlankConstraint(let msg: String) {
         if (msg.isEmpty()) {
             this.message = "this constraint of value is NOT BLANK"
@@ -76,10 +126,23 @@ public class NotBlankConstraint <: JoyConstraint {
 }
 
 /**
- * range constraint for number
+ * Range constraint for numeric types.
+ *
+ * Validates that number is within [min, max] range (inclusive).
  */
 public class RangeConstraint <: JoyConstraint {
+    /**
+     * Error message describing constraint violation.
+     */
     public let message: String
+
+    /**
+     * Create RangeConstraint.
+     *
+     * @param min minimum value as string (inclusive)
+     * @param max maximum value as string (inclusive)
+     * @param msg custom error message (supports {min} and {max} placeholders)
+     */
     public RangeConstraint(public let min: String, public let max: String, let msg: String) {
         if (msg.isEmpty()) {
             this.message = "this constraint of value is NumberRange[${min}, ${max}]"
@@ -90,11 +153,27 @@ public class RangeConstraint <: JoyConstraint {
 }
 
 /**
- * regex pattern constraint for string
+ * Regex pattern constraint for string types.
+ *
+ * Validates that string matches the specified regex pattern.
  */
 public class PatternConstraint <: JoyConstraint {
+    /**
+     * Error describing constraint violation.
+     */
     public let message: String
+
+    /**
+     * Compiled regex pattern.
+     */
     public let regex: Regex
+
+    /**
+     * Create PatternConstraint.
+     *
+     * @param regexStr regex pattern string
+     * @param msg custom error message (supports {regex} placeholder)
+     */
     public PatternConstraint(let regexStr: String, let msg: String) {
         this.regex = Regex(regexStr)
         if (msg.isEmpty()) {
@@ -106,10 +185,23 @@ public class PatternConstraint <: JoyConstraint {
 }
 
 /**
- * datetime range constraint
+ * DateTime range constraint.
+ *
+ * Validates that DateTime is within [after, before] range.
  */
 public class DateTimeRangeConstraint <: JoyConstraint {
+    /**
+     * Error message describing constraint violation.
+     */
     public let message: String
+
+    /**
+     * Create DateTimeRangeConstraint.
+     *
+     * @param before maximum allowed datetime
+     * @param after minimum allowed datetime
+     * @param msg custom error message (supports {after} and {before} placeholders)
+     */
     public DateTimeRangeConstraint(public let before: DateTime, public let after: DateTime, public let msg: String) {
         if (msg.isEmpty()) {
             this.message = "this constraint of value is DateTimeRange[${after}, ${before}]"
@@ -120,11 +212,26 @@ public class DateTimeRangeConstraint <: JoyConstraint {
 }
 
 /**
- * chinese mobile phone number constraint
+ * Chinese mobile phone number constraint.
+ *
+ * Validates that string matches Chinese mobile phone format.
  */
 public class ChMobilePhoneConstraint <: JoyConstraint {
+    /**
+     * Error message describing constraint violation.
+     */
     public let message: String
+
+    /**
+     * Regex pattern for Chinese mobile phone numbers.
+     */
     public static let REGEX: Regex = Regex(#"^(?:\+86[\s-]?)?1[3456789]\d{9}$"#)
+
+    /**
+     * Create ChMobilePhoneConstraint.
+     *
+     * @param msg custom error message
+     */
     public ChMobilePhoneConstraint(let msg: String) {
         if (msg.isEmpty()) {
             this.message = "this constraint of value is chinese mobile phone number"
@@ -135,11 +242,26 @@ public class ChMobilePhoneConstraint <: JoyConstraint {
 }
 
 /**
- * email format constraint
+ * Email format constraint.
+ *
+ * Validates that string matches email format.
  */
 public class EmailConstraint <: JoyConstraint {
+    /**
+     * Error message describing constraint violation.
+     */
     public let message: String
+
+    /**
+     * Regex pattern for email validation.
+     */
     public static let REGEX: Regex = Regex(#"^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$"#)
+
+    /**
+     * Create EmailConstraint.
+     *
+     * @param msg custom error message
+     */
     public EmailConstraint(let msg: String) {
         if (msg.isEmpty()) {
             this.message = "this constraint of value is email"
@@ -150,12 +272,27 @@ public class EmailConstraint <: JoyConstraint {
 }
 
 /**
- * IPv4 address format constraint
+ * IPv4 address format constraint.
+ *
+ * Validates that string matches IPv4 address format.
  */
 public class IPV4Constraint <: JoyConstraint {
+    /**
+     * Error message describing constraint violation.
+     */
     public let message: String
+
+    /**
+     * Regex pattern for IPv4 address validation.
+     */
     public static let REGEX: Regex = Regex(
         #"^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"#)
+
+    /**
+     * Create IPV4Constraint.
+     *
+     * @param msg custom error message
+     */
     public IPV4Constraint(let msg: String) {
         if (msg.isEmpty()) {
             this.message = "this constraint of value is IP V4"
@@ -166,10 +303,22 @@ public class IPV4Constraint <: JoyConstraint {
 }
 
 /**
- * enum string constraint
+ * Enum string constraint.
+ *
+ * Validates that string is one of the allowed enum values.
  */
 public class EnumStrConstraint <: JoyConstraint {
+    /**
+     * Error message describing constraint violation.
+     */
     public let message: String
+
+    /**
+     * Create EnumStrConstraint.
+     *
+     * @param values allowed string values
+     * @param msg custom error message
+     */
     public EnumStrConstraint(public let values: Array<String>, let msg: String) {
         if (msg.isEmpty()) {
             this.message = "this constraint of value is ${values}"
@@ -180,10 +329,22 @@ public class EnumStrConstraint <: JoyConstraint {
 }
 
 /**
- * enum integer constraint
+ * Enum integer constraint.
+ *
+ * Validates that integer is one of the allowed enum values.
  */
 public class EnumIntConstraint <: JoyConstraint {
+    /**
+     * Error message describing constraint violation.
+     */
     public let message: String
+
+    /**
+     * Create EnumIntConstraint.
+     *
+     * @param values allowed integer values
+     * @param msg custom error message
+     */
     public EnumIntConstraint(public let values: Array<Int>, let msg: String) {
         if (msg.isEmpty()) {
             this.message = "this constraint of value is ${values}"
@@ -194,18 +355,39 @@ public class EnumIntConstraint <: JoyConstraint {
 }
 
 /**
- * validation exception for constraint violation
+ * Validation exception for constraint violation.
+ *
+ * Thrown when a constraint validation fails.
  */
 public class JoyValidationException <: Exception {
+    /**
+     * Field name that failed validation.
+     */
     public let field: String
+
+    /**
+     * Constraint that was violated.
+     */
     public let constraint: JoyConstraint
 
+    /**
+     * Create JoyValidationException.
+     *
+     * @param message error message
+     * @param field field name
+     * @param constraint violated constraint
+     */
     public init(message: String, field: String, constraint: JoyConstraint) {
         super(message)
         this.field = field
         this.constraint = constraint
     }
 
+    /**
+     * Convert exception to map for JSON response.
+     *
+     * @return map containing field and error message
+     */
     public func toMap(): HashMap<String, String> {
         let res: HashMap<String, String> = HashMap()
         res.add("field", field)

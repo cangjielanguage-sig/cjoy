@@ -14,14 +14,18 @@ import std.convert.Parsable
 import std.collection.{HashMap, ArrayList}
 import std.time.DateTime
 
+/**
+ * Extend String: bind source to String.
+ */
 extend String <: JoyBindable<String> {
     /**
-     * bind source to string
+     * Bind source to string.
      *
-     * @param source: the bind source
-     * @param name: the field name
-     * @param defaultValue: the default value
-     * @return the string value or None
+     * @param source the bind source
+     * @param name the field name
+     * @param defaultValue the default value
+     * @param _ the time format (unused)
+     * @return the string value, or None
      */
     public static func bind(source: JoyBindSource, name: String, defaultValue: ?String, _: ?String): ?String {
         let val = source.getOne<ToString>(name)
@@ -39,14 +43,17 @@ private func getString(a: ?ToString, b: ?String): ?String {
     }
 }
 
+/**
+ * Extend Option: bind source to optional value.
+ */
 extend<T> Option<T> <: JoyBindable<Option<T>> where T <: JoyBindable<T> {
     /**
-     * bind source to optional value
+     * Bind source to optional value.
      *
-     * @param source: the bind source
-     * @param name: the field name
-     * @param defaultValue: the default value
-     * @param timeformat: the datetime format
+     * @param source the bind source
+     * @param name the field name
+     * @param defaultValue the default value
+     * @param timeformat the datetime format
      * @return the optional value
      */
     public static func bind(source: JoyBindSource, name: String, defaultValue: ?String, timeformat: ?String): ?Option<T> {
@@ -70,185 +77,238 @@ private func bindParsable<T>(val: ?ToString, defaultValue: ?String): ?T where T 
     }
 }
 
+/**
+ * Extend Int8: bind source to Int8.
+ */
 extend Int8 <: JoyBindable<Int8> {
     /**
-     * bind source to int8
+     * Bind source to int8.
      *
-     * @param source: the bind source
-     * @param name: the field name
-     * @param defaultValue: the default value
-     * @return the int8 value or None
+     * @param source the bind source
+     * @param name the field name
+     * @param defaultValue the default value
+     * @param _ the time format (unused)
+     * @return the int8 value, or None
      */
     public static func bind(source: JoyBindSource, name: String, defaultValue: ?String, _: ?String): ?Int8 {
         bindParsable<Int8>(source, name, defaultValue)
     }
 }
 
+/**
+ * Extend Int16: bind source to Int16.
+ */
 extend Int16 <: JoyBindable<Int16> {
     /**
-     * bind source to int16
+     * Bind source to int16.
      *
-     * @param source: the bind source
-     * @param name: the field name
-     * @param defaultValue: the default value
-     * @return the int16 value or None
+     * @param source the bind source
+     * @param name the field name
+     * @param defaultValue the default value
+     * @param _ the time format (unused)
+     * @return the int16 value, or None
      */
     public static func bind(source: JoyBindSource, name: String, defaultValue: ?String, _: ?String): ?Int16 {
         bindParsable<Int16>(source, name, defaultValue)
     }
 }
 
+/**
+ * Extend Int32: bind source to Int32.
+ */
 extend Int32 <: JoyBindable<Int32> {
     /**
-     * bind source to int32
+     * Bind source to int32.
      *
-     * @param source: the bind source
-     * @param name: the field name
-     * @param defaultValue: the default value
-     * @return the int32 value or None
+     * @param source the bind source
+     * @param name the field name
+     * @param defaultValue the default value
+     * @param _ the time format (unused)
+     * @return the int32 value, or None
      */
     public static func bind(source: JoyBindSource, name: String, defaultValue: ?String, _: ?String): ?Int32 {
         bindParsable<Int32>(source, name, defaultValue)
     }
 }
 
+/**
+ * Extend Int64: bind source to Int64.
+ */
 extend Int64 <: JoyBindable<Int64> {
     /**
-     * bind source to int64
+     * Bind source to int64.
      *
-     * @param source: the bind source
-     * @param name: the field name
-     * @param defaultValue: the default value
-     * @return the int64 value or None
+     * @param source the bind source
+     * @param name the field name
+     * @param defaultValue the default value
+     * @param _ the time format (unused)
+     * @return the int64 value, or None
      */
     public static func bind(source: JoyBindSource, name: String, defaultValue: ?String, _: ?String): ?Int64 {
         bindParsable<Int64>(source, name, defaultValue)
     }
 }
 
+/**
+ * Extend UInt8: bind source to UInt8.
+ */
 extend UInt8 <: JoyBindable<UInt8> {
     /**
-     * bind source to uint8
+     * Bind source to uint8.
      *
-     * @param source: the bind source
-     * @param name: the field name
-     * @param defaultValue: the default value
-     * @return the uint8 value or None
+     * @param source the bind source
+     * @param name the field name
+     * @param defaultValue the default value
+     * @param _ the time format (unused)
+     * @return the uint8 value, or None
      */
     public static func bind(source: JoyBindSource, name: String, defaultValue: ?String, _: ?String): ?UInt8 {
         bindParsable<UInt8>(source, name, defaultValue)
     }
 }
 
+/**
+ * Extend UInt16: bind source to UInt16.
+ */
 extend UInt16 <: JoyBindable<UInt16> {
     /**
-     * bind source to uint16
+     * Bind source to uint16.
      *
-     * @param source: the bind source
-     * @param name: the field name
-     * @param defaultValue: the default value
-     * @return the uint16 value or None
+     * @param source the bind source
+     * @param name the field name
+     * @param defaultValue the default value
+     * @param _ the time format (unused)
+     * @return the uint16 value, or None
      */
     public static func bind(source: JoyBindSource, name: String, defaultValue: ?String, _: ?String): ?UInt16 {
         bindParsable<UInt16>(source, name, defaultValue)
     }
 }
 
+/**
+ * Extend UInt32: bind source to UInt32.
+ */
 extend UInt32 <: JoyBindable<UInt32> {
     /**
-     * bind source to uint32
+     * Bind source to uint32.
      *
-     * @param source: the bind source
-     * @param name: the field name
-     * @param defaultValue: the default value
-     * @return the uint32 value or None
+     * @param source the bind source
+     * @param name the field name
+     * @param defaultValue the default value
+     * @param _ the time format (unused)
+     * @return the uint32 value, or None
      */
     public static func bind(source: JoyBindSource, name: String, defaultValue: ?String, _: ?String): ?UInt32 {
         bindParsable<UInt32>(source, name, defaultValue)
     }
 }
 
+/**
+ * Extend UInt64: bind source to UInt64.
+ */
 extend UInt64 <: JoyBindable<UInt64> {
     /**
-     * bind source to uint64
+     * Bind source to uint64.
      *
-     * @param source: the bind source
-     * @param name: the field name
-     * @param defaultValue: the default value
-     * @return the uint64 value or None
+     * @param source the bind source
+     * @param name the field name
+     * @param defaultValue the default value
+     * @param _ the time format (unused)
+     * @return the uint64 value, or None
      */
     public static func bind(source: JoyBindSource, name: String, defaultValue: ?String, _: ?String): ?UInt64 {
         bindParsable<UInt64>(source, name, defaultValue)
     }
 }
 
+/**
+ * Extend Float16: bind source to Float16.
+ */
 extend Float16 <: JoyBindable<Float16> {
     /**
-     * bind source to float16
+     * Bind source to float16.
      *
-     * @param source: the bind source
-     * @param name: the field name
-     * @param defaultValue: the default value
-     * @return the float16 value or None
+     * @param source the bind source
+     * @param name the field name
+     * @param defaultValue the default value
+     * @param _ the time format (unused)
+     * @return the float16 value, or None
      */
     public static func bind(source: JoyBindSource, name: String, defaultValue: ?String, _: ?String): ?Float16 {
         bindParsable<Float16>(source, name, defaultValue)
     }
 }
 
+/**
+ * Extend Float32: bind source to Float32.
+ */
 extend Float32 <: JoyBindable<Float32> {
     /**
-     * bind source to float32
+     * Bind source to float32.
      *
-     * @param source: the bind source
-     * @param name: the field name
-     * @param defaultValue: the default value
-     * @return the float32 value or None
+     * @param source the bind source
+     * @param name the field name
+     * @param defaultValue the default value
+     * @param _ the time format (unused)
+     * @return the float32 value, or None
      */
     public static func bind(source: JoyBindSource, name: String, defaultValue: ?String, _: ?String): ?Float32 {
         bindParsable<Float32>(source, name, defaultValue)
     }
 }
 
+/**
+ * Extend Float64: bind source to Float64.
+ */
 extend Float64 <: JoyBindable<Float64> {
     /**
-     * bind source to float64
+     * Bind source to float64.
      *
-     * @param source: the bind source
-     * @param name: the field name
-     * @param defaultValue: the default value
-     * @return the float64 value or None
+     * @param source the bind source
+     * @param name the field name
+     * @param defaultValue the default value
+     * @param _ the time format (unused)
+     * @return the float64 value, or None
      */
     public static func bind(source: JoyBindSource, name: String, defaultValue: ?String, _: ?String): ?Float64 {
         bindParsable<Float64>(source, name, defaultValue)
     }
 }
 
+/**
+ * Extend Bool: bind source to Bool.
+ */
 extend Bool <: JoyBindable<Bool> {
     /**
-     * bind source to bool
+     * Bind source to bool.
      *
-     * @param source: the bind source
-     * @param name: the field name
-     * @param defaultValue: the default value
-     * @return the bool value or None
+     * @param source the bind source
+     * @param name the field name
+     * @param defaultValue the default value
+     * @param _ the time format (unused)
+     * @return the bool value, or None
      */
     public static func bind(source: JoyBindSource, name: String, defaultValue: ?String, _: ?String): ?Bool {
         bindParsable<Bool>(source, name, defaultValue)
     }
 }
 
-// 当前不考虑T是Option
+// currently not considering T is Option
+/**
+ * Extend Array: bind source to Array.
+ */
 extend<T> Array<T> <: JoyBindable<Array<T>> where T <: JoyBindable<T> {
     /**
-     * bind source to array
+     * Bind source to array.
      *
-     * @param source: the bind source
-     * @param name: the field name
-     * @return the array value or None
+     * @param source the bind source
+     * @param name the field name
+     * @param _ the default value (unused)
+     * @param _ the time format (unused)
+     * @return the array value, or None
      */
     public static func bind(source: JoyBindSource, name: String, _: ?String, _: ?String): ?Array<T> {
-        // 先尝试按同类型获取，如Array<String>
+        // try to get by same type, e.g. Array<String>
         let arr: Collection<T> = source.getList<T>(name)
         if (!arr.isEmpty()) {
             return arr.toArray()
@@ -260,8 +320,8 @@ extend<T> Array<T> <: JoyBindable<Array<T>> where T <: JoyBindable<T> {
 }
 
 private func bindCollection<T>(col: Collection<Any>): ArrayList<T> where T <: JoyBindable<T> {
-    // 按任一类型获取，则需要调用T.bind转换对应的类型
-    // 如Array<Int>， 则先生成临时的map
+    // get by any type, need to call T.bind to convert corresponding type
+    // e.g. Array<Int>, generate temporary map first
     let map = HashMap<String, Any>()
     let container = MapContainer(map)
     let res = ArrayList<T>()
@@ -275,14 +335,19 @@ private func bindCollection<T>(col: Collection<Any>): ArrayList<T> where T <: Jo
     res
 }
 
-// 当前不考虑T是Option
+// currently not considering T is Option
+/**
+ * Extend ArrayList: bind source to ArrayList.
+ */
 extend<T> ArrayList<T> <: JoyBindable<ArrayList<T>> where T <: JoyBindable<T> {
     /**
-     * bind source to array list
+     * Bind source to array list.
      *
-     * @param source: the bind source
-     * @param name: the field name
-     * @return the array list value or None
+     * @param source the bind source
+     * @param name the field name
+     * @param _ the default value (unused)
+     * @param _ the time format (unused)
+     * @return the array list value, or None
      */
     public static func bind(source: JoyBindSource, name: String, _: ?String, _: ?String): ?ArrayList<T> {
         let arr: Collection<T> = source.getList<T>(name)
@@ -295,15 +360,18 @@ extend<T> ArrayList<T> <: JoyBindable<ArrayList<T>> where T <: JoyBindable<T> {
     }
 }
 
+/**
+ * Extend DateTime: bind source to DateTime.
+ */
 extend DateTime <: JoyBindable<DateTime> {
     /**
-     * bind source to datetime
+     * Bind source to datetime.
      *
-     * @param source: the bind source
-     * @param name: the field name
-     * @param defaultValue: the default value
-     * @param timeformat: the datetime format
-     * @return the datetime value or None
+     * @param source the bind source
+     * @param name the field name
+     * @param defaultValue the default value
+     * @param timeformat the datetime format
+     * @return the datetime value, or None
      */
     public static func bind(source: JoyBindSource, name: String, defaultValue: ?String, timeformat: ?String): ?DateTime {
         func parse(str: ?ToString): ?DateTime {

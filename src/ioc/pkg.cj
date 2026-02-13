@@ -12,4 +12,7 @@ package cjoy.ioc
 
 import cjoy.log.macros.*
 
+/**
+ * Create logger for IoC module.
+ */
 @JoyCreateLogger("cjoy.ioc")

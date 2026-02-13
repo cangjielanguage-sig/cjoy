@@ -16,18 +16,20 @@ import std.time.DateTime
 import std.math.numeric.{BigInt, Decimal}
 
 /**
- * JSON schema field information
+ * JSON schema field information.
  *
+ * Represents a field in a JSON schema with its type, description,
+ * and requirement status.
  */
 public class JsonSchemaInfo {
     /**
-     * create JsonSchemaInfo instance
+     * Create JsonSchemaInfo instance.
      *
-     * @param name: field name
-     * @param schemaType: JSON schema type
-     * @param description: field description
-     * @param required: whether the field is required (default: true)
-     * @param schema: custom schema string
+     * @param name field name
+     * @param schemaType JSON schema type
+     * @param description field description
+     * @param required whether field is required (default: true)
+     * @param schema custom schema string
      */
     public JsonSchemaInfo(
         public let name: String,
@@ -38,9 +40,9 @@ public class JsonSchemaInfo {
     ) {}
 
     /**
-     * convert to json serializable
+     * Convert to JsonSerializable.
      *
-     * @return: json serializable object
+     * @return JSON serializable object representing the schema
      */
     public func toJson(): JsonSerializable {
         if (schema != "") {
@@ -51,14 +53,15 @@ public class JsonSchemaInfo {
 }
 
 /**
- * JSON schema type enum for JSON schema specification
+ * JSON schema type enum for JSON schema specification.
  *
+ * Possible values:
  * - Str: string type
  * - Int: integer type
  * - Number: number type (includes floats)
  * - Boolean: boolean type
- * - Arr: array type with item schema
- * - Obj: object type with field schemas
+ * - Arr(JsonSchemaType): array type with item schema
+ * - Obj(Array<JsonSchemaInfo>): object type with field schemas
  */
 public enum JsonSchemaType {
     | Str
@@ -69,10 +72,10 @@ public enum JsonSchemaType {
     | Obj(Array<JsonSchemaInfo>)
 
     /**
-     * convert to json serializable schema
+     * Convert to JsonSerializable schema.
      *
-     * @param description: schema description
-     * @return: json serializable schema object
+     * @param description schema description
+     * @return JSON serializable schema object
      */
     public func toJson(description!: String = ""): JsonSerializable {
         let res: HashMap<String, JsonSerializable> = HashMap()
@@ -117,31 +120,32 @@ public enum JsonSchemaType {
 }
 
 /**
- * Interface for types that can generate JSON schemas
- * Provides methods to convert to JSON Schema format
+ * Interface for types that can generate JSON schemas.
+ *
+ * Provides methods to convert to JSON Schema format.
  */
 public interface Jsonable {
     /**
-     * get json schema type
+     * Get JSON schema type.
      *
-     * @return: json schema type
+     * @return JSON schema type
      */
     static func toSchema(): JsonSchemaType
 
     /**
-     * convert to json schema serializable
+     * Convert to JSON schema serializable.
      *
-     * @return: json serializable schema object
+     * @return JSON serializable schema object
      */
     static func toJsonSchema(): JsonSerializable {
         toSchema().toJson()
     }
 
     /**
-     * convert to json schema serializable with description
+     * Convert to JSON schema serializable with description.
      *
-     * @param description: schema description
-     * @return: json serializable schema object
+     * @param description schema description
+     * @return JSON serializable schema object
      */
     static func toJsonSchema(description: String): JsonSerializable {
         toSchema().toJson(description: description)

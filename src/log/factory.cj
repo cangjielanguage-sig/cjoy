@@ -16,19 +16,28 @@ import std.collection.ArrayList
 import std.sync.AtomicBool
 import stdx.log.{Logger, LogLevel, Attr, LogRecord}
 
+/**
+ * Function type for creating logger instances.
+ *
+ * Accepts a logger name and returns a Logger instance.
+ */
 public type LoggerCreatorFunc = (name: String) -> Logger
 
 /**
- * the logger facotry adapter for other logger framework
+ * Logger factory adapter for external logger frameworks.
+ *
+ * Allows registration of custom logger creators to integrate
+ * with third-party logging frameworks. If no creator is registered,
+ * the default ConsoleLogger is used.
  */
 public class JoyLoggerFactory {
     private static var _creator: ?LoggerCreatorFunc = None
 
     /**
-     * create a logger using creator or defualt ConsoleLogger
+     * Create a logger using registered creator or default ConsoleLogger.
      *
-     * @param name: the logger name
-     * @return: a logger instance
+     * @param name logger name
+     * @return a logger instance
      */
     public static func createLogger(name: String): Logger {
         if (let Some(c) <- _creator) {
@@ -39,25 +48,41 @@ public class JoyLoggerFactory {
     }
 
     /**
-     * register other logger framework
+     * Register external logger framework creator.
      *
-     * @param fn: the other logger framework creator
+     * Call this method to integrate with your preferred logging framework.
+     *
+     * @param fn logger creator function that accepts a name and returns a Logger instance
      */
     public static func registerCreator(fn: LoggerCreatorFunc): Unit {
         _creator = fn
     }
 }
 
+/**
+ * Default console logger implementation.
+ *
+ * Outputs log messages to stdout in a formatted way with
+ * timestamp, log level, thread name, and file/line information.
+ */
 class ConsoleLogger <: Logger {
     let _attrs = ArrayList<Attr>()
     var _level = LogLevel.INFO
     let _output: OutputStream
     let _closed = AtomicBool(false)
 
+    /**
+     * Create console logger with stdout as output.
+     */
     public init() {
         _output = getStdOut()
     }
 
+    /**
+     * Get or set log level.
+     *
+     * Messages below this level will not be logged.
+     */
     public mut prop level: LogLevel {
         get() {
             _level
@@ -67,6 +92,12 @@ class ConsoleLogger <: Logger {
         }
     }
 
+    /**
+     * Create new logger with additional attributes.
+     *
+     * @param attrs array of attributes to add
+     * @return new logger instance with attributes, or this if attrs is empty
+     */
     public func withAttrs(attrs: Array<Attr>): Logger {
         if (attrs.size > 0) {
             let nl = this.clone()
@@ -76,10 +107,18 @@ class ConsoleLogger <: Logger {
         return this
     }
 
+    /**
+     * Check if logger is closed.
+     *
+     * @return true if logger is closed
+     */
     public func isClosed(): Bool {
         _closed.load()
     }
 
+    /**
+     * Close logger and flush output.
+     */
     public func close(): Unit {
         if (isClosed()) {
             return
@@ -89,6 +128,14 @@ class ConsoleLogger <: Logger {
         }
     }
 
+    /**
+     * Log a record.
+     *
+     * Formats and writes the log record to the output stream.
+     * Format: timestamp level [thread][package/file:line] message
+     *
+     * @param record log record to write
+     */
     public func log(record: LogRecord): Unit {
         if (record.level < _level) {
             return

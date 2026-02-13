@@ -14,9 +14,17 @@ import std.collection.{ArrayList, HashMap, HashSet, map, forEach, any, filter, c
 import std.sort.sort
 
 /**
- * Bean dependency node
+ * Bean dependency node.
+ *
+ * Represents a bean type in the dependency graph,
+ * tracking its dependencies and dependents with depth calculation.
  */
 class BeanDepend <: Equatable<BeanDepend> & Hashable & ToString {
+    /**
+     * Create bean dependency node.
+     *
+     * @param beanType bean type name
+     */
     BeanDepend(let beanType: String,
         // dependent bean types
         let depends!: HashSet<BeanDepend> = HashSet(),
@@ -28,21 +36,40 @@ class BeanDepend <: Equatable<BeanDepend> & Hashable & ToString {
             var isClass!: Bool = false) {
     }
 
+    /**
+     * Generate hash code for this bean dependency.
+     *
+     * @return hash code
+     */
     public func hashCode(): Int64 {
         beanType.hashCode()
     }
 
+    /**
+     * Check equality with another bean dependency.
+     *
+     * @param rhs bean dependency to compare
+     * @return true if bean types are equal
+     */
     public operator func ==(rhs: BeanDepend): Bool {
         this.beanType == rhs.beanType
     }
 
+    /**
+     * Convert to string representation.
+     *
+     * @return string containing bean type and depth
+     */
     public func toString(): String {
         "{beanType:${beanType},depth:${depth}}"
     }
 }
 
 /**
- * Bean dependency manager
+ * Bean dependency manager.
+ *
+ * Manages the dependency graph for beans, calculating
+ * proper initialization order and detecting circular dependencies.
  */
 class BeanDependManager {
     // key: beanType
@@ -51,7 +78,7 @@ class BeanDependManager {
     private let _extends: HashMap<String, HashSet<String>> = HashMap()
 
     /**
-     * Get or create bean dependency node
+     * Get or create bean dependency node.
      *
      * @param beanType bean type name
      * @return bean dependency node
@@ -68,7 +95,7 @@ class BeanDependManager {
     }
 
     /**
-     * Add dependency relationship
+     * Add dependency relationship.
      *
      * @param beanType bean type name
      * @param depends array of bean type names this bean depends on
@@ -85,7 +112,7 @@ class BeanDependManager {
     }
 
     /**
-     * Add interface implementations
+     * Add interface implementations.
      *
      * @param beanType bean type name
      * @param interfaces array of interface type names this bean implements
@@ -101,7 +128,7 @@ class BeanDependManager {
     }
 
     /**
-     * Get class types by interface or class name
+     * Get class types by interface or class name.
      *
      * @param btype interface or class type name
      * @return hash set of class type names
@@ -111,11 +138,14 @@ class BeanDependManager {
     }
 
     /**
-     * Get sorted bean dependencies
+     * Get sorted bean dependencies.
+     *
+     * Calculates dependency depth and returns beans sorted
+     * in proper initialization order.
      *
      * @param onlyClass true to return only class beans, false to include interfaces
      * @return array of bean dependencies sorted by depth
-     * @throws IocException if exist depend cycle
+     * @throws IocException if circular dependency exists
      */
     func getSortedBeanDepends(onlyClass!: Bool = true): Array<BeanDepend> {
         let noSetDepth = _beanTypes.values() |> any {it => it.depth == Int.Max}
@@ -127,9 +157,8 @@ class BeanDependManager {
 
         let list = ArrayList<BeanDepend>()
         list.add(all: _beanTypes.values())
-        // 按深度排序，最底层排在最前面
+        // sort by depth, bottom-most beans come first
         sort(list, by: {a, b => a.depth.compare(b.depth)}, stable: true)
-
         if (onlyClass) {
             list |> filter {it => it.isClass} |> collectArray
         } else {
@@ -138,12 +167,12 @@ class BeanDependManager {
     }
 
     /**
-     * Set depth to 0 for beans with no dependencies
+     * Set depth to 0 for beans with no dependencies.
      *
-     * @throws IocException if not found any type with no dependencies
+     * @throws IocException if no bean with no dependencies exists (circular dependency)
      */
     private func setDepth0(): Unit {
-        // 先找到最底层，即没有任何依赖的Bean类型
+        // find bottom layer (beans with no dependencies)
         for ((k, v) in _beanTypes) {
             if (v.depends.isEmpty()) {
                 v.depth = 0
@@ -158,43 +187,45 @@ class BeanDependManager {
     }
 
     /**
-     * Add dependencies for interface types
+     * Add dependencies for interface types.
      *
-     * @throws IocException if not found implementation class
+     * Creates dependency relationships between interfaces and their implementing classes.
+     *
+     * @throws IocException if implementing class is not registered
      */
     private func addDependForInterface(): Unit {
-        // 过滤所有接口
+        // filter all interfaces
         _beanTypes.values() |> filter {it => !it.isClass} |> forEach {
-            // 根据接口找到实现类
+            // find implementing classes based on interface
             it: BeanDepend => match (_extends.get(it.beanType)) {
                 case Some(bts) =>
-                    // 构建接口到实现类的依赖关系
+                    // build interface-to-implementation class dependency relationship
                     for (klass in bts) {
                         match (_beanTypes.get(klass)) {
                             case Some(bd) => it.depends.add(bd)
-                            // 没有找到对应实现类的注册过其信息
+                            // haven't found corresponding implementation class registered
                             case _ => throw IocException(
-                            "not found the class `${klass}` implements inferface `${it.beanType}`")
+                                "not found class `${klass}` implements interface `${it.beanType}`")
                     }
                 }
-                // 没有没有找到任何实现类
+                // haven't found any implementing class
                 case _ =>
-                    // 注释掉异常表示支持接口可选依赖
-                    // throw IocException("not found any class implements inferface `${it.beanType}`")
+                    // commented out exception to support optional interface dependency
+                    // throw IocException("not found any class implements interface `${it.beanType}`")
                     ()
             }
         }
     }
 
     /**
-     * Recursively calculate depth for each bean type
+     * Recursively calculate depth for each bean type.
      *
-     * @param depth current current depth
-     * @throws IocException if not found any bean has no dependencies
+     * @param depth current depth being
+     * @throws IocException if circular dependency detected
      */
     private func recursiveDepth(depth: Int): Unit {
-        // 从下往上找到Bean类型，并修改Depth值，即所在深度
-        // 最下层深度为0，往上依次+1
+        // find beans going up and set Depth value (their depth in tree)
+        // bottom layer has depth 0, going up +1
         let notSetDepth = _beanTypes.values() |> filter {it => it.depth == Int.Max} |> collectHashSet
         if (notSetDepth.isEmpty()) {
             return
@@ -211,7 +242,7 @@ class BeanDependManager {
         }
 
         if (!found) {
-            throw IocException("not found any bean has no dependent, maybe exist depend cycle")
+            throw IocException("not found any bean (has no dependent), maybe exist depend cycle")
         }
         recursiveDepth(depth + 1)
     }

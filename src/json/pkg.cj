@@ -10,7 +10,7 @@
 
 package cjoy.json
 
-// reimport the dependent
+// Re-export commonly used types for JSON serialization
 public import std.time.DateTime
 public import std.io.ByteBuffer
 public import std.collection.{ArrayList, HashMap}

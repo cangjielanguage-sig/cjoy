@@ -16,7 +16,10 @@ import std.sync.{Mutex, AtomicBool}
 import cjoy.log.macros.*
 
 /**
- * Default application context implementation
+ * Default application context implementation.
+ *
+ * Provides thread-safe bean storage and retrieval using ConcurrentHashMap.
+ * Manages both named and typed bean lookup.
  */
 class DefaultApplicationContext <: ApplicationContext {
     private let _beans = ConcurrentHashMap<String, BeanLifecycle>()
@@ -28,10 +31,10 @@ class DefaultApplicationContext <: ApplicationContext {
     let _inited: AtomicBool = AtomicBool(false)
 
     /**
-     * Get bean by name
+     * Get bean by name.
      *
      * @param name bean name
-     * @return bean instance or None
+     * @return bean instance, or None if not found
      */
     public func getBean<T>(name: String): ?T {
         let res = _beans.get(name)
@@ -49,10 +52,10 @@ class DefaultApplicationContext <: ApplicationContext {
     }
 
     /**
-     * Get bean by type
+     * Get bean by type.
      *
-     * @return bean instance or None
-     * @throws IocException if exist multiple candidate
+     * @return bean instance, or None if not found
+     * @throws IocException if multiple candidates exist
      */
     public func getBean<T>(): ?T {
         let res = getBeansByType<T>()
@@ -66,7 +69,7 @@ class DefaultApplicationContext <: ApplicationContext {
     }
 
     /**
-     * Get all beans by type
+     * Get all beans by type.
      *
      * @return collection of bean instances
      */
@@ -75,11 +78,11 @@ class DefaultApplicationContext <: ApplicationContext {
     }
 
     /**
-     * Get bean by type name
+     * Get bean by type name.
      *
      * @param beanType bean type name
-     * @return bean instance or None
-     * @throws IocException if exist multiple candidate
+     * @return bean instance, or None if not found
+     * @throws IocException if multiple candidates exist
      */
     public func getBeanByTypeName<T>(beanType: String): ?T {
         let res = getBeanByTypeNameInner(beanType)
@@ -87,11 +90,11 @@ class DefaultApplicationContext <: ApplicationContext {
     }
 
     /**
-     * Get bean by type name
+     * Get bean by type name (internal).
      *
      * @param beanType bean type name
-     * @return bean lifecycle or None
-     * @throws IocException if exist multiple candidate
+     * @return bean lifecycle, or None if not found
+     * @throws IocException if multiple candidates exist
      */
     private func getBeanByTypeNameInner(beanType: String): ?BeanLifecycle {
         let classTypes = _beanDependManager.getClassType(beanType)
@@ -117,13 +120,13 @@ class DefaultApplicationContext <: ApplicationContext {
     }
 
     /**
-     * Get bean by type name and factory
+     * Get bean by type name and factory (internal).
      *
      * @param f bean factory
      * @param bt bean type name
      * @param classTypeSize number of class types
-     * @return bean lifecycle or None
-     * @throws IocException if exist multiple candidate
+     * @return bean lifecycle, or None if not found
+     * @throws IocException if multiple candidates exist
      */
     private func getBeanByTypeNameInner(f: BeanFactory, bt: String, classTypeSize: Int): ?BeanLifecycle {
         if (f.beanScope == SINGLETON) {
@@ -133,7 +136,7 @@ class DefaultApplicationContext <: ApplicationContext {
                 case _ => return None
             }
         } else {
-            // Prototype Bean只支持单个get
+            // Prototype Bean only supports single get
             if (classTypeSize == 1) {
                 let (_, bean) = f.create(this)
                 bean.afterInit()
@@ -145,10 +148,11 @@ class DefaultApplicationContext <: ApplicationContext {
     }
 
     /**
-     * Get all beans by type name
+     * Get all beans by type name.
      *
      * @param beanType bean type name
      * @return collection of bean instances
+     * @throws IocException if bean is not T type
      */
     public func getBeansByTypeName<T>(beanType: String): Collection<T> {
         let res = getBeansByTypeNameInner(beanType)
@@ -157,7 +161,7 @@ class DefaultApplicationContext <: ApplicationContext {
     }
 
     /**
-     * Get all beans by type name
+     * Get all beans by type name (internal).
      *
      * @param beanType bean type name
      * @return collection of bean lifecycles
@@ -180,7 +184,7 @@ class DefaultApplicationContext <: ApplicationContext {
     }
 
     /**
-     * Get all beans
+     * Get all beans.
      *
      * @return collection of all bean lifecycles
      */
@@ -194,7 +198,7 @@ class DefaultApplicationContext <: ApplicationContext {
     }
 
     /**
-     * Get beans by type
+     * Get beans by type (internal).
      *
      * @return array of beans matching type T
      */
@@ -212,7 +216,7 @@ class DefaultApplicationContext <: ApplicationContext {
     }
 
     /**
-     * Add bean to context
+     * Add bean to context.
      *
      * @param name bean name
      * @param beanType bean type name
@@ -226,9 +230,9 @@ class DefaultApplicationContext <: ApplicationContext {
     }
 
     /**
-     * Create all beans in dependency order
+     * Create all beans in dependency order.
      *
-     * @throws IocException if not found bean factory
+     * @throws IocException if bean factory not found
      */
     public func createAllBeans(): Unit {
         if (_inited.compareAndSwap(false, true)) {
@@ -237,7 +241,7 @@ class DefaultApplicationContext <: ApplicationContext {
             for (b in beans) {
                 match (_factories.get(b.beanType)) {
                     case Some(factory) =>
-                        // Prototype Bean 每次getBeanByTypeName都创建，不存储避免太多导致内存泄露
+                        // Prototype Bean creates new instance each time getBeanByTypeName is called, not stored to avoid memory leak
                         if (factory.beanScope == SINGLETON) {
                             let (name, bean) = factory.create(this)
                             @JoyLogInfo("[IOC] created bean, name=${name}, beanType=${b.beanType}")
@@ -255,7 +259,9 @@ class DefaultApplicationContext <: ApplicationContext {
     }
 
     /**
-     * Destroy all beans
+     * Destroy all beans.
+     *
+     * Invokes beforeDestroy on all beans and removes them from context.
      */
     public func destroyAllBeans(): Unit {
         let beans = getAllBeans()
