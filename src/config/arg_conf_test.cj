@@ -11,6 +11,7 @@
 package cjoy.config
 
 import std.collection.{HashMap, ArrayList}
+import cjoy.macros.*
 
 @Test
 public class ArgConfigTestCaseSuit {
@@ -20,6 +21,37 @@ public class ArgConfigTestCaseSuit {
         let data = loader.load()
         @Assert(cs(data["a"]), "1")
         @Assert(cs(data["b"]), "2")
+    }
+
+    @TestCase
+    public func testValueWithEqualSign(): Unit {
+        let loader = ArgConfigLoader(["-Da=1=2", "-Db=value=with=equals"])
+        let data = loader.load()
+        @Assert(cs(data["a"]), "1=2")
+        @Assert(cs(data["b"]), "value=with=equals")
+    }
+
+    @TestCase
+    public func testPriority(): Unit {
+        let loader1 = ArgConfigLoader(["-Da=1"], priorityNum: 10)
+        let loader2 = ArgConfigLoader(["-Da=2"], priorityNum: 20)
+        @Assert(loader1.priority, 10)
+        @Assert(loader2.priority, 20)
+    }
+
+    @TestCase
+    public func testEmptyArgs(): Unit {
+        let loader = ArgConfigLoader([])
+        let data = loader.load()
+        @Assert(data.size, 0)
+    }
+
+    @TestCase
+    public func testArgWithSpecialChars(): Unit {
+        let loader = ArgConfigLoader(["-Da=!@#$%^&*()", "-Db=你好世界"])
+        let data = loader.load()
+        @Assert(cs(data["a"]), "!@#$%^&*()")
+        @Assert(cs(data["b"]), "你好世界")
     }
 
     @TestCase

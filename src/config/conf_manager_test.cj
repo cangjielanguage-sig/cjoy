@@ -11,7 +11,7 @@
 package cjoy.config
 
 import std.collection.{HashMap, ArrayList}
-import std.env.getVariable
+import std.env.*
 import cjoy.bind.*
 import cjoy.macros.*
 
@@ -201,6 +201,55 @@ public class ConfigManagerTestCaseSuit {
         @Assert(manager.getValue("joy.server.address", ""), "0.0.0.0")
         @Assert(manager.getValue("joy.server.port", ""), "18882")
         @Assert(manager.getValue("joy.server.http.remote-ip-header", ""), "X-FORWARDED-FOR")
+    }
+
+    @TestCase
+    public func testEnvVariableConfig(): Unit {
+        let key = "TEST_CONFIG_VAR"
+        let value = "test_value"
+        let manager = ConfigManager()
+        @Assert(manager.hashKey("PATH"), true) // 检查是否能访问到 PATH 环境变量
+    }
+
+    @TestCase
+    public func testConfigNotFound(): Unit {
+        let manager = ConfigManager()
+        @Assert(manager.hashKey("nonexistent.config"), false)
+        @Assert(manager.getValue("nonexistent.config") ?? "", "")
+        @Assert(manager.getValue("nonexistent.config", "default"), "default")
+        match (manager.bind<Int>("nonexistent.config")) {
+            case None => @Assert(true)
+            case Some(_) => @Fail("should return None for nonexistent config")
+        }
+    }
+
+    @TestCase
+    public func testBindMoreTypes(): Unit {
+        let loader = ArgConfigLoader(["-Db=true", "-Df=3.14", "-Ds=test_string"])
+        let manager = ConfigManager()
+        manager.addLoader(loader)
+
+        @Assert(manager.bind<Bool>("b") ?? false, true)
+        @Assert(manager.bind<Float64>("f") ?? 0.0, 3.14)
+        @Assert(manager.bind<String>("s") ?? "", "test_string")
+    }
+
+    @TestCase
+    public func testResolveComplexExpressions(): Unit {
+        let loader = ArgConfigLoader(["-Da=10", "-Db=20", #"-Dc=${a}+${b}"#, #"-Dd=${c}*2"#])
+        let manager = ConfigManager()
+        manager.addLoader(loader)
+
+        @Assert(manager.resolve(#"${a}+${b}"#), "10+20")
+        @Assert(manager.resolve(#"${c}"#), "10+20")
+        @Assert(manager.resolve(#"${d}"#), "10+20*2")
+    }
+
+    @TestCase
+    public func testResolveWithDefaultValue(): Unit {
+        let manager = ConfigManager()
+        @Assert(manager.resolve(#"${nonexistent:default_value}"#), "default_value")
+        @Assert(manager.resolve(#"${missing.config:123}"#), "123")
     }
 }
 

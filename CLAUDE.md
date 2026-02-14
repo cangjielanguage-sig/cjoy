@@ -25,10 +25,11 @@ cjpm test -i --filter=FileServerTestCaseSuit.testStaticFile
 ```bash
 cd examples
 cjpm run --name examples.simple
-cjpm run --name examples.macros
-cjpm run --name examples.rest
-cjpm run --name examples.tls
 ```
+
+## Syntax
+
+Cangjie language syntax refers to [cj_syntax.md](doc/dev_guide/cj_syntax.md).
 
 ## Architecture Overview
 

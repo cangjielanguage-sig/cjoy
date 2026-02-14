@@ -1,0 +1,12 @@
+{
+    "app": {
+        "title": "测试应用",
+        "description": "这是一个包含特殊字符的\"测试\"应用！",
+        "keywords": ["测试", "应用", "特殊字符"],
+        "config": {
+            "path": "/usr/local/app/测试目录",
+            "encoding": "UTF-8",
+            "maxSize": "100MB"
+        }
+    }
+}
