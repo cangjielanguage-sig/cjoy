@@ -24,8 +24,8 @@ public interface SigningMethod {
     /**
      * signing the token using the key with the algorithm
      *
-     * @param signing: the string will be sign
-     * @param key: the key of algorithm, like Array<Byte> or RSAPrivateKey
+     * @param signing the string will be sign
+     * @param key the key of algorithm, like Array<Byte> or RSAPrivateKey
      * @throws JwtException if sige failed
      */
     func sign(signing: String, key: Any): Array<Byte>
@@ -33,9 +33,9 @@ public interface SigningMethod {
     /**
      * verify the token using the key with the algorithm
      *
-     * @param signing: the signing string
-     * @param sig: the signed data for checking
-     * @param key: the key of algorithm, like Array<Byte> or RSAPublicKey
+     * @param signing the signing string
+     * @param sig the signed data for checking
+     * @param key the key of algorithm, like Array<Byte> or RSAPublicKey
      * @throws JwtException if verify failed
      */
     func verify(signing: String, sig: Array<Byte>, key: Any): Unit
@@ -47,7 +47,7 @@ public class SigningMethods {
     /**
      * register signing method
      *
-     * @param alg: algorithm identifier
+     * @param alg algorithm identifier
      * @param method: signing method
      */
     public static func register(alg: String, method: SigningMethod): Unit {
@@ -57,8 +57,8 @@ public class SigningMethods {
     /**
      * get signing method by algorithm
      *
-     * @param alg: algorithm identifier
-     * @return: signing method or None if not found
+     * @param alg algorithm identifier
+     * @return signing method or None if not found
      */
     public static func getMethod(alg: String): ?SigningMethod {
         METHODS.get(alg)

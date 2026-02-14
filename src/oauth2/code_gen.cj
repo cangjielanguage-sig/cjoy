@@ -17,9 +17,15 @@ import stdx.crypto.crypto.SecureRandom
 import cjoy.utils.{rawBase64URLEncode}
 
 /**
- * the interface to generate the authorization code
+ * The interface to generate authorization codes
  */
 public interface CodeGenerate {
+    /**
+     * Generates an authorization code
+     *
+     * @param data The basic data for code generation
+     * @return The generated authorization code
+     */
     func generate(data: GenerateBasic): String
 }
 
@@ -28,10 +34,10 @@ public interface CodeGenerate {
  */
 public class SecureRandCodeGenerate <: CodeGenerate {
     /**
-     * generate authorization code using secure random
+     * Generates an authorization code using secure random
      *
-     * @param data: the basic data for generation
-     * @return: the generated authorization code
+     * @param data The basic data for generation
+     * @return The generated authorization code
      */
     public func generate(data: GenerateBasic): String {
         let buffer = ByteBuffer()

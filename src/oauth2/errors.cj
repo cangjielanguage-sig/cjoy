@@ -13,9 +13,16 @@ package cjoy.oauth2
 import std.collection.HashMap
 
 /**
- * Error information for OAuth2
+ * ErrorInfo represents error information for OAuth2
  */
 public class ErrorInfo {
+    /**
+     * Constructs an ErrorInfo instance
+     *
+     * @param statusCode HTTP status code
+     * @param code Error code
+     * @param description Error description
+     */
     public ErrorInfo(
         public var statusCode!: UInt16 = 0,
         public var code!: String = "",
@@ -24,22 +31,40 @@ public class ErrorInfo {
 }
 
 /**
- * OAuth2 exception
+ * OAuthException represents an OAuth2 exception
  */
 public class OAuthException <: Exception {
+    /**
+     * Constructs an OAuthException instance with error information
+     *
+     * @param errorInfo Error information
+     */
     public OAuthException(public let errorInfo: ErrorInfo) {
         super(errorInfo.description)
     }
 
+    /**
+     * Constructs an OAuthException instance with a message
+     *
+     * @param message Exception message
+     */
     public init(message: String) {
         this(ErrorInfo(statusCode: 401, description: message))
     }
 }
 
 /**
- * error response
+ * ErrorResponse represents an OAuth2 error response
  */
 public class ErrorResponse {
+    /**
+     * Constructs an ErrorResponse instance
+     *
+     * @param errorInfo Error information
+     * @param uri Error URI
+     * @param error Error code
+     * @param header Response headers
+     */
     public ErrorResponse(
         public let errorInfo: ErrorInfo,
         public var uri!: String = "",

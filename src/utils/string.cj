@@ -14,16 +14,16 @@ protected interface StrExt {
     /**
      * splits string by byte separator
      *
-     * @param b: separator byte
-     * @return: tuple of (left part, right part, found flag)
+     * @param b separator byte
+     * @return tuple of (left part, right part, found flag)
      */
     func cut(b: Byte): (String, String, Bool)
 
     /**
      * finds index of first byte matching predicate
      *
-     * @param f: predicate function
-     * @return: index of first matching byte, or -1 if not found
+     * @param f predicate function
+     * @return index of first matching byte, or -1 if not found
      */
     func indexFunc(f: (x: Byte) -> Bool): Int
 }
@@ -49,8 +49,8 @@ extend String <: StrExt {
 /**
  * checks if byte is a hexadecimal character (0-9, a-f, A-F)
  *
- * @param c: the byte to check
- * @return: true if byte is hex character
+ * @param c the byte to check
+ * @return true if byte is hex character
  */
 protected func ishex(c: Byte): Bool {
     match {
@@ -64,8 +64,8 @@ protected func ishex(c: Byte): Bool {
 /**
  * converts hex character byte to its numeric value
  *
- * @param c: hex character byte (0-9, a-f, A-F)
- * @return: numeric value 0-15, or 0 if not a hex character
+ * @param c hex character byte (0-9, a-f, A-F)
+ * @return numeric value 0-15, or 0 if not a hex character
  */
 protected func unhex(c: Byte): Byte {
     match {
@@ -79,8 +79,8 @@ protected func unhex(c: Byte): Byte {
 /**
  * converts CamelCase string to snake_case string
  *
- * @param str: input string in CamelCase
- * @return: string in snake_case format
+ * @param str input string in CamelCase
+ * @return string in snake_case format
  */
 protected func snakeCase(str: String): String {
     let arr = str.toRuneArray()
@@ -104,8 +104,8 @@ protected func snakeCase(str: String): String {
 /**
  * checks if byte is an ASCII whitespace character
  *
- * @param b: the byte to check
- * @return: true if byte is space, tab, newline, or carriage return
+ * @param b the byte to check
+ * @return true if byte is space, tab, newline, or carriage return
  */
 protected func isASCIISpace(b: Byte): Bool {
     return b == b' ' || b == b'\t' || b == b'\n' || b == b'\r'
@@ -114,8 +114,8 @@ protected func isASCIISpace(b: Byte): Bool {
 /**
  * checks if byte is an ASCII letter character
  *
- * @param b: the byte to check
- * @return: true if byte is a-z or A-Z
+ * @param b the byte to check
+ * @return true if byte is a-z or A-Z
  */
 protected func isASCIILetter(b: Byte): Bool {
     let x = b | 0x20 // make lower case
@@ -125,8 +125,8 @@ protected func isASCIILetter(b: Byte): Bool {
 /**
  * trims ASCII whitespace from both ends of byte array
  *
- * @param bs: input byte array
- * @return: byte array with leading/trailing whitespace removed
+ * @param bs input byte array
+ * @return byte array with leading/trailing whitespace removed
  */
 protected func trimBytes(bs: Array<Byte>): Array<Byte> {
     var x = bs
@@ -142,8 +142,8 @@ protected func trimBytes(bs: Array<Byte>): Array<Byte> {
 /**
  * trims ASCII whitespace from both ends of string
  *
- * @param s: input string
- * @return: string with leading/trailing whitespace removed
+ * @param s input string
+ * @return string with leading/trailing whitespace removed
  */
 protected func trimString(s: String): String {
     var x = s

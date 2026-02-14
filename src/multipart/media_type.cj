@@ -18,6 +18,10 @@ import cjoy.utils.{StrExt, ishex, unhex}
 
 /**
  * Media type parser for Content-Type and Content-Disposition headers
+ *
+ * JoyMediaType parses media type values and optional parameters according to RFC 1521.
+ * Media types are used in Content-Type and Content-Disposition headers (RFC 2183).
+ * The parser handles RFC 2231 parameter continuation and encoding.
  */
 public class JoyMediaType {
     private static let ERR = JoyMediaType("")
@@ -27,16 +31,15 @@ public class JoyMediaType {
     JoyMediaType(public let mediaType: String) {}
 
     /**
-     * parses a media type value and any optional
-     * parameters, per RFC 1521. Media types are the values in
-     * Content-Type and Content-Disposition headers (RFC 2183).
-     * On success, parse returns the media type converted
-     * to lowercase and trimmed of white space and a non-nil map.
-     * If there is an error parsing the optional parameter,
-     * the media type will be returned along with the empty mediaType
+     * Parses a media type value and any optional parameters, per RFC 1521
      *
-     * @param str: the media type strng
-     * @return JoyMediaType the parsed media type
+     * Media types are the values in Content-Type and Content-Disposition headers (RFC 2183).
+     * On success, parse returns the media type converted to lowercase and trimmed of white space,
+     * along with any parsed parameters. If there is an error parsing the parameters,
+     * an empty media type will be returned.
+     *
+     * @param str The media type string to parse
+     * @return The parsed JoyMediaType instance
      */
     public static func parse(str: String): JoyMediaType {
         let (base, _, _) = str.cut(b';')

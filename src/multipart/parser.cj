@@ -20,7 +20,10 @@ const PS_BODY: ParseState = 1
 const PS_END: ParseState = 2
 
 /**
- * parser for multi part content
+ * Parser for multipart content
+ *
+ * JoyMultiPartParser is responsible for parsing multipart content streams
+ * according to the multipart MIME specification.
  */
 public class JoyMultiPartParser <: Iterable<JoyMultiPart> {
     let _config: JoyMultiPartConfig
@@ -36,6 +39,14 @@ public class JoyMultiPartParser <: Iterable<JoyMultiPart> {
     private var _partsRead: Int = 0
     private let _parts = ArrayList<JoyMultiPart>()
 
+    /**
+     * Initializes a new instance of JoyMultiPartParser
+     *
+     * @param config The multipart config
+     * @param handler The handler to process parts
+     * @param inputStream The input stream to parse
+     * @param boundary The boundary string for multipart parsing
+     */
     public init(config: JoyMultiPartConfig, handler: JoyMultiPartHandler, inputStream: InputStream, boundary: String) {
         _config = config
         _handler = handler
@@ -50,7 +61,10 @@ public class JoyMultiPartParser <: Iterable<JoyMultiPart> {
     }
 
     /**
-     * parse the multi parts content
+     * Parses the multipart content from the input stream
+     *
+     * This method reads and parses all multipart parts from the input stream.
+     * Each part is processed by the configured handler.
      */
     public func parseParts(): Unit {
         while (let Some(line) <- _buffer.readUntil(b'\n')) {
@@ -147,19 +161,19 @@ public class JoyMultiPartParser <: Iterable<JoyMultiPart> {
     }
 
     /**
-     * get iterator of multi parts
+     * Gets the iterator of parsed multipart parts
      *
-     * @return: iterator of JoyMultiPart
+     * @return Iterator of JoyMultiPart instances
      */
     public func iterator(): Iterator<JoyMultiPart> {
         _parts.iterator()
     }
 
     /**
-     * get part by name
+     * Gets a specific part by name
      *
-     * @param name:  part name
-     * @return: part or None if not found
+     * @param name The name of the part to retrieve
+     * @return The JoyMultiPart instance or None if not found
      */
     public func getPart(name: String): ?JoyMultiPart {
         for (p in _parts) {

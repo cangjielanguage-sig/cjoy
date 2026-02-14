@@ -43,63 +43,63 @@ public interface BeanLifecycle {
  */
 public interface ApplicationContext {
     /**
-     * Get bean by name from application context.
+     * Gets a bean by name from the application context
      *
-     * @param name name of bean
-     * @return bean instance, or None if not found
+     * @param name The name of the bean to retrieve
+     * @return The bean instance, or None if not found
      */
     func getBean<T>(name: String): ?T
 
     /**
-     * Get bean by type from application context.
+     * Gets a bean by type from the application context
      *
-     * @return bean instance, or None if not found
-     * @throws IocException if multiple candidates exist
+     * @return The bean instance, or None if not found
+     * @throws IocException If multiple candidates exist
      */
     func getBean<T>(): ?T
 
     /**
-     * Get all beans by type from application context.
+     * Gets all beans by type from the application context
      *
-     * @return collection of bean instances matching type T
+     * @return Collection of bean instances matching type T
      */
     func getBeans<T>(): Collection<T>
 
     /**
-     * Get bean by type name from application context.
+     * Gets a bean by type name from the application context
      *
-     * Will create new bean if bean scope is PROTOTYPE.
+     * Will create a new bean if the bean scope is PROTOTYPE
      *
-     * @param beanType type name of bean
-     * @return bean instance (existing or newly created), or None if not found
-     * @throws IocException if bean factory not found
+     * @param beanType The type name of the bean
+     * @return The bean instance (existing or newly created), or None if not found
+     * @throws IocException If bean factory not found
      */
     func getBeanByTypeName<T>(beanType: String): ?T
 
     /**
-     * Get beans by type name from application context.
+     * Gets beans by type name from the application context
      *
-     * Will throw IocException if bean scope is PROTOTYPE.
+     * Will throw IocException if bean scope is PROTOTYPE
      *
-     * @param beanType type name of bean
-     * @return collection of bean instances
-     * @throws IocException if bean factory not found or is prototype
+     * @param beanType The type name of the bean
+     * @return Collection of bean instances
+     * @throws IocException If bean factory not found or is prototype
      */
     func getBeansByTypeName<T>(beanType: String): Collection<T>
 
     /**
-     * Get all beans from application context.
+     * Gets all beans from the application context
      *
-     * @return collection of all bean instances implementing BeanLifecycle
+     * @return Collection of all bean instances implementing BeanLifecycle
      */
     func getAllBeans(): Collection<BeanLifecycle>
 
     /**
-     * Add a bean to application context.
+     * Adds a bean to the application context
      *
-     * @param name name of bean
-     * @param beanType type name of bean
-     * @param bean bean instance implementing BeanLifecycle
+     * @param name The name of the bean
+     * @param beanType The type name of the bean
+     * @param bean The bean instance implementing BeanLifecycle
      */
     func addBean(name: String, beanType: String, bean: BeanLifecycle): Unit
 }

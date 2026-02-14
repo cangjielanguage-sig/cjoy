@@ -17,8 +17,8 @@ import std.time.DateTime
 /**
  * casts value to specified type
  *
- * @param t: value to cast
- * @return: value casted to type R
+ * @param t value to cast
+ * @return value casted to type R
  */
 protected func cast<R>(t: Any): R {
     (t as R).getOrThrow()
@@ -27,8 +27,8 @@ protected func cast<R>(t: Any): R {
 /**
  * converts ArrayList<T> to ArrayList<R> recursively
  *
- * @param list: input list to convert
- * @return: converted list with nested structures also converted
+ * @param list input list to convert
+ * @return converted list with nested structures also converted
  */
 protected func converterList<T, R>(list: ArrayList<T>): ArrayList<R> {
     let res = ArrayList<R>()

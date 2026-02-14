@@ -19,32 +19,32 @@ public interface Headers {
     /**
      * add header
      *
-     * @param name: header name
-     * @param value: header value
-     * @return: headers
+     * @param name header name
+     * @param value header value
+     * @return headers
      */
     func header(name: String, value: JsonSerializable): Headers
 
     /**
      * get header as string
      *
-     * @param name: header name
-     * @return: header value or None
+     * @param name header name
+     * @return header value or None
      */
     func getString(name: String): ?String
 
     /**
      * get header value
      *
-     * @param name: header name
-     * @return: header value or None
+     * @param name header name
+     * @return header value or None
      */
     func getValue<T>(name: String): ?T
 
     /**
      * get algorithm header
      *
-     * @return: algorithm
+     * @return algorithm
      */
     prop alg: String
 }

@@ -202,7 +202,7 @@ public class BeanDependManagerTestCaseSuit {
             manager.getSortedBeanDepends()
             @Fail("shoud throw a exception")
         } catch (ex: IocException) {
-            @Assert(ex.message.contains("not found the class `x` implements inferface"))
+            @Assert(ex.message.contains("not found class `x` implements interface `i2a`"))
         }
     }
 }

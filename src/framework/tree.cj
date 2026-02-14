@@ -15,19 +15,43 @@ import std.sort.sort
 import std.collection.{ArrayList, HashMap}
 import cjoy.log.macros.*
 
+/**
+ * Represents a route endpoint that stores handler, pattern and parameter keys
+ *
+ * @param T The type of the handler
+ */
 class Endpoint<T> <: ToString {
+    /**
+     * Creates a new endpoint instance
+     *
+     * @param handler The route handler
+     * @param pattern The URL pattern
+     * @param paramKeys The parameter keys for the route
+     */
     Endpoint(let handler: T, let pattern: String, let paramKeys: Array<String>) {
     }
 
+    /**
+     * Converts the endpoint to a string representation
+     *
+     * @return String representation of the endpoint
+     */
     public func toString(): String {
         return "(pattern:${pattern},paramKeys:${paramKeys})"
     }
 }
 
+/**
+ * Type alias for endpoints map, key is HTTP method, value is Endpoint
+ *
+ * @param T The type of the handler
+ */
 type Endpoints<T> = HashMap<String, Endpoint<T>>
 
 /**
- * routing info
+ * Route information that stores matched route data
+ *
+ * @param T The type of the handler
  */
 public class RouteInfo<T> {
     public RouteInfo(
@@ -107,6 +131,14 @@ public class TreeNode<T> {
     // first byte of the child prefix
     var _tail: Byte = b'\0'
 
+    /**
+     * Creates a new tree node with specified type, label, prefix and tail
+     *
+     * @param cat The node type (static, regex, param, catchAll)
+     * @param label The first byte of the prefix
+     * @param prefix The common prefix for this node
+     * @param tail The first byte of the child prefix
+     */
     init(cat: NodeType, label: Byte, prefix: String, tail!: Byte = b'\0') {
         _type = cat
         _label = label
@@ -114,15 +146,33 @@ public class TreeNode<T> {
         _tail = tail
     }
 
+    /**
+     * Creates a new static tree node with default values
+     */
     public init() {
         this(NT_STATIC, b'\0', "")
     }
 
+    /**
+     * Sets the endpoint for a specific HTTP method
+     *
+     * @param method The HTTP method
+     * @param pattern The URL pattern
+     * @param handler The route handler
+     */
     private func setEndpoint(method: String, pattern: String, handler: T) {
         let paramKeys = Segment.parseParamKeys(pattern)
         _endpoints.add(method, Endpoint(handler, pattern, paramKeys))
     }
 
+    /**
+     * Replaces a child node with the given label and tail
+     *
+     * @param label The label byte of the child to replace
+     * @param tail The tail byte of the child to replace
+     * @param child The new child node
+     * @throws IllegalStateException if the child to replace is not found
+     */
     private func replaceChild(label: Byte, tail: Byte, child: TreeNode<T>) {
         let ns = _children[child._type]
         for (i in 0..ns.size) {
@@ -136,6 +186,13 @@ public class TreeNode<T> {
         throw IllegalStateException("replace missing child")
     }
 
+    /**
+     * Adds a child node with the given prefix to this node
+     *
+     * @param child The child node to add
+     * @param prefix The prefix for the child node
+     * @return The added child node
+     */
     private func addChild(child: TreeNode<T>, prefix: String): TreeNode<T> {
         var search = prefix
         var hn = child
@@ -186,9 +243,9 @@ public class TreeNode<T> {
     /**
      * add a route to the tree
      *
-     * @param method: the HTTP method (GET, POST, etc.)
-     * @param pattern: the URL pattern (e.g., "/users/{id}")
-     * @param handler: the route handler
+     * @param method the HTTP method (GET, POST, etc.)
+     * @param pattern the URL pattern (e.g., "/users/{id}")
+     * @param handler the route handler
      * @return the tree node
      */
     public func addRoute(method: String, pattern: String, handler: T): TreeNode<T> {
@@ -262,6 +319,14 @@ public class TreeNode<T> {
         throw IllegalStateException("can not run to this line")
     }
 
+    /**
+     * Finds a static route in the given tree nodes
+     *
+     * @param nds The tree nodes to search in
+     * @param search The search path
+     * @param label The label byte to match
+     * @return Tuple of (found node, remaining search path)
+     */
     private func findStaticRoute(nds: ArrayList<TreeNode<T>>, search: String, label: Byte): (?TreeNode<T>, String) {
         let en = nds.findEdge(label)
         if (let Some(n) <- en) {
@@ -273,6 +338,16 @@ public class TreeNode<T> {
         return (None, "")
     }
 
+    /**
+     * Finds a param or regex route in the given tree nodes
+     *
+     * @param ri The route info to store matched data
+     * @param nds The tree nodes to search in
+     * @param nt The node type to search for
+     * @param search The search path
+     * @param method The HTTP method
+     * @return Tuple of (found node, remaining search path, is matched)
+     */
     private func findParamOrRegexRoute(ri: RouteInfo<T>, nds: ArrayList<TreeNode<T>>, nt: NodeType, search: String,
         method: String): (?TreeNode<T>, String, Bool) {
         var xsearch = search
@@ -321,6 +396,15 @@ public class TreeNode<T> {
         return (ret, xsearch, false)
     }
 
+    /**
+     * Finds the route handler by method in the given tree node
+     *
+     * @param ri The route info to store matched data
+     * @param xn The tree node to search in
+     * @param method The HTTP method
+     * @param search The remaining search path
+     * @return The found tree node or None if not found
+     */
     private func findRouteByMethod(ri: RouteInfo<T>, xn: TreeNode<T>, method: String, search: String): ?TreeNode<T> {
         if (search.isEmpty() && xn.isLeaf()) {
             let epOpt = xn._endpoints.get(method)
@@ -338,6 +422,14 @@ public class TreeNode<T> {
         xn.findRoute(ri, method, search)
     }
 
+    /**
+     * Finds the route handler by method and path in the tree
+     *
+     * @param ri The route info to store matched data
+     * @param method The HTTP method
+     * @param path The URL path to search for
+     * @return The found tree node or None if not found
+     */
     func findRoute(ri: RouteInfo<T>, method: String, path: String): ?TreeNode<T> {
         var search = path
         let label = if (search != "") {
@@ -398,9 +490,9 @@ public class TreeNode<T> {
     /**
      * find the route handler by method and path
      *
-     * @param ri: the route info to store matched route data
-     * @param method: the HTTP method
-     * @param path: the URL path
+     * @param ri the route info to store matched route data
+     * @param method the HTTP method
+     * @param path the URL path
      * @return the tree node if found, None otherwise
      */
     public func findRouteHandler(ri: RouteInfo<T>, method: String, path: String): ?TreeNode<T> {
@@ -416,6 +508,12 @@ public class TreeNode<T> {
         rn
     }
 
+    /**
+     * Checks if the tree contains a route with the given pattern
+     *
+     * @param pattern The route pattern to check
+     * @return True if the pattern exists, False otherwise
+     */
     func findPattern(pattern: String): Bool {
         for (nds in _children) {
             if (nds.isEmpty()) {
@@ -450,6 +548,13 @@ public class TreeNode<T> {
         false
     }
 
+    /**
+     * Finds an edge in the children nodes by type and label
+     *
+     * @param ntype The node type to search for
+     * @param label The label byte to search for
+     * @return The found tree node or None if not found
+     */
     private func findEdge(ntype: NodeType, label: Byte): ?TreeNode<T> {
         let nds = _children[ntype]
         return if (ntype == NT_CATCH_ALL) {
@@ -459,10 +564,24 @@ public class TreeNode<T> {
         }
     }
 
+    /**
+     * Checks if the node is a leaf node (has endpoints)
+     *
+     * @return True if the node is a leaf, False otherwise
+     */
     private func isLeaf(): Bool {
         return !_endpoints.isEmpty()
     }
 
+    /**
+     * Gets an edge from the children nodes by type, label, tail and prefix
+     *
+     * @param nt The node type to search for
+     * @param label The label byte to search for
+     * @param tail The tail byte to search for
+     * @param prefix The prefix to match (for regex nodes)
+     * @return The found tree node or None if not found
+     */
     private func getEdge(nt: NodeType, label: Byte, tail: Byte, prefix: String): ?TreeNode<T> {
         let nds = _children[nt]
         for (node in nds) {
@@ -476,6 +595,14 @@ public class TreeNode<T> {
         None
     }
 
+    /**
+     * Recursively dumps the tree structure to a string builder
+     *
+     * @param builder The string builder to write to
+     * @param layer The current layer/depth in the tree
+     * @param prefix The prefix string for indentation
+     * @param node The current tree node to dump
+     */
     private static func dumpTreeInner(builder: StringBuilder, layer: Int, prefix: String, node: TreeNode<T>): Unit {
         var num = 0
         for (nds in node._children) {
@@ -513,6 +640,13 @@ public class TreeNode<T> {
         builder.toString()
     }
 
+    /**
+     * Finds the length of the longest common prefix between two strings
+     *
+     * @param s1 The first string to compare
+     * @param s2 The second string to compare
+     * @return The length of the longest common prefix
+     */
     private static func longestPrefix(s1: String, s2: String): Int {
         let len = min(s1.size, s2.size)
         var idx = 0
@@ -527,9 +661,24 @@ public class TreeNode<T> {
     }
 }
 
+/**
+ * Type alias for list of tree nodes
+ *
+ * @param T The type of the handler
+ */
 type TreeNodes<T> = ArrayList<TreeNode<T>>
 
+/**
+ * Extension functions for TreeNodes
+ *
+ * @param T The type of the handler
+ */
 extend<T> TreeNodes<T> {
+    /**
+     * Sorts the tree nodes by label and tail delimiter
+     * Static nodes are sorted by label
+     * Param nodes with '/' tail are pushed to the end
+     */
     func sortByLableTail() {
         // sort the list of nodes by label
         sort(this, by: {a, b => a._label.compare(b._label)})
@@ -543,6 +692,12 @@ extend<T> TreeNodes<T> {
         }
     }
 
+    /**
+     * Finds an edge in the tree nodes list by label using binary search
+     *
+     * @param label The label byte to search for
+     * @return The found tree node or None if not found
+     */
     func findEdge(label: Byte): ?TreeNode<T> {
         let num = this.size
         var idx = 0
@@ -568,6 +723,9 @@ extend<T> TreeNodes<T> {
     }
 }
 
+/**
+ * Represents a segment of a route pattern, used for parsing and matching routes
+ */
 class Segment {
     var typ: NodeType = NT_STATIC
     var key: String = ""
@@ -618,6 +776,13 @@ class Segment {
         pe
     }
 
+    /**
+     * Parses the next segment from the given pattern
+     *
+     * @param pattern The route pattern to parse
+     * @return The parsed segment
+     * @throws IllegalArgumentException if the pattern is invalid
+     */
     static func parseNext(pattern: String): Segment {
         let seg = Segment()
         seg.parse(pattern)
@@ -625,7 +790,10 @@ class Segment {
     }
 
     /**
-     * @throws IllegalArgumentException if the patten is invalid
+     * Parses the segment from the given pattern
+     *
+     * @param pattern The route pattern to parse
+     * @throws IllegalArgumentException if the pattern is invalid
      */
     private func parse(pattern: String): Unit {
         let ps = pattern.indexOf(b'{') ?? -1
@@ -674,7 +842,11 @@ class Segment {
     }
 
     /**
-     * @throws IllegalArgumentException if the patten contains duplicate param key
+     * Parses the parameter keys from a route pattern
+     *
+     * @param pattern The route pattern to parse
+     * @return Array of parameter keys
+     * @throws IllegalArgumentException if the pattern contains duplicate param keys or is invalid
      */
     static func parseParamKeys(pattern: String): Array<String> {
         var pat = pattern

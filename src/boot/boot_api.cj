@@ -180,7 +180,7 @@ public class JoyBoot {
             properties.name
         }
 
-        let joyCfg = creatJoyConfig(properties)
+        let joyCfg = createJoyConfig(properties)
         let joy = Joy.create(name: name)
 
         // 注册生成的handlers
@@ -264,7 +264,7 @@ private func loadJsonConfig(config: Config, cfgRootPath: String, profile: String
     }
 }
 
-private func creatJoyConfig(properties: JoyProperties): JoyConfig {
+private func createJoyConfig(properties: JoyProperties): JoyConfig {
     @JoyLogInfo("server.http.caseInsensitive=${properties.server.http.caseInsensitive}")
     @JoyLogInfo("server.http.escapeAddedRoutes=${properties.server.http.escapeAddedRoutes}")
     @JoyLogInfo("server.http.remoteIpHeaders=${properties.server.http.remoteIpHeaders}")

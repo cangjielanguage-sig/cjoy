@@ -17,30 +17,32 @@ import cjoy.json.*
 import cjoy.log.macros.*
 
 /**
- * the interface to verify client password for OAuth2 authorization
+ * ClientPasswordVerifier interface to verify client password for OAuth2 authorization
  */
 public interface ClientPasswordVerifier {
     /**
-     * verify the client password
+     * Verifies the client password
      *
-     * @param client:  the client information
-     * @param pwd:  the password to verify
+     * @param client The client information
+     * @param pwd The password to verify
      * @return true if password is valid, false otherwise
      */
     func verifyPassword(client: ClientInfo, pwd: String): Bool
 }
 
 /**
- * validate URI function
+ * ValidateURIFunc type for validating URI
  *
- * @param baseURI:  base URI
- * @param redirectURI:  redirect URI to validate
+ * @param baseURI Base URI
+ * @param redirectURI Redirect URI to validate
  * @throws OAuthException if redirect URI is invalid
  */
 public type ValidateURIFunc = (baseURI: String, redirectURI: String) -> Unit
 
 /**
- * @throws  OAuthException
+ * Default implementation of ValidateURIFunc
+ *
+ * @throws OAuthException if redirect URI is invalid
  */
 func defaultValidateURIFunc(baseURI: String, redirectURI: String): Unit {
     let base = URL.parse(baseURI)
@@ -51,149 +53,153 @@ func defaultValidateURIFunc(baseURI: String, redirectURI: String): Unit {
 }
 
 /**
- * extract extension handler function
+ * ExtractExtensionHandler type for extracting extension fields from token generation requests
  *
- * @param request:  token generate request
- * @param tokenInfo:  token information
+ * @param request Token generate request
+ * @param tokenInfo Token information to populate
  */
 public type ExtractExtensionHandler = (request: TokenGenerateRequest, tokenInfo: TokenInfo) -> Unit
 
 /**
- * get client info from request, return clientID, clientSecret
+ * ClientInfoHandleFunc type for getting client info from requests
  *
- * @param ctx:  context
- * @return tuple of client ID and client secret
+ * @param ctx HTTP context
+ * @return Tuple of client ID and client secret
  */
 public type ClientInfoHandleFunc = (ctx: JoyContext) -> (String, String)
 
 /**
- * check client allows to use this authorization grant type, return true or false
+ * ClientAuthorizedHandleFunc type for checking if client is authorized to use a specific grant type
  *
- * @param clientId:  client ID
- * @param grant:  grant type
- * @return true if client is authorized to use this grant type
+ * @param clientId Client ID
+ * @param grant Grant type
+ * @return true if client is authorized to use this grant type, false otherwise
  */
 public type ClientAuthorizedHandleFunc = (clientId: String, grant: GrantType) -> Bool
 
 /**
- * check client allows to use scope, return true or false
+ * ClientScopeHandleFunc type for checking if client scope is valid
  *
- * @param request:  token generate request
- * @return true if client scope is valid
+ * @param request Token generate request
+ * @return true if client scope is valid, false otherwise
  */
 public type ClientScopeHandleFunc = (request: TokenGenerateRequest) -> Bool
 
 /**
- * get user id from request authorization, return userId
+ * UserAuthorizationHandleFunc type for getting user ID from request authorization
  *
- * @param ctx:  context
- * @return user ID
+ * @param ctx HTTP context
+ * @return User ID
  */
 public type UserAuthorizationHandleFunc = (ctx: JoyContext) -> String
 
 /**
- * get user id from username and password, return userId
+ * PasswordAuthorizationHandleFunc type for getting user ID from username and password
  *
- * @param ctx:  context
- * @param clientId:  client ID
- * @param username:  username
- * @param password:  password
- * @return user ID
+ * @param ctx HTTP context
+ * @param clientId Client ID
+ * @param username Username
+ * @param password Password
+ * @return User ID
  */
 public type PasswordAuthorizationHandleFunc = (ctx: JoyContext, clientId: String, username: String, password: String) -> String
 
 /**
- * check scope of refreshing token, return true or false
+ * RefreshingScopeHandleFunc type for checking scope of refreshing token
  *
- * @param request:  token generate request
- * @param oldScope:  old scope
- * @return true if refreshing scope is valid
+ * @param request Token generate request
+ * @param oldScope Old scope
+ * @return true if refreshing scope is valid, false otherwise
  */
 public type RefreshingScopeHandleFunc = (request: TokenGenerateRequest, oldScope: String) -> Bool
 
 /**
- * check if refresh_token is still valid. eg no revocation or other, return true or false
+ * RefreshingValidationHandleFunc type for checking if refresh token is still valid
  *
- * @param token:  token information
- * @return true if refresh token is still valid
+ * @param token Token information
+ * @return true if refresh token is still valid, false otherwise
  */
 public type RefreshingValidationHandleFunc = (token: TokenInfo) -> Bool
 
 /**
- * response error handling function
+ * ResponseErrorHandleFunc type for handling response errors
  *
- * @param ctx:  context
- * @param er:  error response
+ * @param ctx HTTP context
+ * @param er Error response
  */
 public type ResponseErrorHandleFunc = (ctx: JoyContext, er: ErrorResponse) -> Unit
 
 /**
- * internal error handling function
+ * InternalErrorHandleFunc type for handling internal errors
  *
- * @param ctx:  context
- * @param ex:  error information
+ * @param ctx HTTP context
+ * @param ex Error information
  */
 public type InternalErrorHandleFunc = (ctx: JoyContext, ex: ErrorInfo) -> Unit
 
 /**
- * is used to override "redirect-on-error" behavior
+ * PreRedirectErrorHandleFunc type used to override "redirect-on-error" behavior
  *
- * @param ctx:  context
- * @param req:  authorize request
- * @param ei:  error information
+ * @param ctx HTTP context
+ * @param req Authorize request
+ * @param ei Error information
  */
 public type PreRedirectErrorHandleFunc = (ctx: JoyContext, req: AuthorizeRequest, ei: ErrorInfo) -> Unit
 
 /**
- * set authorized scope, return scope
+ * AuthorizeScopeHandleFunc type for setting authorized scope
  *
- * @param ctx:  context
- * @return authorized scope
+ * @param ctx HTTP context
+ * @return Authorized scope
  */
 public type AuthorizeScopeHandleFunc = (ctx: JoyContext) -> String
 
 /**
- * set expiration date for access token
+ * AccessTokenExpHandleFunc type for setting access token expiration
  *
- * @param ctx:  context
- * @return access token expiration duration
+ * @param ctx HTTP context
+ * @return Access token expiration duration
  */
 public type AccessTokenExpHandleFunc = (ctx: JoyContext) -> Duration
 
 /**
- * response in response to access token with extension of field
+ * ExtensionFieldsHandleFunc type for adding extension fields to token response
  *
- * @param token:  token information
- * @return map of extension fields
+ * @param token Token information
+ * @return Map of extension fields
  */
 public type ExtensionFieldsHandleFunc = (token: TokenInfo) -> HashMap<String, JsonSerializable>
 
 /**
- * response token handling function
+ * ResponseTokenHandleFunc type for handling token responses
  *
- * @param ctx:  context
- * @param data:  token response data
+ * @param ctx HTTP context
+ * @param data Token response data
  */
 public type ResponseTokenHandleFunc = (ctx: JoyContext, data: HashMap<String, JsonSerializable>) -> Unit
 
 /**
- * fetch refresh token from request
+ * RefreshTokenResolveHandleFunc type for fetching refresh token from request
  *
- * @param ctx:  context
- * @return refresh token
+ * @param ctx HTTP context
+ * @return Refresh token
  */
 public type RefreshTokenResolveHandleFunc = (ctx: JoyContext) -> String
 
 /**
- * fetch access token from request
+ * AccessTokenResolveHandleFunc type for fetching access token from request
  *
- * @param ctx:  context
- * @return access token
+ * @param ctx HTTP context
+ * @return Access token
  */
 public type AccessTokenResolveHandleFunc = (ctx: JoyContext) -> String
 
 /**
- * @throws OAuthException
+ * clientFormHandleFunc retrieves client info from request form data
+ *
+ * @param ctx HTTP context
+ * @return Tuple of client ID and client secret
+ * @throws OAuthException if client ID is missing or invalid
  */
 public func clientFormHandleFunc(ctx: JoyContext): (String, String) {
     let clientId = ctx.getForm("client_id") ?? throw OAuthException(OAuthErrors.INVALID_CLIENT)
@@ -202,7 +208,11 @@ public func clientFormHandleFunc(ctx: JoyContext): (String, String) {
 }
 
 /**
- * @throws OAuthException
+ * clientBasicHandleFunc retrieves client info from Basic Auth header
+ *
+ * @param ctx HTTP context
+ * @return Tuple of client ID and client secret
+ * @throws OAuthException if Basic Auth header is missing or invalid
  */
 public func clientBasicHandleFunc(ctx: JoyContext): (String, String) {
     ctx.basicAuth().getOrThrow {
@@ -213,14 +223,22 @@ public func clientBasicHandleFunc(ctx: JoyContext): (String, String) {
 }
 
 /**
- * @throws OAuthException
+ * refreshTokenFormResolveHandleFunc retrieves refresh token from form data
+ *
+ * @param ctx HTTP context
+ * @return Refresh token
+ * @throws OAuthException if refresh token is missing
  */
 public func refreshTokenFormResolveHandleFunc(ctx: JoyContext): String {
     ctx.getForm("refresh_token") ?? throw OAuthException(OAuthErrors.INVALID_REQ)
 }
 
 /**
- * @throws OAuthException
+ * refreshTokenCookieResolveHandleFunc retrieves refresh token from cookie
+ *
+ * @param ctx HTTP context
+ * @return Refresh token
+ * @throws OAuthException if refresh token cookie is missing
  */
 public func refreshTokenCookieResolveHandleFunc(ctx: JoyContext): String {
     ctx.getCookie("refresh_token") ?? throw OAuthException(OAuthErrors.INVALID_REQ)
@@ -229,10 +247,10 @@ public func refreshTokenCookieResolveHandleFunc(ctx: JoyContext): String {
 private const PREFIX: String = "Bearer "
 
 /**
- * fetch access token from authorization header or form
+ * accessTokenDefaultResolveHandleFunc fetches access token from authorization header or form data
  *
- * @param ctx:  context
- * @return access token
+ * @param ctx HTTP context
+ * @return Access token
  */
 public func accessTokenDefaultResolveHandleFunc(ctx: JoyContext): String {
     let auth = ctx.getHeader(JoyHttpConsts.HEADER_AUTHORIZATION)
@@ -245,30 +263,30 @@ public func accessTokenDefaultResolveHandleFunc(ctx: JoyContext): String {
 }
 
 /**
- * fetch access token from cookie
+ * accessTokenCookieResolveHandleFunc fetches access token from cookie
  *
- * @param ctx:  context
- * @return access token
+ * @param ctx HTTP context
+ * @return Access token
  */
 public func accessTokenCookieResolveHandleFunc(ctx: JoyContext): String {
     ctx.getCookie("access_token") ?? ""
 }
 
 /**
- * handle internal error with default logging
+ * defaultInternalErrorHandleFunc handles internal errors with default logging
  *
- * @param ctx:  context
- * @param ex:  error info
+ * @param ctx HTTP context
+ * @param ex Error information
  */
 func defaultInternalErrorHandleFunc(_: JoyContext, ex: ErrorInfo): Unit {
     @JoyLogError("[OAuth2] internal error, ${ex.code}, ${ex.description}")
 }
 
 /**
- * handle response error with default logging
+ * defaultResponseErrorHandleFunc handles response errors with default logging
  *
- * @param ctx:  context
- * @param er:  error response
+ * @param ctx HTTP context
+ * @param er Error response
  */
 func defaultResponseErrorHandleFunc(_: JoyContext, er: ErrorResponse): Unit {
     @JoyLogError("[OAuth2] response error, ${er.errorInfo.code}, ${er.errorInfo.description}")

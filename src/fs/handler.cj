@@ -20,37 +20,92 @@ import cjoy.log.macros.*
 
 @JoyCreateLogger("cjoy.eventbus")
 
+/**
+ * Default implementation of JoyFileHandlerFactory
+ */
 @Component[extends = ["JoyFileHandlerFactory"]]
 class DefaultJoyFileHandlerFactory <: JoyFileHandlerFactory {
+    /**
+     * Creates a file serve handler for the given file path
+     *
+     * @param filePath The file path to serve
+     * @return A JoyRequestHandler for serving the file
+     */
     public func createFileServeHandler(filePath: String): JoyRequestHandler {
         JoyFileServeHandler(filePath)
     }
 
+    /**
+     * Creates a file system serve handler for the given root path
+     *
+     * @param root The root path of the file system to serve
+     * @param confg The JoyConfig instance
+     * @return A JoyRequestHandler for serving the file system
+     */
     public func createFileSystemServeHandler(root: Path, confg: JoyConfig): JoyRequestHandler {
         JoyFileSystemServeHandler(root, confg)
     }
 
+    /**
+     * Serves a file from the given file path
+     *
+     * @param ctx The JoyContext instance
+     * @param filePath The path of the file to serve
+     */
     public func serveFile(ctx: JoyContext, filePath: Path): Unit {
         JoyFileServer.serveFile(ctx, filePath)
     }
 
+    /**
+     * Downloads a file as an attachment
+     *
+     * @param ctx The JoyContext instance
+     * @param filePath The path of the file to download
+     */
     public func downloadFile(ctx: JoyContext, filePath: Path): Unit {
         downloadAttachment(ctx, filePath)
     }
 }
 
+/**
+ * JoyRequestHandler for serving a single file
+ */
 class JoyFileServeHandler <: JoyRequestHandler {
+    /**
+     * Creates a new JoyFileServeHandler instance
+     *
+     * @param filePath The path of the file to serve
+     */
     JoyFileServeHandler(let filePath: String) {
     }
 
+    /**
+     * Handles the request to serve the file
+     *
+     * @param ctx The JoyContext instance
+     */
     public func handle(ctx: JoyContext): Unit {
         JoyFileServer.serveFile(ctx, Path(filePath))
     }
 }
 
+/**
+ * JoyRequestHandler for serving a file system directory
+ */
 class JoyFileSystemServeHandler <: JoyRequestHandler {
+    /**
+     * Creates a new JoyFileSystemServeHandler instance
+     *
+     * @param root The root path of the file system to serve
+     * @param confg The JoyConfig instance
+     */
     public JoyFileSystemServeHandler(let root: Path, let confg: JoyConfig) {}
 
+    /**
+     * Handles the request to serve a file from the file system
+     *
+     * @param ctx The JoyContext instance
+     */
     public func handle(ctx: JoyContext): Unit {
         let pathOpt = ctx.getParam("*")
         if (let Some(path) <- pathOpt) {

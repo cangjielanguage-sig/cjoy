@@ -108,8 +108,8 @@ public class FileSessionStorage <: AbstractSessionStorage {
     /*
      * create FileSessionStorage
      * 
-     * @param path: the sessoin store root path
-     * @param maxLifetime: max life time. Default is 1hour.
+     * @param path the sessoin store root path
+     * @param maxLifetime max life time. Default is 1hour.
      * @throws IllegalArgumentException if the path is not dir
      */
     public init(path: String, maxLifetime!: Duration = Duration.hour) {

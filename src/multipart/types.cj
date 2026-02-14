@@ -11,25 +11,35 @@
 package cjoy.multipart
 
 /**
- * Exception thrown when multi part parsing fails
+ * Exception thrown when multipart parsing fails
  */
 public class MultiPartParseException <: Exception {
+    /**
+     * Initializes a new instance of MultiPartParseException with the specified message
+     *
+     * @param message The exception message
+     */
     public init(message: String) {
         super(message)
     }
 }
 
 /**
- * multipart size limit reached exception
+ * Exception thrown when multipart size limit is reached
  */
 public class MultiPartLimitReachedException <: Exception {
+    /**
+     * Initializes a new instance of MultiPartLimitReachedException with the specified message
+     *
+     * @param message The exception message
+     */
     public init(message: String) {
         super(message)
     }
 }
 
 /**
- * data size constants
+ * Data size constants for measuring memory and file sizes
  */
 public struct JoyDataSize {
     private let _value: Int
@@ -37,14 +47,26 @@ public struct JoyDataSize {
         _value = value
     }
 
+    /** Kilobyte size constant (1024 bytes) */
     public static const KB: JoyDataSize = JoyDataSize(1 << 10)
+    /** Megabyte size constant (1024 kilobytes) */
     public static const MB: JoyDataSize = JoyDataSize(1 << 20)
+    /** Gigabyte size constant (1024 megabytes) */
     public static const GB: JoyDataSize = JoyDataSize(1 << 30)
 
+    /**
+     * Multiplies the data size by an integer value
+     *
+     * @param r The integer multiplier
+     * @return The resulting data size
+     */
     public operator func *(r: Int): JoyDataSize {
         JoyDataSize(_value * r)
     }
 
+    /**
+     * Gets the raw integer value of the data size
+     */
     public prop value: Int {
         get() {
             _value
@@ -53,7 +75,13 @@ public struct JoyDataSize {
 }
 
 /**
- * configuration for multi part parsing and handling
+ * Configuration for multipart parsing and handling
+ *
+ * @property maxParts Maximum number of parts allowed in a multipart request
+ * @property maxHeaders Maximum number of headers allowed per part
+ * @property maxMemSize Maximum memory size allowed for all parts combined
+ * @property maxFileSize Maximum file size allowed for a single part
+ * @property fileCacheDir Directory for caching uploaded files
  */
 public struct JoyMultiPartConfig {
     public var maxParts: Int = 10

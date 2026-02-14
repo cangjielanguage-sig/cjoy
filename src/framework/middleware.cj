@@ -13,26 +13,26 @@ package cjoy.framework
 import std.collection.{forEach, HashMap}
 
 /**
- * the interface of request handler chain
+ * Request handler chain interface for managing middleware execution
  */
 public interface JoyRequestHandlerChain {
     /**
-     * move next handler
+     * Moves to the next handler in the chain
      *
-     * @param ctx: the context
+     * @param ctx Request/response context
      */
     func next(ctx: JoyContext): Unit
 }
 
 /**
- * the interface of request middleware handler
+ * Request middleware handler interface for processing HTTP requests
  */
 public interface JoyMiddlewareHandler {
     /**
-     * process the request
+     * Processes the request and optionally passes it to the next middleware in the chain
      *
-     * @param ctx: the context
-     * @param chain: the chain of Middleware
+     * @param ctx Request/response context
+     * @param chain Middleware chain for passing the request to the next handler
      */
     func handle(ctx: JoyContext, chain: JoyRequestHandlerChain): Unit
 }
@@ -44,37 +44,46 @@ public type JoyMiddlewareFunc = (ctx: JoyContext, chain: JoyRequestHandlerChain)
 
 /**
  * Function-based middleware handler implementation
- *
- * @param handler: the middleware function
  */
 public class JoyMiddlewareFuncHandler <: JoyMiddlewareHandler {
+    /**
+     * Creates a new JoyMiddlewareFuncHandler
+     *
+     * @param handler The middleware function
+     */
     public JoyMiddlewareFuncHandler(let handler: JoyMiddlewareFunc) {}
 
+    /**
+     * Processes the request using the middleware function
+     *
+     * @param ctx Request/response context
+     * @param chain Middleware chain for passing the request to the next handler
+     */
     public func handle(ctx: JoyContext, chain: JoyRequestHandlerChain): Unit {
         this.handler(ctx, chain)
     }
 }
 
 /**
- * middleware handler registry for registering route handlers
+ * Middleware handler registry for registering route handlers
  */
 public class JoyMiddlewares {
     private static let MIDDLEWARES: HashMap<String, JoyMiddlewareHandler> = HashMap()
 
     /**
-     * add the handler for generate code by macros
+     * Adds a middleware handler for code generation by macros
      *
-     * @param group: the path of group
-     * @param mw: the middleware hander
+     * @param groups Array of group paths to register the middleware with
+     * @param mw Middleware handler to add
      */
     public static func addHandler(groups: Array<String>, mw: JoyMiddlewareHandler): Unit {
         groups |> forEach {group => MIDDLEWARES.add(group, mw)}
     }
 
     /**
-     * register the middleware handlers to joy instance
+     * Registers all middleware handlers to the Joy engine instance
      *
-     * @param joy: the instance of joy
+     * @param joy Joy engine instance to register middleware with
      */
     public static func registerTo(joy: Joy): Unit {
         for ((path, handler) in MIDDLEWARES) {

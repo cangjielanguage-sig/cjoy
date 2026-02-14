@@ -14,56 +14,78 @@ import std.collection.concurrent.ConcurrentHashMap
 import std.time.DateTime
 
 /**
- * the inteface to store the token information
+ * TokenStore interface for storing token information
  */
 public interface TokenStore {
     /**
-     *  create and store the new token information
+     * Creates and stores new token information
+     *
+     * @param tokenInfo Token information to store
      */
     func create(tokenInfo: TokenInfo): Unit
 
     /**
-     * delete the authorization code
+     * Removes token information by authorization code
+     *
+     * @param code Authorization code
      */
     func removeByCode(code: String): Unit
 
     /**
-     *  use the access token to delete the token information
+     * Removes token information by access token
+     *
+     * @param access Access token
      */
     func removeByAccess(access: String): Unit
 
     /**
-     * use the refresh token to delete the token information
+     * Removes token information by refresh token
+     *
+     * @param refresh Refresh token
      */
     func removeByRefresh(refresh: String): Unit
 
     /**
-     * use the authorization code for token information data
+     * Gets token information by authorization code
+     *
+     * @param code Authorization code
+     * @return Token information or None if not found
      */
     func getByCode(code: String): ?TokenInfo
 
     /**
-     * use the access token for token information data
+     * Gets token information by access token
+     *
+     * @param access Access token
+     * @return Token information or None if not found
      */
     func getByAccess(access: String): ?TokenInfo
 
     /**
-     * use the refresh token for token information data
+     * Gets token information by refresh token
+     *
+     * @param refresh Refresh token
+     * @return Token information or None if not found
      */
     func getByRefresh(refresh: String): ?TokenInfo
 }
 
 /**
- * the inteface to store the client information
+ * ClientStore interface for storing client information
  */
 public interface ClientStore {
     /**
-     * according to the id for the client information
+     * Gets client information by client ID
+     *
+     * @param id Client ID
+     * @return Client information or None if not found
      */
     func getById(id: String): ?ClientInfo
 
     /**
-     * add a client info to store
+     * Adds client information to the store
+     *
+     * @param clientInfo Client information to add
      */
     func add(clientInfo: ClientInfo): Unit
 }

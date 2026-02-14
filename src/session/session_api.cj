@@ -33,15 +33,15 @@ public interface JoySession {
     /**
      * set value to given key in session.
      *
-     * @param key: the session key
-     * @param value: the session value
+     * @param key the session key
+     * @param value the session value
      */
     func set<T>(key: String, value: T): Unit where T <: JsonSerializable & JsonDeserializable<T>
 
     /**
      * get value by given key in session.
      *
-     * @param key: the session key
+     * @param key the session key
      * @return the session value
      */
     func get<T>(key: String): ?T where T <: JsonSerializable & JsonDeserializable<T>
@@ -49,7 +49,7 @@ public interface JoySession {
     /**
      * delete and return a key from session.
      *
-     * @param key: the session key
+     * @param key the session key
      * @return the removed session value
      */
     func remove<T>(key: String): ?T where T <: JsonSerializable & JsonDeserializable<T>
@@ -83,7 +83,7 @@ public interface JoySessionStorage {
     /**
      * delete session in storage
      *
-     * @param sid: the session id
+     * @param sid the session id
      * @throws IOException if delete fails
      */
     func delete(sid: String): Unit
@@ -91,8 +91,8 @@ public interface JoySessionStorage {
     /**
      * get or create new session
      *
-     * @param sid: the session id
-     * @param idLen: the session id length for new sessions
+     * @param sid the session id
+     * @param idLen the session id length for new sessions
      * @return the session
      * @throws IOException if operation fails
      */
@@ -101,7 +101,7 @@ public interface JoySessionStorage {
     /**
      * exist or not
      *
-     * @param sid: the session id
+     * @param sid the session id
      * @return true if session exists
      */
     func exists(sid: String): Bool

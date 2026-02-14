@@ -13,25 +13,39 @@ package cjoy.fs
 import std.time.DateTime
 
 /**
- * parse and generate http Etag
+ * Utility class for parsing and generating HTTP ETags
  */
 class JoyHttpEtag {
     private static let PREFIX = "W/"
 
+    /**
+     * Checks if two ETags match strongly
+     *
+     * @param a The first ETag to compare
+     * @param b The second ETag to compare
+     * @return True if the ETags match strongly, False otherwise
+     */
     static func strongMatch(a: String, b: String): Bool {
         a == b && a != "" && a[0] == b'"'
     }
 
+    /**
+     * Checks if two ETags match weakly
+     *
+     * @param a The first ETag to compare
+     * @param b The second ETag to compare
+     * @return True if the ETags match weakly, False otherwise
+     */
     static func weakMatch(a: String, b: String): Bool {
         a.trimStart(PREFIX) == b.trimStart(PREFIX)
     }
 
     /**
-     * Generate ETag for file
+     * Generates an ETag for a file based on size and modification time
      *
-     * @param size: file size
-     * @param modTime: modification time
-     * @return ETag string
+     * @param size File size in bytes
+     * @param modTime File modification time
+     * @return Generated ETag string
      */
     static func generate(size: Int64, modTime: DateTime): String {
         // 简单处理，使用文件大小、修改时间和文件名生成ETag
@@ -40,6 +54,12 @@ class JoyHttpEtag {
         "\"${sizeStr}-${timeStr}\""
     }
 
+    /**
+     * Scans a string to extract an ETag
+     *
+     * @param str The string to scan for an ETag
+     * @return Tuple containing (extracted ETag, remaining string)
+     */
     static func scan(str: String): (String, String) {
         // ETag is either W/"text" or "text"
         // See RFC 7232 2.3.

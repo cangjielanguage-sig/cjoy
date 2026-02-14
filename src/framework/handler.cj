@@ -15,13 +15,13 @@ import stdx.net.http.{notFound, HttpStatusCode, OptionsHandler}
 import cjoy.ioc.{BeanFactoryManager}
 
 /**
- * interface of request handler
+ * Request handler interface for processing HTTP requests
  */
 public interface JoyRequestHandler {
     /**
-     * process request and reply response using context api
+     * Processes request and replies with response using context API
      *
-     * @param param ctx: context
+     * @param ctx Request/response context
      */
     func handle(ctx: JoyContext): Unit
 }
@@ -41,16 +41,16 @@ public type JoyRequestFilterFunc = (ctx: JoyContext) -> Bool
  */
 public class JoyFuncHandler <: JoyRequestHandler {
     /**
-     * create a new JoyFuncHandler
+     * Creates a new JoyFuncHandler
      *
-     * @param handler: handler function
+     * @param handler Handler function
      */
     public JoyFuncHandler(let handler: JoyRequestHandlerFunc) {}
 
     /**
-     * process request using handler function
+     * Processes request using the handler function
      *
-     * @param ctx: context
+     * @param ctx Request/response context
      */
     public func handle(ctx: JoyContext): Unit {
         this.handler(ctx)
@@ -58,7 +58,7 @@ public class JoyFuncHandler <: JoyRequestHandler {
 }
 
 /**
- * default 404 not found handler
+ * Default 404 Not Found request handler
  */
 public class JoyNotFoundHandler <: JoyRequestHandler {
     public func handle(ctx: JoyContext): Unit {
@@ -67,7 +67,7 @@ public class JoyNotFoundHandler <: JoyRequestHandler {
 }
 
 /**
- * default 405 method not allowed handler
+ * Default 405 Method Not Allowed request handler
  */
 public class JoyMethodNotAllowedHandler <: JoyRequestHandler {
     public func handle(ctx: JoyContext): Unit {
@@ -78,7 +78,7 @@ public class JoyMethodNotAllowedHandler <: JoyRequestHandler {
 }
 
 /**
- * default options handler
+ * Default OPTIONS request handler
  */
 class JoyOptionsHandler <: JoyRequestHandler {
     static let INSTANCE = JoyOptionsHandler()
@@ -89,37 +89,37 @@ class JoyOptionsHandler <: JoyRequestHandler {
 }
 
 /**
- * handler registry for registering route handlers
+ * Handler registry for registering route handlers
  */
 public class JoyHandlers {
     private static let HANDLERS: ArrayList<(String, Array<String>, JoyRequestHandler)> = ArrayList()
 
     /**
-     * add handler for generate code by macros
+     * Adds a handler for code generation by macros
      *
-     * @param path: path
-     * @param methods: methods
-     * @param handler: handler
+     * @param path Route path
+     * @param methods HTTP methods
+     * @param handler Request handler
      */
     public static func addHandler(path: String, methods: Array<String>, handler: JoyRequestHandler): Unit {
         HANDLERS.add((path, methods, handler))
     }
 
     /**
-     * add handler function for generate code by macros
+     * Adds a handler function for code generation by macros
      *
-     * @param path: path
-     * @param methods: http methods
-     * @param handler: handler function
+     * @param path Route path
+     * @param methods HTTP methods
+     * @param handler Request handler function
      */
     public static func addHandler(path: String, methods: Array<String>, handler: JoyRequestHandlerFunc): Unit {
         HANDLERS.add((path, methods, JoyFuncHandler(handler)))
     }
 
     /**
-     * register handlers to joy instance
+     * Registers all handlers to the Joy engine instance
      *
-     * @param joy: instance of joy
+     * @param joy Joy engine instance
      */
     public static func registerTo(joy: Joy): Unit {
         // 依赖注入类需要先初始化

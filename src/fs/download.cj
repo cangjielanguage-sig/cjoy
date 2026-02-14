@@ -17,10 +17,10 @@ import cjoy.framework.{JoyContext, JoyHttpConsts}
 import cjoy.multipart.{getMimeTypeByExt, escapeQuotes}
 
 /**
- * download file by attachment
+ * Downloads a file as an attachment
  *
- * @param ctx: the joy context
- * @param filePath: the path of file which will to download
+ * @param ctx The joy context
+ * @param filePath The path of file to download
  * @throws IOException if file is not existed
  */
 public func downloadAttachment(ctx: JoyContext, filePath: Path): Unit {

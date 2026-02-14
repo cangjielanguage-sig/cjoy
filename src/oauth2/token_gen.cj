@@ -18,9 +18,16 @@ import stdx.crypto.crypto.SecureRandom
 import cjoy.utils.{rawBase64URLEncode}
 
 /**
- * the interface to generate the access and refresh tokens 
+ * TokenGenerate interface for generating access and refresh tokens
  */
 public interface TokenGenerate {
+    /**
+     * Generates access and refresh tokens
+     *
+     * @param data Basic data for token generation
+     * @param isGenRefresh Whether to generate a refresh token
+     * @return Tuple of (access token, refresh token)
+     */
     func generate(data: GenerateBasic, isGenRefresh: Bool): (String, String)
 }
 
@@ -29,11 +36,11 @@ public interface TokenGenerate {
  */
 public class SecureRandTokenGenerate <: TokenGenerate {
     /**
-     * generate access and refresh tokens using secure random
+     * Generates access and refresh tokens using secure random
      *
-     * @param data: the basic data for generation
-     * @param isGenRefresh:  whether to generate refresh token
-     * @return: tuple of (access token, refresh token)
+     * @param data Basic data for generation
+     * @param isGenRefresh Whether to generate a refresh token
+     * @return Tuple of (access token, refresh token)
      */
     public func generate(data: GenerateBasic, isGenRefresh: Bool): (String, String) {
         let buffer = ByteBuffer()

@@ -16,7 +16,10 @@ import cjoy.utils.{StrExt, secureRandStr}
 import cjoy.framework.{JoyHttpConsts}
 
 /**
- * multi part writer
+ * Multipart content writer
+ *
+ * JoyMultiPartWriter is responsible for writing multipart content to an output stream
+ * according to the multipart MIME specification.
  */
 public class JoyMultiPartWriter <: Resource {
     private let _buffer: BufferedOutputStream<OutputStream>
@@ -25,10 +28,10 @@ public class JoyMultiPartWriter <: Resource {
     private var _closed: Bool = false
 
     /**
-     * initialize multi part writer
+     * Initializes a new instance of JoyMultiPartWriter
      *
-     * @param output: output stream
-     * @param boundry: boundary string
+     * @param output The output stream to write to
+     * @param boundry Optional boundary string (will be generated if not provided)
      */
     public init(output: OutputStream, boundry!: ?String = None) {
         _buffer = BufferedOutputStream(output)
@@ -41,9 +44,9 @@ public class JoyMultiPartWriter <: Resource {
     }
 
     /**
-     * get boundary string
+     * Gets the boundary string
      *
-     * @return:  boundary string
+     * @return The boundary string
      */
     public prop boundary: String {
         get() {
@@ -52,9 +55,9 @@ public class JoyMultiPartWriter <: Resource {
     }
 
     /**
-     * get form data content type header value
+     * Gets the Content-Type header value for multipart form data
      *
-     * @return:  content type string
+     * @return The Content-Type string
      */
     public prop formDataContentType: String {
         get() {
@@ -66,6 +69,13 @@ public class JoyMultiPartWriter <: Resource {
         }
     }
 
+    /**
+     * Creates a new part with the specified headers
+     *
+     * @param headers The headers for the new part
+     * @return The current JoyMultiPartWriter instance for method chaining
+     * @throws IllegalArgumentException if the writer is closed
+     */
     public func createPart(headers: HttpHeaders): JoyMultiPartWriter {
         if (_closed) {
             throw IllegalArgumentException("can't create part after close")
@@ -91,11 +101,11 @@ public class JoyMultiPartWriter <: Resource {
     }
 
     /**
-     * write part data
+     * Writes data to the current part
      *
-     * @param bs:  part data bytes
-     * @return:  JoyMultiPartWriter
-     * @throws IllegalArgumentException if part is not created
+     * @param bs The data to write
+     * @return The current JoyMultiPartWriter instance for method chaining
+     * @throws IllegalArgumentException if no part is currently active or if the part is closed
      */
     public func writePartData(bs: Array<Byte>): JoyMultiPartWriter {
         if (_lastPart.isNone()) {
@@ -111,12 +121,12 @@ public class JoyMultiPartWriter <: Resource {
     }
 
     /**
-     * create file part
+     * Creates a file part with the specified fieldname, filename, and content type
      *
-     * @param fieldname:  field name
-     * @param filename:  file name
-     * @param contentType:  content type
-     * @return:  JoyMultiPartWriter
+     * @param fieldname The fieldname for the part
+     * @param filename The filename
+     * @param contentType The content type (default: application/octet-stream)
+     * @return The current JoyMultiPartWriter instance for method chaining
      */
     public func createFromFile(fieldname: String, filename: String,
         contentType!: String = JoyHttpConsts.MIME_APP_OCTET_STREAM): JoyMultiPartWriter {
@@ -128,10 +138,10 @@ public class JoyMultiPartWriter <: Resource {
     }
 
     /**
-     * create form field part
+     * Creates a form field part with the specified fieldname
      *
-     * @param fieldname:  field name
-     * @return:  JoyMultiPartWriter
+     * @param fieldname The fieldname for the part
+     * @return The current JoyMultiPartWriter instance for method chaining
      */
     public func createFormField(fieldname: String): JoyMultiPartWriter {
         let headers = HttpHeaders()
@@ -140,13 +150,13 @@ public class JoyMultiPartWriter <: Resource {
     }
 
     /**
-     * write file part
+     * Writes a file part with the specified content
      *
-     * @param fieldname:  field name
-     * @param filename:  file name
-     * @param fileContent:  file content bytes
-     * @param contentType:  content type
-     * @return:  JoyMultiPartWriter
+     * @param fieldname The fieldname for the part
+     * @param filename The filename
+     * @param fileContent The file content bytes
+     * @param contentType The content type (default: application/octet-stream)
+     * @return The current JoyMultiPartWriter instance for method chaining
      */
     public func writeFile(fieldname: String, filename: String, fileContent: Array<Byte>,
         contentType!: String = JoyHttpConsts.MIME_APP_OCTET_STREAM): JoyMultiPartWriter {
@@ -155,11 +165,11 @@ public class JoyMultiPartWriter <: Resource {
     }
 
     /**
-     * write field part
+     * Writes a form field part with the specified value
      *
-     * @param fieldname:  field name
-     * @param value:  field value
-     * @return:  JoyMultiPartWriter
+     * @param fieldname The fieldname for the part
+     * @param value The field value
+     * @return The current JoyMultiPartWriter instance for method chaining
      */
     public func writeField(fieldname: String, value: String): JoyMultiPartWriter {
         createFormField(fieldname)
@@ -193,7 +203,10 @@ public class JoyMultiPartWriter <: Resource {
     }
 
     /**
-     * close writer and flush data
+     * Closes the writer and flushes all data to the output stream
+     *
+     * This method writes the final boundary to indicate the end of the multipart content
+     * and flushes all buffered data to the output stream.
      */
     public func close(): Unit {
         if (_closed) {

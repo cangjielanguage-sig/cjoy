@@ -93,10 +93,11 @@ let mimes: HashMap<String, String> = HashMap(
 )
 
 /**
-* return the mime type by extention type
-*
-* @param ext: the extention type
-*/
+ * Returns the MIME type for a given file extension
+ *
+ * @param ext The file extension (including leading dot, e.g., ".txt")
+ * @return The corresponding MIME type or None if not found
+ */
 public func getMimeTypeByExt(ext: String): ?String {
     mimes.get(ext)
 }

@@ -15,11 +15,14 @@ import std.fs.{File, Path, Directory, OpenMode, exists, removeIfExists}
 import std.collection.HashMap
 
 /**
- * the interface to process mutli part content
+ * The interface to process multipart content
  */
 public interface JoyMultiPartHandler {
     /**
-     * call the function when read mutli part content
+     * Called when reading multipart content
+     *
+     * @param part The multipart part being processed
+     * @param data The data bytes of the current part
      */
     func onPart(part: JoyMultiPart, data: Array<Byte>): Unit
 }
@@ -28,6 +31,11 @@ public interface JoyMultiPartHandler {
  * MultiPart handler implementation with function callback
  */
 public class JoyMultiPartFuncHandler <: JoyMultiPartHandler {
+    /**
+     * Initializes a new instance of JoyMultiPartFuncHandler
+     *
+     * @param handler The function to call when processing parts
+     */
     public JoyMultiPartFuncHandler(let handler: (JoyMultiPart, Array<Byte>) -> Unit) {}
 
     public func onPart(part: JoyMultiPart, data: Array<Byte>): Unit {
@@ -36,7 +44,7 @@ public class JoyMultiPartFuncHandler <: JoyMultiPartHandler {
 }
 
 /**
- * memory-based multipart handler for caching parts in memory
+ * Memory-based multipart handler for caching parts in memory
  */
 class JoyMemoryMultiPartHandler <: JoyMultiPartHandler & Resource {
     private let cache = HashMap<String, ByteBuffer>()
@@ -44,12 +52,21 @@ class JoyMemoryMultiPartHandler <: JoyMultiPartHandler & Resource {
     private let _config: JoyMultiPartConfig
     private var _size: Int = 0
 
+    /**
+     * Initializes a new instance of JoyMemoryMultiPartHandler
+     *
+     * @param config The multipart configuration
+     */
     init(config: JoyMultiPartConfig) {
         _config = config
     }
 
     /**
-     * @throws MultiPartLimitReachedException
+     * Called when reading multipart content
+     *
+     * @param part The multipart part being processed
+     * @param data The data bytes of the current part
+     * @throws MultiPartLimitReachedException if memory size limit is reached
      */
     public func onPart(part: JoyMultiPart, data: Array<Byte>): Unit {
         _size += data.size
@@ -68,6 +85,12 @@ class JoyMemoryMultiPartHandler <: JoyMultiPartHandler & Resource {
         cache.add(part.name, buffer)
     }
 
+    /**
+     * Gets the content of a part by name
+     *
+     * @param name The name of the part
+     * @return The content of the part as ByteBuffer or None if not found
+     */
     func getContent(name: String): ?ByteBuffer {
         cache.get(name)
     }
@@ -89,7 +112,7 @@ class JoyMemoryMultiPartHandler <: JoyMultiPartHandler & Resource {
 }
 
 /**
- * disk-based multipart handler for saving parts to temporary files
+ * Disk-based multipart handler for saving parts to temporary files
  */
 class JoyDiskMultiPartHandler <: JoyMultiPartHandler & Resource {
     private let cache = HashMap<String, File>()
@@ -98,6 +121,11 @@ class JoyDiskMultiPartHandler <: JoyMultiPartHandler & Resource {
     private let _tempPath: Path
     private var _size: Int = 0
 
+    /**
+     * Initializes a new instance of JoyDiskMultiPartHandler
+     *
+     * @param config The multipart configuration
+     */
     init(config: JoyMultiPartConfig) {
         _config = config
         _tempPath = Path(_config.fileCacheDir).normalize()
@@ -107,7 +135,11 @@ class JoyDiskMultiPartHandler <: JoyMultiPartHandler & Resource {
     }
 
     /**
-     * @throws MultiPartLimitReachedException
+     * Called when reading multipart content
+     *
+     * @param part The multipart part being processed
+     * @param data The data bytes of the current part
+     * @throws MultiPartLimitReachedException if file size limit is reached
      */
     public func onPart(part: JoyMultiPart, data: Array<Byte>): Unit {
         _size += data.size
@@ -133,6 +165,12 @@ class JoyDiskMultiPartHandler <: JoyMultiPartHandler & Resource {
         }
     }
 
+    /**
+     * Gets the file reference of a part by name
+     *
+     * @param name The name of the part
+     * @return The File reference or None if not found
+     */
     func getFile(name: String): ?File {
         cache.get(name)
     }

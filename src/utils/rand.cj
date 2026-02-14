@@ -19,8 +19,8 @@ import stdx.crypto.crypto.SecureRandom
 /**
  * string utility functions for random string generation
  *
- * @param len: length of random string to generate
- * @return: random string of specified length
+ * @param len length of random string to generate
+ * @return random string of specified length
  */
 protected func randStr(len: Int32): String {
     let r = Random()
@@ -32,8 +32,8 @@ protected func randStr(len: Int32): String {
 /**
  * secure random string generation using SecureRandom
  *
- * @param len: length of random string to generate
- * @return: secure random string of specified length
+ * @param len length of random string to generate
+ * @return secure random string of specified length
  */
 protected func secureRandStr(len: Int32): String {
     let r = SecureRandom()

@@ -16,7 +16,10 @@ import std.io.{ByteBuffer}
 import stdx.net.http.HttpHeaders
 
 /**
- * represents a multi part content
+ * Represents a multipart content part
+ *
+ * A JoyMultiPart instance contains all information about a single part of a multipart request,
+ * including headers, content type, name, filename, and content data.
  */
 public class JoyMultiPart {
     let _headers: HttpHeaders = HttpHeaders()
@@ -29,14 +32,19 @@ public class JoyMultiPart {
     var _diskHandler: ?JoyDiskMultiPartHandler = None
 
     /**
-     * return the header
+     * Gets the value of a specific header from the part
+     *
+     * @param name The name of the header to retrieve
+     * @return The header value or None if not found
      */
     public func header(name: String): ?String {
         _headers.getFirst(name)
     }
 
     /**
-     * return the content type
+     * Gets the Content-Type header of the part
+     *
+     * @return The Content-Type string
      */
     public prop contentType: String {
         get() {
@@ -45,7 +53,9 @@ public class JoyMultiPart {
     }
 
     /**
-     * return the name
+     * Gets the name of the part from Content-Disposition header
+     *
+     * @return The part name
      */
     public prop name: String {
         get() {
@@ -55,14 +65,16 @@ public class JoyMultiPart {
     }
 
     /**
-     * set the name for test
+     * Sets the name for testing purposes
      */
     func setName(name: String): Unit {
         _dispositionParams["name"] = name
     }
 
     /**
-     * return the file name
+     * Gets the filename of the part from Content-Disposition header
+     *
+     * @return The filename or empty string if not a file part
      */
     public prop fileName: String {
         get() {
@@ -72,7 +84,9 @@ public class JoyMultiPart {
     }
 
     /**
-     * return text value in memory
+     * Gets the text content of the part from memory
+     *
+     * @return The text content as string or None if not available
      */
     public prop text: ?String {
         get() {
@@ -81,7 +95,9 @@ public class JoyMultiPart {
     }
 
     /**
-     * return file in cache dir, you can move or copy to other dir
+     * Gets the file reference of the part from disk cache
+     *
+     * @return The File instance or None if not available
      */
     public prop file: ?File {
         get() {
@@ -90,7 +106,9 @@ public class JoyMultiPart {
     }
 
     /**
-     * return file content in memory
+     * Gets the file content of the part from memory
+     *
+     * @return The file content as ByteBuffer or None if not available
      */
     public prop fileContent: ?ByteBuffer {
         get() {

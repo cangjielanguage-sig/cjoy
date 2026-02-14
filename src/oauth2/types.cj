@@ -20,7 +20,7 @@ import cjoy.framework.JoyContext
 import cjoy.utils.rawBase64URLEncode
 
 /**
- * the return token base info when invoke /token path
+ * TokenBody represents the base token information returned when invoking /token path
  */
 @Json
 public class TokenBody {
@@ -37,7 +37,7 @@ public class TokenBody {
 }
 
 /**
- * the token information
+ * TokenInfo represents token information
  */
 @Json
 public class TokenInfo {
@@ -63,7 +63,7 @@ public class TokenInfo {
 }
 
 /**
- * the client information
+ * ClientInfo represents client information
  */
 @Json
 public class ClientInfo {
@@ -75,9 +75,18 @@ public class ClientInfo {
 }
 
 /**
- * provide the basis of the generated token data
+ * GenerateBasic provides the basis for generated token data
  */
 public class GenerateBasic {
+    /**
+     * Constructs a GenerateBasic instance
+     *
+     * @param client Client information
+     * @param userId User ID
+     * @param createAt Token creation time
+     * @param tokenInfo Token information
+     * @param request HTTP request context
+     */
     public GenerateBasic(
         public let client!: ClientInfo,
         public let userId!: String,
@@ -89,9 +98,25 @@ public class GenerateBasic {
 }
 
 /**
- * provide to generate the token request parameters
+ * TokenGenerateRequest provides parameters for token generation
  */
 public class TokenGenerateRequest {
+    /**
+     * Constructs a TokenGenerateRequest instance
+     *
+     * @param request HTTP request context
+     * @param clientId Client ID
+     * @param clientSecret Client secret
+     * @param userId User ID
+     * @param redirectURI Redirect URI
+     * @param scope Authorization scope
+     * @param code Authorization code
+     * @param codeChallenge Code challenge for PKCE
+     * @param codeChallengeMethod Code challenge method for PKCE
+     * @param refresh Refresh token
+     * @param codeVerifier Code verifier for PKCE
+     * @param accessTokenExp Access token expiration duration
+     */
     public TokenGenerateRequest(
         public let request!: JoyContext,
         public let clientId!: String = "",

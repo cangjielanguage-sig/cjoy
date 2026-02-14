@@ -16,13 +16,21 @@ import stdx.encoding.json.stream.{JsonSerializable, JsonWriter}
 
 
 /**
- * the writer for chunked http response
+ * Base class for chunked HTTP response writers
+ *
+ * Provides functionality for writing chunked responses with proper HTTP headers
+ * and end state management.
  */
 public open class ChunkedWriter {
     protected let _httpContext: HttpContext
     protected let _httpResponseWriter: HttpResponseWriter
     protected var _end: Bool = false
 
+    /**
+     * Creates a new ChunkedWriter instance
+     *
+     * @param httpContext The HTTP context for the response
+     */
     init(httpContext: HttpContext) {
         _httpContext = httpContext
         let responseBuilder = httpContext.responseBuilder
@@ -33,17 +41,19 @@ public open class ChunkedWriter {
     }
 
     /**
-     * add a header to response
+     * Adds a header to the response
      *
-     * @param name: the header name
-     * @param value: the header value
+     * @param name The header name
+     * @param value The header value
      */
     public func header(name: String, value: String): Unit {
         _httpContext.responseBuilder.header(name, value)
     }
 
     /**
-     * @throws IllegalStateException if send data on end state
+     * Checks if the response has already ended
+     *
+     * @throws IllegalStateException if trying to send data after ending the response
      */
     protected func checkEnd() {
         if (_end) {
@@ -52,7 +62,7 @@ public open class ChunkedWriter {
     }
 
     /**
-     * end the chunked response
+     * Ends the chunked response
      */
     public func end(): Unit {
         _end = true
@@ -60,18 +70,23 @@ public open class ChunkedWriter {
 }
 
 /**
- * the writer for chunked http response
+ * Concrete implementation of ChunkedWriter for writing chunked HTTP responses
  */
 public class JoyChunkedWriter <: ChunkedWriter {
+    /**
+     * Creates a new JoyChunkedWriter instance
+     *
+     * @param httpContext The HTTP context for the response
+     */
     init(httpContext: HttpContext) {
         super(httpContext)
     }
 
     /**
-     * write string data then send it
+     * Writes string data to the chunked response and sends it immediately
      *
-     * @param data: the chunked data
-     * @return the JoyChunkedWriter
+     * @param data The string data to write
+     * @return This JoyChunkedWriter instance for method chaining
      */
     public func write(data: String): JoyChunkedWriter {
         checkEnd()
@@ -80,10 +95,10 @@ public class JoyChunkedWriter <: ChunkedWriter {
     }
 
     /**
-     * write bytes data then send it
+     * Writes binary data to the chunked response and sends it immediately
      *
-     * @param data: the chunked data
-     * @return the JoyChunkedWriter
+     * @param data The binary data to write
+     * @return This JoyChunkedWriter instance for method chaining
      */
     public func write(data: Array<Byte>): JoyChunkedWriter {
         checkEnd()
@@ -92,10 +107,10 @@ public class JoyChunkedWriter <: ChunkedWriter {
     }
 
     /**
-     * write data which be serializabled to json then send it
+     * Writes JSON-serializable data to the chunked response and sends it immediately
      *
-     * @param data: the chunked data
-     * @return the JoyChunkedWriter
+     * @param data The JSON-serializable data to write
+     * @return This JoyChunkedWriter instance for method chaining
      */
     public func writeJson<T>(data: T): JoyChunkedWriter where T <: JsonSerializable {
         let buffer = ByteBuffer()

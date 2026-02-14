@@ -31,7 +31,7 @@ public abstract class AbstractSession <: JoySession {
     /**
      * creates a new session
      *
-     * @param sid: session identifier
+     * @param sid session identifier
      */
     public init(sid: String) {
         _sid = sid
@@ -40,7 +40,7 @@ public abstract class AbstractSession <: JoySession {
     /**
      * session identifier (read-only)
      *
-     * @return: the session ID
+     * @return the session ID
      */
     public prop id: String {
         get() {
@@ -51,7 +51,7 @@ public abstract class AbstractSession <: JoySession {
     /**
      * whether session is invalidated (read-only)
      *
-     * @return: true if session is invalidated
+     * @return true if session is invalidated
      */
     public prop isInvalidated: Bool {
         get() {
@@ -62,8 +62,8 @@ public abstract class AbstractSession <: JoySession {
     /**
      * stores a value in session data
      *
-     * @param key: the key
-     * @param value: the value to store, must be JSON serializable
+     * @param key the key
+     * @param value the value to store, must be JSON serializable
      */
     public open func set<T>(key: String, value: T): Unit where T <: JsonSerializable & JsonDeserializable<T> {
         _data.add(key, value)
@@ -72,8 +72,8 @@ public abstract class AbstractSession <: JoySession {
     /**
      * retrieves a value from session data
      *
-     * @param key: the key
-     * @return: the value if exists, None otherwise
+     * @param key the key
+     * @return the value if exists, None otherwise
      */
     public open func get<T>(key: String): ?T where T <: JsonSerializable & JsonDeserializable<T> {
         (_data.get(key) ?? Option<T>.None) as T
@@ -82,8 +82,8 @@ public abstract class AbstractSession <: JoySession {
     /**
      * removes and returns a value from session data
      *
-     * @param key: the key to remove
-     * @return: the removed value if existed, None otherwise
+     * @param key the key to remove
+     * @return the removed value if existed, None otherwise
      */
     public open func remove<T>(key: String): ?T where T <: JsonSerializable & JsonDeserializable<T> {
         (_data.remove(key) ?? Option<T>.None) as T
@@ -121,7 +121,7 @@ public abstract class AbstractSessionStorage <: JoySessionStorage {
     /**
      * creates a new session storage
      *
-     * @param maxLifetime: maximum session lifetime before expiration
+     * @param maxLifetime maximum session lifetime before expiration
      */
     public init(maxLifetime: Duration) {
         _maxLifetime = maxLifetime
@@ -130,7 +130,7 @@ public abstract class AbstractSessionStorage <: JoySessionStorage {
     /**
      * number of active sessions (read-only)
      *
-     * @return: count of sessions in memory
+     * @return count of sessions in memory
      */
     public prop size: Int {
         get() {
@@ -141,7 +141,7 @@ public abstract class AbstractSessionStorage <: JoySessionStorage {
     /**
      * deletes a session from storage
      *
-     * @param sid: session ID to delete
+     * @param sid session ID to delete
      */
     public open func delete(sid: String): Unit {
         _sessions.remove(sid)
@@ -150,9 +150,9 @@ public abstract class AbstractSessionStorage <: JoySessionStorage {
     /**
      * gets existing session or creates new one
      *
-     * @param sid: requested session ID (if not found, new random ID will be generated)
-     * @param idLen: length for new session ID if creation is needed
-     * @return: session instance (existing or newly created)
+     * @param sid requested session ID (if not found, new random ID will be generated)
+     * @param idLen length for new session ID if creation is needed
+     * @return session instance (existing or newly created)
      */
     public func getOrCreate(sid: String, idLen: Int32): JoySession {
         var s = _sessions.get(sid)
@@ -184,8 +184,8 @@ public abstract class AbstractSessionStorage <: JoySessionStorage {
     /**
      * checks if session exists in memory
      *
-     * @param sid: session ID to check
-     * @return: true if session exists
+     * @param sid session ID to check
+     * @return true if session exists
      */
     public func exists(sid: String): Bool {
         _sessions.contains(sid)
@@ -194,16 +194,16 @@ public abstract class AbstractSessionStorage <: JoySessionStorage {
     /**
      * creates a new session instance (must be implemented by subclass)
      *
-     * @param sid: session ID for the new session
-     * @return: new session instance
+     * @param sid session ID for the new session
+     * @return new session instance
      */
     protected func createSession(sid: String): AbstractSession
 
     /**
      * loads session from persistent storage (override in subclasses)
      *
-     * @param sid: session ID to load
-     * @return: loaded session if exists, None otherwise
+     * @param sid session ID to load
+     * @return loaded session if exists, None otherwise
      */
     protected open func loadSession(_: String): ?AbstractSession {
         None

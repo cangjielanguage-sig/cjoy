@@ -17,16 +17,79 @@ import cjoy.log.macros.*
 @JoyCreateLogger("cjoy.oauth2")
 
 /**
- * authorization management
+ * OAuth2Manager interface for authorization management
  */
 public interface OAuth2Manager {
+    /**
+     * Gets client information by client ID
+     *
+     * @param clientId Client ID
+     * @return Client information
+     * @throws OAuthException if client not found
+     */
     func getClient(clientId: String): ClientInfo
+
+    /**
+     * Generates an authorization token
+     *
+     * @param rt Response type
+     * @param request Token generation request
+     * @return Generated token information
+     * @throws OAuthException if generation fails
+     */
     func generateAuthToken(rt: ResponseType, request: TokenGenerateRequest): TokenInfo
+
+    /**
+     * Generates an access token
+     *
+     * @param gt Grant type
+     * @param request Token generation request
+     * @return Generated token information
+     * @throws OAuthException if generation fails
+     */
     func generateAccessToken(gt: GrantType, request: TokenGenerateRequest): TokenInfo
+
+    /**
+     * Refreshes an access token
+     *
+     * @param request Token generation request
+     * @return Refreshed token information
+     * @throws OAuthException if refresh fails
+     */
     func refreshAccessToken(request: TokenGenerateRequest): TokenInfo
+
+    /**
+     * Removes an access token
+     *
+     * @param access Access token to remove
+     * @throws OAuthException if token is invalid
+     */
     func removeAccessToken(access: String): Unit
+
+    /**
+     * Removes a refresh token
+     *
+     * @param refresh Refresh token to remove
+     * @throws OAuthException if token is invalid
+     */
     func removeRefreshToken(refresh: String): Unit
+
+    /**
+     * Loads and validates an access token
+     *
+     * @param access Access token
+     * @return Token information
+     * @throws OAuthException if token is invalid or expired
+     */
     func loadAccessToken(access: String): TokenInfo
+
+    /**
+     * Loads and validates a refresh token
+     *
+     * @param refresh Refresh token
+     * @return Token information
+     * @throws OAuthException if token is invalid or expired
+     */
     func loadRefreshToken(refresh: String): TokenInfo
 }
 
@@ -66,20 +129,20 @@ public class DefaultOAuth2Manager <: OAuth2Manager {
     }
 
     /**
-     * set grant config for a specific grant type
+     * Sets the grant configuration for a specific grant type
      *
-     * @param grantType:  grant type
-     * @param config:  grant configuration
+     * @param grantType Grant type
+     * @param config Grant configuration
      */
     public func setGrantConfig(grantType: GrantType, config: GrantConfig) {
         _gtcfg.add(grantType, config)
     }
 
     /**
-     * get grant config for a specific grant type
+     * Gets the grant configuration for a specific grant type
      *
-     * @param grantType:  grant type
-     * @return:  grant configuration
+     * @param grantType Grant type
+     * @return Grant configuration
      */
     public func getGrantConfig(grantType: GrantType): GrantConfig {
         let cfg = _gtcfg.get(grantType)

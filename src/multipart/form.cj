@@ -15,7 +15,10 @@ import stdx.net.http.HttpRequest
 import cjoy.framework.{JoyContext, JoyHttpConsts}
 
 /**
- * form data handler for multi part content
+ * Form data handler for multipart content
+ *
+ * JoyMultiPartForm provides functionality to parse and handle multipart form data requests.
+ * It supports both in-memory and disk-based storage of parts.
  */
 public class JoyMultiPartForm <: JoyMultiPartHandler & Resource & Iterable<JoyMultiPart> {
     private static let INSTANCE: JoyMultiPartForm = JoyMultiPartForm()
@@ -27,22 +30,22 @@ public class JoyMultiPartForm <: JoyMultiPartHandler & Resource & Iterable<JoyMu
     private var _isClosed = false
 
     /**
-     * create the MultiPartForm to parse the multipart
+     * Creates a MultiPartForm to parse the multipart request
      *
-     * @param ctx: the context
-     * @param config: the multi part config
-     * @throw MultiPartParseException: parse multipart failed
+     * @param ctx The context
+     * @param config The multipart config
+     * @throws MultiPartParseException if parsing multipart fails
      */
     public static func create(ctx: JoyContext, config: JoyMultiPartConfig): JoyMultiPartForm {
         create(ctx.httpContext.request, config)
     }
 
     /**
-     * create the MultiPartForm to parse the multipart
+     * Creates a MultiPartForm to parse the multipart request
      *
-     * @param request: the http request
-     * @param config: the multi part config
-     * @throw MultiPartParseException: parse multipart failed
+     * @param request The HTTP request
+     * @param config The multipart config
+     * @throws MultiPartParseException if parsing multipart fails
      */
     public static func create(request: HttpRequest, config: JoyMultiPartConfig): JoyMultiPartForm {
         if (let Some(header) <- request.headers.getFirst(JoyHttpConsts.HEADER_CONTENT_TYPE)) {
@@ -71,14 +74,14 @@ public class JoyMultiPartForm <: JoyMultiPartHandler & Resource & Iterable<JoyMu
     }
 
     /**
-     * parse the multi parts
+     * Parses the multipart parts
      */
     public func parse(): Unit {
         _parser?.parseParts()
     }
 
     /**
-     * return true when content-type is `multipart/form-data`
+     * Returns true when content-type is `multipart/form-data`
      */
     public prop isFormData: Bool {
         get() {
@@ -87,17 +90,20 @@ public class JoyMultiPartForm <: JoyMultiPartHandler & Resource & Iterable<JoyMu
     }
 
     /**
-     * return multi part info
+     * Returns multipart info by name
+     *
+     * @param name The name of the part
+     * @return The JoyMultiPart instance or None if not found
      */
     public func getPart(name: String): ?JoyMultiPart {
         _parser?.getPart(name) ?? None
     }
 
     /**
-     * iterate the multi part
+     * Iterates over the multipart parts
      *
-     * @return the iterator of JoyMultiPart
-     * @throw IllegalStateException: parse multipart failed
+     * @return The iterator of JoyMultiPart
+     * @throws IllegalStateException if parsing multipart failed
      */
     public func iterator(): Iterator<JoyMultiPart> {
         if (let Some(p) <- _parser) {

@@ -31,9 +31,9 @@ class SigningMethodHmac <: SigningMethod {
     /**
      * sign string with HMAC key
      *
-     * @param signing: string to be signed
-     * @param key: HMAC key
-     * @return: signed data
+     * @param signing string to be signed
+     * @param key HMAC key
+     * @return signed data
      * @throws JwtException if sign failed
      */
     public func sign(signing: String, key: Any): Array<Byte> {
@@ -48,9 +48,9 @@ class SigningMethodHmac <: SigningMethod {
     /**
      * verify signature with HMAC key
      *
-     * @param signing: signed string
-     * @param sig: signature to verify
-     * @param key: HMAC key
+     * @param signing signed string
+     * @param sig signature to verify
+     * @param key HMAC key
      * @throws JwtException if verify failed
      */
     public func verify(signing: String, sig: Array<Byte>, key: Any): Unit {

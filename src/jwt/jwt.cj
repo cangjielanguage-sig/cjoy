@@ -59,7 +59,7 @@ public class Jwt {
     /**
      * specify the signing algorithm
      *
-     * @param alg: the algorithm
+     * @param alg the algorithm
      * @throws JwtException if not found sign alg
      */
     public func alg(alg: String): Jwt {
@@ -74,7 +74,7 @@ public class Jwt {
     /**
      * copy claims from origin jwt
      *
-     * @param jwt: the origin jwt
+     * @param jwt the origin jwt
      */
     public func copyClaims(jwt: Jwt): Unit {
         _claims.add(all: jwt._claims)
@@ -83,8 +83,8 @@ public class Jwt {
     /**
      * signs the JWT to a string with algorithm and key
      *
-     * @param key: the key of algorithm, like Array<Byte> or RSAPrivateKey
-     * @return: a signed JWT string
+     * @param key the key of algorithm, like Array<Byte> or RSAPrivateKey
+     * @return a signed JWT string
      * @throws JwtException if not invoke alg
      */
     public func signWith(key: Any): String {
@@ -100,8 +100,8 @@ public class Jwt {
     /**
      * parse the string token to JWT
      *
-     * @param token: the token to parse
-     * @param config: the parser config
+     * @param token the token to parse
+     * @param config the parser config
      * @return: a JWT object
      */
     public static func parse(token: String, config!: ParserConfig = ParserConfig()): Jwt {
@@ -114,7 +114,7 @@ public class Jwt {
     /**
      * verify the JWT with the key with the algorithm
      *
-     * @param key: the key of algorithm, like Array<Byte> or RSAPublicKey
+     * @param key the key of algorithm, like Array<Byte> or RSAPublicKey
      * @throws JwtException if verify failure
      */
     public func verifyWith(key: Any): Jwt {

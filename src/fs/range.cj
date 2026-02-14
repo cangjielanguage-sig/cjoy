@@ -18,15 +18,37 @@ import cjoy.framework.JoyHttpConsts
 import cjoy.utils.{StrExt, trimString}
 import cjoy.multipart.JoyMultiPartWriter
 
+/**
+ * Represents an HTTP range for byte-range requests
+ */
 class JoyHttpRange {
     private static let PREFIX = "bytes="
 
+    /**
+     * Creates a new HTTP range instance
+     *
+     * @param start The start position of the range
+     * @param length The length of the range
+     */
     public JoyHttpRange(let start!: Int = 0, let length!: Int = 0) {}
 
+    /**
+     * Gets the content range string for the given size
+     *
+     * @param size The total size of the content
+     * @return The content range string
+     */
     public func contentRange(size: Int): String {
         "bytes ${start}-${start + length - 1}/${size}"
     }
 
+    /**
+     * Gets the MIME headers for the range
+     *
+     * @param contentType The content type
+     * @param size The total size of the content
+     * @return The HTTP headers for the range
+     */
     public func mimeHeaders(contentType: String, size: Int): HttpHeaders {
         let headers = HttpHeaders()
         headers.add(JoyHttpConsts.HEADER_CONTENT_TYPE, contentType)
@@ -35,9 +57,12 @@ class JoyHttpRange {
     }
 
     /**
-     * parse http range
+     * Parses an HTTP range header string
      *
-     * @throws IllegalArgumentException
+     * @param str The range header string to parse
+     * @param size The total size of the content
+     * @return The parsed HTTP ranges
+     * @throws IllegalArgumentException if the range string is invalid
      */
     public static func parse(str: String, size: Int): JoyHttpRangs {
         let res: JoyHttpRangs = JoyHttpRangs()
@@ -119,9 +144,20 @@ class JoyHttpRange {
     }
 }
 
+/**
+ * Type alias for a list of HTTP ranges
+ */
 type JoyHttpRangs = ArrayList<JoyHttpRange>
 
+/**
+ * Extension functions for JoyHttpRangs
+ */
 extend JoyHttpRangs {
+    /**
+     * Calculates the total size of all ranges combined
+     *
+     * @return The total size of all ranges
+     */
     func sumSize(): Int {
         var size = 0
         for (hr in this) {
@@ -130,6 +166,13 @@ extend JoyHttpRangs {
         return size
     }
 
+    /**
+     * Calculates the MIME size of the ranges when served as multipart/byteranges
+     *
+     * @param contentType The content type of the response
+     * @param size The total size of the content
+     * @return The MIME size of the ranges
+     */
     func mimeSize(contentType: String, size: Int): Int {
         let writer = CountingWriter()
         var encSize = 0
@@ -144,8 +187,17 @@ extend JoyHttpRangs {
     }
 }
 
+/**
+ * A counting writer that tracks the number of bytes written
+ */
 class CountingWriter <: OutputStream {
     var len = 0
+
+    /**
+     * Writes the given buffer to the writer and increments the byte count
+     *
+     * @param buffer The buffer to write
+     */
     public func write(buffer: Array<Byte>): Unit {
         len += buffer.size
     }

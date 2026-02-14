@@ -13,16 +13,16 @@ package cjoy.framework
 import stdx.net.http.{HttpContext, HttpResponseWriter}
 
 /**
- * the builder for server-sent event
+ * Builder for server-sent event (SSE)
  */
 public class JoyServerEventBuilder {
     private let _sb: StringBuilder = StringBuilder()
 
     /**
-     * set the event name
+     * Sets the event name
      *
-     * @param event: the event name
-     * @return the JoyServerEventBuilder
+     * @param event The event name
+     * @return This JoyServerEventBuilder instance for method chaining
      */
     public func event(event: String): JoyServerEventBuilder {
         _sb.append("event: ")
@@ -32,10 +32,10 @@ public class JoyServerEventBuilder {
     }
 
     /**
-     * set the event id
+     * Sets the event id
      *
-     * @param id: the event id
-     * @return the JoyServerEventBuilder
+     * @param id The event id
+     * @return This JoyServerEventBuilder instance for method chaining
      */
     public func id(id: String): JoyServerEventBuilder {
         _sb.append("id: ")
@@ -45,10 +45,10 @@ public class JoyServerEventBuilder {
     }
 
     /**
-     * set the event data
+     * Sets the event data
      *
-     * @param data: the event data
-     * @return the JoyServerEventBuilder
+     * @param data The event data
+     * @return This JoyServerEventBuilder instance for method chaining
      */
     public func data(data: String): JoyServerEventBuilder {
         _sb.append("data: ")
@@ -58,10 +58,10 @@ public class JoyServerEventBuilder {
     }
 
     /**
-     * set the retry time
+     * Sets the retry time
      *
-     * @param retry: the retry time in milliseconds
-     * @return the JoyServerEventBuilder
+     * @param retry The retry time in milliseconds
+     * @return This JoyServerEventBuilder instance for method chaining
      */
     public func retry(retry: UInt): JoyServerEventBuilder {
         _sb.append("retry: ")
@@ -71,10 +71,10 @@ public class JoyServerEventBuilder {
     }
 
     /**
-     * add a comment to the event
+     * Adds a comment to the event
      *
-     * @param comment: the comment string
-     * @return the JoyServerEventBuilder
+     * @param comment The comment string
+     * @return This JoyServerEventBuilder instance for method chaining
      */
     public func comment(comment: String): JoyServerEventBuilder {
         _sb.append(": ")
@@ -84,9 +84,9 @@ public class JoyServerEventBuilder {
     }
 
     /**
-     * build the server-sent event string
+     * Builds the server-sent event string
      *
-     * @return the SSE formatted string
+     * @return The SSE formatted string
      */
     public func build(): String {
         if (_sb.size > 0) {
@@ -97,7 +97,7 @@ public class JoyServerEventBuilder {
 }
 
 /**
- * the writer for server-sent events
+ * Writer for server-sent events (SSE)
  */
 public class JoySseEmitter <: ChunkedWriter {
     init(httpContext: HttpContext) {
@@ -108,10 +108,10 @@ public class JoySseEmitter <: ChunkedWriter {
     }
 
     /**
-     * write data which be encoded to SSE
+     * Writes data which is encoded to SSE
      *
-     * @param data: the event
-     * @return the JoySseEmitter
+     * @param data The event
+     * @return This JoySseEmitter instance for method chaining
      */
     public func sendEvent(data: JoyServerEventBuilder): JoySseEmitter {
         checkEnd()

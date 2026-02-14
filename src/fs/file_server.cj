@@ -43,8 +43,8 @@ public class JoyFileServer {
     /**
      * Serve file from local filesystem
      *
-     * @param ctx: joy context
-     * @param filePath: path of file which will to serve
+     * @param ctx joy context
+     * @param filePath path of file which will to serve
      * @throws IOException if file is not existed
      */
     public static func serveFile(ctx: JoyContext, filePath: Path): Unit {
@@ -66,10 +66,10 @@ public class JoyFileServer {
     /**
      * Serve content from provided read seeker
      *
-     * @param ctx: joy context
-     * @param filePath: path of file which will to serve
-     * @param modTime: modification time of content, None means use file modification time
-     * @param eTag: ETag of content, None means auto generate
+     * @param ctx joy context
+     * @param filePath path of file which will to serve
+     * @param modTime modification time of content, None means use file modification time
+     * @param eTag ETag of content, None means auto generate
      * @throws IOException if file is not existed
      */
     public static func serveContent(ctx: JoyContext, filePath: Path, modTime: ?DateTime, eTag: ?String): Unit {
@@ -135,9 +135,9 @@ public class JoyFileServer {
     /**
      * Serve directory with index.html or directory listing
      *
-     * @param ctx: joy context
-     * @param dirPath: path of directory
-     * @param fileInfo: directory file info
+     * @param ctx joy context
+     * @param dirPath path of directory
+     * @param fileInfo directory file info
      * @throws IOException if directory is not existed
      */
     private static func serveDirectory(ctx: JoyContext, dirPath: Path, fileInfo: FileInfo): Unit {
@@ -194,11 +194,11 @@ public class JoyFileServer {
     /**
      * Handle range request
      *
-     * @param ctx: joy context
-     * @param filePath: path of file
-     * @param rangeStr: range header string
-     * @param size: file size
-     * @param contentType: content type
+     * @param ctx joy context
+     * @param filePath path of file
+     * @param rangeStr range header string
+     * @param size file size
+     * @param contentType content type
      */
     private static func handleRangeRequest(ctx: JoyContext, filePath: Path, rangeStr: String, size: Int64,
         contentType: String): Unit {
@@ -268,10 +268,10 @@ public class JoyFileServer {
     /**
      * Send file content
      *
-     * @param ctx: joy context
-     * @param filePath: path of file
-     * @param offset: offset to start reading
-     * @param length: length to read
+     * @param ctx joy context
+     * @param filePath path of file
+     * @param offset offset to start reading
+     * @param length length to read
      */
     private static func sendFile(ctx: JoyContext, filePath: Path, offset: Int64, length: Int64): Unit {
         let writer = JoyHttpResponseWriter(ctx)
@@ -310,9 +310,9 @@ public class JoyFileServer {
     /**
      * Check preconditions (If-Match, If-None-Match, If-Modified-Since, etc.)
      *
-     * @param ctx: joy context
-     * @param modTime: modification time
-     * @param eTag: ETag
+     * @param ctx joy context
+     * @param modTime modification time
+     * @param eTag ETag
      * @return (done, rangeHeader) - done means response already sent
      */
     private static func checkPreconditions(ctx: JoyContext, modTime: DateTime, eTag: String): (Bool, String) {
@@ -372,8 +372,8 @@ public class JoyFileServer {
     /**
      * Check If-Match header
      *
-     * @param ctx: joy context
-     * @param eTag: ETag to check
+     * @param ctx joy context
+     * @param eTag ETag to check
      * @return cond result
      */
     private static func checkIfMatch(ctx: JoyContext, eTag: String): JoyCondResult {
@@ -413,8 +413,8 @@ public class JoyFileServer {
     /**
      * Check If-None-Match header
      *
-     * @param ctx: joy context
-     * @param eTag: ETag to check
+     * @param ctx joy context
+     * @param eTag ETag to check
      * @return cond result
      */
     private static func checkIfNoneMatch(ctx: JoyContext, eTag: String): JoyCondResult {
@@ -455,8 +455,8 @@ public class JoyFileServer {
     /**
      * Check If-Modified-Since header
      *
-     * @param ctx: joy context
-     * @param modTime: modification time
+     * @param ctx joy context
+     * @param modTime modification time
      * @return cond result
      */
     private static func checkIfIfModifiedSince(ctx: JoyContext, modTime: DateTime): JoyCondResult {
@@ -492,8 +492,8 @@ public class JoyFileServer {
     /**
      * Check If-Unmodified-Since header
      *
-     * @param ctx: joy context
-     * @param modTime: modification time
+     * @param ctx joy context
+     * @param modTime modification time
      * @return cond result
      */
     private static func checkIfUnmodifiedSince(ctx: JoyContext, modTime: DateTime): JoyCondResult {
@@ -525,9 +525,9 @@ public class JoyFileServer {
     /**
      * Check If-Range header
      *
-     * @param ctx: joy context
-     * @param modTime: modification time
-     * @param eTag: ETag
+     * @param ctx joy context
+     * @param modTime modification time
+     * @param eTag ETag
      * @return cond result
      */
     private static func checkIfRange(ctx: JoyContext, modTime: DateTime, eTag: String): JoyCondResult {
@@ -569,8 +569,8 @@ public class JoyFileServer {
     /**
      * Set Last-Modified header
      *
-     * @param ctx: joy context
-     * @param modTime: modification time
+     * @param ctx joy context
+     * @param modTime modification time
      */
     private static func setLastLastModified(ctx: JoyContext, modTime: DateTime): Unit {
         let timeStr = formatHttpTime(modTime)
@@ -590,7 +590,7 @@ public class JoyFileServer {
     /**
      * Write 304 Not Modified response
      *
-     * @param ctx: joy context
+     * @param ctx joy context
      */
     private static func writeNotModified(ctx: JoyContext): Unit {
         // RFC 7232 section 4.1:
@@ -609,9 +609,9 @@ public class JoyFileServer {
     /**
      * Write error response
      *
-     * @param ctx: joy context
-     * @param text: error text
-     * @param code: HTTP status code
+     * @param ctx joy context
+     * @param text error text
+     * @param code HTTP status code
      */
     private static func writeError(ctx: JoyContext, text: String, code: UInt16): Unit {
         ctx.status(code)
@@ -621,8 +621,8 @@ public class JoyFileServer {
     /**
      * Build directory listing HTML
      *
-     * @param dirPath: directory path
-     * @param requestPath: request URL path
+     * @param dirPath directory path
+     * @param requestPath request URL path
      * @return HTML string
      */
     private static func buildDirList(dirPath: Path, requestPath: String): String {
@@ -667,7 +667,7 @@ public class JoyFileServer {
     /**
      * Get parent path from URL path
      *
-     * @param path: URL path
+     * @param path URL path
      * @return parent path
      */
     private static func getParentPath(path: String): String {
@@ -693,7 +693,7 @@ public class JoyFileServer {
     /**
      * Escape HTML special characters
      *
-     * @param str: string to escape
+     * @param str string to escape
      * @return escaped string
      */
     private static func escapeHtml(str: String): String {
