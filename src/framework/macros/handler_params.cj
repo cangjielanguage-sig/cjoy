@@ -35,6 +35,9 @@ open class ParamInfo {
     // the timeformat of datatime
     var timeformat: String = ""
 
+    // 是否有具有默认值的函数参数的变量初始化节点
+    var initExpr: ?Expr = None
+
     init(marcroName: String) {
         this.marcroName = marcroName
         let supportTypes = "String, PrimitiveType, T <: JsonDeserializable, Opition<T> where T <: JsonDeserializable>, Opition<String>, ArrayList<String>, Array<Strng>"
@@ -92,6 +95,10 @@ open class ParamInfo {
 
     func parseFuncParam(funcParam: FuncParam): Unit {
         pname = funcParam.identifier
+        try {
+            this.initExpr = funcParam.expr
+        } catch (e: ASTException) {
+        }
         this.paramType = funcParam.paramType
         typeNode.parse(funcParam.toTokens(), this.paramType.getOrThrow())
     }
@@ -110,7 +117,12 @@ class PathParamVarGenerator <: ParamInfo {
     }
 
     public override func genTokens(): Tokens {
-        quote(let $(pname) = $(getType()).bind(ctx.params, $(getName()), $(getDefValue()), $(getTimeformat())).getOrThrow() )
+        let msg = "@PathParam ${pname.value} bind value failed"
+        if (let Some(expr) <- this.initExpr) {
+            quote(let $(pname) = $(getType()).bind(ctx.params, $(getName()), $(getDefValue()), $(getTimeformat())) ?? $expr )
+        } else {
+            quote(let $(pname) = $(getType()).bind(ctx.params, $(getName()), $(getDefValue()), $(getTimeformat())).getOrThrow({=>throw Exception($(msg))}) )
+        }
     }
 }
 
@@ -120,7 +132,12 @@ class QueryParamVarGenerator <: ParamInfo {
     }
 
     public override func genTokens(): Tokens {
-        quote(let $(pname) = $(getType()).bind(ctx.httpContext.request.url.queryForm, $(getName()), $(getDefValue()), $(getTimeformat())).getOrThrow())
+        let msg = "@QueryParam ${pname.value} bind value failed"
+        if (let Some(expr) <- this.initExpr) {
+            quote(let $(pname) = $(getType()).bind(ctx.httpContext.request.url.queryForm, $(getName()), $(getDefValue()), $(getTimeformat())) ?? $expr)
+        } else {
+            quote(let $(pname) = $(getType()).bind(ctx.httpContext.request.url.queryForm, $(getName()), $(getDefValue()), $(getTimeformat())).getOrThrow({=>throw Exception($(msg))}))
+        }
     }
 }
 
@@ -130,7 +147,12 @@ class PostFormParamVarGenerator <: ParamInfo {
     }
 
     public override func genTokens(): Tokens {
-        quote(let $(pname) = $(getType()).bind(ctx.httpContext.request.form, $(getName()), $(getDefValue()), $(getTimeformat())).getOrThrow())
+        let msg = "@PostFormParam ${pname.value} bind value failed"
+        if (let Some(expr) <- this.initExpr) {
+            quote(let $(pname) = $(getType()).bind(ctx.httpContext.request.form, $(getName()), $(getDefValue()), $(getTimeformat())) ?? $expr)
+        } else {
+            quote(let $(pname) = $(getType()).bind(ctx.httpContext.request.form, $(getName()), $(getDefValue()), $(getTimeformat())).getOrThrow({=>throw Exception($(msg))}))
+        }
     }
 }
 
@@ -140,7 +162,12 @@ class HeaderParamVarGenerator <: ParamInfo {
     }
 
     public override func genTokens(): Tokens {
-        quote(let $(pname) = $(getType()).bind(ctx.httpContext.request.headers, $(getName()), $(getDefValue()), $(getTimeformat())).getOrThrow())
+        let msg = "@HeaderParam ${pname.value} bind value failed"
+        if (let Some(expr) <- this.initExpr) {
+            quote(let $(pname) = $(getType()).bind(ctx.httpContext.request.headers, $(getName()), $(getDefValue()), $(getTimeformat())) ?? $expr)
+        } else {
+            quote(let $(pname) = $(getType()).bind(ctx.httpContext.request.headers, $(getName()), $(getDefValue()), $(getTimeformat())).getOrThrow({=>throw Exception($(msg))}))
+        }
     }
 }
 
@@ -150,7 +177,12 @@ class CookieParamVarGenerator <: ParamInfo {
     }
 
     public override func genTokens(): Tokens {
-        quote(let $(pname) = $(getType()).bind(ctx.cookies, $(getName()), $(getDefValue()), $(getTimeformat())).getOrThrow())
+        let msg = "@CookieParam ${pname.value} bind value failed"
+        if (let Some(expr) <- this.initExpr) {
+            quote(let $(pname) = $(getType()).bind(ctx.cookies, $(getName()), $(getDefValue()), $(getTimeformat())) ?? $expr)
+        } else {
+            quote(let $(pname) = $(getType()).bind(ctx.cookies, $(getName()), $(getDefValue()), $(getTimeformat())).getOrThrow({=>throw Exception($(msg))}))
+        }
     }
 }
 
@@ -161,9 +193,18 @@ class ContextParamVarGenerator <: ParamInfo {
 
     public override func genTokens(): Tokens {
         if (typeNode.vtype.value == "Option") {
-            quote(let $(pname): ?$(typeNode.genericType)= ctx.getCtxParam<$(typeNode.genericType)>($(getName())))
+            if (let Some(expr) <- this.initExpr) {
+                quote(let $(pname): ?$(typeNode.genericType)= ctx.getCtxParam<$(typeNode.genericType)>($(getName())) ?? $expr)
+            } else {
+                quote(let $(pname): ?$(typeNode.genericType)= ctx.getCtxParam<$(typeNode.genericType)>($(getName())))
+            }
         } else {
-            quote(let $(pname): $(typeNode.vtype)= ctx.getCtxParam<$(typeNode.vtype)>($(getName())).getOrThrow())
+            let msg = "@ContextParam ${pname.value} bind value failed"
+            if (let Some(expr) <- this.initExpr) {
+                quote(let $(pname): $(typeNode.vtype)= ctx.getCtxParam<$(typeNode.vtype)>($(getName())) ?? $expr)
+            } else {
+                quote(let $(pname): $(typeNode.vtype)= ctx.getCtxParam<$(typeNode.vtype)>($(getName())).getOrThrow({=>throw Exception($(msg))}))
+            }
         }
     }
 }
@@ -176,12 +217,25 @@ class BodyParamVarGenerator <: ParamInfo {
     public override func genTokens(): Tokens {
         // body param
         if (typeNode.isStringType() || typeNode.isOptionStringType()) {
-            return quote(let $(pname) = ctx.readString())
+            if (let Some(expr) <- this.initExpr) {
+                return quote(let $(pname) = ctx.bindStringBody() ?? $expr)
+            } else {
+                return quote(let $(pname) = ctx.readString())
+            }
         }
         if (typeNode.vtype.value == "Option") {
-            quote(let $(pname): ?$(typeNode.genericType) = ctx.readJson<$(typeNode.genericType)>())
+            if (let Some(expr) <- this.initExpr) {
+                quote(let $(pname): ?$(typeNode.genericType) = ctx.readJson<$(typeNode.genericType)>() ?? $expr)
+            } else {
+                quote(let $(pname): ?$(typeNode.genericType) = ctx.readJson<$(typeNode.genericType)>())
+            }
         } else {
-            quote(let $(pname): $(typeNode.vtype) = ctx.readJson<$(typeNode.vtype)>().getOrThrow())
+            let msg = "@BodyParam ${pname.value} bind value failed"
+            if (let Some(expr) <- this.initExpr) {
+                quote(let $(pname): $(typeNode.vtype) = ctx.readJson<$(typeNode.vtype)>() ?? $expr)
+            } else {
+                quote(let $(pname): $(typeNode.vtype) = ctx.readJson<$(typeNode.vtype)>().getOrThrow({=>throw Exception($(msg))}))
+            }
         }
     }
 }
@@ -193,9 +247,18 @@ class QueryBindParamVarGenerator <: ParamInfo {
 
     public override func genTokens(): Tokens {
         if (typeNode.vtype.value == "Option") {
-            quote(let $(pname): ?$(typeNode.genericType) = ctx.bindQuery<$(typeNode.genericType)>())
+            if (let Some(expr) <- this.initExpr) {
+                quote(let $(pname): ?$(typeNode.genericType) = ctx.bindQuery<$(typeNode.genericType)>() ?? $expr)
+            } else {
+                quote(let $(pname): ?$(typeNode.genericType) = ctx.bindQuery<$(typeNode.genericType)>())
+            }
         } else {
-            quote(let $(pname): $(typeNode.vtype) = ctx.bindQuery<$(typeNode.vtype)>().getOrThrow())
+            let msg = "@QueryBindParam ${pname.value} bind value failed"
+            if (let Some(expr) <- this.initExpr) {
+                quote(let $(pname): $(typeNode.vtype) = ctx.bindQuery<$(typeNode.vtype)>() ?? $expr)
+            } else {
+                quote(let $(pname): $(typeNode.vtype) = ctx.bindQuery<$(typeNode.vtype)>().getOrThrow({=>throw Exception($(msg))}))
+            }
         }
     }
 }
@@ -207,9 +270,18 @@ class PostFormBindParamVarGenerator <: ParamInfo {
 
     public override func genTokens(): Tokens {
         if (typeNode.vtype.value == "Option") {
-            quote(let $(pname): ?$(typeNode.genericType) = ctx.bindPostForm<$(typeNode.genericType)>())
+            if (let Some(expr) <- this.initExpr) {
+                quote(let $(pname): ?$(typeNode.genericType) = ctx.bindPostForm<$(typeNode.genericType)>() ?? $expr)
+            } else {
+                quote(let $(pname): ?$(typeNode.genericType) = ctx.bindPostForm<$(typeNode.genericType)>())
+            }
         } else {
-            quote(let $(pname): $(typeNode.vtype) = ctx.bindPostForm<$(typeNode.vtype)>().getOrThrow())
+            let msg = "@PostFormBindParam ${pname.value} bind value failed"
+            if (let Some(expr) <- this.initExpr) {
+                quote(let $(pname): $(typeNode.vtype) = ctx.bindPostForm<$(typeNode.vtype)>() ?? $expr)
+            } else {
+                quote(let $(pname): $(typeNode.vtype) = ctx.bindPostForm<$(typeNode.vtype)>().getOrThrow({=>throw Exception($(msg))}))
+            }
         }
     }
 }
@@ -221,9 +293,19 @@ class HeaderBindParamVarGenerator <: ParamInfo {
 
     public override func genTokens(): Tokens {
         if (typeNode.vtype.value == "Option") {
+            if (let Some(expr) <- this.initExpr) {
+                quote(let $(pname): ?$(typeNode.genericType) = ctx.bindHeader<$(typeNode.genericType)>() ?? $expr)
+            } else {
+                quote(let $(pname): ?$(typeNode.genericType) = ctx.bindHeader<$(typeNode.genericType)>())
+            }
             quote(let $(pname): ?$(typeNode.genericType) = ctx.bindHeader<$(typeNode.genericType)>())
         } else {
-            quote(let $(pname): $(typeNode.vtype) = ctx.bindHeader<$(typeNode.vtype)>().getOrThrow())
+            let msg = "@HeaderBindParam ${pname.value} bind value failed"
+            if (let Some(expr) <- this.initExpr) {
+                quote(let $(pname): $(typeNode.vtype) = ctx.bindHeader<$(typeNode.vtype)>() ?? $expr)
+            } else {
+                quote(let $(pname): $(typeNode.vtype) = ctx.bindHeader<$(typeNode.vtype)>().getOrThrow({=>throw Exception($(msg))}))
+            }
         }
     }
 }

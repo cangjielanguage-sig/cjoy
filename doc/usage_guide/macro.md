@@ -154,6 +154,48 @@ func getEvent(@PathParam[name = date] event: DateTime): String {
 func getPosts(@PathParam[name = category, default = "all"] category: String): String {
     "Category: ${category}"
 }
+
+// 命名参数（支持默认值）
+@Get[path = "/path1_named/{name}"]
+func getNamedPathParam(@PathParam name!: String = "defstr"): String {
+    println(name)
+    name
+}
+
+// 命名参数与属性配置结合
+@Get[path = "/path2_named/{p}"]
+func getPathParamWithCustomName(@PathParam[name = p] a!: String = "defstr"): String {
+    println(a)
+    a
+}
+
+// 可选类型的命名参数
+@Get[path = "/path3_named/{p}"]
+func getOptionalPathParam(@PathParam[name = p] a!: ?String = "defstr"): String {
+    println(a)
+    a ?? "p"
+}
+
+// Option类型的命名参数
+@Get[path = "/path4_named/{p}"]
+func getOptionPathParam(@PathParam[name = p] a!: Option<String> = Some("defstr")): String {
+    println(a)
+    a ?? "p"
+}
+
+// 数值类型的命名参数
+@Get[path = "/path5_named/{p}"]
+func getNumericPathParam(@PathParam[name = p] a!: Int = 100): String {
+    println(a)
+    a.toString()
+}
+
+// DateTime类型的命名参数
+@Get[path = "/path9_named/{p}"]
+func getDateTimePathParam(@PathParam[name = p] date!: DateTime = DateTime.now()): UInt16 {
+    println(date)
+    200
+}
 ```
 
 ### 2.4 @QueryParam
@@ -180,6 +222,41 @@ func getTags(@QueryParam[name = "tag"] tags: ArrayList<String>): String {
 func search(@QueryParam keyword: ?String): String {
     keyword.getOrValue("")
 }
+
+// 命名参数
+@Get[path = "/query1_named"]
+func getNamedQueryParam(@QueryParam name!: String = "defstr"): String {
+    println(name)
+    name
+}
+
+// 命名参数与属性配置结合
+@Get[path = "/query2_named"]
+func getQueryParamWithCustomName(@QueryParam[name = q1] name!: String = "defstr"): String {
+    println(name)
+    name
+}
+
+// 列表类型的命名参数
+@Get[path = "/query3_named"]
+func getListQueryParam(@QueryParam[name = q1] name!: ArrayList<String> = ArrayList<String>()) : String {
+    println(name)
+    "list"
+}
+
+// 数组类型的命名参数
+@Get[path = "/query4_named"]
+func getArrayQueryParam(@QueryParam[name = q1] name!: Array<String> = []): String {
+    println(name)
+    "array"
+}
+
+// 带默认值的命名参数
+@Get[path = "/query5_named"]
+func getQueryParamWithDefault(@QueryParam[name = q1, default = "x"] name!: String = "defstr"): String {
+    println(name)
+    name
+}
 ```
 
 ### 2.5 @PostFormParam
@@ -193,6 +270,13 @@ func login(
     @PostFormParam password: String
 ): String {
     "Login: ${username}"
+}
+
+// 命名参数
+@Post[path = "/postform1_named"]
+func getNamedPostFormParam(@PostFormParam[name = f1] name!: String = "defstr"): String {
+    println(name)
+    name
 }
 ```
 
@@ -211,6 +295,24 @@ func checkAuth(@HeaderParam[name = "Authorization"] token: String): String {
 func getHeaders(@HeaderParam[name = "X-Custom-Ids"] ids: Array<String>): String {
     ids.toString()
 }
+
+// 命名参数
+@Post[path = "/header1_named"]
+func getNamedHeaderParam(@HeaderParam[name = "X-Tokens", default = "xxx"] token!: String = "defstr"): String {
+    token
+}
+
+// 数组类型的命名参数
+@Post[path = "/header2_named"]
+func getArrayHeaderParam(@HeaderParam[name = "X-IDS"] ids!: Array<String> = []): String {
+    ids.toString()
+}
+
+// 可选类型的命名参数
+@Post[path = "/header3_named"]
+func getOptionalHeaderParam(@HeaderParam[name = "X-Tokens"] token!: ?String = "defstr"): String {
+    token.getOrThrow().toString()
+}
 ```
 
 ### 2.7 @CookieParam
@@ -221,6 +323,12 @@ func getHeaders(@HeaderParam[name = "X-Custom-Ids"] ids: Array<String>): String 
 @Get[path = "/profile"]
 func getProfile(@CookieParam[name = "sessionId"] sid: String): String {
     "Session: ${sid}"
+}
+
+// 命名参数
+@Post[path = "/cookie1_named", produce = json]
+func getNamedCookieParam(@CookieParam[name = "csrf-token"] token!: ?String = "defstr"): String {
+    token.getOrThrow().toString()
 }
 ```
 
@@ -241,6 +349,26 @@ func authMiddleware(ctx: JoyContext, chain: JoyRequestHandlerChain): Unit {
 @Get[path = "/api/profile"]
 func getProfile(@ContextParam[name = "userId"] userId: String): String {
     "User ID: ${userId}"
+}
+
+// 命名参数
+@Post[path = "/context1_named"]
+func getNamedContextParam(@ContextParam[name = c1] name!: String = "defstr"): String {
+    println(name)
+    name
+}
+
+// 数值类型的命名参数
+@Post[path = "/context2_named"]
+func getNumericContextParam(@ContextParam[name = c1] id!: Int = 100): String {
+    println(id)
+    id.toString()
+}
+
+// 自定义类型的命名参数
+@Post[path = "/context3_named"]
+func getCustomContextParam(@ContextParam[name = c1] ctxParm!: TestCtxParam = TestCtxParam()): String {
+    ctxParm.toString()
 }
 ```
 
@@ -273,6 +401,42 @@ class UserInfo {
     var id: String = ""
     var name: String = ""
 }
+
+// 命名参数
+@Post[path = "/body1_named"]
+func getNamedBodyParam(@BodyParam body!: String = "defstr"): String {
+    body
+}
+
+// 可选类型的命名参数
+@Post[path = "/body2_named"]
+func getOptionalBodyParam(@BodyParam body!: ?TestBody = TestBody()): String {
+    body.getOrThrow().toString()
+}
+
+// Option类型的命名参数
+@Post[path = "/body3_named"]
+func getOptionBodyParam(@BodyParam body!: Option<TestBody> = Some(TestBody())): String {
+    body.getOrThrow().toString()
+}
+
+// 自定义类型的命名参数
+@Post[path = "/body4_named"]
+func getCustomBodyParam(@BodyParam body!: TestBody = TestBody()): String {
+    body.toString()
+}
+
+// 返回 JSON 的命名参数
+@Post[path = "/body5_named", produce = json]
+func getJsonBodyParam(@BodyParam body!: TestBody = TestBody()): TestBody {
+    body
+}
+
+// 返回 JSON 数组的命名参数
+@Post[path = "/body6_named", produce = json]
+func getJsonArrayBodyParam(@BodyParam body!: TestBody = TestBody()): Array<TestBody> {
+    [body]
+}
 ```
 
 ### 2.10 @QueryBindParam
@@ -295,6 +459,12 @@ func search(@QueryBindParam params: SearchParams): String {
 }
 
 // 请求: /search?keyword=hello&page=2
+
+// 命名参数
+@Get[path = "/bind_query_named"]
+func getNamedQueryBindParam(@QueryBindParam param!: QueryBindParams = QueryBindParams()): String {
+    param.toString()
+}
 ```
 
 ### 2.11 @PostFormBindParam
@@ -315,6 +485,12 @@ class LoginForm {
 func login(@PostFormBindParam form: LoginForm): String {
     "Login: ${form.username}"
 }
+
+// 命名参数
+@Post[path = "/bind_postform_named"]
+func getNamedPostFormBindParam(@PostFormBindParam param!: FormBindParams = FormBindParams()): String {
+    param.toString()
+}
 ```
 
 ### 2.12 @HeaderBindParam
@@ -334,6 +510,12 @@ class RequestHeaders {
 @Get[path = "/api/data"]
 func getData(@HeaderBindParam headers: RequestHeaders): String {
     "Content-Type: ${headers.contentType}"
+}
+
+// 命名参数
+@Get[path = "/bind__named"]
+func getNamedHeaderBindParam(@HeaderBindParam param!: HeaderParams = HeaderParams()): String {
+    param.toString()
 }
 ```
 
@@ -357,6 +539,7 @@ func getData(@HeaderBindParam headers: RequestHeaders): String {
 | `?T where T <: JoyBindable` | QueryBindParam, PostFormBindParam, HeaderBindParam | 可选的绑定类型 |
 | `JoyContext` | - | 上下文对象，无需宏标注 |
 | 任意类型 | ContextParam | 由中间件设置的任意类型 |
+| `T!`（命名参数） | 所有参数绑定宏 | 命名参数语法，支持默认值（如 `name!: String = "defstr"`） |
 
 ---
 
@@ -660,6 +843,10 @@ main(): Int64 {
 9. **绑定宏**：`@Bind` 注解需要与 `cjoy.bind` 模块配合使用，实现参数绑定
 
 10. **Controller 组合**：`@Controller` 可以与 Handler 宏组合使用，实现类级别的 Handler 组织
+
+11. **命名参数支持**：所有参数绑定宏均支持命名参数语法（`param!: Type = defaultValue`），提供了更清晰的参数默认值声明方式
+
+12. **默认值优先级**：命名参数的默认值（如 `name!: String = "defstr"`）优先级高于宏属性中设置的 `default` 属性（如 `@QueryParam[default = "x"]`）
 
 ---
 << [返回](../../README.md#使用指导)

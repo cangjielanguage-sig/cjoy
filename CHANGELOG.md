@@ -5,6 +5,7 @@ Changelog
  - 变更：废弃LogTool，启用JoyLoggerFactory适配其它的日志框架
  - 特性：增加JoyBoot，简化应用启动引导
  - 增强：提升API Doc规范性与准确性
+ - 特性：Handler宏的入参支持命名参数
 
 # v0.80.0
 

@@ -53,7 +53,9 @@ class FuncInfo {
     }
 
     private func declVars(): (Tokens, Tokens) {
+        // 变量定义
         let vars = ArrayList<Tokens>()
+        // 函数的参数
         let params = ArrayList<Tokens>()
         for (fp in decl.funcParams) {
             let pid = fp.identifier
@@ -68,7 +70,13 @@ class FuncInfo {
             }
 
             vars.add(paramInfo.genTokens())
-            params.add(quote($(pid)))
+            if (paramInfo.initExpr.isSome()) {
+                // 命名参数
+                params.add(quote($(pid): $(pid)))
+            } else {
+                params.add(quote($(pid)))
+            }
+            
         }
 
         (joinTokens(vars, Token(TokenKind.NL)), joinTokens(params, Token(TokenKind.COMMA)))

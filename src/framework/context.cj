@@ -234,6 +234,13 @@ public interface JoyContext <: Context {
     func readString(): String
 
     /**
+     * Reads and binds the request body content into a string
+     *
+     * @return The request body as a string, or None if no body
+     */
+    func bindStringBody(): ?String
+
+    /**
      * Reads and binds query parameters to an object of type T
      *
      * @return The bound object of type T, or None if no query parameters
@@ -736,6 +743,17 @@ class JoyHttpContext <: JoyContext {
         res
     }
 
+    public func bindStringBody(): ?String {
+        copyRequestBody()
+        if (_requestBuffer.length == 0) {
+            return None
+        }
+        let reader = StringReader(BufferedInputStream(_requestBuffer))
+        let res = reader.readToEnd()
+        _requestBuffer.seek(SeekPosition.Begin(0))
+        res
+    }
+
     public func bindQuery<T>(): ?T where T <: JoyBindable<T> {
         if (_httpContext.request.url.queryForm.isEmpty()) {
             return None
@@ -863,7 +881,7 @@ class JoyHttpContext <: JoyContext {
         for (x in _config.remoteIPHeaders) {
             let ip = getHeader(x).map({it => IPAddress.tryParse(it)}).map({it => it.toString()})
             if (ip.isSome()) {
-                return ip.getOrThrow()
+                return ip ?? throw Exception("parse ip address failed")
             }
         }
         getRemoteIP()
