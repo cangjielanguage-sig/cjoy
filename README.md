@@ -7,7 +7,7 @@
 </div>
 
 <p align="center">
-  <img alt="Release" src="https://img.shields.io/badge/release-v0.90.0-brightgreen" />
+  <img alt="Release" src="https://img.shields.io/badge/release-v1.0.0-brightgreen" />
   <img alt="Cangjie Version" src="https://img.shields.io/badge/cjc-v1.0.4-brightgreen" />
   <img alt="Code Coverage" src="https://img.shields.io/badge/cjcov-70%25+-brightgreen" />
   <img alt="State" src="https://img.shields.io/badge/state-孵化-brightgreen" />
@@ -219,7 +219,7 @@ cjoy = { git = "https://gitcode.com/Cangjie-SIG/cjoy.git", branch = "main" }
 
 # 依赖指定 tag
 [dependencies]
-cjoy = { git = "https://gitcode.com/Cangjie-SIG/cjoy.git", tag = "v0.90.0" }
+cjoy = { git = "https://gitcode.com/Cangjie-SIG/cjoy.git", tag = "v1.0.0" }
 ```
 
 ---

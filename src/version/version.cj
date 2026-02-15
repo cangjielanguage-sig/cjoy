@@ -14,7 +14,7 @@ import cjoy.log.macros.*
 
 @JoyCreateLogger("cjoy.version")
 
-public const VERSION: String = "v0.90.0"
+public const VERSION: String = "v1.0.0"
 private const LOGO: String = ##"
  ________        ___  ________      ___    ___ 
 |\   ____\      |\  \|\   __  \    |\  \  /  /|
