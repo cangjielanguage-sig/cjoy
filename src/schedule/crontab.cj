@@ -11,6 +11,7 @@
 package cjoy.schedule
 
 import std.sync.{Timer}
+import std.collection.{ArrayList}
 import std.collection.concurrent.ConcurrentHashMap
 import std.time.DateTime
 import cjoy.context.ServiceContainer
@@ -93,6 +94,30 @@ public class Crontab <: Resource {
      */
     public func exists(name: String): Bool {
         _jobs.contains(name)
+    }
+
+    /**
+     * Remove a cron job from the crontab
+     *
+     * @param name job name
+     * @return true if job was removed, false if job not found
+     */
+    public func removeJob(name: String): Bool {
+        _jobs.remove(name).isSome()
+    }
+
+    /**
+     * Get all job names in the crontab
+     *
+     * @return array of job names
+     */
+    public func getJobNames(): Array<String> {
+        let names = ArrayList<String>()
+        let iter = _jobs.iterator()
+        while (let Some(it) <- iter.next()) {
+            names.add(it[0])
+        }
+        names.toArray()
     }
 
     private static func runScheduled(jobs: ConcurrentHashMap<String, CronJob>): Unit {
