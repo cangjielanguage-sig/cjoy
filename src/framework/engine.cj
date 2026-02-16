@@ -181,6 +181,7 @@ public class Joy {
             } else {
                 server.close()
             }
+            _server = None
         }
         _INSTANCES.remove(this.name)
     }

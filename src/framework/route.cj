@@ -290,8 +290,10 @@ class TreeRouteDistributor <: HttpRequestDistributor & HttpRequestHandler {
         } else {
             req.url.path
         }
-        path = path.removeSuffix("/")
-
+        if (path != "/") {
+            path = path.removeSuffix("/")
+        }
+        
         let ri: RouteInfo<JoyRequestHandler> = RouteInfo()
         var node = _root.findRouteHandler(ri, req.method, path)
         if (node.isNone()) {
@@ -448,7 +450,7 @@ class JoyRouteGroup <: JoyRouters {
      */
     public func createGroups(path: String): JoyRouters {
         checkPath(path)
-        if (path.size == 1) {
+        if (path.isEmpty() || path.size == 1) {
             return this
         }
 
@@ -461,7 +463,9 @@ class JoyRouteGroup <: JoyRouters {
         let segs = xpath.split("/")
         var gr: JoyRouters = this
         for (s in segs) {
-            gr = gr.group("/" + s)
+            if (!s.isEmpty()) {
+                gr = gr.group("/" + s)
+            }
         }
         gr
     }
@@ -472,6 +476,9 @@ class JoyRouteGroup <: JoyRouters {
     private static func checkPath(path: String): Unit {
         if (path.size > 1 && path[0] != b'/') {
             throw IllegalArgumentException("path [${path}] must start with slash")
+        }
+        if (path.contains("//")) {
+            throw IllegalArgumentException("path [${path}] must not contain consecutive slashes")
         }
     }
 
@@ -497,7 +504,9 @@ class JoyRouteGroup <: JoyRouters {
     }
 
     private func addOne(method: String, path: String, handler: JoyRequestHandler): Unit {
-        let thePath = if (_distributor._config.caseInsensitive) {
+        let thePath = if (path == "/") {
+            path
+        } else if (_distributor._config.caseInsensitive) {
             path.toAsciiLower().removeSuffix("/")
         } else {
             path.removeSuffix("/")
@@ -605,7 +614,8 @@ class JoyRouteGroup <: JoyRouters {
         }
 
         let factory = getJoyFileHandlerFactory()
-        handle([JoyHttpConsts.METHOD_GET, JoyHttpConsts.METHOD_HEAD], path, factory.createFileSystemServeHandler(fp, _distributor._config))
+        handle([JoyHttpConsts.METHOD_GET, JoyHttpConsts.METHOD_HEAD], path,
+            factory.createFileSystemServeHandler(fp, _distributor._config))
         this
     }
 
@@ -621,7 +631,8 @@ class JoyRouteGroup <: JoyRouters {
         }
 
         let factory = getJoyFileHandlerFactory()
-        handle([JoyHttpConsts.METHOD_GET, JoyHttpConsts.METHOD_HEAD], relativePath, factory.createFileServeHandler(fp.toString()))
+        handle([JoyHttpConsts.METHOD_GET, JoyHttpConsts.METHOD_HEAD], relativePath,
+            factory.createFileServeHandler(fp.toString()))
         this
     }
 
