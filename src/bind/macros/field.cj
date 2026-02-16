@@ -84,12 +84,12 @@ class BindInfoCache {
 
     public static func create(vd: VarDecl): BindFieldGenerator {
         let fieldInfo = FIELD_INFOS.get(vd.identifier.value) ?? BindFieldInfo(vd)
-        BindFieldGenerator(vd.identifier, fieldInfo)
+        BindFieldGenerator(vd.identifier, fieldInfo, vd)
     }
 }
 
 class BindFieldGenerator {
-    BindFieldGenerator(let varId: Token, let info: BindFieldInfo) {
+    BindFieldGenerator(let varId: Token, let info: BindFieldInfo, let varDecl: VarDecl) {
     }
 
     public func genBindTokens(): Tokens {
@@ -98,16 +98,26 @@ class BindFieldGenerator {
             case _ => info.declType.toTokens()
         }
 
-        if (let Some(dv) <- getDefValueOfType(info.declType)) {
+        // 尝试获取字段声明中设置的默认值，而不是只依赖类型默认值
+        if (let Some(dv) <- getVarDeclDefValue()) {
+            return quote(
+                $(varId): $(vType).bind(source, $(info.keyName()), $(info.getDefValue()), $(info.getTimeformat())).getOrDefault({=>$dv}))
+        } else if (let Some(dv) <- getDefValueOfType(info.declType)) {
             return quote(
                 $(varId): $(vType).bind(source, $(info.keyName()), $(info.getDefValue()), $(info.getTimeformat())).getOrDefault({=>$dv}))
         } else {
-            if (vType.toString() == "DateTime") {
-                return quote(
-                   $(varId): $(vType).bind(source, $(info.keyName()), $(info.getDefValue()), $(info.getTimeformat())).getOrThrow())
-            }
+            let msg = "not found bind ${varId.value} valude"
             return quote(
-                $(varId): $(vType).bind(source, $(info.keyName()), $(info.getDefValue()), $(info.getTimeformat())) ?? $(vType)())
+                $(varId): $(vType).bind(source, $(info.keyName()), $(info.getDefValue()), $(info.getTimeformat())).getOrThrow({=>throw Exception($msg)}))
+        }
+    }
+
+    public func getVarDeclDefValue(): Option<Tokens> {
+        try {
+            let expr = varDecl.expr
+            return expr.toTokens()
+        } catch (_: ASTException) {
+            return None
         }
     }
 }

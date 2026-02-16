@@ -12,7 +12,7 @@ macro package cjoy.bind.macros
 
 import std.ast.*
 import std.collection.{ArrayList, map, collectArrayList}
-import cjoy.utils.ast.{ClassGenentor, joinTokens}
+import cjoy.utils.ast.{ClassGenentor, joinTokens, getDefValueOfType}
 
 class BindClassInfo {
     let classId: Token
@@ -36,6 +36,9 @@ class BindClassInfo {
             Token(TokenKind.COMMA)
         )
 
+        // 对于结构体和类，我们需要确保所有非可选字段都能成功绑定
+        // 但是为了简化实现，我们将直接创建对象，让字段绑定逻辑自行处理
+        // 如果字段绑定失败，它会返回默认值或抛出异常
         quote(
             public static func bind(source: JoyBindSource, name: String, _: ?String, _: ?String): ?$(classId) {
                 if (name.isEmpty()) {

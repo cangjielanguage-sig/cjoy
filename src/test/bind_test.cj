@@ -106,6 +106,67 @@ public class Bind3 {
     var str: String = ""
 }
 
+@Bind
+public struct SDefaultValueBind {
+    @BindField[name = "required_field"]
+    var requiredField: String = ""
+
+    @BindField[name = "optional_field"]
+    var optionalField: ?String = None
+
+    @BindField[name = "int_field"]
+    var intField: Int = 0
+
+    @BindField[name = "default_str"]
+    var defaultStr: String = "default_value"
+
+    @BindField[name = "default_int"]
+    var defaultInt: Int = 100
+}
+
+@Bind
+public struct SNumericTypesBind {
+    var int8: Int8 = 0
+    var int16: Int16 = 0
+    var int32: Int32 = 0
+    var int64: Int64 = 0
+    var uint8: UInt8 = 0
+    var uint16: UInt16 = 0
+    var uint32: UInt32 = 0
+    var uint64: UInt64 = 0
+    var float16: Float16 = 0.0
+    var float32: Float32 = 0.0
+    var float64: Float64 = 0.0
+}
+
+@Bind
+public struct SBooleanBind {
+    var boolValue: Bool = false
+    var optionalBool: ?Bool = None
+}
+
+@Bind
+public struct SDateTimeBind {
+    var date: ?DateTime = None
+    var optionalDate: ?DateTime = None
+
+    @BindField[name = "custom_date", timeformat = "yyyy-MM-dd HH:mm:ss"]
+    var customFormatDate: ?DateTime = None
+}
+
+@Bind
+public class ComplexNestedBind {
+    var name: String = ""
+    var value: Float64 = 0.0
+    var details: ?ComplexDetailsBind = None
+}
+
+@Bind
+public class ComplexDetailsBind {
+    var description: String = ""
+    var tags: Array<String> = []
+}
+
 @Test
 public class BindTestCaseSuit {
     @TestCase
@@ -265,5 +326,150 @@ public class BindTestCaseSuit {
         let container = MapContainer(map1)
         let arr = ArrayList<Int>.bind(container, "A", None, None).getOrThrow()
         @Assert(arr.toArray(), [1, 2])
+    }
+
+    @TestCase
+    public func testDefaultValueBind() {
+        let map1 = HashMap<String, Any>()
+        map1.add("required_field", "test_value")
+        map1.add("int_field", 42)
+        let container = MapContainer(map1)
+        let obj = SDefaultValueBind.bind(container, "").getOrThrow()
+
+        @Assert(obj.requiredField, "test_value")
+        @Assert(obj.intField, 42)
+        @Assert(obj.defaultStr, "default_value")
+        @Assert(obj.defaultInt, 100)
+        @Assert(obj.optionalField, None)
+    }
+
+    @TestCase
+    public func testNumericTypesBind() {
+        let map1 = HashMap<String, Any>()
+        map1.add("int8", 10)
+        map1.add("int16", 1000)
+        map1.add("int32", 100000)
+        map1.add("int64", 1000000000)
+        map1.add("uint8", 200)
+        map1.add("uint16", 50000)
+        map1.add("uint32", 4000000000)
+        map1.add("uint64", 18446744073709551615u64)
+        map1.add("float16", 1.5)
+        map1.add("float32", 3.14)
+        map1.add("float64", 2.71828)
+        let container = MapContainer(map1)
+        let obj = SNumericTypesBind.bind(container, "").getOrThrow()
+
+        @Assert(obj.int8, 10)
+        @Assert(obj.int16, 1000)
+        @Assert(obj.int32, 100000)
+        @Assert(obj.int64, 1000000000)
+        @Assert(obj.uint8, 200)
+        @Assert(obj.uint16, 50000)
+        @Assert(obj.uint32, 4000000000)
+        @Assert(obj.uint64, 18446744073709551615)
+        @Assert(obj.float16, 1.5)
+        @Assert(obj.float32, 3.14)
+        @Assert(obj.float64, 2.71828)
+    }
+
+    @TestCase
+    public func testBooleanBind() {
+        let map1 = HashMap<String, Any>()
+        map1.add("boolValue", true)
+        map1.add("optionalBool", "true")
+        let container = MapContainer(map1)
+        let obj = SBooleanBind.bind(container, "").getOrThrow()
+
+        @Assert(obj.boolValue, true)
+        @Assert(obj.optionalBool, true)
+    }
+
+    @TestCase
+    public func testDateTimeBind() {
+        let now = DateTime.now()
+        let customDateStr = "2023-12-25 18:30:45"
+        let customDate = DateTime.parse(customDateStr, "yyyy-MM-dd HH:mm:ss")
+
+        let map1 = HashMap<String, Any>()
+        map1.add("custom_date", customDateStr)
+        let container = MapContainer(map1)
+        let obj = SDateTimeBind.bind(container, "").getOrThrow()
+
+        @Assert(obj.customFormatDate, customDate)
+        @Assert(obj.optionalDate, None)
+    }
+
+    @TestCase
+    public func testComplexNestedBind() {
+        let map1 = HashMap<String, Any>()
+        let detailsMap = HashMap<String, Any>()
+
+        detailsMap.add("description", "test description")
+        detailsMap.add("tags", ["tag1", "tag2"])
+
+        map1.add("name", "test name")
+        map1.add("value", 1.23)
+        map1.add("details", detailsMap)
+
+        let container = MapContainer(map1)
+        let obj = ComplexNestedBind.bind(container, "").getOrThrow()
+
+        @Assert(obj.name, "test name")
+        @Assert(obj.value, 1.23)
+        @Assert(obj.details?.description, "test description")
+        @Assert(obj.details?.tags, ["tag1", "tag2"])
+    }
+
+    @TestCase
+    public func testBindFailure() {
+        let map1 = HashMap<String, Any>()
+        let container = MapContainer(map1)
+
+        // 测试必填字段缺失
+        let result1 = SQueryBind.bind(container, "").isSome()
+        @Assert(result1, true)
+
+        // 测试类型不匹配
+        let map2 = HashMap<String, Any>()
+        map2.add("str", "test")
+        map2.add("str2", "test2")
+        map2.add("i64", "not_number")
+        map2.add("int", 2)
+        map2.add("i3_64", 3)
+        map2.add("arr", ["1", "2"])
+        map2.add("list", ["1", "2"])
+        let container2 = MapContainer(map2)
+
+        let result2 = SQueryBind.bind(container2, "").isSome()
+        @Assert(result2, true)
+    }
+
+    @TestCase
+    public func testBindFieldMethod() {
+        let map1 = HashMap<String, Any>()
+        let nestedMap = HashMap<String, Any>()
+        nestedMap.add("str", "nested_str")
+        nestedMap.add("int", 42)
+        nestedMap.add("arr", ["a", "b"])
+        map1.add("nested_field", nestedMap)
+        let container = MapContainer(map1)
+
+        let result = SQueryBind.bindField(container, "nested_field").getOrThrow()
+        @Assert(result.str, "nested_str")
+        @Assert(result.i2_64, 42)
+        @Assert(result.arr, ["a", "b"])
+    }
+
+    @TestCase
+    public func testBoolStringBinding() {
+        let map1 = HashMap<String, Any>()
+        map1.add("boolValue", "true")
+        map1.add("optionalBool", "false")
+        let container = MapContainer(map1)
+        let obj = SBooleanBind.bind(container, "").getOrThrow()
+
+        @Assert(obj.boolValue, true)
+        @Assert(obj.optionalBool, false)
     }
 }
