@@ -10,6 +10,7 @@
 
 package cjoy.mcp.server
 
+import std.convert.Parsable
 import std.collection.{ArrayList, map, collectArray}
 import std.collection.concurrent.ConcurrentHashMap
 import stdx.encoding.json.stream.JsonSerializable
@@ -20,22 +21,49 @@ import cjoy.log.macros.*
 import cjoy.json.JsonTool
 
 /**
- * manages MCP resources
+ * Manager class for MCP resources
+ *
+ * Handles resource registration, discovery, and content reading. Provides methods for
+ * adding resources, registering resource handlers, and accessing resource contents.
  */
 public class McpResources {
+    /**
+     * ConcurrentHashMap for storing registered MCP resources
+     */
     let resources: ConcurrentHashMap<String, McpResource> = ConcurrentHashMap()
+
+    /**
+     * ConcurrentHashMap for storing resource templates
+     */
     let resourceTempls: ConcurrentHashMap<String, ResourceTemplate> = ConcurrentHashMap()
+
+    /**
+     * Root node of the routing tree for resource handlers
+     */
     private let _root: TreeNode<McpReadResourceHandler> = TreeNode()
 
-    //-----Resource -----
+    /**
+     * Adds a read resource handler for a specific URI
+     *
+     * @param uri The URI to handle
+     * @param handler The McpReadResourceHandler implementation
+     */
     public func addReadResourceHandler(uri: String, handler: McpReadResourceHandler): Unit {
         _root.addRoute("GET", normUrl(uri), handler)
     }
 
+    /**
+     * Dumps the resource handler routing tree for debugging purposes
+     */
     public func dump() {
         @JoyLogInfo("[MCP] resource handler:\n${_root.dumpTree()}")
     }
 
+    /**
+     * Adds an MCP resource to the manager
+     *
+     * @param resource The McpResource instance to add
+     */
     public func addResource(resource: McpResource): Unit {
         if (resources.contains(resource.uri)) {
             @JoyLogError("[MCP] resource `${resource.uri}` is existed, will be overwrite")
@@ -53,22 +81,93 @@ public class McpResources {
         }
     }
 
+    /**
+     * Lists all available MCP resources with pagination support
+     *
+     * @param page PaginatedRequest containing cursor for pagination
+     * @return ListResourcesResult containing list of resources and next cursor
+     */
     public func listResources(page: PaginatedRequest): ListResourcesResult {
+        let pageSize = 10
+        let startIndex = page.cursor.map {it: String => Int.tryParse(it) ?? 0} ?? 0
         let res: ArrayList<McpResource> = ArrayList()
+
+        var index = 0
         for ((_, value) in resources) {
-            res.add(value)
+            if (index >= startIndex && res.size < pageSize) {
+                res.add(value)
+            }
+            index += 1
         }
-        ListResourcesResult(resources: res)
+
+        let nextCursor = if (index > startIndex + pageSize) {
+            "${startIndex + pageSize}"
+        } else {
+            Option<String>.None
+        }
+
+        let result = ListResourcesResult(resources: res)
+        result.nextCursor = nextCursor
+        result
     }
 
+    /**
+     * Lists all available resource templates with pagination support
+     *
+     * @param page PaginatedRequest containing cursor for pagination
+     * @return ListResourceTemplatesResult containing list of templates and next cursor
+     */
     public func listResourceTemplates(page: PaginatedRequest): ListResourceTemplatesResult {
+        let pageSize = 10
+        let startIndex = page.cursor.map {it: String => Int.tryParse(it) ?? 0} ?? 0
         let res: ArrayList<ResourceTemplate> = ArrayList()
+
+        var index = 0
         for ((_, value) in resourceTempls) {
-            res.add(value)
+            if (index >= startIndex && res.size < pageSize) {
+                res.add(value)
+            }
+            index += 1
         }
-        ListResourceTemplatesResult(resourceTemplates: res)
+
+        let nextCursor = if (index > startIndex + pageSize) {
+            "${startIndex + pageSize}"
+        } else {
+            Option<String>.None
+        }
+
+        let result = ListResourceTemplatesResult(resourceTemplates: res)
+        result.nextCursor = nextCursor
+        result
     }
 
+    /**
+     * Removes the resources with the given URIs
+     *
+     * @param uris The URIs of the resources to remove
+     */
+    public func removeResources(uris: Array<String>): Unit {
+        for (uri in uris) {
+            resources.remove(uri)
+            resourceTempls.remove(uri)
+        }
+    }
+
+    /**
+     * Removes a single resource with the given URI
+     *
+     * @param uri The URI of the resource to remove
+     */
+    public func removeResource(uri: String): Unit {
+        removeResources([uri])
+    }
+
+    /**
+     * Adds route parameters to the JoyContext
+     *
+     * @param ctx The JoyContext
+     * @param ri The RouteInfo containing route parameters
+     */
     private func addCtxParam(ctx: JoyContext, ri: RouteInfo<McpReadResourceHandler>) {
         if (!ri.routeParamKeys.isEmpty()) {
             if (ri.routeParamKeys.size != ri.routeParamValues.size) {
@@ -81,6 +180,14 @@ public class McpResources {
         }
     }
 
+    /**
+     * Reads the content of a specific resource
+     *
+     * @param ctx The JoyContext
+     * @param request ReadResourceRequest containing the URI to read
+     * @return ReadResourceResult containing the resource content
+     * @throws Exception If resource not found or read error occurs
+     */
     public func readResource(ctx: JoyContext, request: ReadResourceRequest): ReadResourceResult {
         let uri = normUrl(request.uri)
         let ri: RouteInfo<McpReadResourceHandler> = RouteInfo()
@@ -93,23 +200,19 @@ public class McpResources {
                 let contents: Array<ResourceContents> = match (result) {
                     case x: Array<Byte> => [createBlobResourceContents(request.uri, toBase64String(x),
                         getMimeType(ctx, JoyHttpConsts.MIME_APP_OCTET_STREAM))]
-                    case x: Collection<Array<Byte>> => x |>
-                        map {
+                    case x: Collection<Array<Byte>> => x |> map {
                         it => createBlobResourceContents(request.uri, toBase64String(it),
                             getMimeType(ctx, JoyHttpConsts.MIME_APP_OCTET_STREAM))
                     } |> collectArray
-                    case x: Collection<String> => x |>
-                        map {
+                    case x: Collection<String> => x |> map {
                         it => createTextResourceContents(request.uri, it, getMimeType(ctx, JoyHttpConsts.MIME_TEXT_PLAIN))
                     } |> collectArray
-                    case x: Collection<JsonSerializable> => x |>
-                        map {
+                    case x: Collection<JsonSerializable> => x |> map {
                         it =>
-                        let value = JsonTool.toJson(it)
-                        createTextResourceContents(request.uri, value, getMimeType(ctx, getMimeType(value)))
+                            let value = JsonTool.toJson(it)
+                            createTextResourceContents(request.uri, value, getMimeType(ctx, getMimeType(value)))
                     } |> collectArray
-                    case x: Collection<ToString> => x |>
-                        map {
+                    case x: Collection<ToString> => x |> map {
                         it => createTextResourceContents(request.uri, it.toString(),
                             getMimeType(ctx, JoyHttpConsts.MIME_TEXT_PLAIN))
                     } |> collectArray
@@ -131,10 +234,23 @@ public class McpResources {
         }
     }
 
+    /**
+     * Gets the MIME type from context or returns a default
+     *
+     * @param ctx The JoyContext
+     * @param defaultValue The default MIME type to return
+     * @return The MIME type from context or default value
+     */
     private static func getMimeType(ctx: JoyContext, defaultValue: String): String {
         ctx.getParam("mimeType") ?? defaultValue
     }
 
+    /**
+     * Determines MIME type from string content
+     *
+     * @param str The string to analyze
+     * @return MIME type (JSON if starts with { or [, otherwise plain text)
+     */
     private static func getMimeType(str: String): String {
         if (str.startsWith("{") || str.startsWith("[")) {
             JoyHttpConsts.MIME_APP_JSON
@@ -143,10 +259,24 @@ public class McpResources {
         }
     }
 
+    /**
+     * Normalizes a URI for routing
+     *
+     * @param uri The URI to normalize
+     * @return Normalized URI
+     */
     private static func normUrl(uri: String): String {
         "/" + uri.replace("://", "/").replace("//", "/")
     }
 
+    /**
+     * Creates a TextResourceContents instance
+     *
+     * @param uri The URI of the resource
+     * @param text The text content
+     * @param mimeType The MIME type of the content
+     * @return TextResourceContents instance
+     */
     private static func createTextResourceContents(uri: String, text: String, mimeType: String): ResourceContents {
         let res = TextResourceContents(text: text)
         res.uri = uri
@@ -154,6 +284,14 @@ public class McpResources {
         res
     }
 
+    /**
+     * Creates a BlobResourceContents instance
+     *
+     * @param uri The URI of the resource
+     * @param blob The base64 encoded blob content
+     * @param mimeType The MIME type of the content
+     * @return BlobResourceContents instance
+     */
     private static func createBlobResourceContents(uri: String, blob: String, mimeType: String): ResourceContents {
         let res = BlobResourceContents(blob: blob)
         res.uri = uri

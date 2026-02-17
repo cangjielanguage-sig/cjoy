@@ -10,6 +10,7 @@
 
 package cjoy.mcp.server
 
+import std.convert.Parsable
 import std.collection.{ArrayList, HashMap, map, collectArray}
 import std.collection.concurrent.ConcurrentHashMap
 import stdx.encoding.json.stream.JsonSerializable
@@ -19,17 +20,38 @@ import cjoy.log.macros.*
 import cjoy.json.JsonTool
 
 /**
- * manages MCP tools
+ * Manager class for MCP tools
+ *
+ * Handles tool registration, discovery, and invocation. Provides methods for
+ * adding tools, registering tool handlers, and executing tool calls.
  */
 public class McpTools {
     // tools
+    /**
+     * ConcurrentHashMap for storing registered MCP tools
+     */
     let tools: ConcurrentHashMap<String, McpTool> = ConcurrentHashMap()
+
+    /**
+     * ConcurrentHashMap for storing tool call handlers
+     */
     let callToolHandlers: ConcurrentHashMap<String, McpCallToolHandler> = ConcurrentHashMap()
 
+    /**
+     * Adds a tool call handler for a specific method
+     *
+     * @param method The method name to handle
+     * @param handler The handler implementation
+     */
     public func addCallToolHandler(method: String, handler: McpCallToolHandler) {
         callToolHandlers.add(method, handler)
     }
 
+    /**
+     * Adds an MCP tool to the manager
+     *
+     * @param tool The McpTool instance to add
+     */
     public func addTool(tool: McpTool): Unit {
         if (tools.contains(tool.name)) {
             @JoyLogWarn("[MCP]tool `${tool.name}` is existed, will be overwrite")
@@ -37,14 +59,64 @@ public class McpTools {
         tools.add(tool.name, tool)
     }
 
+    /**
+     * Lists all available MCP tools with pagination support
+     *
+     * @param page PaginatedRequest containing cursor for pagination
+     * @return ListToolsResult containing list of tools and next cursor
+     */
     public func listTools(page: PaginatedRequest): ListToolsResult {
+        let pageSize = 10
+        let startIndex = page.cursor.map {it: String => Int.tryParse(it) ?? 0} ?? 0
         let res: ArrayList<McpTool> = ArrayList()
+
+        var index = 0
         for ((_, value) in tools) {
-            res.add(value)
+            if (index >= startIndex && res.size < pageSize) {
+                res.add(value)
+            }
+            index += 1
         }
-        ListToolsResult(tools: res)
+
+        let nextCursor = if (index > startIndex + pageSize) {
+            "${startIndex + pageSize}"
+        } else {
+            Option<String>.None
+        }
+
+        let result = ListToolsResult(tools: res)
+        result.nextCursor = nextCursor
+        result
     }
 
+    /**
+     * Removes the tools with the given names
+     *
+     * @param names The names of the tools to remove
+     */
+    public func removeTools(names: Array<String>): Unit {
+        for (name in names) {
+            tools.remove(name)
+            callToolHandlers.remove(name)
+        }
+    }
+
+    /**
+     * Removes a single tool with the given name
+     *
+     * @param name The name of the tool to remove
+     */
+    public func removeTool(name: String): Unit {
+        removeTools([name])
+    }
+
+    /**
+     * Calls an MCP tool with the given request
+     *
+     * @param ctx The JoyContext for the request
+     * @param request CallToolRequest containing tool name and arguments
+     * @return CallToolResult containing the tool's response or error information
+     */
     public func callTool(ctx: JoyContext, request: CallToolRequest): CallToolResult {
         if (let Some(handler) <- callToolHandlers.get(request.name)) {
             let arguments = (request.arguments as Array<Byte>) ?? Array<Byte>()
@@ -80,6 +152,12 @@ public class McpTools {
         }
     }
 
+    /**
+     * Creates a TextContent instance with the given text
+     *
+     * @param text The text to wrap
+     * @return TextContent instance with type "text"
+     */
     private static func createTextContent(text: String): Content {
         let content = TextContent(text: text)
         content.type_ = "text"

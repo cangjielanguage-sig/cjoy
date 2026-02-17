@@ -27,8 +27,8 @@ public interface McpSession <: Resource {
     /**
      * send a JSON-RPC request and wait for response
      *
-     * @param method: the method name
-     * @param requestParams: the request parameters
+     * @param method the method name
+     * @param requestParams the request parameters
      * @return the response of type T
      */
     func sendRequest<T>(method: String, requestParams: JsonSerializable): T where T <: JsonDeserializable<T>
@@ -36,8 +36,8 @@ public interface McpSession <: Resource {
     /**
      * send a JSON-RPC notification without waiting for response
      *
-     * @param method: the notification method name
-     * @param params: the notification parameters
+     * @param method the notification method name
+     * @param params the notification parameters
      */
     func sendNotification(method: String, params: ?JsonSerializable): Unit
     func sendNotification(method: String) {
@@ -47,8 +47,8 @@ public interface McpSession <: Resource {
     /**
      * add a consumer for notification method
      *
-     * @param method: the notification method name
-     * @param consumer: the consumer function to handle notification bytes
+     * @param method the notification method name
+     * @param consumer the consumer function to handle notification bytes
      */
     func addNotificationConsumer(method: String, consumer: (Array<Byte>) -> Unit): Unit
 }
@@ -60,8 +60,8 @@ public interface McpServerSession <: McpSession {
     /**
      * handle incoming JSON-RPC message
      *
-     * @param ctx: the context
-     * @param message: the JSON-RPC message
+     * @param ctx the context
+     * @param message the JSON-RPC message
      */
     func handle(ctx: JoyContext, message: JSONRPCMessage): Unit
 }
@@ -83,7 +83,7 @@ public interface McpNotificationHandler {
     /**
      * handle notification message
      *
-     * @param message: the notification message
+     * @param message the notification message
      */
     func onNotification(message: JSONRPCNotification): Unit
 }
@@ -95,7 +95,7 @@ public interface McpResponseHandler {
     /**
      * handle response message
      *
-     * @param message: the response message
+     * @param message the response message
      */
     func onResponse(message: JSONRPCResponse): Unit
 }
@@ -107,8 +107,8 @@ public interface McpRequestHandler {
     /**
      * handle request message
      *
-     * @param ctx: the context
-     * @param message: the request message
+     * @param ctx the context
+     * @param message the request message
      */
     func onRequest(ctx: JoyContext, message: JSONRPCRequest): Unit
 }
@@ -120,8 +120,8 @@ public interface McpCallToolHandler {
     /**
      * handle tool call with arguments
      *
-     * @param ctx: the context
-     * @param arguments: the tool arguments as bytes
+     * @param ctx the context
+     * @param arguments the tool arguments as bytes
      * @return the result of tool call
      */
     func handle(ctx: JoyContext, arguments: Array<Byte>): Any
@@ -134,7 +134,7 @@ public interface McpReadResourceHandler {
     /**
      * read resource content
      *
-     * @param ctx: the context
+     * @param ctx the context
      * @return the resource content
      */
     func readResource(ctx: JoyContext): Any
@@ -147,8 +147,8 @@ public interface McpGetPromptHandler {
     /**
      * get prompt content with arguments
      *
-     * @param ctx: the context
-     * @param arguments: the prompt arguments
+     * @param ctx the context
+     * @param arguments the prompt arguments
      * @return the prompt content
      */
     func getPrompt(ctx: JoyContext, arguments: HashMap<String, String>): Any
@@ -161,7 +161,7 @@ public interface McpTransport <: Resource {
     /**
      * send message through transport
      *
-     * @param message: the message bytes to send
+     * @param message the message bytes to send
      */
     func send(message: ByteBuffer): Unit
 }
@@ -173,14 +173,14 @@ public interface McpClientTransport <: McpTransport {
     /**
      * connect to transport with message consumer
      *
-     * @param consumer: the consumer function to handle incoming messages
+     * @param consumer the consumer function to handle incoming messages
      */
     func connect(consumer: (ByteBuffer) -> Unit): Unit
 
     /**
      * set callback when reconnected
      *
-     * @param callback: the callback function
+     * @param callback the callback function
      */
     func whenReConnect(callback: () -> Unit): Unit
 }
@@ -219,7 +219,7 @@ public interface McpClient <: Resource {
     /**
      * list available tools
      *
-     * @param cursor: the pagination cursor
+     * @param cursor the pagination cursor
      * @return the list tools result
      */
     func listTools(cursor: ?String): ListToolsResult
@@ -230,7 +230,7 @@ public interface McpClient <: Resource {
     /**
      * call a tool
      *
-     * @param request: the tool call request
+     * @param request the tool call request
      * @return the tool call result
      */
     func callTool(request: CallToolRequest): CallToolResult
@@ -238,7 +238,7 @@ public interface McpClient <: Resource {
     /**
      * list available resources
      *
-     * @param cursor: the pagination cursor
+     * @param cursor the pagination cursor
      * @return the list resources result
      */
     func listResources(cursor: ?String): ListResourcesResult
@@ -249,7 +249,7 @@ public interface McpClient <: Resource {
     /**
      * list resource templates
      *
-     * @param cursor: the pagination cursor
+     * @param cursor the pagination cursor
      * @return the list resource templates result
      */
     func listResourceTemplates(cursor: ?String): ListResourceTemplatesResult
@@ -260,7 +260,7 @@ public interface McpClient <: Resource {
     /**
      * read resource content
      *
-     * @param request: the read resource request
+     * @param request the read resource request
      * @return the read resource result
      */
     func readResource(request: ReadResourceRequest): ReadResourceResult
@@ -268,7 +268,7 @@ public interface McpClient <: Resource {
     /**
      * list available prompts
      *
-     * @param cursor: the pagination cursor
+     * @param cursor the pagination cursor
      * @return the list prompts result
      */
     func listPrompts(cursor: ?String): ListPromptResult
@@ -279,17 +279,34 @@ public interface McpClient <: Resource {
     /**
      * get prompt content
      *
-     * @param request: the get prompt request
+     * @param request the get prompt request
      * @return the get prompt result
      */
     func getPrompt(request: GetPromptRequest): GetPromptResult
 }
 
-// -----
+/**
+ * Represents an image content type for MCP
+ *
+ * This class provides functionality to load images from files or raw data
+ * and convert them to ImageContent format for use in MCP responses.
+ */
 public class Image {
+    /**
+     * Initializes a new Image instance
+     *
+     * @param path Path to the image file (default: empty string)
+     * @param data Raw image data (default: empty array)
+     * @param format Image format (e.g., "png", "jpeg") (default: empty string)
+     */
     public Image(public let path!: String = "", public var data!: Array<Byte> = [], public let format!: String = "") {
     }
 
+    /**
+     * Converts the Image to ImageContent format for MCP responses
+     *
+     * @return ImageContent instance containing the image data
+     */
     public func toImageContext(): Content {
         var mimeType = if (format != "") {
             "image/${format.toAsciiLower()}"
@@ -309,10 +326,28 @@ public class Image {
     }
 }
 
+/**
+ * Represents an audio content type for MCP
+ *
+ * This class provides functionality to load audio from files or raw data
+ * and convert them to AudioContent format for use in MCP responses.
+ */
 public class Audio {
+    /**
+     * Initializes a new Audio instance
+     *
+     * @param path Path to the audio file (default: empty string)
+     * @param data Raw audio data (default: empty array)
+     * @param format Audio format (e.g., "mp3", "wav") (default: empty string)
+     */
     public Audio(public let path!: String = "", public var data!: Array<Byte> = [], public let format!: String = "") {
     }
 
+    /**
+     * Converts the Audio to AudioContent format for MCP responses
+     *
+     * @return AudioContent instance containing the audio data
+     */
     public func toAudioContent(): Content {
         var mimeType = if (format != "") {
             "audio/${format.toAsciiLower()}"
@@ -332,10 +367,27 @@ public class Audio {
     }
 }
 
+/**
+ * Represents a message type for MCP prompts
+ *
+ * This class provides functionality to create prompt messages with
+ * specific roles (e.g., user, assistant) for use in MCP responses.
+ */
 public class Message {
+    /**
+     * Initializes a new Message instance
+     *
+     * @param content Message content (default: empty string)
+     * @param role Message sender role (e.g., "user", "assistant") (default: "assistant")
+     */
     public Message(public let content!: String = "", public let role!: String = "assistant") {
     }
 
+    /**
+     * Converts the Message to PromptMessage format for MCP responses
+     *
+     * @return PromptMessage instance containing the message
+     */
     public func toPromptMessage(): PromptMessage {
         var res = TextContent(text: content)
         res.type_ = "text"

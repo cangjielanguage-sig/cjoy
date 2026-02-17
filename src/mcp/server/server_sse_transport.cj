@@ -20,14 +20,37 @@ import cjoy.mcp.api.*
 import cjoy.jsonrpc.{JSONRPCError, JSONRPCConsts, JSONRPCTool}
 import cjoy.log.macros.*
 
+/**
+ * MCP server transport for Server-Sent Events (SSE) communication
+ *
+ * Handles incoming SSE connections and message exchange between MCP server and clients
+ * using SSE protocol for real-time communication.
+ */
 class McpSseServerTransport <: McpServerTransport {
+    /**
+     * ConcurrentHashMap for storing active server sessions
+     */
     private let _sessions: ConcurrentHashMap<String, McpServerSession> = ConcurrentHashMap()
+
+    /**
+     * The endpoint for message exchange
+     */
     private let _messageEndpoint: String
 
+    /**
+     * Initializes a new McpSseServerTransport
+     *
+     * @param messageEndpoint The endpoint for message exchange
+     */
     init(messageEndpoint: String) {
         this._messageEndpoint = messageEndpoint
     }
 
+    /**
+     * Handles incoming SSE requests
+     *
+     * @param ctx The JoyContext for the request
+     */
     public func handleSseRequest(ctx: JoyContext): Unit {
         @JoyLogInfo("[MCP] recv sse request from ${ctx.getClientIP()}")
         let emitter = ctx.eventEmitter()
@@ -56,6 +79,11 @@ class McpSseServerTransport <: McpServerTransport {
         _sessions.remove(sessionId)
     }
 
+    /**
+     * Handles incoming POST requests for message exchange
+     *
+     * @param ctx The JoyContext for the request
+     */
     public func handlePostRequest(ctx: JoyContext): Unit {
         let sessionId = ctx.getQuery("sessionId", "")
         if (sessionId == "") {
@@ -85,27 +113,80 @@ class McpSseServerTransport <: McpServerTransport {
         }
     }
 
+    /**
+     * Sends a message through this transport (not implemented for SSE)
+     *
+     * @param message The message to send
+     */
     public func send(_: ByteBuffer): Unit {
         // nothing
     }
 
+    /**
+     * Closes the transport
+     */
     public func close(): Unit {
     }
 
+    /**
+     * Checks if the transport is closed
+     *
+     * @return Always false for SSE transport
+     */
     public func isClosed(): Bool {
         false
     }
 }
 
+/**
+ * MCP server session transport for Server-Sent Events (SSE) communication
+ *
+ * Manages communication between server and client over an SSE connection for a specific session.
+ */
 class McpSseServerSessionTransport <: McpTransport {
+    /**
+     * The SSE emitter for sending events to client
+     */
     let _emitter: JoySseEmitter
+
+    /**
+     * The session state manager
+     */
     let _state: McpServerSessionState
+
+    /**
+     * Reference to all active sessions
+     */
     let _sessions: ConcurrentHashMap<String, McpServerSession>
+
+    /**
+     * Time of last message sent
+     */
     private var _lastMsgTime: DateTime = DateTime.now()
+
+    /**
+     * Flag indicating if transport is running
+     */
     private var _running: Bool = true
+
+    /**
+     * Flag indicating if transport is closed
+     */
     private var _isClosed: Bool = false
+
+    /**
+     * Flag indicating if session should be removed on error
+     */
     private let _removeOnErr: Bool
 
+    /**
+     * Initializes a new McpSseServerSessionTransport
+     *
+     * @param emitter The SSE emitter for this session
+     * @param state The session state manager
+     * @param sessions Reference to all active sessions
+     * @param removeOnErr Whether to remove session on error (default: true)
+     */
     init(emitter: JoySseEmitter, state: McpServerSessionState, sessions: ConcurrentHashMap<String, McpServerSession>,
         removeOnErr!: Bool = true) {
         _emitter = emitter
@@ -124,6 +205,9 @@ class McpSseServerSessionTransport <: McpTransport {
         }
     }
 
+    /**
+     * Closes the session transport
+     */
     public func close(): Unit {
         if (_isClosed) {
             return
@@ -132,10 +216,18 @@ class McpSseServerSessionTransport <: McpTransport {
         _isClosed = true
     }
 
+    /**
+     * Checks if the transport is closed
+     *
+     * @return True if transport is closed, false otherwise
+     */
     public func isClosed(): Bool {
         _isClosed
     }
 
+    /**
+     * Sends a ping event to keep the SSE connection alive
+     */
     private func sendPing(): Unit {
         try {
             _emitter.sendEvent(JoyServerEventBuilder().comment("ping"))
@@ -148,11 +240,21 @@ class McpSseServerSessionTransport <: McpTransport {
         }
     }
 
+    /**
+     * Sends a message through the SSE transport
+     *
+     * @param message The message to send as ByteBuffer
+     */
     public func send(message: ByteBuffer): Unit {
         let data = String.fromUtf8(message.bytes())
         send(data)
     }
 
+    /**
+     * Sends a message through the SSE transport
+     *
+     * @param data The message to send as string
+     */
     public func send(data: String): Unit {
         try {
             sendEvent(_emitter, McpConsts.EVENT_MESSAGE, data)
@@ -169,6 +271,13 @@ class McpSseServerSessionTransport <: McpTransport {
     }
 }
 
+/**
+ * Helper function to send an SSE event
+ *
+ * @param emitter The SSE emitter to use
+ * @param eventType The type of event
+ * @param data The event data
+ */
 func sendEvent(emitter: JoySseEmitter, eventType: String, data: String) {
     emitter.sendEvent(JoyServerEventBuilder().event(eventType).data(data))
 }
