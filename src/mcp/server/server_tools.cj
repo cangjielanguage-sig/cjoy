@@ -37,6 +37,8 @@ public class McpTools {
      */
     let callToolHandlers: ConcurrentHashMap<String, McpCallToolHandler> = ConcurrentHashMap()
 
+    private let _pageSize = 10
+
     /**
      * Adds a tool call handler for a specific method
      *
@@ -66,20 +68,19 @@ public class McpTools {
      * @return ListToolsResult containing list of tools and next cursor
      */
     public func listTools(page: PaginatedRequest): ListToolsResult {
-        let pageSize = 10
         let startIndex = page.cursor.map {it: String => Int.tryParse(it) ?? 0} ?? 0
         let res: ArrayList<McpTool> = ArrayList()
 
         var index = 0
         for ((_, value) in tools) {
-            if (index >= startIndex && res.size < pageSize) {
+            if (index >= startIndex && res.size < _pageSize) {
                 res.add(value)
             }
             index += 1
         }
 
-        let nextCursor = if (index > startIndex + pageSize) {
-            "${startIndex + pageSize}"
+        let nextCursor = if (index > startIndex + _pageSize) {
+            "${startIndex + _pageSize}"
         } else {
             Option<String>.None
         }

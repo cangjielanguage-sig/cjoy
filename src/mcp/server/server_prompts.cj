@@ -36,6 +36,8 @@ public class McpPrompts {
      */
     let prompts: ConcurrentHashMap<String, McpPrompt> = ConcurrentHashMap()
 
+    private let _pageSize = 10
+
     /**
      * Adds an MCP prompt to the manager
      *
@@ -65,20 +67,19 @@ public class McpPrompts {
      * @return ListPromptResult containing list of prompts and next cursor
      */
     public func listPrompt(page: PaginatedRequest): ListPromptResult {
-        let pageSize = 10
         let startIndex = page.cursor.map {it: String => Int.tryParse(it) ?? 0} ?? 0
         let res: ArrayList<McpPrompt> = ArrayList()
 
         var index = 0
         for ((_, value) in prompts) {
-            if (index >= startIndex && res.size < pageSize) {
+            if (index >= startIndex && res.size < _pageSize) {
                 res.add(value)
             }
             index += 1
         }
 
-        let nextCursor = if (index > startIndex + pageSize) {
-            "${startIndex + pageSize}"
+        let nextCursor = if (index > startIndex + _pageSize) {
+            "${startIndex + _pageSize}"
         } else {
             Option<String>.None
         }

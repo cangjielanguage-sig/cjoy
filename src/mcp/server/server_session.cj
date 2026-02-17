@@ -17,7 +17,7 @@ import std.sync.SyncCounter
 import std.convert.Parsable
 import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable}
 import cjoy.mcp.api.*
-import cjoy.jsonrpc.{JSONRPCRequest, JSONRPCResponse, JSONRPCMessage, JSONRPCTool, JSONRPCError, JSONRPCConsts,
+import cjoy.jsonrpc.{JSONRPCRequest, JSONRPCResponse, JSONRPCMessage, JSONRPCTool, JSONRPCError, JSONRPCConsts, 
     JSONRPCException, JSONRPCNotification}
 import cjoy.log.macros.*
 import cjoy.json.JsonTool
@@ -31,6 +31,8 @@ import cjoy.framework.{JoyContext, JoySseEmitter}
  */
 class McpServerSessionState {
     private let _counter: SyncCounter = SyncCounter(1)
+    private var _streamCompleted: Bool = false
+    private let _streamCompletionHandlers: ArrayList<() -> Unit> = ArrayList()
 
     /**
      * Initializes a new McpServerSessionState
@@ -56,6 +58,35 @@ class McpServerSessionState {
     public func compete(): Unit {
         _counter.dec()
     }
+
+    /**
+     * Marks the stream as completed
+     */
+    public func markStreamCompleted(): Unit {
+        _streamCompleted = true
+        @JoyLogDebug("[MCP] stream completed, sessionId: ${sessionId}")
+        // 通知所有流完成处理程序
+        var i = 0
+        while (i < _streamCompletionHandlers.size) {
+            let handler = _streamCompletionHandlers[i]
+            handler()
+            i += 1
+        }
+    }
+
+    /**
+     * Checks if the stream is completed
+     */
+    public func isStreamCompleted(): Bool {
+        _streamCompleted
+    }
+
+    /**
+     * Adds a stream completion handler
+     */
+    public func addStreamCompletionHandler(handler: () -> Unit): Unit {
+        _streamCompletionHandlers.add(handler)
+    }
 }
 
 /**
@@ -73,6 +104,45 @@ class DefaultMcpServerSession <: McpServerSession & McpRequestHandler & McpRespo
     private let _notificationConsumer: ConcurrentHashMap<String, (Array<Byte>) -> Unit> = ConcurrentHashMap()
     private var _events: ArrayList<(String, ByteBuffer)> = ArrayList()
     private var _eventIdCounter: Int64 = 0
+    private let _eventStore: ?EventStore
+
+    public prop sessionId: String {
+        get() {
+            return _sessionId
+        }
+    }
+
+    /**
+     * Marks the stream as completed
+     */
+    public func markStreamCompleted(): Unit {
+        // 这里可以添加流完成时的逻辑，例如清理资源、关闭连接等
+        @JoyLogInfo("[MCP] Stream completed, sessionId: ${_sessionId}")
+        // 标记会话状态为流完成
+        // 如果使用 McpServerSessionState，可以在这里调用其方法
+        // 例如：_state.markStreamCompleted()
+        // 同时，可以通知所有流完成处理程序
+        close()
+    }
+
+    /**
+     * Checks if the stream is completed
+     */
+    public func isStreamCompleted(): Bool {
+        // 这里可以添加检查流是否已完成的逻辑
+        // 如果使用 McpServerSessionState，可以在这里调用其方法
+        // 例如：_state.isStreamCompleted() 
+        _isClosed
+    }
+
+    /**
+     * Adds a stream completion handler
+     */
+    public func addStreamCompletionHandler(handler: () -> Unit): Unit {
+        // 这里可以添加流完成处理程序的逻辑
+        // 如果使用 McpServerSessionState，可以在这里调用其方法
+        // 例如：_state.addStreamCompletionHandler(handler)
+    }
 
     /**
      * Initializes a new DefaultMcpServerSession
@@ -81,12 +151,32 @@ class DefaultMcpServerSession <: McpServerSession & McpRequestHandler & McpRespo
      * @param transport The MCP transport to use
      * @param isJsonResp Whether to send JSON responses directly instead of via transport
      * @param streamable Whether this is a streamable session
+     * @param eventStore Optional event store for persisting events (default: None)
      */
-    init(sessionId: String, transport: McpTransport, isJsonResp: Bool, streamable: Bool) {
+    init(sessionId: String, transport: McpTransport, isJsonResp: Bool, streamable: Bool, eventStore!: ?EventStore = None) {
         _sessionId = sessionId
         _transport = transport
         _isJsonResp = isJsonResp
         _streamable = streamable
+        _eventStore = eventStore
+
+        // Open default event stream when event store is available
+        if (let Some(store) <- eventStore) {
+            let streamId = "default" // TODO: support multiple streams per session
+            store.open(_sessionId, streamId)
+            @JoyLogDebug("[MCP] opened event stream, streamId: ${streamId}, sessionId: ${_sessionId}")
+        }
+    }
+
+    /**
+     * Creates a dummy JoyContext instance for use when no real context is available
+     *
+     * @return A dummy JoyContext instance
+     */
+    private func _dummyContext(): JoyContext {
+        // 在实际代码中，我们应该使用一个更简单的方法来获取或创建上下文
+        // 这里我们抛出异常，因为我们不应该在没有上下文的情况下调用event store方法
+        throw Exception("No JoyContext available")
     }
 
     /**
@@ -95,10 +185,68 @@ class DefaultMcpServerSession <: McpServerSession & McpRequestHandler & McpRespo
      * @param data The event data to store
      * @return The unique event identifier
      */
-    public func storeEvent(data: ByteBuffer): String {
-        _eventIdCounter += 1
-        let eventId = "${_eventIdCounter}"
-        _events.add((eventId, data))
+    /**
+     * Formats an event ID using <streamID>_<index> format
+     *
+     * @param streamId The stream identifier
+     * @param index The event index in the stream
+     * @return Formatted event ID string
+     */
+    private func formatEventId(streamId: String, index: Int64): String {
+        "${streamId}_${index}"
+    }
+
+    /**
+     * Parses an event ID in <streamID>_<index> format
+     *
+     * @param eventId The event ID to parse
+     * @return Tuple containing (streamId, index) if parsing succeeds, otherwise (None, None)
+     */
+    private func parseEventId(eventId: String): (?String, ?Int64) {
+        let parts = eventId.split("_")
+        if (parts.size != 2) {
+            @JoyLogDebug("[MCP] invalid eventId format: ${eventId}")
+            return (None, None)
+        }
+        let streamId = parts[0]
+        let indexStr = parts[1]
+        let parsedIndex = Int64.tryParse(indexStr)
+        if (let Some(index) <- parsedIndex) {
+            if (index >= 0) {
+                (Some(streamId), Some(index))
+            } else {
+                @JoyLogDebug("[MCP] invalid eventId index: ${indexStr}")
+                (None, None)
+            }
+        } else {
+            @JoyLogDebug("[MCP] invalid eventId index: ${indexStr}")
+            (None, None)
+        }
+    }
+
+    /**
+     * Stores an event for retrieval
+     *
+     * @param data The event data to store
+     * @return The unique event identifier in <streamID>_<index> format
+     */
+    public func storeEvent(data: ByteBuffer, ctx!: ?JoyContext = None): String {
+        let streamId = "default" // TODO: support multiple streams per session
+        let eventId = match (_eventStore) {
+            case Some(eventStore) =>
+                // Get current event count to determine index
+                let currentCount = eventStore.getEventCount(_sessionId, streamId)
+                let newIndex = currentCount
+                eventStore.append(_sessionId, streamId, data)
+                formatEventId(streamId, newIndex)
+            case None =>
+                _eventIdCounter += 1
+                let newIndex = _eventIdCounter - 1
+                let formattedId = formatEventId(streamId, newIndex)
+                _events.add((formattedId, data))
+                formattedId
+        }
+
         @JoyLogDebug("[MCP] stored event, eventId: ${eventId}, sessionId: ${_sessionId}")
         return eventId
     }
@@ -109,19 +257,40 @@ class DefaultMcpServerSession <: McpServerSession & McpRequestHandler & McpRespo
      * @param lastEventId The last event ID to use as a starting point
      * @return List of events with their IDs and data
      */
-    public func retrieveEvents(lastEventId: String): ArrayList<(String, ByteBuffer)> {
+    public func retrieveEvents(lastEventId: String, ctx!: ?JoyContext = None): ArrayList<(String, ByteBuffer)> {
+        // If event store is available, use it for event retrieval
+        if (let Some(eventStore) <- _eventStore) {
+            let streamId = "default" // TODO: support multiple streams per session
+
+            // Parse event ID to get last index
+            let (_, lastIndex) = parseEventId(lastEventId)
+            let index = lastIndex ?? -1
+            var events = ArrayList<(String, ByteBuffer)>()
+
+            let iterator = eventStore.after(_sessionId, streamId, index)
+            while (let Some(next) <- iterator.next()) {
+                let event = (formatEventId(streamId, next[0]), next[1])
+                events.add(event)
+            }
+
+            @JoyLogDebug("[MCP] retrieved ${events.size} events from event store after eventId: ${lastEventId}, sessionId: ${_sessionId}")
+            return events
+        }
+
+        // Fallback to in-memory storage
         let events = ArrayList<(String, ByteBuffer)>()
-        let id = Int.tryParse(lastEventId) ?? 0
+        let (_, lastIndex) = parseEventId(lastEventId)
+        let id = lastIndex ?? -1
         var i = 0
         while (i < _events.size) {
             let (eventId, data) = _events[i]
-            let eventIntId = Int.tryParse(eventId) ?? 0
-            if (eventIntId > id) {
+            let (_, eventIntId) = parseEventId(eventId)
+            if (let Some(intId) <- eventIntId && intId > id) {
                 events.add((eventId, data))
             }
             i += 1
         }
-        @JoyLogDebug("[MCP] retrieved ${events.size} events after eventId: ${lastEventId}, sessionId: ${_sessionId}")
+        @JoyLogDebug("[MCP] retrieved ${events.size} events from memory after eventId: ${lastEventId}, sessionId: ${_sessionId}")
         return events
     }
 
@@ -161,6 +330,11 @@ class DefaultMcpServerSession <: McpServerSession & McpRequestHandler & McpRespo
     func closeTransport(): Unit {
         @JoyLogInfo("[MCP] close SSE transport, sessionId=${_sessionId}")
         _transport.close()
+        if (let Some(store) <- _eventStore) {
+            let streamId = "default"
+            store.sessionClosed(_sessionId)
+            @JoyLogDebug("[MCP] close event stream, streamId: ${streamId}, sessionId: ${_sessionId}")
+        }
     }
 
     /**
@@ -202,7 +376,9 @@ class DefaultMcpServerSession <: McpServerSession & McpRequestHandler & McpRespo
         } else {
             JSONRPCNotification(method: method)
         }
-        _transport.send(JSONRPCTool.serialize(message))
+        let data = JSONRPCTool.serialize(message)
+        storeEvent(data)
+        _transport.send(data)
         @JoyLogInfo("[MCP] send notification, method: ${method}, sessionId: ${_sessionId}")
     }
 
@@ -222,11 +398,9 @@ class DefaultMcpServerSession <: McpServerSession & McpRequestHandler & McpRespo
      * @param message The JSON-RPC notification to handle
      */
     public func onNotification(message: JSONRPCNotification): Unit {
-        _notificationConsumer
-            .get(message.method)
-            .map({
-                consumer: (Array<Byte>) -> Unit => consumer((message.params as Array<Byte>) ?? Array<Byte>())
-            })
+        _notificationConsumer.get(message.method).map({
+            consumer: (Array<Byte>) -> Unit => consumer((message.params as Array<Byte>) ?? Array<Byte>())
+        })
     }
 
     /**
@@ -305,6 +479,7 @@ class DefaultMcpServerSession <: McpServerSession & McpRequestHandler & McpRespo
             @JoyLogDebug("[MCP] send json response: ${JsonTool.toJson(resp)}, sessionId: ${_sessionId}")
         } else {
             let data = JSONRPCTool.serialize(resp)
+            storeEvent(data)
             _transport.send(data)
         }
     }

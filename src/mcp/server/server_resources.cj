@@ -42,6 +42,8 @@ public class McpResources {
      */
     private let _root: TreeNode<McpReadResourceHandler> = TreeNode()
 
+    private let _pageSize = 10
+
     /**
      * Adds a read resource handler for a specific URI
      *
@@ -88,20 +90,19 @@ public class McpResources {
      * @return ListResourcesResult containing list of resources and next cursor
      */
     public func listResources(page: PaginatedRequest): ListResourcesResult {
-        let pageSize = 10
         let startIndex = page.cursor.map {it: String => Int.tryParse(it) ?? 0} ?? 0
         let res: ArrayList<McpResource> = ArrayList()
 
         var index = 0
         for ((_, value) in resources) {
-            if (index >= startIndex && res.size < pageSize) {
+            if (index >= startIndex && res.size < _pageSize) {
                 res.add(value)
             }
             index += 1
         }
 
-        let nextCursor = if (index > startIndex + pageSize) {
-            "${startIndex + pageSize}"
+        let nextCursor = if (index > startIndex + _pageSize) {
+            "${startIndex + _pageSize}"
         } else {
             Option<String>.None
         }
@@ -118,20 +119,19 @@ public class McpResources {
      * @return ListResourceTemplatesResult containing list of templates and next cursor
      */
     public func listResourceTemplates(page: PaginatedRequest): ListResourceTemplatesResult {
-        let pageSize = 10
         let startIndex = page.cursor.map {it: String => Int.tryParse(it) ?? 0} ?? 0
         let res: ArrayList<ResourceTemplate> = ArrayList()
 
         var index = 0
         for ((_, value) in resourceTempls) {
-            if (index >= startIndex && res.size < pageSize) {
+            if (index >= startIndex && res.size < _pageSize) {
                 res.add(value)
             }
             index += 1
         }
 
-        let nextCursor = if (index > startIndex + pageSize) {
-            "${startIndex + pageSize}"
+        let nextCursor = if (index > startIndex + _pageSize) {
+            "${startIndex + _pageSize}"
         } else {
             Option<String>.None
         }

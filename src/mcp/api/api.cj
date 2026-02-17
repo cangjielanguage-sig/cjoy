@@ -58,6 +58,14 @@ public interface McpSession <: Resource {
  */
 public interface McpServerSession <: McpSession {
     /**
+     * Session Identifier, used to uniquely identify an MCP session
+     *
+     * The session ID is generated upon session creation and is used to track and manage communication throughout the session
+     * It is typically passed through request headers or query parameters to associate different requests with the same session
+     */
+    prop sessionId: String
+
+    /**
      * handle incoming JSON-RPC message
      *
      * @param ctx the context
@@ -183,6 +191,61 @@ public interface McpClientTransport <: McpTransport {
      * @param callback the callback function
      */
     func whenReConnect(callback: () -> Unit): Unit
+}
+
+/**
+ * MCP event store interface for persisting and replaying events
+ *
+ * Provides a pluggable interface for storing and retrieving events for stream resumption.
+ * Implementations can include in-memory, file-based, or database-backed storage.
+ */
+public interface EventStore {
+    /**
+     * Opens an event stream for a specific session and stream ID
+     *
+     * @param sessionId The unique session identifier
+     * @param streamId The unique stream identifier
+     * @throws Exception If the stream cannot be opened
+     */
+    func open(sessionId: String, streamId: String): Unit
+
+    /**
+     * Appends an event to the stream
+     *
+     * @param sessionId The unique session identifier
+     * @param streamId The unique stream identifier
+     * @param data The event data to append
+     * @throws Exception If the event cannot be appended
+     */
+    func append(sessionId: String, streamId: String, data: ByteBuffer): Unit
+
+    /**
+     * Retrieves all events from a stream after a specific index
+     *
+     * @param sessionId The unique session identifier
+     * @param streamId The unique stream identifier
+     * @param lastIndex The last event index to start from (exclusive)
+     * @return An iterator over events with their indices and data
+     * @throws Exception If events cannot be retrieved
+     */
+    func after(sessionId: String, streamId: String, lastIndex: Int64): Iterator<(Int64, ByteBuffer)>
+
+    /**
+     * Gets the number of events stored for a specific session and stream
+     *
+     * @param sessionId The unique session identifier
+     * @param streamId The unique stream identifier
+     * @return The number of events stored
+     */
+    func getEventCount(sessionId: String, streamId: String): Int64
+
+    /**
+     * Called when a session is closed to clean up resources
+     *
+     * @param sessionId The unique session identifier
+     * @throws Exception If cleanup fails
+     */
+    func sessionClosed(sessionId: String): Unit
 }
 
 /**

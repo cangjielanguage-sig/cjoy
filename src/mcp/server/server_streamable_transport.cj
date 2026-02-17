@@ -13,11 +13,13 @@ package cjoy.mcp.server
 import std.collection.concurrent.ConcurrentHashMap
 import std.collection.{any, map, collectArrayList}
 import std.io.ByteBuffer
+import std.time.DateTime
 import stdx.net.http.HttpStatusCode
 import cjoy.framework.{JoyContext, JoyHttpConsts, JoyServerEventBuilder}
 import cjoy.utils.secureRandStr
 import cjoy.mcp.api.*
-import cjoy.jsonrpc.api.{JSONRPCRequest, JSONRPCResponse, JSONRPCMessage, JSONRPCTool, JSONRPCError, JSONRPCConsts, JSONRPCException}
+import cjoy.jsonrpc.api.{JSONRPCRequest, JSONRPCResponse, JSONRPCMessage, JSONRPCTool, JSONRPCError, JSONRPCConsts, 
+    JSONRPCException}
 import cjoy.log.macros.*
 
 /**
@@ -33,19 +35,78 @@ class McpStreamableServerTransport <: McpServerTransport {
     private let _sessions: ConcurrentHashMap<String, McpServerSession> = ConcurrentHashMap()
 
     /**
+     * Map for tracking session timestamps: sessionId -> last activity time
+     */
+    private let _sessionTimestamps: ConcurrentHashMap<String, Int64> = ConcurrentHashMap()
+
+    /**
+     * Session timeout duration in milliseconds, default 30 minutes
+     */
+    private let _sessionTimeoutMs: Int64
+
+    /**
+     * Time interval for checking and cleaning up timeout sessions in milliseconds, default 5 minutes
+     */
+    private let _sessionCheckIntervalMs: Int64
+
+    /**
+     * Flag indicating if session timeout management is enabled
+     */
+    private let _sessionTimeoutEnabled: Bool
+
+    /**
      * Flag indicating if responses should be sent as JSON instead of SSE
      */
     private let _isJsonResp: Bool
 
     /**
+     * Event store for persisting and replaying events
+     */
+    private let _eventStore: ?EventStore
+
+    /**
+     * Flag indicating if session timeout task is running
+     */
+    private var _sessionTimeoutTaskRunning: Bool = false
+
+    /**
+     * Flag indicating if stateless mode is enabled
+     */
+    private let _statelessMode: Bool
+
+    /**
      * Initializes a new McpStreamableServerTransport
      *
      * @param isJsonResp Whether to return JSON responses instead of SSE streams
+     * @param eventStore Optional event store for persisting events (default: None)
+     * @param sessionTimeoutMs Session timeout duration in milliseconds (default: 30 minutes)
+     * @param sessionCheckIntervalMs Time interval for checking and cleaning up timeout sessions (default: 5 minutes)
+     * @param statelessMode Whether to enable stateless mode (default: false)
      */
-    public init(isJsonResp: Bool) {
+    public init(isJsonResp: Bool, eventStore!: ?EventStore = None, sessionTimeoutMs!: Int64 = 30 * 60 * 1000,
+        sessionCheckIntervalMs!: Int64 = 5 * 60 * 1000, statelessMode!: Bool = false) {
         _isJsonResp = isJsonResp
+        _eventStore = eventStore
+        _sessionTimeoutMs = sessionTimeoutMs
+        _sessionCheckIntervalMs = sessionCheckIntervalMs
+        _sessionTimeoutEnabled = (sessionTimeoutMs > 0 && sessionCheckIntervalMs > 0)
+        _statelessMode = statelessMode
+
+        if (_statelessMode) {
+            @JoyLogInfo("[MCP] started streamable transport with stateless mode enabled")
+        }
+
         if (isJsonResp) {
             @JoyLogInfo("[MCP] started streamable transport, return JSON response for requests instead of SSE streams")
+        }
+        if (eventStore.isSome()) {
+            @JoyLogInfo("[MCP] started streamable transport with event store support")
+        }
+        if (_sessionTimeoutEnabled) {
+            @JoyLogInfo("[MCP] started streamable transport with session timeout management, timeout: ${_sessionTimeoutMs}ms, check interval: ${_sessionCheckIntervalMs}ms")
+            startSessionTimeoutTask()
+        } else {
+            @JoyLogInfo("[MCP] started streamable transport with session timeout management disabled")
         }
     }
 
@@ -130,6 +191,68 @@ class McpStreamableServerTransport <: McpServerTransport {
     }
 
     /**
+     * Starts the session timeout check task
+     */
+    private func startSessionTimeoutTask(): Unit {
+        _sessionTimeoutTaskRunning = true
+        spawn {
+            while (_sessionTimeoutTaskRunning) {
+                sleep(_sessionCheckIntervalMs * Duration.millisecond)
+                checkTimeoutSessions()
+            }
+        }
+    }
+
+    /**
+     * Checks and cleans up timeout sessions
+     */
+    private func checkTimeoutSessions(): Unit {
+        let currentTime = DateTime.now().toUnixTimeStamp().toMilliseconds() // Convert to milliseconds
+        let timeoutThreshold = _sessionTimeoutMs
+
+        @JoyLogDebug("[MCP] checking for timeout sessions, current time: ${currentTime}, timeout threshold: ${timeoutThreshold}ms")
+
+        let sessionIter = _sessions.iterator()
+        while (let Some((sessionId, session)) <- sessionIter.next()) {
+            // Get session's last activity time
+            let lastActivityTime = _sessionTimestamps.get(sessionId)
+
+            if (let Some(activityTime) <- lastActivityTime) {
+                let elapsedTime = currentTime - activityTime
+                if (elapsedTime > timeoutThreshold) {
+                    @JoyLogInfo("[MCP] session timeout, sessionId: ${sessionId}, elapsed: ${elapsedTime}ms, threshold: ${timeoutThreshold}ms")
+                    // Cleanup session
+                    _sessions.remove(sessionId)
+                    _sessionTimestamps.remove(sessionId)
+                    terminateSession(session)
+                }
+            } else {
+                // Session without timestamp, consider it as timeout and clean up
+                @JoyLogInfo("[MCP] session without timestamp, consider as timeout: ${sessionId}")
+                terminateSession(session)
+            }
+        }
+    }
+
+    /**
+     * Updates a session's last activity time
+     *
+     * @param sessionId The session identifier
+     */
+    private func updateSessionActivity(sessionId: String): Unit {
+        _sessionTimestamps.add(sessionId, DateTime.now().toUnixTimeStamp().toMilliseconds()) // Convert to milliseconds
+    }
+
+    /**
+     * Tracks session creation time
+     *
+     * @param sessionId The session identifier
+     */
+    private func sessionCreated(sessionId: String): Unit {
+        _sessionTimestamps.add(sessionId, DateTime.now().toUnixTimeStamp().toMilliseconds()) // Convert to milliseconds
+    }
+
+    /**
      * Sends a message through this transport (not implemented for streamable)
      *
      * @param message The message to send
@@ -174,6 +297,7 @@ class McpStreamableServerTransport <: McpServerTransport {
      */
     private func terminateSession(session: McpServerSession): Unit {
         session.close()
+        _sessions.remove(session.sessionId)
     }
 
     /**
@@ -252,10 +376,10 @@ class McpStreamableServerTransport <: McpServerTransport {
      */
     private func createSession(ctx: JoyContext, sessionId: String): DefaultMcpServerSession {
         if (_isJsonResp) {
-            DefaultMcpServerSession(sessionId, this, _isJsonResp, true)
+            DefaultMcpServerSession(sessionId, this, _isJsonResp, true, eventStore: _eventStore)
         } else {
             let transport = createTransport(ctx, sessionId)
-            DefaultMcpServerSession(sessionId, transport, _isJsonResp, true)
+            DefaultMcpServerSession(sessionId, transport, _isJsonResp, true, eventStore: _eventStore)
         }
     }
 
@@ -311,24 +435,66 @@ class McpStreamableServerTransport <: McpServerTransport {
     private func handleRequest(ctx: JoyContext, m: JSONRPCRequest): Unit {
         var session: ?McpServerSession = None
         if (m.method == McpConsts.METHOD_INITIALIZE) {
-            session = validateSession(ctx, mustExist: false)
+            session = validateSession(ctx, mustExist: !_statelessMode)
             if (session.isNone()) {
                 let sessionId = secureRandStr(16)
                 let sess = createSession(ctx, sessionId)
-                @JoyLogInfo("[MCP] create streamable session, sessionId: ${sessionId}")
+                if (_statelessMode) {
+                    @JoyLogInfo("[MCP] create stateless session, sessionId: ${sessionId}")
+                } else {
+                    @JoyLogInfo("[MCP] create streamable session, sessionId: ${sessionId}")
+                }
                 session = sess
                 _sessions.add(sessionId, sess)
+                sessionCreated(sessionId) // 记录会话创建时间
+            } else {
+                // 更新已存在会话的活动时间
+                if (let Some(s) <- session) {
+                    updateSessionActivity(s.sessionId)
+                }
             }
             session?.handle(ctx, m)
             if (!_isJsonResp) {
                 closeTransport(session)
             }
+
+            // 无状态模式下，处理完请求后立即关闭会话
+            if (_statelessMode) {
+                session?.close()
+                if (let Some(s) <- session) {
+                    _sessions.remove(s.sessionId)
+                    _sessionTimestamps.remove(s.sessionId)
+                }
+            }
         } else {
-            session = validateSession(ctx)
+            // 无状态模式下，对于非初始化请求也创建临时会话
+            if (_statelessMode) {
+                let sessionId = secureRandStr(16)
+                let sess = createSession(ctx, sessionId)
+                @JoyLogInfo("[MCP] create stateless session for non-initialize request, sessionId: ${sessionId}")
+                session = sess
+                _sessions.add(sessionId, sess)
+                sessionCreated(sessionId) // 记录会话创建时间
+            } else {
+                session = validateSession(ctx)
+                if (let Some(s) <- session) {
+                    updateSessionActivity(s.sessionId) // 更新会话活动时间
+                }
+            }
+
             if (!_isJsonResp) {
                 updateTransport(ctx, session)
             }
             session?.handle(ctx, m)
+
+            // 无状态模式下，处理完请求后立即关闭会话
+            if (_statelessMode) {
+                session?.close()
+                if (let Some(s) <- session) {
+                    _sessions.remove(s.sessionId)
+                    _sessionTimestamps.remove(s.sessionId)
+                }
+            }
         }
     }
 

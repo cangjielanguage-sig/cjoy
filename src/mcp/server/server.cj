@@ -114,12 +114,13 @@ public class McpServer {
      * @param joy The CJoy instance to register with
      * @param path The path for streamable transport (default: "/mcp")
      * @param isJsonResp Whether to return JSON responses directly instead of SSE streams (default: false)
+     * @param eventStore Optional event store for persisting events (default: None)
      * @param serverFeatures The server features configuration (default: McpServerFeatures())
      */
     public static func registerStreamableTo(joy: Joy, path!: String = "/mcp", isJsonResp!: Bool = false,
-        serverFeatures!: McpServerFeatures = McpServerFeatures()): Unit {
+        eventStore!: ?EventStore = None, serverFeatures!: McpServerFeatures = McpServerFeatures()): Unit {
         updateFeatures(serverFeatures)
-        let transport = McpStreamableServerTransport(isJsonResp)
+        let transport = McpStreamableServerTransport(isJsonResp, eventStore: eventStore)
 
         let rg = joy.router.findGroup(path)
         let rpath = path[rg.basePath().size..]
