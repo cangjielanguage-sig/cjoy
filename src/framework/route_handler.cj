@@ -13,7 +13,6 @@ package cjoy.framework
 import std.collection.{ArrayList}
 import std.fs.{Path}
 
-
 class JoyGroupRouteHandler <: JoyRequestHandler {
     static let INSTANCE = JoyGroupRouteHandler()
 

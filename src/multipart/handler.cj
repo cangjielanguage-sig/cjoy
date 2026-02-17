@@ -47,7 +47,7 @@ public class JoyMultiPartFuncHandler <: JoyMultiPartHandler {
  * Memory-based multipart handler for caching parts in memory
  */
 class JoyMemoryMultiPartHandler <: JoyMultiPartHandler & Resource {
-    private let cache = HashMap<String, ByteBuffer>()
+    private let _cache = HashMap<String, ByteBuffer>()
     private var _isClosed = false
     private let _config: JoyMultiPartConfig
     private var _size: Int = 0
@@ -74,7 +74,7 @@ class JoyMemoryMultiPartHandler <: JoyMultiPartHandler & Resource {
             throw MultiPartLimitReachedException("memory size limit reached, ${_size} > ${_config.maxMemSize.value}")
         }
 
-        if (let Some(c) <- cache.get(part.name)) {
+        if (let Some(c) <- _cache.get(part.name)) {
             c.write(data)
             return
         }
@@ -82,7 +82,7 @@ class JoyMemoryMultiPartHandler <: JoyMultiPartHandler & Resource {
         let buffer = ByteBuffer()
         buffer.write(data)
         part._memoryHandler = this
-        cache.add(part.name, buffer)
+        _cache.add(part.name, buffer)
     }
 
     /**
@@ -92,7 +92,7 @@ class JoyMemoryMultiPartHandler <: JoyMultiPartHandler & Resource {
      * @return The content of the part as ByteBuffer or None if not found
      */
     func getContent(name: String): ?ByteBuffer {
-        cache.get(name)
+        _cache.get(name)
     }
 
     public func isClosed(): Bool {
@@ -103,10 +103,10 @@ class JoyMemoryMultiPartHandler <: JoyMultiPartHandler & Resource {
         if (_isClosed) {
             return
         }
-        for ((k, v) in cache) {
+        for ((k, v) in _cache) {
             v.clear()
         }
-        cache.clear()
+        _cache.clear()
         _isClosed = true
     }
 }
@@ -115,7 +115,7 @@ class JoyMemoryMultiPartHandler <: JoyMultiPartHandler & Resource {
  * Disk-based multipart handler for saving parts to temporary files
  */
 class JoyDiskMultiPartHandler <: JoyMultiPartHandler & Resource {
-    private let cache = HashMap<String, File>()
+    private let _cache = HashMap<String, File>()
     private var _isClosed = false
     private let _config: JoyMultiPartConfig
     private let _tempPath: Path
@@ -147,7 +147,7 @@ class JoyDiskMultiPartHandler <: JoyMultiPartHandler & Resource {
             throw MultiPartLimitReachedException("file size limit reached, ${_size} > ${_config.maxFileSize.value}")
         }
 
-        if (let Some(f) <- cache.get(part.name)) {
+        if (let Some(f) <- _cache.get(part.name)) {
             f.write(data)
             f.flush()
             return
@@ -159,7 +159,7 @@ class JoyDiskMultiPartHandler <: JoyMultiPartHandler & Resource {
             file.write(data)
             file.flush()
             part._diskHandler = this
-            cache.add(part.name, file)
+            _cache.add(part.name, file)
         } catch (_: Exception) {
             file.close()
         }
@@ -172,7 +172,7 @@ class JoyDiskMultiPartHandler <: JoyMultiPartHandler & Resource {
      * @return The File reference or None if not found
      */
     func getFile(name: String): ?File {
-        cache.get(name)
+        _cache.get(name)
     }
 
     public func isClosed(): Bool {
@@ -183,13 +183,13 @@ class JoyDiskMultiPartHandler <: JoyMultiPartHandler & Resource {
         if (_isClosed) {
             return
         }
-        for ((k, v) in cache) {
+        for ((k, v) in _cache) {
             if (!v.isClosed()) {
                 v.close()
             }
             removeIfExists(v.info.path, recursive: false)
         }
-        cache.clear()
+        _cache.clear()
         _isClosed = true
     }
 }

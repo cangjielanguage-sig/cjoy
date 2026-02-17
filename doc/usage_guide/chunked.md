@@ -98,7 +98,7 @@ let emitter = ctx.eventEmitter()
 
 ```cangjie
 // 发送事件
-emitter.sendEvent(JoyServerEventBuilder().data("message"))
+emitter.sendEvent(JoySseBuilder().data("message"))
 ```
 
 ## 三、JoyContext 扩展方法
@@ -132,7 +132,7 @@ router.get("/events", { ctx: JoyContext =>
     let counter = SyncCounter(1)
     spawn {
         for (num in 1..10) {
-            emitter.sendEvent(JoyServerEventBuilder().data("${num}"))
+            emitter.sendEvent(JoySseBuilder().data("${num}"))
             sleep(Duration.millisecond*200)
         }
         counter.dec()
@@ -199,7 +199,7 @@ func sseHandler(ctx: JoyContext): String {
     // 写入多行 SSE 数据
     for (line in lines) {
         for (i in 0..10) {
-            writer.sendEvent(JoyServerEventBuilder().data("{\"num\":\"${num}\"}"))
+            writer.sendEvent(JoySseBuilder().data("{\"num\":\"${num}\"}"))
         }
     }
     writer.end()

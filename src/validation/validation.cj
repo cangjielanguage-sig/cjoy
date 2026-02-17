@@ -47,8 +47,7 @@ public interface JoyValidatable {
  */
 extend String <: JoyValidatable {
     /**
-     * Validate string
- value with constraints.
+     * Validate string value with constraints.
      *
      * Supports constraints: LengthConstraint, NotEmptyConstraint,
      * NotBlankConstraint, PatternConstraint, ChMobilePhoneConstraint,
@@ -110,8 +109,7 @@ extend String <: JoyValidatable {
  */
 extend<T> Option<T> <: JoyValidatable where T <: JoyValidatable {
     /**
-     * Validate optional
- value with constraints.
+     * Validate optional value with constraints.
      *
      * Only validates if the option contains a value.
      *

@@ -14,7 +14,7 @@ import std.collection.concurrent.ConcurrentHashMap
 import std.io.ByteBuffer
 import std.time.DateTime
 import stdx.net.http.HttpStatusCode
-import cjoy.framework.{JoyContext, JoySseEmitter, JoyServerEventBuilder}
+import cjoy.framework.{JoyContext, JoySseEmitter, JoySseBuilder}
 import cjoy.utils.secureRandStr
 import cjoy.mcp.api.*
 import cjoy.jsonrpc.{JSONRPCError, JSONRPCConsts, JSONRPCTool}
@@ -230,7 +230,7 @@ class McpSseServerSessionTransport <: McpTransport {
      */
     private func sendPing(): Unit {
         try {
-            _emitter.sendEvent(JoyServerEventBuilder().comment("ping"))
+            _emitter.sendEvent(JoySseBuilder().comment("ping"))
         } catch (ex: Exception) {
             _running = false
             if (_removeOnErr) {
@@ -279,5 +279,5 @@ class McpSseServerSessionTransport <: McpTransport {
  * @param data The event data
  */
 func sendEvent(emitter: JoySseEmitter, eventType: String, data: String) {
-    emitter.sendEvent(JoyServerEventBuilder().event(eventType).data(data))
+    emitter.sendEvent(JoySseBuilder().event(eventType).data(data))
 }

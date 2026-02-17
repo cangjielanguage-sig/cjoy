@@ -23,7 +23,7 @@ import cjoy.framework.{JoyContext, JoyHttpConsts}
 public class JoyMultiPartForm <: JoyMultiPartHandler & Resource & Iterable<JoyMultiPart> {
     private static let INSTANCE: JoyMultiPartForm = JoyMultiPartForm()
 
-    private let handlers = HashMap<String, JoyMultiPartHandler>()
+    private let _handlers = HashMap<String, JoyMultiPartHandler>()
     private var _parser: ?JoyMultiPartParser = None
     private var _memoryHandler: ?JoyMemoryMultiPartHandler = None
     private var _diskHandler: ?JoyDiskMultiPartHandler = None
@@ -114,7 +114,7 @@ public class JoyMultiPartForm <: JoyMultiPartHandler & Resource & Iterable<JoyMu
 
     public func onPart(part: JoyMultiPart, data: Array<Byte>): Unit {
         // if the user registers a handler, prioritize calling the handler
-        if (let Some(handler) <- handlers.get(part.name)) {
+        if (let Some(handler) <- _handlers.get(part.name)) {
             handler.onPart(part, data)
             return
         }
@@ -155,7 +155,7 @@ public class JoyMultiPartForm <: JoyMultiPartHandler & Resource & Iterable<JoyMu
      * @param handler: the handler of body
      */
     public func handlePart(name: String, handler: JoyMultiPartHandler) {
-        handlers.add(name, handler)
+        _handlers.add(name, handler)
     }
 
     /**

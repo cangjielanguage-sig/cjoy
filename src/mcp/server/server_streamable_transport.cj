@@ -15,7 +15,7 @@ import std.collection.{any, map, collectArrayList}
 import std.io.ByteBuffer
 import std.time.DateTime
 import stdx.net.http.HttpStatusCode
-import cjoy.framework.{JoyContext, JoyHttpConsts, JoyServerEventBuilder}
+import cjoy.framework.{JoyContext, JoyHttpConsts, JoySseBuilder}
 import cjoy.utils.secureRandStr
 import cjoy.mcp.api.*
 import cjoy.jsonrpc.api.{JSONRPCRequest, JSONRPCResponse, JSONRPCMessage, JSONRPCTool, JSONRPCError, JSONRPCConsts, 
@@ -540,7 +540,7 @@ class McpStreamableServerTransport <: McpServerTransport {
      */
     private func sendEvent(ctx: JoyContext, eventId: String, data: ByteBuffer): Unit {
         let emitter = ctx.eventEmitter()
-        let eventBuilder = JoyServerEventBuilder()
+        let eventBuilder = JoySseBuilder()
         eventBuilder.id(eventId)
         eventBuilder.data(String.fromUtf8(data.bytes()))
         emitter.sendEvent(eventBuilder)

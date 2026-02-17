@@ -13,7 +13,7 @@ package cjoy.multipart
 
 import std.collection.HashMap
 
-let mimes: HashMap<String, String> = HashMap(
+private let _MIMES: HashMap<String, String> = HashMap(
     [
         (".aac", "audio/aac"),
         (".abw", "application/x-abiword"),
@@ -99,5 +99,5 @@ let mimes: HashMap<String, String> = HashMap(
  * @return The corresponding MIME type or None if not found
  */
 public func getMimeTypeByExt(ext: String): ?String {
-    mimes.get(ext)
+    _MIMES.get(ext)
 }

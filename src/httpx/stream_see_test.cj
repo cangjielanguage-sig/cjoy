@@ -10,14 +10,14 @@
 
 package cjoy.httpx
 
-import cjoy.framework.JoyServerEventBuilder
+import cjoy.framework.JoySseBuilder
 
 @Test
 public class JoySSEventStreamCaseSuit {
     @TestCase
     public func testOneEventOneField() {
         let httpStream = JoyHttpStream()
-        httpStream.put(JoyServerEventBuilder().id("test_id").build().toArray())
+        httpStream.put(JoySseBuilder().id("test_id").build().toArray())
 
         let sse = JoySSEventStream(httpStream)
         let data = sse.next().getOrThrow()
@@ -30,8 +30,8 @@ public class JoySSEventStreamCaseSuit {
     @TestCase
     public func testTwoEventOneField() {
         let httpStream = JoyHttpStream()
-        httpStream.put(JoyServerEventBuilder().id("test_id_1").build().toArray())
-        httpStream.put(JoyServerEventBuilder().id("test_id_2").build().toArray())
+        httpStream.put(JoySseBuilder().id("test_id_1").build())
+        httpStream.put(JoySseBuilder().id("test_id_2").build())
         let sse = JoySSEventStream(httpStream)
 
         var data = sse.next().getOrThrow()
@@ -48,14 +48,7 @@ public class JoySSEventStreamCaseSuit {
     public func testOneEventAllField() {
         let httpStream = JoyHttpStream()
         httpStream.put(
-            JoyServerEventBuilder()
-                .id("test_id")
-                .data("data")
-                .event("event")
-                .comment("comment")
-                .retry(1)
-                .build()
-                .toArray())
+            JoySseBuilder().id("test_id").data("data").event("event").comment("comment").retry(1).build().toArray())
 
         let sse = JoySSEventStream(httpStream)
         let data = sse.next().getOrThrow()

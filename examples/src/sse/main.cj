@@ -17,7 +17,7 @@ main(): Int64 {
         let counter = SyncCounter(1)
         spawn {
             for (num in 1..10) {
-                emitter.sendEvent(JoyServerEventBuilder().data("{\"num\":\"${num}\"}"))
+                emitter.sendEvent(JoySseBuilder().data("{\"num\":\"${num}\"}"))
                 sleep(Duration.millisecond*200)
             }
             counter.dec()

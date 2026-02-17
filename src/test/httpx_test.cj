@@ -44,7 +44,7 @@ private func handler(ctx: JoyContext): Unit {
 private func sseHandler(ctx: JoyContext): Unit {
     let emitter = ctx.eventEmitter()
     for (num in 1..=10) {
-        emitter.sendEvent(JoyServerEventBuilder().data("${num}"))
+        emitter.sendEvent(JoySseBuilder().data("${num}"))
     }
 }
 

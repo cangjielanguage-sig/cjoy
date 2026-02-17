@@ -726,7 +726,7 @@ extend<T> TreeNodes<T> {
 /**
  * Represents a segment of a route pattern, used for parsing and matching routes
  */
-class Segment {
+private class Segment {
     var typ: NodeType = NT_STATIC
     var key: String = ""
     var rex: String = ""
