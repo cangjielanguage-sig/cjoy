@@ -15,26 +15,26 @@ import std.fs.{File, Path, Directory, OpenMode, exists, removeIfExists}
 import std.collection.HashMap
 
 /**
- * The interface to process multipart content
+ * 处理多部分内容的接口
  */
 public interface JoyMultiPartHandler {
     /**
-     * Called when reading multipart content
+     * 读取多部分内容时调用
      *
-     * @param part The multipart part being processed
-     * @param data The data bytes of the current part
+     * @param part 正在处理的多部分
+     * @param data 当前部分的数据字节
      */
     func onPart(part: JoyMultiPart, data: Array<Byte>): Unit
 }
 
 /**
- * MultiPart handler implementation with function callback
+ * 使用函数回调的 MultiPart 处理器实现
  */
 public class JoyMultiPartFuncHandler <: JoyMultiPartHandler {
     /**
-     * Initializes a new instance of JoyMultiPartFuncHandler
+     * 初始化 JoyMultiPartFuncHandler 的新实例
      *
-     * @param handler The function to call when processing parts
+     * @param handler 处理部分时调用的函数
      */
     public JoyMultiPartFuncHandler(let handler: (JoyMultiPart, Array<Byte>) -> Unit) {}
 
@@ -44,7 +44,7 @@ public class JoyMultiPartFuncHandler <: JoyMultiPartHandler {
 }
 
 /**
- * Memory-based multipart handler for caching parts in memory
+ * 基于内存的多部分处理器，用于在内存中缓存部分
  */
 class JoyMemoryMultiPartHandler <: JoyMultiPartHandler & Resource {
     private let _cache = HashMap<String, ByteBuffer>()
@@ -53,20 +53,20 @@ class JoyMemoryMultiPartHandler <: JoyMultiPartHandler & Resource {
     private var _size: Int = 0
 
     /**
-     * Initializes a new instance of JoyMemoryMultiPartHandler
+     * 初始化 JoyMemoryMultiPartHandler 的新实例
      *
-     * @param config The multipart configuration
+     * @param config 多部分配置
      */
     init(config: JoyMultiPartConfig) {
         _config = config
     }
 
     /**
-     * Called when reading multipart content
+     * 读取多部分内容时调用
      *
-     * @param part The multipart part being processed
-     * @param data The data bytes of the current part
-     * @throws MultiPartLimitReachedException if memory size limit is reached
+     * @param part 正在处理的多部分
+     * @param data 当前部分的数据字节
+     * @throws MultiPartLimitReachedException 如果达到内存大小限制
      */
     public func onPart(part: JoyMultiPart, data: Array<Byte>): Unit {
         _size += data.size
@@ -86,10 +86,10 @@ class JoyMemoryMultiPartHandler <: JoyMultiPartHandler & Resource {
     }
 
     /**
-     * Gets the content of a part by name
+     * 根据名称获取部分的内容
      *
-     * @param name The name of the part
-     * @return The content of the part as ByteBuffer or None if not found
+     * @param name 部分的名称
+     * @return 部分的 ByteBuffer 内容，如果未找到则返回 None
      */
     func getContent(name: String): ?ByteBuffer {
         _cache.get(name)
@@ -112,7 +112,7 @@ class JoyMemoryMultiPartHandler <: JoyMultiPartHandler & Resource {
 }
 
 /**
- * Disk-based multipart handler for saving parts to temporary files
+ * 基于磁盘的多部分处理器，用于将部分保存到临时文件
  */
 class JoyDiskMultiPartHandler <: JoyMultiPartHandler & Resource {
     private let _cache = HashMap<String, File>()
@@ -122,9 +122,9 @@ class JoyDiskMultiPartHandler <: JoyMultiPartHandler & Resource {
     private var _size: Int = 0
 
     /**
-     * Initializes a new instance of JoyDiskMultiPartHandler
+     * 初始化 JoyDiskMultiPartHandler 的新实例
      *
-     * @param config The multipart configuration
+     * @param config 多部分配置
      */
     init(config: JoyMultiPartConfig) {
         _config = config
@@ -135,11 +135,11 @@ class JoyDiskMultiPartHandler <: JoyMultiPartHandler & Resource {
     }
 
     /**
-     * Called when reading multipart content
+     * 读取多部分内容时调用
      *
-     * @param part The multipart part being processed
-     * @param data The data bytes of the current part
-     * @throws MultiPartLimitReachedException if file size limit is reached
+     * @param part 正在处理的多部分
+     * @param data 当前部分的数据字节
+     * @throws MultiPartLimitReachedException 如果达到文件大小限制
      */
     public func onPart(part: JoyMultiPart, data: Array<Byte>): Unit {
         _size += data.size
@@ -166,10 +166,10 @@ class JoyDiskMultiPartHandler <: JoyMultiPartHandler & Resource {
     }
 
     /**
-     * Gets the file reference of a part by name
+     * 根据名称获取部分的文件引用
      *
-     * @param name The name of the part
-     * @return The File reference or None if not found
+     * @param name 部分的名称
+     * @return File 引用，如果未找到则返回 None
      */
     func getFile(name: String): ?File {
         _cache.get(name)

@@ -11,7 +11,7 @@
 package cjoy.framework
 
 /**
- * HTTP constants including method names, content types, and header names
+ * HTTP 常量，包括方法名称、内容类型和头名称
  */
 public struct JoyHttpConsts {
     // method

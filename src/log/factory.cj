@@ -17,27 +17,26 @@ import std.sync.AtomicBool
 import stdx.log.{Logger, LogLevel, Attr, LogRecord}
 
 /**
- * Function type for creating logger instances.
+ * 用于创建日志记录器实例的函数类型。
  *
- * Accepts a logger name and returns a Logger instance.
+ * 接受日志记录器名称并返回 Logger 实例。
  */
 public type LoggerCreatorFunc = (name: String) -> Logger
 
 /**
- * Logger factory adapter for external logger frameworks.
+ * 外部日志框架的日志记录器工厂适配器。
  *
- * Allows registration of custom logger creators to integrate
- * with third-party logging frameworks. If no creator is registered,
- * the default ConsoleLogger is used.
+ * 允许注册自定义日志记录器创建器以与第三方日志框架集成。
+ * 如果未注册创建器，则使用默认的 ConsoleLogger。
  */
 public class JoyLoggerFactory {
     private static var _creator: ?LoggerCreatorFunc = None
 
     /**
-     * Create a logger using registered creator or default ConsoleLogger.
+     * 使用已注册的创建器或默认 ConsoleLogger 创建日志记录器。
      *
-     * @param name logger name
-     * @return a logger instance
+     * @param name 日志记录器名称
+     * @return 日志记录器实例
      */
     public static func createLogger(name: String): Logger {
         if (let Some(c) <- _creator) {
@@ -48,11 +47,11 @@ public class JoyLoggerFactory {
     }
 
     /**
-     * Register external logger framework creator.
+     * 注册外部日志框架创建器。
      *
-     * Call this method to integrate with your preferred logging framework.
+     * 调用此方法与您首选的日志框架集成。
      *
-     * @param fn logger creator function that accepts a name and returns a Logger instance
+     * @param fn 接受名称并返回 Logger 实例的日志记录器创建器函数
      */
     public static func registerCreator(fn: LoggerCreatorFunc): Unit {
         _creator = fn
@@ -60,10 +59,10 @@ public class JoyLoggerFactory {
 }
 
 /**
- * Default console logger implementation.
+ * 默认控制台日志记录器实现。
  *
- * Outputs log messages to stdout in a formatted way with
- * timestamp, log level, thread name, and file/line information.
+ * 以格式化方式将日志消息输出到 stdout，
+ * 包含时间戳、日志级别、线程名称和文件/行信息。
  */
 class ConsoleLogger <: Logger {
     let _attrs = ArrayList<Attr>()
@@ -72,16 +71,16 @@ class ConsoleLogger <: Logger {
     let _closed = AtomicBool(false)
 
     /**
-     * Create console logger with stdout as output.
+     * 创建以 stdout 为输出的控制台日志记录器。
      */
     public init() {
         _output = getStdOut()
     }
 
     /**
-     * Get or set log level.
+     * 获取或设置日志级别。
      *
-     * Messages below this level will not be logged.
+     * 低于此级别的消息将不会被记录。
      */
     public mut prop level: LogLevel {
         get() {
@@ -93,10 +92,10 @@ class ConsoleLogger <: Logger {
     }
 
     /**
-     * Create new logger with additional attributes.
+     * 使用附加属性创建新的日志记录器。
      *
-     * @param attrs array of attributes to add
-     * @return new logger instance with attributes, or this if attrs is empty
+     * @param attrs 要添加的属性数组
+     * @return 带有属性的新日志记录器实例，如果 attrs 为空则返回此实例
      */
     public func withAttrs(attrs: Array<Attr>): Logger {
         if (attrs.size > 0) {
@@ -108,16 +107,16 @@ class ConsoleLogger <: Logger {
     }
 
     /**
-     * Check if logger is closed.
+     * 检查日志记录器是否已关闭。
      *
-     * @return true if logger is closed
+     * @return 如果日志记录器已关闭返回 true
      */
     public func isClosed(): Bool {
         _closed.load()
     }
 
     /**
-     * Close logger and flush output.
+     * 关闭日志记录器并刷新输出。
      */
     public func close(): Unit {
         if (isClosed()) {
@@ -129,12 +128,12 @@ class ConsoleLogger <: Logger {
     }
 
     /**
-     * Log a record.
+     * 记录日志记录。
      *
-     * Formats and writes the log record to the output stream.
-     * Format: timestamp level [thread][package/file:line] message
+     * 将日志记录格式化并写入输出流。
+     * 格式：timestamp level [thread][package/file:line] message
      *
-     * @param record log record to write
+     * @param record 要写入的日志记录
      */
     public func log(record: LogRecord): Unit {
         if (record.level < _level) {

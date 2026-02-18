@@ -19,7 +19,7 @@ import cjoy.framework.JoyHttpConsts
 import cjoy.multipart.JoyMultiPartWriter
 
 /**
- * HTTP request builder
+ * HTTP 请求构建器
  */
 public class JoyHttpRequest {
     let _path: String
@@ -35,20 +35,20 @@ public class JoyHttpRequest {
     }
 
     /**
-     * Create a new HTTP request with given path
+     * 使用给定路径创建新的 HTTP 请求
      *
-     * @param path request path
-     * @return new HTTP request instance
+     * @param path 请求路径
+     * @return 新的 HTTP 请求实例
      */
     public static func of(path: String): JoyHttpRequest {
         JoyHttpRequest(path)
     }
 
     /**
-     * Set HTTP method
+     * 设置 HTTP 方法
      *
-     * @param method HTTP method (GET, POST, PUT, DELETE, PATCH)
-     * @return this request for chaining
+     * @param method HTTP 方法 (GET, POST, PUT, DELETE, PATCH)
+     * @return 此请求，用于链式调用
      */
     public func method(method: String): JoyHttpRequest {
         _method = method
@@ -56,55 +56,55 @@ public class JoyHttpRequest {
     }
 
     /**
-     * Set HTTP method to GET
+     * 设置 HTTP 方法为 GET
      *
-     * @return this request for chaining
+     * @return 此请求，用于链式调用
      */
     public func get(): JoyHttpRequest {
         method(JoyHttpConsts.METHOD_GET)
     }
 
     /**
-     * Set HTTP method to POST
+     * 设置 HTTP 方法为 POST
      *
-     * @return this request for chaining
+     * @return 此请求，用于链式调用
      */
     public func post(): JoyHttpRequest {
         method(JoyHttpConsts.METHOD_POST)
     }
 
     /**
-     * Set HTTP method to PUT
+     * 设置 HTTP 方法为 PUT
      *
-     * @return this request for chaining
+     * @return 此请求，用于链式调用
      */
     public func put(): JoyHttpRequest {
         method(JoyHttpConsts.METHOD_PUT)
     }
 
     /**
-     * Set HTTP method to DELETE
+     * 设置 HTTP 方法为 DELETE
      *
-     * @return this request for chaining
+     * @return 此请求，用于链式调用
      */
     public func delete(): JoyHttpRequest {
         method(JoyHttpConsts.METHOD_DELETE)
     }
 
     /**
-     * Set HTTP method to PATCH
+     * 设置 HTTP 方法为 PATCH
      *
-     * @return this request for chaining
+     * @return 此请求，用于链式调用
      */
     public func patch(): JoyHttpRequest {
         method(JoyHttpConsts.METHOD_PATCH)
     }
 
     /**
-     * Set request timeout
+     * 设置请求超时时间
      *
-     * @param timeout timeout duration
-     * @return this request for chaining
+     * @param timeout 超时持续时间
+     * @return 此请求，用于链式调用
      */
     public func timeout(timeout: Duration): JoyHttpRequest {
         _timeout = timeout
@@ -112,11 +112,11 @@ public class JoyHttpRequest {
     }
 
     /**
-     * Add a query parameter
+     * 添加查询参数
      *
-     * @param name query parameter name
-     * @param value query parameter value
-     * @return this request for chaining
+     * @param name 查询参数名称
+     * @param value 查询参数值
+     * @return 此请求，用于链式调用
      */
     public func query(name: String, value: String): JoyHttpRequest {
         _queries.add(name, value)
@@ -124,10 +124,10 @@ public class JoyHttpRequest {
     }
 
     /**
-     * Add multiple query parameters
+     * 添加多个查询参数
      *
-     * @param queries map of query parameters
-     * @return this request for chaining
+     * @param queries 查询参数映射
+     * @return 此请求，用于链式调用
      */
     public func queries(queries: Map<String, ToString>): JoyHttpRequest {
         _queries.add(all: queries)
@@ -135,10 +135,10 @@ public class JoyHttpRequest {
     }
 
     /**
-     * Add multiple headers
+     * 添加多个请求头
      *
-     * @param headers HTTP headers to add
-     * @return this request for chaining
+     * @param headers 要添加的 HTTP 请求头
+     * @return 此请求，用于链式调用
      */
     public func headers(headers: HttpHeaders): JoyHttpRequest {
         for (h in headers) {
@@ -152,11 +152,11 @@ public class JoyHttpRequest {
     }
 
     /**
-     * Add a header
+     * 添加请求头
      *
-     * @param name header name
-     * @param value header value
-     * @return this request for chaining
+     * @param name 请求头名称
+     * @param value 请求头值
+     * @return 此请求，用于链式调用
      */
     public func header(name: String, value: String): JoyHttpRequest {
         _headers.add(name, value)
@@ -164,10 +164,10 @@ public class JoyHttpRequest {
     }
 
     /**
-     * Set request body
+     * 设置请求体
      *
-     * @param body request body (String, Array<Byte>, JsonSerializable, InputStream)
-     * @return this request for chaining
+     * @param body 请求体 (String, Array<Byte>, JsonSerializable, InputStream)
+     * @return 此请求，用于链式调用
      */
     public func body(body: Any): JoyHttpRequest {
         _body = body
@@ -175,10 +175,10 @@ public class JoyHttpRequest {
     }
 
     /**
-     * Set request body as JSON
+     * 设置请求体为 JSON
      *
-     * @param body JSON-serializable body
-     * @return this request for chaining
+     * @param body 可序列化为 JSON 的请求体
+     * @return 此请求，用于链式调用
      */
     public func json<T>(body: T): JoyHttpRequest where T <: JsonSerializable {
         let buffer = ByteBuffer()
@@ -191,10 +191,10 @@ public class JoyHttpRequest {
     }
 
     /**
-     * Set request body as multipart form data
+     * 设置请求体为多部分表单数据
      *
-     * @param fn function to write multipart data
-     * @return this request for chaining
+     * @param fn 写入多部分数据的函数
+     * @return 此请求，用于链式调用
      */
     public func multiPart(fn: (writer: JoyMultiPartWriter) -> Unit): JoyHttpRequest {
         post()
@@ -208,11 +208,11 @@ public class JoyHttpRequest {
     }
 
     /**
-     * Add a form field
+     * 添加表单字段
      *
-     * @param name form field name
-     * @param value form field value
-     * @return this request for chaining
+     * @param name 表单字段名称
+     * @param value 表单字段值
+     * @return 此请求，用于链式调用
      */
     public func postform(name: String, value: String): JoyHttpRequest {
         if (let Some(f) <- _form) {
@@ -227,17 +227,17 @@ public class JoyHttpRequest {
 }
 
 /**
- * JSON HTTP request body
+ * JSON HTTP 请求体
  */
 public class JsonRequest {
     public JsonRequest(let body: Any) {
     }
 
     /**
-     * Write this request to request builder
+     * 将此请求写入请求构建器
      *
-     * @param builder HTTP request builder
-     * @throws IllegalArgumentException if request body is not json serializable object
+     * @param builder HTTP 请求构建器
+     * @throws IllegalArgumentException 如果请求体不是可序列化为 JSON 的对象
      */
     public func write(builder: HttpRequestBuilder): Unit {
         match (body) {

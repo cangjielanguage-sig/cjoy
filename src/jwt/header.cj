@@ -17,34 +17,34 @@ public type MapHeaders = HashMap<String, JsonSerializable>
 
 public interface Headers {
     /**
-     * add header
+     * 添加头信息
      *
-     * @param name header name
-     * @param value header value
-     * @return headers
+     * @param name 头名称
+     * @param value 头值
+     * @return 头信息
      */
     func header(name: String, value: JsonSerializable): Headers
 
     /**
-     * get header as string
+     * 获取头信息作为字符串
      *
-     * @param name header name
-     * @return header value or None
+     * @param name 头名称
+     * @return 头值或 None
      */
     func getString(name: String): ?String
 
     /**
-     * get header value
+     * 获取头值
      *
-     * @param name header name
-     * @return header value or None
+     * @param name 头名称
+     * @return 头值或 None
      */
     func getValue<T>(name: String): ?T
 
     /**
-     * get algorithm header
+     * 获取算法头
      *
-     * @return algorithm
+     * @return 算法
      */
     prop alg: String
 }

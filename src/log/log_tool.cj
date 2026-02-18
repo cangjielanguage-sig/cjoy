@@ -15,113 +15,113 @@ import stdx.logger.SimpleLogger
 import std.env.getStdOut
 
 /**
- * Legacy logging tool class.
+ * 遗留的日志工具类。
  *
- * @deprecated Use JoyLoggerFactory instead since v0.90.0.
+ * @deprecated 从 v0.90.0 版本开始，请使用 JoyLoggerFactory 替代。
  */
 @Deprecated["Use JoyLoggerFactory", since: "v0.90.0", strict: false]
 public class LogTool {
     private static var _logger: Logger = SimpleLogger(getStdOut())
 
     /**
-     * Get or set the logger instance.
+     * 获取或设置日志记录器实例。
      *
-     * Set your custom logger at program start to customize logging behavior.
+     * 在程序启动时设置您的自定义日志记录器，以自定义日志记录行为。
      */
     public mut static prop logger: Logger {
         get() {
             _logger
         }
         set(value) {
-            // non thread safe
+            // 非线程安全
             _logger = value
         }
     }
 
     /**
-     * Enable debug level logging.
+     * 启用调试级别日志记录。
      *
-     * Sets the logger level to DEBUG, allowing all log messages to be output.
+     * 将日志记录器级别设置为 DEBUG，允许输出所有日志消息。
      */
     public static func enableDebugLog(): Unit {
         logger.level = LogLevel.DEBUG
     }
 
     /**
-     * Log a debug message.
+     * 记录调试消息。
      *
-     * @param msg the message to log
+     * @param msg 要记录的消息
      */
     public static func debug(msg: String): Unit {
         logger.debug("[${thread()}] ${msg}")
     }
 
     /**
-     * Log a debug message with file and line information.
+     * 记录包含文件和行号信息的调试消息。
      *
-     * @param msg the message to log
-     * @param file the source file name
-     * @param line the line number in the source file
+     * @param msg 要记录的消息
+     * @param file 源文件名
+     * @param line 源文件中的行号
      */
     public static func debug(msg: String, file: String, line: Int): Unit {
         logger.debug("[${thread()}][${file}:${line}] ${msg}")
     }
 
     /**
-     * Log an info message.
+     * 记录信息消息。
      *
-     * @param msg the message to log
+     * @param msg 要记录的消息
      */
     public static func info(msg: String): Unit {
         logger.info("[${thread()}] ${msg}")
     }
 
     /**
-     * Log an info message with file and line information.
+     * 记录包含文件和行号信息的信息消息。
      *
-     * @param msg the message to log
-     * @param file the source file name
-     * @param line the line number in the source file
+     * @param msg 要记录的消息
+     * @param file 源文件名
+     * @param line 源文件中的行号
      */
     public static func info(msg: String, file: String, line: Int): Unit {
         logger.info("[${thread()}][${file}:${line}] ${msg}")
     }
 
     /**
-     * Log an error message.
+     * 记录错误消息。
      *
-     * @param msg the message to log
+     * @param msg 要记录的消息
      */
     public static func error(msg: String): Unit {
         logger.error("[${thread()}] ${msg}")
     }
 
     /**
-     * Log an error message with file and line information.
+     * 记录包含文件和行号信息的错误消息。
      *
-     * @param msg the message to log
-     * @param file the source file name
-     * @param line the line number in the source file
+     * @param msg 要记录的消息
+     * @param file 源文件名
+     * @param line 源文件中的行号
      */
     public static func error(msg: String, file: String, line: Int): Unit {
         logger.error("[${thread()}][${file}:${line}] ${msg}")
     }
 
     /**
-     * Log a warning message.
+     * 记录警告消息。
      *
-     * @param msg the message to log
+     * @param msg 要记录的消息
      */
     public static func warn(msg: String): Unit {
         logger.warn("[${thread()}] ${msg}")
     }
 
     /**
-     * Log a warning message with file and line information.
+     * 记录包含文件和行号信息的警告消息。
      *
-     * @param msg the message to log
-     * @param file the source file name
-     * @param line the line number in the source file
+     * @param msg 要记录的消息
+     * @param file 源文件名
+     * @param line 源文件中的行号
      */
     public static func warn(msg: String, file: String, line: Int): Unit {
         logger.warn("[${thread()}][${file}:${line}] ${msg}")

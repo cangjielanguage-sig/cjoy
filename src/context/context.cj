@@ -13,49 +13,49 @@ package cjoy.context
 import std.collection.concurrent.ConcurrentHashMap
 
 /**
- * Context interface for key-value storage and service retrieval.
+ * 用于键值存储和服务检索的上下文接口。
  *
- * Provides a mechanism to store and retrieve arbitrary data using string keys,
- * as well as access registered services from the global service container.
+ * 提供使用字符串键存储和检索任意数据的机制，
+ * 以及从全局服务容器访问已注册服务的能力。
  */
 public interface Context {
     /**
-     * Set parameter in context.
+     * 在上下文中设置参数。
      *
-     * @param key parameter key name
-     * @param value parameter value
+     * @param key 参数键名
+     * @param value 参数值
      */
     func set(key: String, value: Any): Unit
 
     /**
-     * Get parameter from context.
+     * 从上下文中获取参数。
      *
-     * @param key parameter key name
-     * @return parameter value, or None if not found
+     * @param key 参数键名
+     * @return 参数值，如果未找到则返回 None
      */
     func get<T>(key: String): ?T
 
     /**
-     * Remove parameter from context.
+     * 从上下文中移除参数。
      *
-     * @param key parameter key name
+     * @param key 参数键名
      */
     func remove(key: String): Unit
 
     /**
-     * Get service from context.
+     * 从上下文中获取服务。
      *
-     * @param name name of service
-     * @return service instance, or None if not found
+     * @param name 服务名称
+     * @return 服务实例，如果未找到则返回 None
      */
     func getService<T>(name: String): ?T
 
     /**
-     * Get service from context, throw exception if not found.
+     * 从上下文中获取服务，如果未找到则抛出异常。
      *
-     * @param name name of service
-     * @return service instance
-     * @throws OptionError if service not found
+     * @param name 服务名称
+     * @return 服务实例
+     * @throws OptionError 如果未找到服务
      */
     func mustService<T>(name: String): T {
         getService<T>(name).getOrThrow()
@@ -63,38 +63,38 @@ public interface Context {
 }
 
 /**
- * Map-based context implementation using ConcurrentHashMap.
+ * 使用 ConcurrentHashMap 的基于映射的上下文实现。
  *
- * Provides thread-safe storage for key-value pairs and delegates
- * service lookup to the global ServiceContainer.
+ * 为键值对提供线程安全的存储，并将
+ * 服务查找委托给全局 ServiceContainer。
  */
 public open class MapContext <: Context {
     private let _data: ConcurrentHashMap<String, Any> = ConcurrentHashMap()
 
     /**
-     * Set parameter in context.
+     * 在上下文中设置参数。
      *
-     * @param key parameter key name
-     * @param value parameter value
+     * @param key 参数键名
+     * @param value 参数值
      */
     public func set(key: String, value: Any): Unit {
         _data.add(key, value)
     }
 
     /**
-     * Get parameter from context.
+     * 从上下文中获取参数。
      *
-     * @param key parameter key name
-     * @return parameter value, or None if not found
+     * @param key 参数键名
+     * @return 参数值，如果未找到则返回 None
      */
     public func get<T>(key: String): ?T {
         (_data.get(key) ?? Option<Any>.None) as T
     }
 
     /**
-     * Remove parameter from context.
+     * 从上下文中移除参数。
      *
-     * @param key parameter key name
+     * @param key 参数键名
      */
     public func remove(key: String): Unit {
         _data.remove(key)

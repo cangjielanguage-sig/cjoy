@@ -14,20 +14,20 @@ import std.collection.{HashMap}
 import cjoy.log.macros.*
 
 /**
- * The interface for parameter binding.
+ * 参数绑定的接口。
  *
- * Enables binding of HTTP request query parameters, form data, or headers to typed objects.
- * Supports simple types, arrays, and complex nested structures.
+ * 支持将 HTTP 请求查询参数、表单数据或头信息绑定到类型化对象。
+ * 支持简单类型、数组和复杂嵌套结构。
  */
 public interface JoyBindable<T> {
     /**
-     * Bind HTTP request query, post form or header params to object.
+     * 将 HTTP 请求查询、POST 表单或头参数绑定到对象。
      *
-     * @param source the bind source object
-     * @param name the name of bind field
-     * @param defaultValue the default value of field
-     * @param timeformat the datetime field format
-     * @return the object, or None if binding fails
+     * @param source 绑定源对象
+     * @param name 绑定字段名
+     * @param defaultValue 字段默认值
+     * @param timeformat 日期时间字段格式
+     * @return 对象，如果绑定失败则返回 None
      */
     static func bind(source: JoyBindSource, name: String, defaultValue: ?String, timeformat: ?String): ?T
     static func bind(source: JoyBindSource, name: String, defaultValue: ?String): ?T {
@@ -37,13 +37,13 @@ public interface JoyBindable<T> {
         bind(source, name, None, None)
     }
     /**
-     * Bind HTTP request query, post form or header params to object with complex structure.
+     * 将 HTTP 请求查询、POST 表单或头参数绑定到具有复杂结构的对象。
      *
-     * Supports nested fields by treating the value as a map or collection and recursively binding.
+     * 通过将值视为映射或集合并递归绑定来支持嵌套字段。
      *
-     * @param source the bind source object
-     * @param name the name of bind field, can be a nested field
-     * @return the object, or None if binding fails
+     * @param source 绑定源对象
+     * @param name 绑定字段名，可以是嵌套字段
+     * @return 对象，如果绑定失败则返回 None
      */
     static func bindField(source: JoyBindSource, name: String): ?T {
         let map = source.getOne<HashMap<String, Any>>(name)
@@ -67,25 +67,25 @@ public interface JoyBindable<T> {
 }
 
 /**
- * The interface for bind source, JoyBindable can get value from the source.
+ * 绑定源的接口，JoyBindable 可以从源获取值。
  *
- * Provides methods to retrieve single or multiple values by name from various sources
- * such as query parameters, form data, headers, or maps.
+ * 提供按名称从各种源（如查询参数、表单数据、头信息或映射）
+ * 检索单个或多个值的方法。
  */
 public interface JoyBindSource {
     /**
-     * Get one value by name from source.
+     * 从源按名称获取单个值。
      *
-     * @param name the value name
-     * @return the value, or None if not found
+     * @param name 值名称
+     * @return 值，如果未找到则返回 None
      */
     func getOne<T>(name: String): ?T
 
     /**
-     * Get all values by name from source.
+     * 从源按名称获取所有值。
      *
-     * @param name the value name
-     * @return the collection of values
+     * @param name 值名称
+     * @return 值的集合
      */
     func getList<T>(name: String): Collection<T>
 }

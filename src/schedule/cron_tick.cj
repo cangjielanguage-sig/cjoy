@@ -14,7 +14,7 @@ import std.time.DateTime
 import std.deriving.Derive
 
 /**
- * Time tick for cron job matching
+ * Cron 任务匹配的时间刻度
  */
 @Derive[ToString]
 class CronTick {

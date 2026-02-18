@@ -21,10 +21,10 @@ import cjoy.jsonrpc.api.{JSONRPCRequest, JSONRPCResponse, JSONRPCMessage, JSONRP
     JSONRPCException}
 
 /**
- * Checks if the given address is a loopback address
+ * 检查给定地址是否为回环地址
  *
- * @param address The address to check
- * @return True if the address is a loopback address
+ * @param address 要检查的地址
+ * @return 如果是回环地址返回 true
  */
 func isLoopbackAddress(address: String): Bool {
     let addr = address
@@ -38,11 +38,11 @@ func isLoopbackAddress(address: String): Bool {
 
 
 /**
-* Validates DNS rebinding protection for localhost connections
+* 验证 localhost 连接的 DNS 重绑定保护
 *
-* @param ctx The JoyContext for the request
-* @param disableLocalhostProtection Disable localhost protecttion
-* @return True if DNS rebinding protection is passed or disabled
+* @param ctx 请求的 JoyContext
+* @param disableLocalhostProtection 禁用 localhost 保护
+* @return 如果通过 DNS 重绑定保护或已禁用返回 true
 */
 func validateLocalhostProtection(ctx: JoyContext, disableLocalhostProtection: Bool): Bool {
     if (disableLocalhostProtection) {
@@ -69,12 +69,12 @@ func validateLocalhostProtection(ctx: JoyContext, disableLocalhostProtection: Bo
 
 
 /**
-* Creates a JSONRPCResponse with an error message
+* 创建带有错误消息的 JSONRPCResponse
 *
-* @param msg The error message
-* @param code The error code (default: JSONRPCConsts.ERR_INVALID_REQUEST)
-* @param data Additional error data (optional)
-* @return The JSONRPCResponse with error information
+* @param msg 错误消息
+* @param code 错误代码（默认：JSONRPCConsts.ERR_INVALID_REQUEST）
+* @param data 额外的错误数据（可选）
+* @return 包含错误信息的 JSONRPCResponse
 */
 func createErrorMsg(msg: String, code!: Int = JSONRPCConsts.ERR_INVALID_REQUEST, data!: ?Any = None): JSONRPCResponse {
     @JoyLogError("[MCP] Error occurred")

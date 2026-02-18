@@ -16,10 +16,10 @@ import stdx.encoding.json.stream.{JsonSerializable, JsonWriter}
 
 
 /**
- * Base class for chunked HTTP response writers
+ * 分块 HTTP 响应写入器的基类
  *
- * Provides functionality for writing chunked responses with proper HTTP headers
- * and end state management.
+ * 提供写入分块响应的功能，包括正确的 HTTP 头
+ * 和结束状态管理。
  */
 public open class ChunkedWriter {
     protected let _httpContext: HttpContext
@@ -27,9 +27,9 @@ public open class ChunkedWriter {
     protected var _end: Bool = false
 
     /**
-     * Creates a new ChunkedWriter instance
+     * 创建新的 ChunkedWriter 实例
      *
-     * @param httpContext The HTTP context for the response
+     * @param httpContext HTTP 响应上下文
      */
     init(httpContext: HttpContext) {
         _httpContext = httpContext
@@ -41,19 +41,19 @@ public open class ChunkedWriter {
     }
 
     /**
-     * Adds a header to the response
+     * 向响应添加头信息
      *
-     * @param name The header name
-     * @param value The header value
+     * @param name 头名称
+     * @param value 头值
      */
     public func header(name: String, value: String): Unit {
         _httpContext.responseBuilder.header(name, value)
     }
 
     /**
-     * Checks if the response has already ended
+     * 检查响应是否已结束
      *
-     * @throws IllegalStateException if trying to send data after ending the response
+     * @throws IllegalStateException 如果尝试在结束响应后发送数据
      */
     protected func checkEnd() {
         if (_end) {
@@ -62,7 +62,7 @@ public open class ChunkedWriter {
     }
 
     /**
-     * Ends the chunked response
+     * 结束分块响应
      */
     public func end(): Unit {
         _end = true
@@ -70,23 +70,23 @@ public open class ChunkedWriter {
 }
 
 /**
- * Concrete implementation of ChunkedWriter for writing chunked HTTP responses
+ * 用于写入分块 HTTP 响应的 ChunkedWriter 具体实现
  */
 public class JoyChunkedWriter <: ChunkedWriter {
     /**
-     * Creates a new JoyChunkedWriter instance
+     * 创建新的 JoyChunkedWriter 实例
      *
-     * @param httpContext The HTTP context for the response
+     * @param httpContext HTTP 响应上下文
      */
     init(httpContext: HttpContext) {
         super(httpContext)
     }
 
     /**
-     * Writes string data to the chunked response and sends it immediately
+     * 将字符串数据写入分块响应并立即发送
      *
-     * @param data The string data to write
-     * @return This JoyChunkedWriter instance for method chaining
+     * @param data 要写入的字符串数据
+     * @return 此 JoyChunkedWriter 实例，用于方法链式调用
      */
     public func write(data: String): JoyChunkedWriter {
         checkEnd()
@@ -95,10 +95,10 @@ public class JoyChunkedWriter <: ChunkedWriter {
     }
 
     /**
-     * Writes binary data to the chunked response and sends it immediately
+     * 将二进制数据写入分块响应并立即发送
      *
-     * @param data The binary data to write
-     * @return This JoyChunkedWriter instance for method chaining
+     * @param data 要写入的二进制数据
+     * @return 此 JoyChunkedWriter 实例，用于方法链式调用
      */
     public func write(data: Array<Byte>): JoyChunkedWriter {
         checkEnd()
@@ -107,10 +107,10 @@ public class JoyChunkedWriter <: ChunkedWriter {
     }
 
     /**
-     * Writes JSON-serializable data to the chunked response and sends it immediately
+     * 将 JSON 可序列化数据写入分块响应并立即发送
      *
-     * @param data The JSON-serializable data to write
-     * @return This JoyChunkedWriter instance for method chaining
+     * @param data 要写入的 JSON 可序列化数据
+     * @return 此 JoyChunkedWriter 实例，用于方法链式调用
      */
     public func writeJson<T>(data: T): JoyChunkedWriter where T <: JsonSerializable {
         let buffer = ByteBuffer()

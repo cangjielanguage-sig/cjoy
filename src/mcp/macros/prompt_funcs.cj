@@ -16,7 +16,7 @@ import cjoy.utils.{MapToString, MapListGetFunc, randStr}
 import cjoy.utils.ast.parserAttrs
 
 /**
- * function info for prompt macro
+ * 提示词宏的函数信息
  */
 class PromptFuncInfo <: FuncInfo {
     init(macroName: String, decl: FuncDecl) {

@@ -17,27 +17,27 @@ class JsonInfoCache {
     static let FIELD_INFOS: HashMap<String, JsonFieldInfo> = HashMap()
 
     /**
-     * clear all cached field info
+     * 清除所有缓存的字段信息
      */
     public static func clear(): Unit {
         FIELD_INFOS.clear()
     }
 
     /**
-     * add field info to cache
+     * 添加字段信息到缓存
      *
-     * @param vid: variable identifier
-     * @param info: field info
+     * @param vid: 变量标识符
+     * @param info: 字段信息
      */
     public static func addCache(vid: String, info: JsonFieldInfo): Unit {
         FIELD_INFOS.add(vid, info)
     }
 
     /**
-     * create json field generator from variable declaration
+     * 从变量声明创建 json 字段生成器
      *
-     * @param vd: variable declaration
-     * @return: json field generator
+     * @param vd: 变量声明
+     * @return: json 字段生成器
      */
     public static func create(vd: VarDecl): JsonFieldGenerator {
         let vtypeTokens = vd.declType.toTokens()

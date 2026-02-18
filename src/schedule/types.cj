@@ -14,7 +14,7 @@ import cjoy.context.MapContext
 import cjoy.framework.Joy
 
 /**
- * Schedule context for scheduled task execution
+ * 用于定时任务执行的调度上下文
  */
 public class ScheduleContext <: MapContext {
     public func getService<T>(name: String): ?T {
@@ -23,12 +23,12 @@ public class ScheduleContext <: MapContext {
 }
 
 /**
- * Function type for scheduled task execution
+ * 定时任务执行的函数类型
  */
 public type ScheduleFunc = (ctx: ScheduleContext) -> Unit
 
 /**
- * Schedule exception for scheduling errors
+ * 用于调度错误的调度异常
  */
 public class ScheduleException <: Exception {
     public ScheduleException(msg: String) {
@@ -39,7 +39,7 @@ public class ScheduleException <: Exception {
 const BAD_CRON_FORMAT: String = "schedule string must have five components like * * * * *"
 
 /**
- * Out of range error for cron field values
+ * Cron 字段值的越界错误
  */
 class OutOfRange <: ToString {
     OutOfRange(
@@ -56,7 +56,7 @@ class OutOfRange <: ToString {
 }
 
 /**
- * Parsing error for cron expressions
+ * Cron 表达式的解析错误
  */
 class ParsingErr <: ToString {
     ParsingErr(let invalidPart: String, let base!: String = "") {

@@ -23,24 +23,24 @@ private const JWT_CTX_KEY: String = "__jwt__"
 private const JWT_PAYLOAD_CTX_KEY: String = "__jwt_payload__"
 
 /**
- * return the jwt token form context
+ * 从上下文中获取 JWT 令牌
  */
 public func getJwt(ctx: JoyContext): ?String {
     ctx.getCtxParam(JWT_CTX_KEY)
 }
 
 /**
- * Interface for JWT signing and verification keys
+ * JWT 签名和验证密钥的接口
  */
 public interface Jwtkey {
     /**
-     * return the sign and verify key
+     * 返回签名和验证密钥
      */
     func getKeys(jwt: Jwt): Array<Any>
 }
 
 /**
- * the HMAC (HS256, HS384, HS512) algorithm key
+ * HMAC (HS256, HS384, HS512) 算法密钥
  */
 public class HmacSigningkey <: Jwtkey {
     public HmacSigningkey(let key: Array<Byte>) {
@@ -52,7 +52,7 @@ public class HmacSigningkey <: Jwtkey {
 }
 
 /**
- * the RSA (RS256, RS384, RS512) algorithm key
+ * RSA (RS256, RS384, RS512) 算法密钥
  */
 public class RsaSigningkey <: Jwtkey {
     public RsaSigningkey(let privateKey: RSAPrivateKey, let publicKey: RSAPublicKey) {
@@ -64,71 +64,54 @@ public class RsaSigningkey <: Jwtkey {
 }
 
 /**
- * jwt authentication middleware
+ * JWT 认证中间件
  */
 public class JwtAuth <: JoyMiddlewareHandler {
     private let _getTokenFunc: (ctx: JoyContext) -> ?String
 
-    public JwtAuth(
-        // Realm name to display to the user.
-        let realm!: String,
-        // Signing algorithm - possible values are HS256, HS384, HS512, RS256, RS384 or RS512
-        let signingAlg!: String,
-        // Callback to retrieve key used for signing or verifing.
-        let keyProvider!: Jwtkey,
-        // Callback function that should perform the authentication of the user based on login info.
-        // Must set user data as user identifier in context, it will be stored in Claim Array.
+    /**
+     * 构造 JwtAuth 实例。
+     *
+     * @param realm 向用户显示的领域名称
+     * @param signingAlg 签名算法 -可能的值为 HS256、HS384、HS512、RS256、RS384 或 RS512
+     * @param keyProvider 用于获取签名或验证密钥的回调函数
+     * @param authenticator 执行用户身份验证的回调函数。必须在上下文中设置用户数据作为用户标识符，它将存储在 Claim 数组中
+     * @param authorizator 执行已认证用户授权的回调函数。仅在身份验证成功后调用。成功时返回 true，失败时返回 false
+     * @param setPayload 登录时调用的回调函数。使用此函数可以向 webtoken 添加额外的负载数据。请注意，负载未加密。jwt.io 上提到的属性不能用作映射的键
+     * @param unauthorized 用户可以定义自己的 Unauthorized 函数
+     * @param loginResponse 用户可以定义自己的 LoginResponse 函数
+     * @param logoutResponse 用户可以定义自己的 LogoutResponse 函数
+     * @param refreshResponse 用户可以定义自己的 RefreshResponse 函数
+     * @param timeout JWT 令牌的有效时长
+     * @param maxRefresh 刷新令牌的时长。客户端可以在 maxRefresh 结束前的最后时刻刷新令牌。这意味着令牌的最大有效时间跨度为 tokenTime + maxRefresh。默认为 0 表示不可刷新
+     * @param identityKey 设置身份密钥
+     * @param identityHandler 设置身份处理函数
+     * @param tokenLookup TokenLookup 是一个 "<source>:<name>" 形式的字符串，用于从请求中提取令牌。可能的值：header、query、cookie、param、form
+     * @param tokenHeadName 头部中的字符串
+     * @param sendCookie 作为 cookie 的令牌
+     * @param cookieMaxAge Cookie 的有效时长。可选，默认为 Timeout 值
+     * @param cookieSecure 是否使用安全 Cookie
+     * @param cookieHttpOnly 是否只允许 HTTP 访问 Cookie
+     * @param cookieDomain Cookie 域名
+     * @param cookieName Cookie 名称
+     * @param sendAuthorization 允许为每个请求返回授权头部
+     * @param jwtParserConfig 修改 jwt 解析配置
+     */
+    public JwtAuth(let realm!: String, let signingAlg!: String, let keyProvider!: Jwtkey,
         let authenticator!: JoyRequestHandlerFunc,
-        // Callback function that should perform the authorization of the authenticated user.
-        // called only after an authentication success. Must return true on success, false on failure.
         let authorizator!: (ctx: JoyContext, identity: String) -> Bool = defaultAuthorizator,
-        // Callback function that will be called during login.
-        // Using this function it is possible to add additional payload data to the webtoken.
-        // Note that the payload is not encrypted.
-        // The attributes mentioned on jwt.io can't be used as keys for the map.
         let setPayload!: (ctx: JoyContext, jwt: Jwt) -> Unit = defaultPayloadFunc,
-        // User can define own Unauthorized func.
         let unauthorized!: (ctx: JoyContext, code: UInt16, message: String) -> Unit = defaultUnauthorized,
-        // User can define own LoginResponse func.
         let loginResponse!: (ctx: JoyContext, code: UInt16, token: String, expire: DateTime) -> Unit = defaultLoginResponse,
-        // User can define own LogoutResponse func.
         let logoutResponse!: (ctx: JoyContext, code: UInt16) -> Unit = defaultLogoutResponse,
-        // User can define own RefreshResponse func.
         let refreshResponse!: (ctx: JoyContext, code: UInt16, token: String, expire: DateTime) -> Unit = defaultLoginResponse,
-        // Duration that a jwt token is valid. 
-        let timeout!: Duration = Duration.minute * 30,
-        // Refresh their token until MaxRefresh has passed.
-        // Note that clients can refresh their token in the last moment of maxRefresh.
-        // This means that the maximum validity timespan for a token is tokenTime + maxRefresh.
-        // defaults to 0 meaning not refreshable.
-        let maxRefresh!: Duration = Duration.Zero,
-        // Set the identity key
-        let identityKey!: String = "identity",
-        // Set the identity handler function
-        var identityHandler!: ?(ctx: JoyContext) -> String = None,
-        // TokenLookup is a string in the form of "<source>:<name>" that is used to extract token from the request.
-        // Possible values:
-        // - "header:<name>"
-        // - "query:<name>"
-        // - "cookie:<name>"
-        // - "param:<name>"
-        // - "form:<name>"
-        let tokenLookup!: String = "header:Authorization",
-        // is a string in the header.
-        let tokenHeadName!: String = "Bearer",
-        // token as a cookie
-        let sendCookie!: Bool = false,
-        // Duration that a cookie is valid. Optional, by default equals to Timeout value.
-        let cookieMaxAge!: Duration = Duration.minute * 30,
-        let cookieSecure!: Bool = false,
-        let cookieHttpOnly!: Bool = true,
-        let cookieDomain!: String = "",
-        let cookieName!: String = "jwt",
-        // allow return authorization header for every request
-        let sendAuthorization!: Bool = false,
-        // modify the jwt parse config
-        let jwtParserConfig!: ?ParserConfig = None
-    ) {
+        let timeout!: Duration = Duration.minute * 30, let maxRefresh!: Duration = Duration.Zero,
+        let identityKey!: String = "identity", var identityHandler!: ?(ctx: JoyContext) -> String = None,
+        let tokenLookup!: String = "header:Authorization", let tokenHeadName!: String = "Bearer",
+        let sendCookie!: Bool = false, let cookieMaxAge!: Duration = Duration.minute * 30,
+        let cookieSecure!: Bool = false, let cookieHttpOnly!: Bool = true, let cookieDomain!: String = "",
+        let cookieName!: String = "jwt", let sendAuthorization!: Bool = false,
+        let jwtParserConfig!: ?ParserConfig = None) {
         _getTokenFunc = createGetTokenFunc(tokenLookup, tokenHeadName)
         if (this.identityHandler.isNone()) {
             this.identityHandler = {

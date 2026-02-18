@@ -23,71 +23,71 @@ import cjoy.jsonrpc.api.{JSONRPCRequest, JSONRPCResponse, JSONRPCMessage, JSONRP
 import cjoy.log.macros.*
 
 /**
- * MCP server transport for streaming with JSON response
+ * 用于流式传输和 JSON 响应的 MCP 服务器传输
  *
- * Provides streamable communication between MCP server and clients using SSE
- * (Server-Sent Events) with support for JSON responses and session resumability.
+ * 提供 MCP 服务器与客户端之间使用 SSE（Server-Sent Events）的流式通信，
+ * 支持 JSON 响应和会话可恢复性。
  */
 class McpStreamableServerTransport <: McpServerTransport {
     /**
-     * ConcurrentHashMap for storing active server sessions with user info
+     * 用于存储活动服务器会话及用户信息的 ConcurrentHashMap
      */
     private let _sessions: ConcurrentHashMap<String, SessionInfo> = ConcurrentHashMap()
 
     /**
-     * Map for tracking session timestamps: sessionId -> last activity time
+     * 用于跟踪会话时间戳的映射：sessionId -> 最后活动时间
      */
     private let _sessionTimestamps: ConcurrentHashMap<String, Int64> = ConcurrentHashMap()
 
     /**
-     * Session timeout duration in milliseconds, default 30 minutes
+     * 会话超时持续时间（毫秒），默认 30 分钟
      */
     private let _sessionTimeoutMs: Int64
 
     /**
-     * Time interval for checking and cleaning up timeout sessions in milliseconds, default 5 minutes
+     * 检查和清理超时会话的时间间隔（毫秒），默认 5 分钟
      */
     private let _sessionCheckIntervalMs: Int64
 
     /**
-     * Flag indicating if session timeout management is enabled
+     * 标志位，指示是否启用会话超时管理
      */
     private let _sessionTimeoutEnabled: Bool
 
     /**
-     * Flag indicating if responses should be sent as JSON instead of SSE
+     * 标志位，指示是否将响应作为 JSON 而不是 SSE 发送
      */
     private let _isJsonResp: Bool
 
     /**
-     * Event store for persisting and replaying events
+     * 用于持久化和重放事件的事件存储
      */
     private let _eventStore: ?EventStore
 
     /**
-     * Flag indicating if session timeout task is running
+     * 标志位，指示会话超时任务是否正在运行
      */
     private var _sessionTimeoutTaskRunning: Bool = false
 
     /**
-     * Flag indicating if stateless mode is enabled
+     * 标志位，指示是否启用无状态模式
      */
     private let _statelessMode: Bool
 
     /**
-     * Flag indicating if DNS rebinding protection for localhost is disabled
+     * 标志位，指示是否禁用 localhost 的 DNS 重绑定保护
      */
     private let _disableLocalhostProtection: Bool
 
     /**
-     * Initializes a new McpStreamableServerTransport
+     * 初始化新的 McpStreamableServerTransport
      *
-     * @param isJsonResp Whether to return JSON responses instead of SSE streams
-     * @param eventStore Optional event store for persisting events (default: None)
-     * @param sessionTimeoutMs Session timeout duration in milliseconds (default: 30 minutes)
-     * @param sessionCheckIntervalMs Time interval for checking and cleaning up timeout sessions (default: 5 minutes)
-     * @param statelessMode Whether to enable stateless mode (default: false)
-     * @param disableLocalhostProtection Whether to disable DNS rebinding protection for localhost (default: false)
+     * @param isJsonResp 是否返回 JSON 响应而不是 SSE 流
+     * @param eventStore 用于持久化事件的事件存储（默认：None）
+     * @param sessionTimeoutMs 会话超时持续时间（毫秒）（默认：30 分钟）
+     * @param sessionCheckIntervalMs 检查和清理超时会话的时间间隔（毫秒）（默认：5 分钟）
+     * @param statelessMode 是否启用无状态模式（默认：false）
+     * @param disableLocalhostProtection 是否禁用 localhost 的 DNS 重绑定保护（默认：false）
      */
     public init(isJsonResp: Bool, eventStore!: ?EventStore = None, sessionTimeoutMs!: Int64 = 30 * 60 * 1000,
         sessionCheckIntervalMs!: Int64 = 5 * 60 * 1000, statelessMode!: Bool = false,
@@ -125,9 +125,9 @@ class McpStreamableServerTransport <: McpServerTransport {
     }
 
     /**
-     * Handles incoming GET requests for SSE connections
+     * 处理传入的 GET 请求以建立 SSE 连接
      *
-     * @param ctx The JoyContext for the request
+     * @param ctx 请求的 JoyContext
      */
     public func handleGetRequest(ctx: JoyContext): Unit {
         if (!validateProtocolVersion(ctx) || !validateLocalhostProtection(ctx, _disableLocalhostProtection)) {
@@ -158,9 +158,9 @@ class McpStreamableServerTransport <: McpServerTransport {
     }
 
     /**
-     * Handles incoming POST requests for message exchange
+     * 处理传入的 POST 请求以进行消息交换
      *
-     * @param ctx The JoyContext for the request
+     * @param ctx 请求的 JoyContext
      */
     public func handlePostRequest(ctx: JoyContext): Unit {
         if (!validateProtocolVersion(ctx) || !validateLocalhostProtection(ctx, _disableLocalhostProtection)) {
@@ -200,9 +200,9 @@ class McpStreamableServerTransport <: McpServerTransport {
     }
 
     /**
-     * Handles incoming DELETE requests for terminating sessions
+     * 处理传入的 DELETE 请求以终止会话
      *
-     * @param ctx The JoyContext for the request
+     * @param ctx 请求的 JoyContext
      */
     public func handleDelRequest(ctx: JoyContext): Unit {
         if (!validateProtocolVersion(ctx) || !validateLocalhostProtection(ctx, _disableLocalhostProtection)) {
@@ -217,7 +217,7 @@ class McpStreamableServerTransport <: McpServerTransport {
     }
 
     /**
-     * Starts the session timeout check task
+     * 启动会话超时检查任务
      */
     private func startSessionTimeoutTask(): Unit {
         _sessionTimeoutTaskRunning = true
@@ -230,7 +230,7 @@ class McpStreamableServerTransport <: McpServerTransport {
     }
 
     /**
-     * Checks and cleans up timeout sessions
+     * 检查和清理超时会话
      */
     private func checkTimeoutSessions(): Unit {
         let currentTime = DateTime.now().toUnixTimeStamp().toMilliseconds() // Convert to milliseconds
@@ -261,37 +261,37 @@ class McpStreamableServerTransport <: McpServerTransport {
     }
 
     /**
-     * Updates a session's last activity time
+     * 更新会话的最后活动时间
      *
-     * @param sessionId The session identifier
+     * @param sessionId 会话标识符
      */
     private func updateSessionActivity(sessionId: String): Unit {
         _sessionTimestamps.add(sessionId, DateTime.now().toUnixTimeStamp().toMilliseconds()) // Convert to milliseconds
     }
 
     /**
-     * Tracks session creation time
+     * 跟踪会话创建时间
      *
-     * @param sessionId The session identifier
+     * @param sessionId 会话标识符
      */
     private func sessionCreated(sessionId: String): Unit {
         _sessionTimestamps.add(sessionId, DateTime.now().toUnixTimeStamp().toMilliseconds()) // Convert to milliseconds
     }
 
     /**
-     * Sends a message through this transport (not implemented for streamable)
+     * 通过此传输发送消息（流式传输未实现）
      *
-     * @param message The message to send
+     * @param message 要发送的消息
      */
     public func send(message: ByteBuffer): Unit {
         // nothing
     }
 
     /**
-     * Validates the protocol version from the request
+     * 验证请求中的协议版本
      *
-     * @param ctx The JoyContext for the request
-     * @return True if protocol version is valid and supported
+     * @param ctx 请求的 JoyContext
+     * @return 如果协议版本有效且支持返回 true
      */
     private func validateProtocolVersion(ctx: JoyContext): Bool {
         let protocolVersion = ctx.getHeader(McpConsts.HEADER_PROTOCOL_VERSION) ?? McpConsts.PROTOCOL_VERSION_20250326
@@ -308,11 +308,11 @@ class McpStreamableServerTransport <: McpServerTransport {
     }
 
     /**
-     * Validates the session from the request and prevents session hijacking
+     * 验证请求中的会话并防止会话劫持
      *
-     * @param ctx The JoyContext for the request
-     * @param mustExist Whether the session must exist (default: true)
-     * @return Optional McpServerSession if valid
+     * @param ctx 请求的 JoyContext
+     * @param mustExist 会话是否必须存在（默认：true）
+     * @return 如果有效返回可选的 McpServerSession
      */
     private func validateSession(ctx: JoyContext, mustExist!: Bool = true): ?McpServerSession {
         let sessionId = ctx.getHeader(McpConsts.HEADER_MCP_SESSION_ID)
@@ -345,9 +345,9 @@ class McpStreamableServerTransport <: McpServerTransport {
     }
 
     /**
-     * Terminates a session
+     * 终止会话
      *
-     * @param session The session to terminate
+     * @param session 要终止的会话
      */
     private func terminateSession(session: McpServerSession): Unit {
         session.close()
@@ -355,10 +355,10 @@ class McpStreamableServerTransport <: McpServerTransport {
     }
 
     /**
-     * Checks if the request accepts JSON and/or SSE responses
+     * 检查请求是否接受 JSON 和/或 SSE 响应
      *
-     * @param ctx The JoyContext for the request
-     * @return Tuple indicating if JSON and SSE are accepted
+     * @param ctx 请求的 JoyContext
+     * @return 指示是否接受 JSON 和 SSE 的元组
      */
     private func checkAcceptHeader(ctx: JoyContext): (Bool, Bool) {
         let accept = ctx.getHeader("accept") ?? ""
@@ -369,10 +369,10 @@ class McpStreamableServerTransport <: McpServerTransport {
     }
 
     /**
-     * Checks if the request content type is JSON
+     * 检查请求内容类型是否为 JSON
      *
-     * @param ctx The JoyContext for the request
-     * @return True if content type is JSON, false otherwise
+     * @param ctx 请求的 JoyContext
+     * @return 如果内容类型是 JSON 返回 true，否则返回 false
      */
     private func checkContentType(ctx: JoyContext): Bool {
         let contentType = ctx.getHeader("Content-Type") ?? ""
@@ -381,10 +381,10 @@ class McpStreamableServerTransport <: McpServerTransport {
     }
 
     /**
-     * Handles incoming JSONRPC messages
+     * 处理传入的 JSONRPC 消息
      *
-     * @param ctx The JoyContext for the request
-     * @param message The JSONRPCMessage to handle
+     * @param ctx 请求的 JoyContext
+     * @param message 要处理的 JSONRPCMessage
      */
     private func handleMessage(ctx: JoyContext, message: JSONRPCMessage): Unit {
         match (message) {
@@ -397,11 +397,11 @@ class McpStreamableServerTransport <: McpServerTransport {
     }
 
     /**
-     * Creates a new SSE session transport
+     * 创建新的 SSE 会话传输
      *
-     * @param ctx The JoyContext for the request
-     * @param sessionId The session identifier
-     * @return McpSseServerSessionTransport instance
+     * @param ctx 请求的 JoyContext
+     * @param sessionId 会话标识符
+     * @return McpSseServerSessionTransport 实例
      */
     private func createTransport(ctx: JoyContext, sessionId: String): McpSseServerSessionTransport {
         let emitter = ctx.eventEmitter()
@@ -411,11 +411,11 @@ class McpStreamableServerTransport <: McpServerTransport {
     }
 
     /**
-     * Creates a new DefaultMcpServerSession
+     * 创建新的 DefaultMcpServerSession
      *
-     * @param ctx The JoyContext for the request
-     * @param sessionId The session identifier
-     * @return DefaultMcpServerSession instance
+     * @param ctx 请求的 JoyContext
+     * @param sessionId 会话标识符
+     * @return DefaultMcpServerSession 实例
      */
     private func createSession(ctx: JoyContext, sessionId: String): DefaultMcpServerSession {
         if (_isJsonResp) {
@@ -427,9 +427,9 @@ class McpStreamableServerTransport <: McpServerTransport {
     }
 
     /**
-     * Closes the transport for a session
+     * 关闭会话的传输
      *
-     * @param session The session to close transport for
+     * @param session 要关闭传输的会话
      */
     private func closeTransport(session: ?McpServerSession): Unit {
         if (let Some(s) <- session) {
@@ -440,10 +440,10 @@ class McpStreamableServerTransport <: McpServerTransport {
     }
 
     /**
-     * Updates the transport for a session
+     * 更新会话的传输
      *
-     * @param ctx The JoyContext for the request
-     * @param session The session to update transport for
+     * @param ctx 请求的 JoyContext
+     * @param session 要更新传输的会话
      */
     private func updateTransport(ctx: JoyContext, session: ?McpServerSession): Unit {
         if (let Some(s) <- session) {
@@ -455,9 +455,9 @@ class McpStreamableServerTransport <: McpServerTransport {
     }
 
     /**
-     * Waits for a session to end
+     * 等待会话结束
      *
-     * @param session The session to wait for
+     * @param session 要等待的会话
      */
     private func waitEnd(session: ?McpServerSession): Unit {
         if (let Some(s) <- session) {
@@ -470,10 +470,10 @@ class McpStreamableServerTransport <: McpServerTransport {
     }
 
     /**
-     * Handles incoming JSONRPCRequest messages
+     * 处理传入的 JSONRPCRequest 消息
      *
-     * @param ctx The JoyContext for the request
-     * @param m The JSONRPCRequest to handle
+     * @param ctx 请求的 JoyContext
+     * @param m 要处理的 JSONRPCRequest
      */
     private func handleRequest(ctx: JoyContext, m: JSONRPCRequest): Unit {
         var session: ?McpServerSession = None
@@ -564,10 +564,10 @@ class McpStreamableServerTransport <: McpServerTransport {
     }
 
     /**
-     * Relays events to a client from a specific event ID
+     * 从特定事件 ID 向客户端中继事件
      *
-     * @param ctx The JoyContext for the request
-     * @param lastEventId The last event ID received by the client
+     * @param ctx 请求的 JoyContext
+     * @param lastEventId 客户端接收的最后一个事件 ID
      */
     private func relayEvents(ctx: JoyContext, lastEventId: String): Unit {
         let session = validateSession(ctx)
@@ -597,11 +597,11 @@ class McpStreamableServerTransport <: McpServerTransport {
     }
 
     /**
-     * Sends an event to the client
+     * 向客户端发送事件
      *
-     * @param ctx The JoyContext for the request
-     * @param eventId The event ID
-     * @param data The event data as ByteBuffer
+     * @param ctx 请求的 JoyContext
+     * @param eventId 事件 ID
+     * @param data 事件数据，类型为 ByteBuffer
      */
     private func sendEvent(ctx: JoyContext, eventId: String, data: ByteBuffer): Unit {
         let emitter = ctx.eventEmitter()
@@ -612,15 +612,15 @@ class McpStreamableServerTransport <: McpServerTransport {
     }
 
     /**
-     * Closes the transport
+     * 关闭传输
      */
     public func close(): Unit {
     }
 
     /**
-     * Checks if the transport is closed
+     * 检查传输是否已关闭
      *
-     * @return Always false for streamable transport
+     * @return 对于可流式传输始终返回 false
      */
     public func isClosed(): Bool {
         false

@@ -29,12 +29,12 @@ class SigningMethodHmac <: SigningMethod {
     }
 
     /**
-     * sign string with HMAC key
+     * 使用 HMAC 密钥签名字符串
      *
-     * @param signing string to be signed
-     * @param key HMAC key
-     * @return signed data
-     * @throws JwtException if sign failed
+     * @param signing 要签名的字符串
+     * @param key HMAC 密钥
+     * @return 签名后的数据
+     * @throws JwtException 如果签名失败
      */
     public func sign(signing: String, key: Any): Array<Byte> {
         if (key is Array<Byte>) {
@@ -46,12 +46,12 @@ class SigningMethodHmac <: SigningMethod {
     }
 
     /**
-     * verify signature with HMAC key
+     * 使用 HMAC 密钥验证签名
      *
-     * @param signing signed string
-     * @param sig signature to verify
-     * @param key HMAC key
-     * @throws JwtException if verify failed
+     * @param signing 已签名的字符串
+     * @param sig 要验证的签名
+     * @param key HMAC 密钥
+     * @throws JwtException 如果验证失败
      */
     public func verify(signing: String, sig: Array<Byte>, key: Any): Unit {
         if (key is Array<Byte>) {

@@ -15,7 +15,7 @@ import cjoy.json.JsonTool
 import cjoy.utils.{StrExt, rawBase64URLEncode, rawBase64URLDecode}
 
 /**
- * JWT (JSON Web Token) for authentication and information exchange
+ * 用于认证和信息交换的 JWT (JSON Web Token)
  */
 public class Jwt {
     private var _headers: MapHeaders = MapHeaders()
@@ -32,14 +32,14 @@ public class Jwt {
     }
 
     /**
-     * create a JWT and sign it to token string
+     * 创建 JWT 并将其签名为令牌字符串
      */
     public static func create(): Jwt {
         Jwt()
     }
 
     /**
-     * return the headers of JWT
+     * 返回 JWT 的头部
      */
     public prop headers: Headers {
         get() {
@@ -48,7 +48,7 @@ public class Jwt {
     }
 
     /**
-     * return the claims of JWT
+     * 返回 JWT 的声明
      */
     public prop claims: Claims {
         get() {
@@ -57,10 +57,10 @@ public class Jwt {
     }
 
     /**
-     * specify the signing algorithm
+     * 指定签名算法
      *
-     * @param alg the algorithm
-     * @throws JwtException if not found sign alg
+     * @param alg 算法
+     * @throws JwtException 如果未找到签名算法
      */
     public func alg(alg: String): Jwt {
         _method = SigningMethods.getMethod(alg)
@@ -72,20 +72,20 @@ public class Jwt {
     }
 
     /**
-     * copy claims from origin jwt
+     * 从原始 JWT 复制声明
      *
-     * @param jwt the origin jwt
+     * @param jwt 原始 JWT
      */
     public func copyClaims(jwt: Jwt): Unit {
         _claims.add(all: jwt._claims)
     }
 
     /**
-     * signs the JWT to a string with algorithm and key
+     * 使用算法和密钥将 JWT 签名为字符串
      *
-     * @param key the key of algorithm, like Array<Byte> or RSAPrivateKey
-     * @return a signed JWT string
-     * @throws JwtException if not invoke alg
+     * @param key 算法密钥，如 Array<Byte> 或 RSAPrivateKey
+     * @return 已签名的 JWT 字符串
+     * @throws JwtException 如果未调用 alg
      */
     public func signWith(key: Any): String {
         if (_method.isNone()) {
@@ -98,11 +98,11 @@ public class Jwt {
     }
 
     /**
-     * parse the string token to JWT
+     * 将字符串令牌解析为 JWT
      *
-     * @param token the token to parse
-     * @param config the parser config
-     * @return: a JWT object
+     * @param token 要解析的令牌
+     * @param config 解析器配置
+     * @return JWT 对象
      */
     public static func parse(token: String, config!: ParserConfig = ParserConfig()): Jwt {
         let jwt = Jwt()
@@ -112,10 +112,10 @@ public class Jwt {
     }
 
     /**
-     * verify the JWT with the key with the algorithm
+     * 使用算法密钥验证 JWT
      *
-     * @param key the key of algorithm, like Array<Byte> or RSAPublicKey
-     * @throws JwtException if verify failure
+     * @param key 算法密钥，如 Array<Byte> 或 RSAPublicKey
+     * @throws JwtException 如果验证失败
      */
     public func verifyWith(key: Any): Jwt {
         if (_valid) {
@@ -338,31 +338,31 @@ public class Jwt {
 }
 
 /**
- * JWT (JSON Web Token) parser config
+ * JWT (JSON Web Token) 解析器配置
  */
 public struct ParserConfig {
     public ParserConfig(
-        // if populated, only these methods will be considered valid.
+        // 如果设置，则只有这些方法将被视为有效
         let validMethods!: Array<String> = Array(),
-        // skip claims validation during token parsing.
+        // 在令牌解析期间跳过声明验证
         let skipClaimsValidation!: Bool = false,
-        // specifying the leeway window.
+        // 指定容差窗口
         let leeway!: Duration = Duration.second * 0,
-        // the primary use-case for this is testing. if you are looking for a way to account for clock-skew, specifying leeway should be used instead.
+        // 主要用例是测试。如果要考虑时钟偏移，应使用指定 leeway 的方式
         let timeFunc!: ?() -> DateTime = None,
-        // require `iat` claim.
+        // 要求 `iat` 声明
         let issueAtRequired!: Bool = false,
-        // require `exp` claim.
+        // 要求 `exp` 声明
         let expirationRequired!: Bool = false,
-        // require `nbf` claim.
+        // 要求 `nbf` 声明
         let notBeforeRequired!: Bool = false,
-        // require any of the specified audiences in the `aud` claim. it will fail if the audience is not listed in the token or the `aud` claim is missing.
+        // 要求在 `aud` 声明中包含任意一个指定的受众。如果令牌中未列出受众或缺少 `aud` 声明，则验证失败
         let expectedAud!: Array<String> = [],
-        // require all the specified audiences
+        // 要求所有指定的受众
         let expectedAllAud!: Bool = false,
-        // expected issuer
+        // 预期的签发者
         let expectedIss!: String = "",
-        // expected subject
+        // 预期的主题
         let expectedSub!: String = "") {
     }
 }

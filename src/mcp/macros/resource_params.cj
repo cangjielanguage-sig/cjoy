@@ -13,7 +13,7 @@ macro package cjoy.mcp.macros
 import std.ast.*
 
 /**
- * parameter info for resource parameter in macro
+ * 宏中资源参数的参数信息
  */
 class ResourceParamInfo <: ParamInfo {
     init(marcroName: String) {

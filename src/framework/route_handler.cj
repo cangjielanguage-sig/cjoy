@@ -17,7 +17,7 @@ class JoyGroupRouteHandler <: JoyRequestHandler {
     static let INSTANCE = JoyGroupRouteHandler()
 
     public func handle(ctx: JoyContext): Unit {
-        // default handle is return not found
+        // 默认处理是返回未找到
         ctx.notFound()
     }
 }
@@ -47,39 +47,39 @@ class JoyRequestHandlerWrapper <: JoyRequestHandlerChain & JoyRequestHandler {
 }
 
 /**
- * factory interface for creating file serve handlers
+ * 用于创建文件服务处理程序的工厂接口
  */
 public interface JoyFileHandlerFactory {
     /**
-     * create a handler to serve a single file
+     * 为提供单个文件创建处理程序
      *
-     * @param filePath: the path of the file to serve
-     * @return the file serve handler
+     * @param filePath: 要提供服务的文件路径
+     * @return 文件服务处理程序
      */
     func createFileServeHandler(filePath: String): JoyRequestHandler
 
     /**
-     * create a handler to serve a file system directory
+     * 为提供文件系统目录创建处理程序
      *
-     * @param root: the root directory path
-     * @param confg: the joy configuration
-     * @return the file system serve handler
+     * @param root: 根目录路径
+     * @param confg: Joy 配置
+     * @return 文件系统服务处理程序
      */
     func createFileSystemServeHandler(root: Path, confg: JoyConfig): JoyRequestHandler
 
     /**
-     * serve a file to the client
+     * 将文件提供给客户端
      *
-     * @param ctx: the request context
-     * @param filePath: the path of the file to serve
+     * @param ctx: 请求上下文
+     * @param filePath: 要提供服务的文件路径
      */
     func serveFile(ctx: JoyContext, filePath: Path): Unit
 
     /**
-     * serve a file as attachment for download
+     * 以附件形式提供下载文件
      *
-     * @param ctx: the request context
-     * @param filePath: the path of the file to download
+     * @param ctx: 请求上下文
+     * @param filePath: 要下载的文件路径
      */
     func downloadFile(ctx: JoyContext, filePath: Path): Unit
 }

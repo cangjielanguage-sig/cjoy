@@ -18,21 +18,21 @@ import stdx.crypto.digest.{SHA256, SHA384, SHA512, CryptoException}
 import stdx.crypto.keys.{RSAPrivateKey, RSAPublicKey, PadOption, PSSOption}
 
 /**
- * load RSA private key from file
+ * 从文件加载 RSA 私钥
  */
 public func loadRSAPrivateKey(path: String): RSAPrivateKey {
     RSAPrivateKey.decodeFromPem(readPermFile(path))
 }
 
 /**
- * load RSA private key from file with password
+ * 使用密码从文件加载 RSA 私钥
  */
 public func loadRSAPrivateKey(path: String, password!: ?String): RSAPrivateKey {
     RSAPrivateKey.decodeFromPem(readPermFile(path), password: password)
 }
 
 /**
- * load RSA public key from file
+ * 从文件加载 RSA 公钥
  */
 public func loadRSAPublicKey(path: String): RSAPublicKey {
     RSAPublicKey.decodeFromPem(readPermFile(path))
@@ -56,12 +56,12 @@ class SigningMethodRsa <: SigningMethod {
     }
 
     /**
-     * sign string with RSA private key
+     * 使用 RSA 私钥签名字符串
      *
-     * @param signing string to be signed
-     * @param key RSA private key
-     * @return: signed data
-     * @throws JwtException if sign failed
+     * @param signing 要签名的字符串
+     * @param key RSA 私钥
+     * @return 签名后的数据
+     * @throws JwtException 如果签名失败
      */
     public func sign(signing: String, key: Any): Array<Byte> {
         match (key) {
@@ -76,12 +76,12 @@ class SigningMethodRsa <: SigningMethod {
     }
 
     /**
-     * verify signature with RSA public key
+     * 使用 RSA 公钥验证签名
      *
-     * @param signing signed string
-     * @param sig signature to verify
-     * @param key RSA public key
-     * @throws JwtException if verify failed
+     * @param signing 已签名的字符串
+     * @param sig 要验证的签名
+     * @param key RSA 公钥
+     * @throws JwtException 如果验证失败
      */
     public func verify(signing: String, sig: Array<Byte>, key: Any): Unit {
         match (key) {

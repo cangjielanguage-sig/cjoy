@@ -14,18 +14,18 @@ import stdx.net.http.{HttpStatusCode}
 import cjoy.context.Context
 
 /**
- * HTTP client with automatic retry on server errors
+ * 服务器错误时自动重试的 HTTP 客户端
  */
 public class RetryClient <: JoyHttpClient {
     public RetryClient(let http: JoyHttpClient, let maxRetries!: Int = 3) {
     }
 
     /**
-     * Send HTTP request with automatic retry on server errors
+     * 发送 HTTP 请求，服务器错误时自动重试
      *
-     * @param ctx request context
-     * @param request HTTP request
-     * @return HTTP response
+     * @param ctx 请求上下文
+     * @param request HTTP 请求
+     * @return HTTP 响应
      */
     public func send(ctx: Context, request: JoyHttpRequest): JoyHttpResponse {
         var lastEx: ?Exception = None

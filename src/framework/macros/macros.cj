@@ -13,10 +13,9 @@ macro package cjoy.framework.macros
 import std.ast.Tokens
 
 /**
- * PathParam macro is used for annotation at the paramter of function
- * which value from named paramter in url path.
+ * PathParam 宏用于在函数参数上注解，其值来自 URL 路径中的命名参数。
  *
- * @attribute name: the name of paramter in url path
+ * @attribute name: URL 路径中的参数名称
  */
 public macro PathParam(attr: Tokens, input: Tokens) {
     parseParam("PathParam", attr, input)
@@ -24,9 +23,8 @@ public macro PathParam(attr: Tokens, input: Tokens) {
 }
 
 /**
- * PathParam macro is used for annotation at the paramter of function
- * which value from named paramter in url path.
- * The paramter name of function is the same as named paramter in path.
+ * PathParam 宏用于在函数参数上注解，其值来自 URL 路径中的命名参数。
+ * 函数参数名称与路径中的命名参数相同。
  *
  */
 public macro PathParam(input: Tokens) {
@@ -35,11 +33,10 @@ public macro PathParam(input: Tokens) {
 }
 
 /**
- * QueryParam macro is used for annotation at the paramter of function
- * which value from named paramter in url query.
+ * QueryParam 宏用于在函数参数上注解，其值来自 URL 查询中的命名参数。
  *
- * @attribute name: the name of paramter in url query
- * @attribute default: the default value of parameter
+ * @attribute name: URL 查询中的参数名称
+ * @attribute default: 参数的默认值
  */
 public macro QueryParam(attr: Tokens, input: Tokens) {
     parseParam("QueryParam", attr, input)
@@ -47,9 +44,8 @@ public macro QueryParam(attr: Tokens, input: Tokens) {
 }
 
 /**
- * QueryParam macro is used for annotation at the paramter of function
- * which value from named paramter in url query.
- * The paramter name of function is the same as paramter name in query.
+ * QueryParam 宏用于在函数参数上注解，其值来自 URL 查询中的命名参数。
+ * 函数参数名称与查询中的参数名称相同。
  *
  */
 public macro QueryParam(input: Tokens) {
@@ -58,8 +54,7 @@ public macro QueryParam(input: Tokens) {
 }
 
 /**
- * QueryParam macro is used for annotation at the paramter of function
- * which value from paramters in url query.
+ * QueryBindParam 宏用于在函数参数上注解，其值来自 URL 查询中的参数。
  *
  */
 public macro QueryBindParam(input: Tokens) {
@@ -68,11 +63,10 @@ public macro QueryBindParam(input: Tokens) {
 }
 
 /**
- * PostFormParam macro is used for annotation at the paramter of function
- * which value from named paramter in encoded url or post form.
+ * PostFormParam 宏用于在函数参数上注解，其值来自编码 URL 或 POST 表单中的命名参数。
  *
- * @attribute name: the name of paramter in encoded url or post form
- * @attribute default: the default value of parameter
+ * @attribute name: 编码 URL 或 POST 表单中的参数名称
+ * @attribute default: 参数的默认值
  */
 public macro PostFormParam(attr: Tokens, input: Tokens) {
     parseParam("PostFormParam", attr, input)
@@ -80,9 +74,8 @@ public macro PostFormParam(attr: Tokens, input: Tokens) {
 }
 
 /**
- * PostFormParam macro is used for annotation at the paramter of function
- * which value from named paramter in encoded url or post form.
- * The paramter name of function is the same as paramter name in encoded url or post form.
+ * PostFormParam 宏用于在函数参数上注解，其值来自编码 URL 或 POST 表单中的命名参数。
+ * 函数参数名称与编码 URL 或 POST 表单中的参数名称相同。
  *
  */
 public macro PostFormParam(input: Tokens) {
@@ -91,8 +84,7 @@ public macro PostFormParam(input: Tokens) {
 }
 
 /**
- * PostFormParam macro is used for annotation at the paramter of function
- * which value from paramters in encoded url or post form.
+ * PostFormBindParam 宏用于在函数参数上注解，其值来自编码 URL 或 POST 表单中的参数。
  */
 public macro PostFormBindParam(input: Tokens) {
     parseParam("PostFormBindParam", input)
@@ -100,11 +92,10 @@ public macro PostFormBindParam(input: Tokens) {
 }
 
 /**
- * HeaderParam macro is used for annotation at the paramter of function
- * which value from named paramter in header.
+ * HeaderParam 宏用于在函数参数上注解，其值来自请求头中的命名参数。
  *
- * @attribute name: the name of paramter in header
- * @attribute default: the default value of parameter
+ * @attribute name: 请求头中的参数名称
+ * @attribute default: 参数的默认值
  */
 public macro HeaderParam(attr: Tokens, input: Tokens) {
     parseParam("HeaderParam", attr, input)
@@ -112,9 +103,8 @@ public macro HeaderParam(attr: Tokens, input: Tokens) {
 }
 
 /**
- * HeaderParam macro is used for annotation at the paramter of function
- * which value from named paramter in header.
- * The paramter name of function is the same as paramter name in header.
+ * HeaderParam 宏用于在函数参数上注解，其值来自请求头中的命名参数。
+ * 函数参数名称与请求头中的参数名称相同。
  *
  */
 public macro HeaderParam(input: Tokens) {
@@ -123,8 +113,7 @@ public macro HeaderParam(input: Tokens) {
 }
 
 /**
- * HeaderParam macro is used for annotation at the paramter of function
- * which value from paramters in header.
+ * HeaderBindParam 宏用于在函数参数上注解，其值来自请求头中的参数。
  *
  */
 public macro HeaderBindParam(input: Tokens) {
@@ -133,10 +122,9 @@ public macro HeaderBindParam(input: Tokens) {
 }
 
 /**
- * ContextParam macro is used for annotation at the paramter of function
- * which value from named paramter in context.
+ * ContextParam 宏用于在函数参数上注解，其值来自上下文中的命名参数。
  *
- * @attribute name: the name of paramter in context
+ * @attribute name: 上下文中的参数名称
  */
 public macro ContextParam(attr: Tokens, input: Tokens) {
     parseParam("ContextParam", attr, input)
@@ -144,9 +132,8 @@ public macro ContextParam(attr: Tokens, input: Tokens) {
 }
 
 /**
- * ContextParam macro is used for annotation at the paramter of function
- * which value from named paramter in context.
- * The paramter name of function is the same as paramter name in context.
+ * ContextParam 宏用于在函数参数上注解，其值来自上下文中的命名参数。
+ * 函数参数名称与上下文中的参数名称相同。
  *
  */
 public macro ContextParam(input: Tokens) {
@@ -155,11 +142,10 @@ public macro ContextParam(input: Tokens) {
 }
 
 /**
- * CookieParam macro is used for annotation at the paramter of function
- * which value from named paramter in cookie.
+ * CookieParam 宏用于在函数参数上注解，其值来自 Cookie 中的命名参数。
  *
- * @attribute name: the name of paramter in cookie
- * @attribute default: the default value of parameter
+ * @attribute name: Cookie 中的参数名称
+ * @attribute default: 参数的默认值
  */
 public macro CookieParam(attr: Tokens, input: Tokens) {
     parseParam("CookieParam", attr, input)
@@ -167,9 +153,8 @@ public macro CookieParam(attr: Tokens, input: Tokens) {
 }
 
 /**
- * CookieParam macro is used for annotation at the paramter of function
- * which value from named paramter in cookie.
- * The paramter name of function is the same as paramter name in cookie.
+ * CookieParam 宏用于在函数参数上注解，其值来自 Cookie 中的命名参数。
+ * 函数参数名称与 Cookie 中的参数名称相同。
  *
  */
 public macro CookieParam(input: Tokens) {
@@ -178,8 +163,7 @@ public macro CookieParam(input: Tokens) {
 }
 
 /**
- * BodyParam macro is used for annotation at the paramter of function
- * which value from body.
+ * BodyParam 宏用于在函数参数上注解，其值来自请求体。
  *
  */
 public macro BodyParam(attr: Tokens, input: Tokens) {
@@ -188,8 +172,7 @@ public macro BodyParam(attr: Tokens, input: Tokens) {
 }
 
 /**
- * BodyParam macro is used for annotation at the paramter of function
- * which value from body.
+ * BodyParam 宏用于在函数参数上注解，其值来自请求体。
  *
  */
 public macro BodyParam(input: Tokens) {
@@ -198,89 +181,89 @@ public macro BodyParam(input: Tokens) {
 }
 
 /**
- * Get macro is used for annotation at the function, register the funtion for GET `path`
+ * Get 宏用于在函数上注解，为 GET `path` 注册函数
  *
- * @attribute path: the path pattern
- * @attribute produce: the format of response body, value is json/text, default is text
+ * @attribute path: 路径模式
+ * @attribute produce: 响应体格式，值为 json/text，默认为 text
  */
 public macro Get(attr: Tokens, input: Tokens) {
     input + parseFunc("Get", attr, input)
 }
 
 /**
- * Post macro is used for annotation at the function, register the funtion for POST `path`
+ * Post 宏用于在函数上注解，为 POST `path` 注册函数
  *
- * @attribute path: the path pattern
- * @attribute produce: the format of response body, value is json/text, default is text
+ * @attribute path: 路径模式
+ * @attribute produce: 响应体格式，值为 json/text，默认为 text
  */
 public macro Post(attr: Tokens, input: Tokens) {
     input + parseFunc("Post", attr, input)
 }
 
 /**
- * Delete macro is used for annotation at the function, register the funtion for DELETE `path`
+ * Delete 宏用于在函数上注解，为 DELETE `path` 注册函数
  *
- * @attribute path: the path pattern
- * @attribute produce: the format of response body, value is json/text, default is text
+ * @attribute path: 路径模式
+ * @attribute produce: 响应体格式，值为 json/text，默认为 text
  */
 public macro Delete(attr: Tokens, input: Tokens) {
     input + parseFunc("Delete", attr, input)
 }
 
 /**
- * Patch macro is used for annotation at the function, register the funtion for PATCH `path`
+ * Patch 宏用于在函数上注解，为 PATCH `path` 注册函数
  *
- * @attribute path: the path pattern
- * @attribute produce: the format of response body, value is json/text, default is text
+ * @attribute path: 路径模式
+ * @attribute produce: 响应体格式，值为 json/text，默认为 text
  */
 public macro Patch(attr: Tokens, input: Tokens) {
     input + parseFunc("Patch", attr, input)
 }
 
 /**
- * Put macro is used for annotation at the function, register the funtion for PUT `path`
+ * Put 宏用于在函数上注解，为 PUT `path` 注册函数
  *
- * @attribute path: the path pattern
- * @attribute produce: the format of response body, value is json/text, default is text
+ * @attribute path: 路径模式
+ * @attribute produce: 响应体格式，值为 json/text，默认为 text
  */
 public macro Put(attr: Tokens, input: Tokens) {
     input + parseFunc("Put", attr, input)
 }
 
 /**
- * Head macro is used for annotation at the function, register the funtion for HEAD `path`
+ * Head 宏用于在函数上注解，为 HEAD `path` 注册函数
  *
- * @attribute path: the path pattern
- * @attribute produce: the format of response body, value is json/text, default is text
+ * @attribute path: 路径模式
+ * @attribute produce: 响应体格式，值为 json/text，默认为 text
  */
 public macro Head(attr: Tokens, input: Tokens) {
     input + parseFunc("Head", attr, input)
 }
 
 /**
- * Handler macro is used for annotation at the function, register the funtion for `method path`
+ * Handler 宏用于在函数上注解，为 `method path` 注册函数
  *
- * @attribute path: the path pattern
- * @attribute methods: the method list, like `GET,PUT` or `GET`
- * @attribute produce: the format of response body, value is json/text, default is text
+ * @attribute path: 路径模式
+ * @attribute methods: 方法列表，如 `GET,PUT` 或 `GET`
+ * @attribute produce: 响应体格式，值为 json/text，默认为 text
  */
 public macro Handler(attr: Tokens, input: Tokens) {
     input + parseFunc("Handler", attr, input)
 }
 
 /**
- * Methods macro is used for annotation at the function,
- * register the funtion to intercept group handler
+ * Middleware 宏用于在函数上注解，
+ * 注册函数以拦截组处理器
  *
- * @attribute groups: the group list, like `/a/b/c,/d/f` or `/a`
+ * @attribute groups: 组列表，如 `/a/b/c,/d/f` 或 `/a`
  */
 public macro Middleware(attr: Tokens, input: Tokens) {
     input + parseMiddlewareFunc(attr, input)
 }
 
 /**
- * Methods macro is used for annotation at the function,
- * register the funtion to intercept route group handler
+ * Middleware 宏用于在函数上注解，
+ * 注册函数以拦截路由组处理器
  *
  */
 public macro Middleware(input: Tokens) {

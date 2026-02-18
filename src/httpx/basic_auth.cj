@@ -15,18 +15,18 @@ import cjoy.context.Context
 import cjoy.framework.{JoyHttpConsts}
 
 /**
- * HTTP client with basic authentication
+ * 基本认证 HTTP 客户端
  */
 public class BasicAuthClient <: JoyHttpClient {
     public BasicAuthClient(let http: JoyHttpClient, let username!: String, let password!: String) {
     }
 
     /**
-     * Send HTTP request with basic authentication
+     * 发送带基本认证的 HTTP 请求
      *
-     * @param ctx request context
-     * @param request HTTP request
-     * @return HTTP response
+     * @param ctx 请求上下文
+     * @param request HTTP 请求
+     * @return HTTP 响应
      */
     public func send(ctx: Context, request: JoyHttpRequest): JoyHttpResponse {
         let authValue = "Basic " + toBase64String((username + ":" + password).toArray())

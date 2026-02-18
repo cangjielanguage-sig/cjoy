@@ -17,11 +17,11 @@ import cjoy.framework.{JoyContext, JoyHttpConsts}
 import cjoy.multipart.{getMimeTypeByExt, escapeQuotes}
 
 /**
- * Downloads a file as an attachment
+ * 将文件作为附件下载
  *
- * @param ctx The joy context
- * @param filePath The path of file to download
- * @throws IOException if file is not existed
+ * @param ctx joy 上下文
+ * @param filePath 要下载的文件路径
+ * @throws IOException 如果文件不存在
  */
 public func downloadAttachment(ctx: JoyContext, filePath: Path): Unit {
     if (!exists(filePath)) {

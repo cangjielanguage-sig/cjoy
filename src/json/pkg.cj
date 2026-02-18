@@ -10,7 +10,7 @@
 
 package cjoy.json
 
-// Re-export commonly used types for JSON serialization
+// 重新导出 JSON 序列化常用的类型
 public import std.time.DateTime
 public import std.io.ByteBuffer
 public import std.collection.{ArrayList, HashMap}

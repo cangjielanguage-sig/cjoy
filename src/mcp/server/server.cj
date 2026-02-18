@@ -18,68 +18,66 @@ import cjoy.log.macros.*
 @JoyCreateLogger("cjoy.mcp.server")
 
 /**
- * Represents the configurable features for an MCP server
+ * 表示 MCP 服务器的可配置功能
  *
- * This class contains all the server-specific configurations and capabilities
- * that are negotiated during the MCP initialization phase.
+ * 此类包含在 MCP 初始化阶段协商的所有服务器特定配置和功能。
  */
 public class McpServerFeatures {
     /**
-     * MCP protocol version supported by the server
+     * 服务器支持的 MCP 协议版本
      */
     public var protocolVersion: String = McpConsts.LASTEST_PROTOCOL_VERSION
 
     /**
-     * Information about the server implementation
+     * 服务器实现信息
      */
     public var serverInfo: Implementation = Implementation(name: "cjoy", version: VERSION)
 
     /**
-     * Capabilities supported by the server (tools, resources, prompts)
+     * 服务器支持的功能（工具、资源、提示）
      */
     var capabilities: ServerCapabilities = ServerCapabilities()
 
     /**
-     * Instructions or guidelines for using the server
+     * 使用服务器的说明或指南
      */
     public var instructions: ?String = None
 
     /**
-     * Keepalive interval for MCP sessions in milliseconds
+     * MCP 会话的保活间隔（毫秒）
      *
-     * If set to a positive value, the server will send ping messages at the specified interval
-     * to keep the connection alive. If set to 0 or negative, keepalive is disabled.
+     * 如果设为正值，服务器将在指定间隔发送 ping 消息以保持连接活跃。
+     * 如果设为 0 或负值，则禁用保活。
      */
     public var keepaliveIntervalMs: Int64 = 0
 
     /**
-     * Keepalive timeout for MCP sessions in milliseconds
+     * MCP 会话的保活超时（毫秒）
      *
-     * If no response to a ping is received within this time, the session will be closed.
-     * Defaults to half of the keepalive interval.
+     * 如果在此时间内未收到 ping 响应，会话将关闭。
+     * 默认为保活间隔的一半。
      */
     public var keepaliveTimeoutMs: Int64 = 0
 }
 
 /**
- * Main entry point for MCP server functionality
+ * MCP 服务器功能的主入口点
  *
- * Provides static methods for registering MCP servers with CJoy framework and
- * managing server-wide resources, tools, and prompts.
+ * 提供用于向 CJoy 框架注册 MCP 服务器和管理服务器级资源、工具和提示的静态方法。
  */
 public class McpServer {
     /**
-     * Static instance for managing MCP tools
+     * 用于管理 MCP 工具的静态实例
      */
     public static let TOOLS: McpTools = McpTools()
 
     /**
-     * Static instance for managing MCP resources
+     * 用于管理 MCP 资源的静态实例
      */
     public static let RESOURCES: McpResources = McpResources()
 
     /**
-     * Static instance for managing MCP prompts
+     * 用于管理 MCP 提示的静态实例
      */
     public static let PROMPTS: McpPrompts = McpPrompts()
 
@@ -87,10 +85,10 @@ public class McpServer {
     private static var dump = false
 
     /**
-     * Handles the initialization exchange with MCP clients
+     * 处理与 MCP 客户端的初始化交换
      *
-     * @return The InitializeResult containing server capabilities and information
-     * @throws Exception If server features are not properly configured
+     * @return 包含服务器功能信息的 InitializeResult
+     * @throws Exception 如果服务器功能未正确配置
      */
     public static func exchangeInit(): InitializeResult {
         let features = McpServer.serverFeatures.getOrThrow()
@@ -99,13 +97,13 @@ public class McpServer {
     }
 
     /**
-     * Registers an MCP server with SSE (Server-Sent Events) transport to CJoy framework
+     * 使用 SSE（Server-Sent Events）传输将 MCP 服务器注册到 CJoy 框架
      *
-     * @param joy The CJoy instance to register with
-     * @param ssePath The path for SSE connections (default: "/sse")
-     * @param messagePath The path for message exchange (default: "/messages")
-     * @param serverFeatures The server features configuration (default: McpServerFeatures())
-     * @param disableLocalhostProtection Whether to disable DNS rebinding protection for localhost (default: false)
+     * @param joy 要注册的 CJoy 实例
+     * @param ssePath SSE 连接的路径（默认为 "/sse"）
+     * @param messagePath 消息交换的路径（默认为 "/messages"）
+     * @param serverFeatures 服务器功能配置（默认为 McpServerFeatures()）
+     * @param disableLocalhostProtection 是否禁用 localhost 的 DNS 重绑定保护（默认为 false）
      */
     public static func registerSseTo(joy: Joy, ssePath!: String = "/sse", messagePath!: String = "/messages",
         serverFeatures!: McpServerFeatures = McpServerFeatures(), disableLocalhostProtection!: Bool = false): Unit {
@@ -126,14 +124,14 @@ public class McpServer {
     }
 
     /**
-     * Registers an MCP server with streamable transport to CJoy framework
+     * 使用可流式传输将 MCP 服务器注册到 CJoy 框架
      *
-     * @param joy The CJoy instance to register with
-     * @param path The path for streamable transport (default: "/mcp")
-     * @param isJsonResp Whether to return JSON responses directly instead of SSE streams (default: false)
-     * @param eventStore Optional event store for persisting events (default: None)
-     * @param serverFeatures The server features configuration (default: McpServerFeatures())
-     * @param disableLocalhostProtection Whether to disable DNS rebinding protection for localhost (default: false)
+     * @param joy 要注册的 CJoy 实例
+     * @param path 可流式传输的路径（默认为 "/mcp"）
+     * @param isJsonResp 是否直接返回 JSON 响应而不是 SSE 流（默认为 false）
+     * @param eventStore 用于持久化事件的可选事件存储（默认为 None）
+     * @param serverFeatures 服务器功能配置（默认为 McpServerFeatures()）
+     * @param disableLocalhostProtection 是否禁用 localhost 的 DNS 重绑定保护（默认为 false）
      */
     public static func registerStreamableTo(joy: Joy, path!: String = "/mcp", isJsonResp!: Bool = false,
         eventStore!: ?EventStore = None, serverFeatures!: McpServerFeatures = McpServerFeatures(),
@@ -152,9 +150,9 @@ public class McpServer {
     }
 
     /**
-     * Updates the server features and capabilities based on registered tools, resources, and prompts
+     * 根据已注册的工具、资源和提示更新服务器功能
      *
-     * @param serverFeatures The server features configuration to update
+     * @param serverFeatures 要更新的服务器功能配置
      */
     private static func updateFeatures(serverFeatures: McpServerFeatures) {
         McpServer.serverFeatures = serverFeatures
@@ -170,7 +168,7 @@ public class McpServer {
     }
 
     /**
-     * Dumps the registered resources for debugging purposes
+     * 转储已注册的资源，用于调试目的
      */
     private static func dumpResources(): Unit {
         if (!dump) {

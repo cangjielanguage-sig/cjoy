@@ -10,7 +10,7 @@
 
 package cjoy.mcp
 
-// only export mcp server
+// 仅导出 mcp.server
 public import std.collection.{HashMap, ArrayList}
 public import cjoy.mcp.server.McpServer
 public import cjoy.bind.{JoyBindable, JoyBindSource}

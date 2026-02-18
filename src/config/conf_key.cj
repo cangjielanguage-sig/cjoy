@@ -16,18 +16,18 @@ import cjoy.utils.snakeCase
 import cjoy.log.macros.*
 
 /**
- * Represents a parsed configuration key with support for nested keys and array indices
+ * 表示解析后的配置键，支持嵌套键和数组索引
  *
- * @param key: the key segment name
- * @param arrIdx: the array index, -1 if not an array
- * @param sub: the next key segment for nested keys
+ * @param key: 键段名称
+ * @param arrIdx: 数组索引，如果不是数组则为 -1
+ * @param sub: 嵌套键的下一个键段
  */
 public class ConfigKey <: ToString {
     ConfigKey(public let key: String, public let arrIdx: Int, public var sub: ?ConfigKey) {
     }
 
     /**
-     * Returns a string representation of this config key
+     * 返回此配置键的字符串表示
      */
     public func toString(): String {
         var str = "(${key},${arrIdx})"
@@ -43,10 +43,10 @@ func convertKey(key: String): String {
 }
 
 /**
- * Converts all keys in a config map to snake_case format recursively
- * This converts camelCase keys to snake_case (e.g., "userName" -> "user_name")
+ * 将配置映射中的所有键递归转换为 snake_case 格式
+ * 这将把 camelCase 键转换为 snake_case（例如，"userName" -> "user_name"）
  *
- * @param data: the config map to convert keys in
+ * @param data: 要转换键的配置映射
  */
 public func convertKeys(data: Map<String, Any>): Unit {
     let iter = data.iterator()
@@ -65,7 +65,7 @@ public func convertKeys(data: Map<String, Any>): Unit {
 }
 
 /**
- * @throws ConfigException if the index is out range
+ * @throws ConfigException 如果索引超出范围
  */
 private func oneKeySeg(str: String): (String, Int) {
     let start = str.indexOf("[") ?? -1
@@ -84,9 +84,9 @@ private func oneKeySeg(str: String): (String, Int) {
 }
 
 /**
- * split key to ConfigKey
+ * 将键分割为 ConfigKey
  *
- * @throws ConfigException if the key is invalid
+ * @throws ConfigException 如果键无效
  */
 public func splitKey(key: String): ConfigKey {
     let exist = key.indexOf(".") ?? -1

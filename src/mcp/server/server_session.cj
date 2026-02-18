@@ -40,10 +40,9 @@ class SessionInfo {
 }
 
 /**
- * Session state manager for MCP server
+ * MCP 服务器的会话状态管理器
  *
- * Tracks the state of an MCP session, managing session lifecycle and
- * synchronization between SSE transport and session closure.
+ * 跟踪 MCP 会话的状态，管理会话生命周期和 SSE 传输与会话关闭之间的同步。
  */
 class McpServerSessionState {
     private let _counter: SyncCounter = SyncCounter(1)
@@ -51,15 +50,15 @@ class McpServerSessionState {
     private let _streamCompletionHandlers: ArrayList<() -> Unit> = ArrayList()
 
     /**
-     * Initializes a new McpServerSessionState
+     * 初始化新的 McpServerSessionState
      *
-     * @param sessionId The unique session identifier
-     * @param sseEmitter The SSE emitter for this session
+     * @param sessionId 唯一的会话标识符
+     * @param sseEmitter 此会话的 SSE 发射器
      */
     public McpServerSessionState(let sessionId: String, let sseEmitter: JoySseEmitter) {}
 
     /**
-     * Waits for the session to end and closes the SSE connection
+     * 等待会话结束并关闭 SSE 连接
      */
     public func waitEnd(): Unit {
         @JoyLogInfo("[MCP] waiting sse transport end, sessionId=${sessionId}")
@@ -69,7 +68,7 @@ class McpServerSessionState {
     }
 
     /**
-     * Completes a session by decrementing the counter
+     * 通过递减计数器完成会话
      */
     public func compete(): Unit {
         _counter.dec()
@@ -154,7 +153,7 @@ class DefaultMcpServerSession <: McpServerSession & McpRequestHandler & McpRespo
     }
 
     /**
-     * Marks the stream as completed
+     * 将流标记为已完成
      */
     public func markStreamCompleted(): Unit {
         // 这里可以添加流完成时的逻辑，例如清理资源、关闭连接等
@@ -167,17 +166,17 @@ class DefaultMcpServerSession <: McpServerSession & McpRequestHandler & McpRespo
     }
 
     /**
-     * Checks if the stream is completed
+     * 检查流是否已完成
      */
     public func isStreamCompleted(): Bool {
         // 这里可以添加检查流是否已完成的逻辑
         // 如果使用 McpServerSessionState，可以在这里调用其方法
-        // 例如：_state.isStreamCompleted() 
+        // 例如：_state.isStreamCompleted()
         _isClosed
     }
 
     /**
-     * Adds a stream completion handler
+     * 添加流完成处理程序
      */
     public func addStreamCompletionHandler(handler: () -> Unit): Unit {
         // 这里可以添加流完成处理程序的逻辑
@@ -186,13 +185,13 @@ class DefaultMcpServerSession <: McpServerSession & McpRequestHandler & McpRespo
     }
 
     /**
-     * Initializes a new DefaultMcpServerSession
+     * 初始化新的 DefaultMcpServerSession
      *
-     * @param sessionId The unique session identifier
-     * @param transport The MCP transport to use
-     * @param isJsonResp Whether to send JSON responses directly instead of via transport
-     * @param streamable Whether this is a streamable session
-     * @param eventStore Optional event store for persisting events (default: None)
+     * @param sessionId 唯一的会话标识符
+     * @param transport 要使用的 MCP 传输
+     * @param isJsonResp 是否直接发送 JSON 响应而不是通过传输
+     * @param streamable 这是否是可流式传输的会话
+     * @param eventStore 用于持久化事件的可选事件存储（默认：None）
      */
     init(sessionId: String, transport: McpTransport, isJsonResp: Bool, streamable: Bool, eventStore!: ?EventStore = None) {
         _sessionId = sessionId
@@ -210,9 +209,9 @@ class DefaultMcpServerSession <: McpServerSession & McpRequestHandler & McpRespo
     }
 
     /**
-     * Creates a dummy JoyContext instance for use when no real context is available
+     * 创建一个虚拟的 JoyContext 实例，用于没有真实上下文时
      *
-     * @return A dummy JoyContext instance
+     * @return 虚拟的 JoyContext 实例
      */
     private func _dummyContext(): JoyContext {
         // 在实际代码中，我们应该使用一个更简单的方法来获取或创建上下文
@@ -221,27 +220,27 @@ class DefaultMcpServerSession <: McpServerSession & McpRequestHandler & McpRespo
     }
 
     /**
-     * Stores an event for retrieval
+     * 存储事件以供检索
      *
-     * @param data The event data to store
-     * @return The unique event identifier
+     * @param data 要存储的事件数据
+     * @return 唯一的事件标识符
      */
     /**
-     * Formats an event ID using <streamID>_<index> format
+     * 使用 <streamID>_<index> 格式格式化事件 ID
      *
-     * @param streamId The stream identifier
-     * @param index The event index in the stream
-     * @return Formatted event ID string
+     * @param streamId 流标识符
+     * @param index 流中的事件索引
+     * @return 格式化后的事件 ID 字符串
      */
     private func formatEventId(streamId: String, index: Int64): String {
         "${streamId}_${index}"
     }
 
     /**
-     * Parses an event ID in <streamID>_<index> format
+     * 解析 <streamID>_<index> 格式的事件 ID
      *
-     * @param eventId The event ID to parse
-     * @return Tuple containing (streamId, index) if parsing succeeds, otherwise (None, None)
+     * @param eventId 要解析的事件 ID
+     * @return 如果解析成功返回包含 (streamId, index) 的元组，否则返回 (None, None)
      */
     private func parseEventId(eventId: String): (?String, ?Int64) {
         let parts = eventId.split("_")
@@ -266,10 +265,10 @@ class DefaultMcpServerSession <: McpServerSession & McpRequestHandler & McpRespo
     }
 
     /**
-     * Stores an event for retrieval
+     * 存储事件以供检索
      *
-     * @param data The event data to store
-     * @return The unique event identifier in <streamID>_<index> format
+     * @param data 要存储的事件数据
+     * @return <streamID>_<index> 格式的唯一事件标识符
      */
     public func storeEvent(data: ByteBuffer, ctx!: ?JoyContext = None): String {
         let streamId = "default" // TODO: support multiple streams per session
@@ -293,10 +292,10 @@ class DefaultMcpServerSession <: McpServerSession & McpRequestHandler & McpRespo
     }
 
     /**
-     * Retrieves all events after a specific event ID
+     * 检索特定事件 ID 之后的所有事件
      *
-     * @param lastEventId The last event ID to use as a starting point
-     * @return List of events with their IDs and data
+     * @param lastEventId 用作起点的最后一个事件 ID
+     * @return 包含事件 ID 和数据的列表
      */
     public func retrieveEvents(lastEventId: String, ctx!: ?JoyContext = None): ArrayList<(String, ByteBuffer)> {
         // If event store is available, use it for event retrieval
@@ -336,9 +335,9 @@ class DefaultMcpServerSession <: McpServerSession & McpRequestHandler & McpRespo
     }
 
     /**
-     * Cleans up old events to prevent memory overflow
+     * 清理旧事件以防止内存溢出
      *
-     * @param maxEvents Maximum number of events to keep
+     * @param maxEvents 要保留的最大事件数量
      */
     public func cleanUpEvents(maxEvents!: Int): Unit {
         if (_events.size > maxEvents) {
@@ -355,9 +354,9 @@ class DefaultMcpServerSession <: McpServerSession & McpRequestHandler & McpRespo
     }
 
     /**
-     * Updates the transport for this session
+     * 更新此会话的传输
      *
-     * @param transport The new transport to use
+     * @param transport 要使用的新传输
      */
     func updateTransport(transport: McpTransport): Unit {
         _transport.close()
@@ -366,7 +365,7 @@ class DefaultMcpServerSession <: McpServerSession & McpRequestHandler & McpRespo
     }
 
     /**
-     * Closes the current transport
+     * 关闭当前传输
      */
     func closeTransport(): Unit {
         @JoyLogInfo("[MCP] close SSE transport, sessionId=${_sessionId}")
@@ -379,10 +378,10 @@ class DefaultMcpServerSession <: McpServerSession & McpRequestHandler & McpRespo
     }
 
     /**
-     * Handles incoming JSON-RPC messages
+     * 处理传入的 JSON-RPC 消息
      *
-     * @param ctx The JoyContext for the request
-     * @param message The JSON-RPC message to handle
+     * @param ctx 请求的 JoyContext
+     * @param message 要处理的 JSON-RPC 消息
      */
     public func handle(ctx: JoyContext, message: JSONRPCMessage): Unit {
         match (message) {
@@ -394,22 +393,22 @@ class DefaultMcpServerSession <: McpServerSession & McpRequestHandler & McpRespo
     }
 
     /**
-     * Sends a JSON-RPC request (not supported by server sessions)
+     * 发送 JSON-RPC 请求（服务器会话不支持）
      *
-     * @param method The method name
-     * @param requestParams The request parameters
-     * @return The response of type T
-     * @throws UnsupportedException Always thrown as server sessions don't support outgoing requests
+     * @param method 方法名称
+     * @param requestParams 请求参数
+     * @return 类型 T 的响应
+     * @throws UnsupportedException 始终抛出，因为服务器会话不支持传出请求
      */
     public func sendRequest<T>(_: String, _: JsonSerializable): T where T <: JsonDeserializable<T> {
         throw UnsupportedException("unsupported this method")
     }
 
     /**
-     * Sends a JSON-RPC notification
+     * 发送 JSON-RPC 通知
      *
-     * @param method The notification method name
-     * @param params The notification parameters (optional)
+     * @param method 通知方法名称
+     * @param params 通知参数（可选）
      */
     public func sendNotification(method: String, params: ?JsonSerializable): Unit {
         let message = if (let Some(v) <- params) {
@@ -424,19 +423,19 @@ class DefaultMcpServerSession <: McpServerSession & McpRequestHandler & McpRespo
     }
 
     /**
-     * Adds a notification consumer for a specific method
+     * 为特定方法添加通知消费者
      *
-     * @param method The notification method name
-     * @param consumer The consumer function to handle notification bytes
+     * @param method 通知方法名称
+     * @param consumer 处理通知字节的消费者函数
      */
     public func addNotificationConsumer(method: String, consumer: (Array<Byte>) -> Unit): Unit {
         _notificationConsumer.add(method, consumer)
     }
 
     /**
-     * Handles incoming JSON-RPC notifications
+     * 处理传入的 JSON-RPC 通知
      *
-     * @param message The JSON-RPC notification to handle
+     * @param message 要处理的 JSON-RPC 通知
      */
     public func onNotification(message: JSONRPCNotification): Unit {
         _notificationConsumer.get(message.method).map({
@@ -445,18 +444,18 @@ class DefaultMcpServerSession <: McpServerSession & McpRequestHandler & McpRespo
     }
 
     /**
-     * Handles incoming JSON-RPC responses (default implementation does nothing)
+     * 处理传入的 JSON-RPC 响应（默认实现不执行任何操作）
      *
-     * @param message The JSON-RPC response to handle
+     * @param message 要处理的 JSON-RPC 响应
      */
     public func onResponse(_: JSONRPCResponse): Unit {
     }
 
     /**
-     * Handles incoming JSON-RPC requests
+     * 处理传入的 JSON-RPC 请求
      *
-     * @param ctx The JoyContext for the request
-     * @param message The JSON-RPC request to handle
+     * @param ctx 请求的 JoyContext
+     * @param message 要处理的 JSON-RPC 请求
      */
     public func onRequest(ctx: JoyContext, message: JSONRPCRequest): Unit {
         var jsonResp: Bool = false
@@ -517,11 +516,11 @@ class DefaultMcpServerSession <: McpServerSession & McpRequestHandler & McpRespo
     }
 
     /**
-     * Sends a JSON-RPC response
+     * 发送 JSON-RPC 响应
      *
-     * @param ctx The JoyContext for the response
-     * @param resp The JSON-RPC response to send
-     * @param jsonResp Whether to send the response as JSON directly or via transport
+     * @param ctx 响应的 JoyContext
+     * @param resp 要发送的 JSON-RPC 响应
+     * @param jsonResp 是直接作为 JSON 发送响应还是通过传输发送
      */
     private func sendResp(ctx: JoyContext, resp: JSONRPCResponse, jsonResp: Bool): Unit {
         if (_isJsonResp || jsonResp) {
@@ -535,10 +534,10 @@ class DefaultMcpServerSession <: McpServerSession & McpRequestHandler & McpRespo
     }
 
     /**
-     * Handles initialization requests
+     * 处理初始化请求
      *
-     * @param request The InitializeRequest
-     * @return The InitializeResult
+     * @param request 初始化请求
+     * @return 初始化结果
      */
     private func onRecvInitRequest(request: InitializeRequest): InitializeResult {
         // Protocol version negotiation
@@ -550,10 +549,10 @@ class DefaultMcpServerSession <: McpServerSession & McpRequestHandler & McpRespo
     }
 
     /**
-     * Negotiates the protocol version based on client request and server support
+     * 根据客户端请求和服务器支持协商协议版本
      *
-     * @param clientVersion The protocol version requested by the client
-     * @return The negotiated protocol version
+     * @param clientVersion 客户端请求的协议版本
+     * @return 协商后的协议版本
      */
     private func negotiateProtocolVersion(clientVersion: String): String {
         // Check if client version is supported
@@ -567,7 +566,7 @@ class DefaultMcpServerSession <: McpServerSession & McpRequestHandler & McpRespo
     }
 
     /**
-     * Closes the session
+     * 关闭会话
      */
     public func close(): Unit {
         if (_isClosed) {
@@ -578,9 +577,9 @@ class DefaultMcpServerSession <: McpServerSession & McpRequestHandler & McpRespo
     }
 
     /**
-     * Checks if the session is closed
+     * 检查会话是否已关闭
      *
-     * @return True if the session is closed, false otherwise
+     * @return 如果会话已关闭返回 true，否则返回 false
      */
     public func isClosed(): Bool {
         _isClosed

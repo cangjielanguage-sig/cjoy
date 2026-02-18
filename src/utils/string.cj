@@ -12,18 +12,18 @@ package cjoy.utils
 
 protected interface StrExt {
     /**
-     * splits string by byte separator
+     * 按字节分隔符分割字符串
      *
-     * @param b separator byte
-     * @return tuple of (left part, right part, found flag)
+     * @param b 分隔符字节
+     * @return (左侧部分, 右侧部分, 是否找到的标记) 元组
      */
     func cut(b: Byte): (String, String, Bool)
 
     /**
-     * finds index of first byte matching predicate
+     * 查找第一个匹配谓词的字节索引
      *
-     * @param f predicate function
-     * @return index of first matching byte, or -1 if not found
+     * @param f 谓词函数
+     * @return 第一个匹配字节的索引，如果未找到则返回 -1
      */
     func indexFunc(f: (x: Byte) -> Bool): Int
 }
@@ -47,10 +47,10 @@ extend String <: StrExt {
 }
 
 /**
- * checks if byte is a hexadecimal character (0-9, a-f, A-F)
+ * 检查字节是否为十六进制字符 (0-9, a-f, A-F)
  *
- * @param c the byte to check
- * @return true if byte is hex character
+ * @param c 要检查的字节
+ * @return 如果字节是十六进制字符返回 true
  */
 protected func ishex(c: Byte): Bool {
     match {
@@ -62,10 +62,10 @@ protected func ishex(c: Byte): Bool {
 }
 
 /**
- * converts hex character byte to its numeric value
+ * 将十六进制字符字节转换为其数值
  *
- * @param c hex character byte (0-9, a-f, A-F)
- * @return numeric value 0-15, or 0 if not a hex character
+ * @param c 十六进制字符字节 (0-9, a-f, A-F)
+ * @return 数值 0-15，如果不是十六进制字符则返回 0
  */
 protected func unhex(c: Byte): Byte {
     match {
@@ -77,10 +77,10 @@ protected func unhex(c: Byte): Byte {
 }
 
 /**
- * converts CamelCase string to snake_case string
+ * 将 CamelCase 字符串转换为 snake_case 字符串
  *
- * @param str input string in CamelCase
- * @return string in snake_case format
+ * @param str CamelCase 格式的输入字符串
+ * @return snake_case 格式的字符串
  */
 protected func snakeCase(str: String): String {
     let arr = str.toRuneArray()
@@ -102,31 +102,31 @@ protected func snakeCase(str: String): String {
 }
 
 /**
- * checks if byte is an ASCII whitespace character
+ * 检查字节是否为 ASCII 空白字符
  *
- * @param b the byte to check
- * @return true if byte is space, tab, newline, or carriage return
+ * @param b 要检查的字节
+ * @return 如果字节是空格、制表符、换行符或回车符返回 true
  */
 protected func isASCIISpace(b: Byte): Bool {
     return b == b' ' || b == b'\t' || b == b'\n' || b == b'\r'
 }
 
 /**
- * checks if byte is an ASCII letter character
+ * 检查字节是否为 ASCII 字母字符
  *
- * @param b the byte to check
- * @return true if byte is a-z or A-Z
+ * @param b 要检查的字节
+ * @return 如果字节是 a-z 或 A-Z 返回 true
  */
 protected func isASCIILetter(b: Byte): Bool {
-    let x = b | 0x20 // make lower case
+    let x = b | 0x20 // 转换为小写
     x >= b'a' && x <= b'z'
 }
 
 /**
- * trims ASCII whitespace from both ends of byte array
+ * 从字节数组的两端修剪 ASCII 空白字符
  *
- * @param bs input byte array
- * @return byte array with leading/trailing whitespace removed
+ * @param bs 输入字节数组
+ * @return 移除了前导/尾随空白的字节数组
  */
 protected func trimBytes(bs: Array<Byte>): Array<Byte> {
     var x = bs
@@ -140,10 +140,10 @@ protected func trimBytes(bs: Array<Byte>): Array<Byte> {
 }
 
 /**
- * trims ASCII whitespace from both ends of string
+ * 从字符串的两端修剪 ASCII 空白字符
  *
- * @param s input string
- * @return string with leading/trailing whitespace removed
+ * @param s 输入字符串
+ * @return 移除了前导/尾随空白的字符串
  */
 protected func trimString(s: String): String {
     var x = s

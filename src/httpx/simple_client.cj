@@ -18,16 +18,16 @@ import cjoy.log.macros.*
 @JoyCreateLogger("cjoy.httpx")
 
 /**
- * This is a simple HTTP client that closes connection directly after each request response,
- * which is not suitable for high-performance connection reuse scenarios.
+ * 这是一个简单的 HTTP 客户端，每个请求响应后直接关闭连接，
+ * 不适合高性能连接复用场景。
  */
 public struct JoySimpleHttpClient {
     /**
-     * Connect to server-sent events endpoint
+     * 连接到服务器发送事件 (SSE) 端点
      *
-     * @param url SSE endpoint URL
-     * @param verify whether to verify SSL certificate
-     * @return SSE event stream
+     * @param url SSE 端点 URL
+     * @param verify 是否验证 SSL 证书
+     * @return SSE 事件流
      */
     public static func sseConnect(url: String, verify!: Bool = false): JoySSEventStream {
         let header = HashMap<String, String>()
@@ -37,13 +37,13 @@ public struct JoySimpleHttpClient {
     }
 
     /**
-     * Send HTTP GET request
+     * 发送 HTTP GET 请求
      *
-     * @param url request URL
-     * @param body optional request body
-     * @param header optional request headers
-     * @param verify whether to verify SSL certificate
-     * @return response body as string, or None if failed
+     * @param url 请求 URL
+     * @param body 可选请求体
+     * @param header 可选请求头
+     * @param verify 是否验证 SSL 证书
+     * @return 响应体字符串，失败返回 None
      */
     public static func get(
         url: String,
@@ -55,13 +55,13 @@ public struct JoySimpleHttpClient {
     }
 
     /**
-     * Send HTTP POST request
+     * 发送 HTTP POST 请求
      *
-     * @param url request URL
-     * @param body request body
-     * @param header optional request headers
-     * @param verify whether to verify SSL certificate
-     * @return response body as string, or None if failed
+     * @param url 请求 URL
+     * @param body 请求体
+     * @param header 可选请求头
+     * @param verify 是否验证 SSL 证书
+     * @return 响应体字符串，失败返回 None
      */
     public static func post(
         url: String,
@@ -73,14 +73,14 @@ public struct JoySimpleHttpClient {
     }
 
     /**
-     * Send HTTP request synchronously
+     * 同步发送 HTTP 请求
      *
-     * @param method HTTP method
-     * @param url request URL
-     * @param header request headers
-     * @param body optional request body
-     * @param verify whether to verify SSL certificate
-     * @return response body as string, or None if failed
+     * @param method HTTP 方法
+     * @param url 请求 URL
+     * @param header 请求头
+     * @param body 可选请求体
+     * @param verify 是否验证 SSL 证书
+     * @return 响应体字符串，失败返回 None
      */
     public static func send(
         method: String,
@@ -103,13 +103,13 @@ public struct JoySimpleHttpClient {
     }
 
     /**
-     * Send HTTP GET request asynchronously
+     * 异步发送 HTTP GET 请求
      *
-     * @param url request URL
-     * @param body optional request body
-     * @param header optional request headers
-     * @param verify whether to verify SSL certificate
-     * @return HTTP byte stream
+     * @param url 请求 URL
+     * @param body 可选请求体
+     * @param header 可选请求头
+     * @param verify 是否验证 SSL 证书
+     * @return HTTP 字节流
      */
     public static func asyncGet(
         url: String,
@@ -121,13 +121,13 @@ public struct JoySimpleHttpClient {
     }
 
     /**
-     * Send HTTP POST request asynchronously
+     * 异步发送 HTTP POST 请求
      *
-     * @param url request URL
-     * @param body request body
-     * @param header optional request headers
-     * @param verify whether to verify SSL certificate
-     * @return HTTP byte stream
+     * @param url 请求 URL
+     * @param body 请求体
+     * @param header 可选请求头
+     * @param verify 是否验证 SSL 证书
+     * @return HTTP 字节流
      */
     public static func asyncPost(
         url: String,
@@ -139,14 +139,14 @@ public struct JoySimpleHttpClient {
     }
 
     /**
-     * Send HTTP request asynchronously
+     * 异步发送 HTTP 请求
      *
-     * @param method HTTP method
-     * @param url request URL
-     * @param header request headers
-     * @param body optional request body
-     * @param verify whether to verify SSL certificate
-     * @return HTTP byte stream
+     * @param method HTTP 方法
+     * @param url 请求 URL
+     * @param header 请求头
+     * @param body 可选请求体
+     * @param verify 是否验证 SSL 证书
+     * @return HTTP 字节流
      */
     public static func asyncSend(
         method: String,
@@ -182,13 +182,13 @@ public struct JoySimpleHttpClient {
     }
 
     /**
-     * Prepare HTTP request builder
+     * 准备 HTTP 请求构建器
      *
-     * @param method HTTP method
-     * @param url request URL
-     * @param header request headers
-     * @param body optional request body
-     * @return HTTP request
+     * @param method HTTP 方法
+     * @param url 请求 URL
+     * @param header 请求头
+     * @param body 可选请求体
+     * @return HTTP 请求
      */
     private static func prepareHttpRequest(
         method: String,
@@ -212,14 +212,14 @@ public struct JoySimpleHttpClient {
     }
 
     /**
-     * Send HTTP request and get response
+     * 发送 HTTP 请求并获取响应
      *
-     * @param method HTTP method
-     * @param url request URL
-     * @param header request headers
-     * @param body optional request body
-     * @param verify whether to verify SSL certificate
-     * @return HTTP client and response
+     * @param method HTTP 方法
+     * @param url 请求 URL
+     * @param header 请求头
+     * @param body 可选请求体
+     * @param verify 是否验证 SSL 证书
+     * @return HTTP 客户端和响应
      */
     private static func sendHttp(
         method: String,
@@ -234,12 +234,12 @@ public struct JoySimpleHttpClient {
     }
 
     /**
-     * Log HTTP request information
+     * 记录 HTTP 请求信息
      *
-     * @param method HTTP method
-     * @param url request URL
-     * @param header request headers
-     * @param body optional request body
+     * @param method HTTP 方法
+     * @param url 请求 URL
+     * @param header 请求头
+     * @param body 可选请求体
      */
     private static func logHttpInfo(method: String, url: String, header: HashMap<String, String>,
         body: Option<Array<Byte>>) {

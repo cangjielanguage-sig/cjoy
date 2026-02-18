@@ -13,46 +13,46 @@ package cjoy.eventbus
 import cjoy.context.{Context, MapContext}
 
 /**
- * Event subscriber interface.
+ * 事件订阅者接口。
  *
- * Implement this interface to handle events published to the event bus.
+ * 实现此接口以处理发布到事件总线的事件。
  */
 public interface EventSubscriber {
     /**
-     * Handle event.
+     * 处理事件。
      *
-     * @param ctx application context
-     * @param evt event to handle
+     * @param ctx 应用上下文
+     * @param evt 要处理的事件
      */
     func handle(ctx: Context, evt: Event): Unit
 }
 
 /**
- * Type alias for event subscriber function.
+ * 事件订阅者函数的类型别名。
  *
- * Function type that can be used as a subscriber directly.
+ * 可直接用作订阅者的函数类型。
  */
 public type EventSubscriberFunc = (ctx: Context, evt: Event) -> Unit
 
 /**
- * Event subscriber that wraps a function.
+ * 包装函数的事件订阅者。
  *
- * Allows a function to be used as an event subscriber.
+ * 允许将函数用作事件订阅者。
  */
 public class EventFuncSubscriber <: EventSubscriber {
     /**
-     * Create a new EventFuncSubscriber.
+     * 创建新的 EventFuncSubscriber。
      *
-     * @param fn event subscriber function
+     * @param fn 事件订阅者函数
      */
     public EventFuncSubscriber(let fn: EventSubscriberFunc) {
     }
 
     /**
-     * Handle event by calling wrapped function.
+     * 通过调用包装函数处理事件。
      *
-     * @param ctx application context
-     * @param evt event to handle
+     * @param ctx 应用上下文
+     * @param evt 要处理的事件
      */
     public func handle(ctx: Context, evt: Event): Unit {
         fn(ctx, evt)
@@ -60,52 +60,52 @@ public class EventFuncSubscriber <: EventSubscriber {
 }
 
 /**
- * Event bus interface.
+ * 事件总线接口。
  *
- * Defines the contract for event bus implementations,
- * providing methods for subscribing to and firing events.
+ * 定义事件总线实现的约定，
+ * 提供订阅和触发事件的方法。
  */
 public interface EventBus {
     /**
-     * Register a subscriber to handle events.
+     * 注册订阅者以处理事件。
      *
-     * @param pattern the match pattern. Match rules:
-     *   - "*" matches any sequence of non-dot characters
-     *   - "**" matches all characters to end, only allowed at start or end on pattern
-     *   Examples:
-     *     - "evt.some.*.*"       -> matches "evt.some.thing.run", "evt.some.thing.do"
-     *     - "evt.some.*.run"     -> matches "evt.some.thing.run", but not "evt.some.thing.do"
-     *     - "evt.some.**"        -> matches any starting with "evt.some.", e.g., "evt.some.thing.run", "evt.some.thing.do"
-     *     - "**.thing.run"       -> matches any ending with ".thing.run", e.g., "evt.some.thing.run"
-     * @param name subscriber name
-     * @param subscriber event subscriber
-     * @param priority priority for handling events (higher values execute first)
-     * @throws EventBusException if pattern is invalid
+     * @param pattern 匹配模式。匹配规则：
+     *   - "*" 匹配任何非点字符序列
+     *   - "**" 匹配到结尾的所有字符，仅在模式开头或结尾允许
+     *   示例：
+     *     - "evt.some.*.*"       -> 匹配 "evt.some.thing.run", "evt.some.thing.do"
+     *     - "evt.some.*.run"     -> 匹配 "evt.some.thing.run", 但不匹配 "evt.some.thing.do"
+     *     - "evt.some.**"        -> 匹配任何以 "evt.some." 开头的内容，例如 "evt.some.thing.run", "evt.some.thing.do"
+     *     - "**.thing.run"       -> 匹配任何以 ".thing.run" 结尾的内容，例如 "evt.some.thing.run"
+     * @param name 订阅者名称
+     * @param subscriber 事件订阅者
+     * @param priority 处理事件的优先级（值越高越先执行）
+     * @throws EventBusException 如果模式无效
      */
     func onEvent(pattern: String, name: String, subscriber: EventSubscriber, priority: Array<Int>): Unit
 
     /**
-     * Register a subscriber function to handle events.
+     * 注册订阅者函数以处理事件。
      *
-     * @param pattern the match pattern
-     * @param name subscriber name
-     * @param subscriber event subscriber function
-     * @param priority priority for handling events
-     * @throws EventBusException if pattern is invalid
+     * @param pattern 匹配模式
+     * @param name 订阅者名称
+     * @param subscriber 事件订阅者函数
+     * @param priority 处理事件的优先级
+     * @throws EventBusException 如果模式无效
      */
     func onEvent(pattern: String, name: String, subscriber: EventSubscriberFunc, priority: Array<Int>): Unit {
         onEvent(pattern, name, EventFuncSubscriber(subscriber), priority)
     }
 
     /**
-     * Register a subscriber to handle events, only trigger once.
+     * 注册订阅者以处理事件，仅触发一次。
      *
-     * Subscriber is automatically removed after first event is handled.
+     * 处理完第一个事件后自动移除订阅者。
      *
-     * @param pattern the match pattern
-     * @param name subscriber name
-     * @param listener event subscriber
-     * @param priority priority for handling events
+     * @param pattern 匹配模式
+     * @param name 订阅者名称
+     * @param listener 事件订阅者
+     * @param priority 处理事件的优先级
      */
     func onceEvent(pattern: String, name: String, listener: EventSubscriber, priority: Array<Int>): Unit {
         let onceListener = {
@@ -119,52 +119,52 @@ public interface EventBus {
     }
 
     /**
-     * Register a subscriber function to handle events, only trigger once once.
+     * 注册订阅者函数以处理事件，仅触发一次。
      *
-     * @param pattern the match pattern
-     * @param name subscriber name
-     * @param subscriber event subscriber function
-     * @param priority priority for handling events
+     * @param pattern 匹配模式
+     * @param name 订阅者名称
+     * @param subscriber 事件订阅者函数
+     * @param priority 处理事件的优先级
      */
     func onceEvent(pattern: String, name: String, subscriber: EventSubscriberFunc, priority: Array<Int>): Unit {
         onceEvent(pattern, name, EventFuncSubscriber(subscriber), priority)
     }
 
     /**
-     * Remove subscriber by pattern and name.
+     * 通过模式和名称移除订阅者。
      *
-     * @param pattern the match pattern
-     * @param name subscriber name
+     * @param pattern 匹配模式
+     * @param name 订阅者名称
      */
     func removeSubscriber(pattern: String, name: String): Unit
 
     /**
-     * Fire events asynchronously by queue.
+     * 通过队列异步触发事件。
      *
-     * Events are queued and processed by consumer threads.
+     * 事件被排队并由消费者线程处理。
      *
-     * @param cxt application context
-     * @param evts events to fire
+     * @param cxt 应用上下文
+     * @param evts 要触发的事件
      */
     func fireEventAsync(cxt: Context, evts: Array<Event>): Unit
 
     /**
-     * Fire events synchronously.
+     * 同步触发事件。
      *
-     * Events are processed immediately on calling thread.
+     * 事件在调用线程上立即处理。
      *
-     * @param cxt application context
-     * @param evts events to fire
+     * @param cxt 应用上下文
+     * @param evts 要触发的事件
      */
     func fireEvent(cxt: Context, evts: Array<Event>): Unit
 
     /**
-     * Async fire event by thread.
+     * 通过线程异步触发事件。
      *
-     * Fires events in a new thread with a new context.
+     * 在新线程中使用新上下文触发事件。
      *
-     * @param _ context (ignored, creates new MapContext)
-     * @param evts events to fire
+     * @param _ 上下文（被忽略，会创建新的 MapContext）
+     * @param evts 要触发的事件
      */
     func asyncFireEvent(_: Context, evts: Array<Event>): Unit {
         spawn {
@@ -173,25 +173,25 @@ public interface EventBus {
     }
 
     /**
-     * Close event bus and wait for all async events to complete.
+     * 关闭事件总线并等待所有异步事件完成。
      *
-     * Cancels consumer threads and waits for pending events to be processed.
+     * 取消消费者线程并等待待处理事件被处理。
      *
-     * @throws InterruptedException if interrupted while waiting
+     * @throws InterruptedException 如果在等待时被中断
      */
     func closeAndWait(): Unit
 }
 
 /**
- * Event bus exception.
+ * 事件总线异常。
  *
- * Thrown for event bus related errors such as invalid patterns.
+ * 用于抛出事件总线相关的错误，如无效模式等。
  */
 public class EventBusException <: Exception {
     /**
-     * Create a new event bus exception.
+     * 创建新的事件总线异常。
      *
-     * @param message error message
+     * @param message 错误消息
      */
     public EventBusException(message: String) {
         super(message)
@@ -199,41 +199,41 @@ public class EventBusException <: Exception {
 }
 
 /**
- * Constants for constants configuration.
+ * 常量配置的常量。
  */
 public struct EventConsts {
     /**
-     * Minimum priority level (-1000).
+     * 最低优先级 (-1000)。
      */
     public static const PRIORITY_MIN: Int = -1000
 
     /**
-     * Low priority level (-500).
+     * 低优先级 (-500)。
      */
     public static const PRIORITY_LOW: Int = -500
 
     /**
-     * Normal priority level (0).
+     * 正常优先级 (0)。
      */
     public static const PRIORITY_NORMAL: Int = 0
 
     /**
-     * High priority level (500).
+     * 高优先级 (500)。
      */
     public static const PRIORITY_HIGH: Int = 500
 
     /**
-     * Maximum priority level (1000).
+     * 最高优先级 (1000)。
      */
     public static const PRIORITY_MAX: Int = 1000
 
     /**
-     * Wildcard matching any single node (*).
+     * 匹配任何单个节点的通配符 (*)。
      */
     public static const ANY_NODE: String = "*"
 
     /**
-     * Wildcard matching all nodes to end (**).
+     * 匹配到末尾所有节点的通配符 (**)。
      */
     public static const ALL_NODE: String = "**"
 }

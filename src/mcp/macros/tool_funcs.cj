@@ -16,7 +16,7 @@ import cjoy.utils.{MapToString, MapListGetFunc, randStr}
 import cjoy.utils.ast.parserAttrs
 
 /**
- * function info for tool macro
+ * 工具宏的函数信息
  */
 open class FuncInfo {
     let macroName: String

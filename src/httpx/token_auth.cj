@@ -13,7 +13,7 @@ package cjoy.httpx
 import cjoy.context.Context
 
 /**
- * HTTP client with token-based authentication
+ * 基于令牌的认证 HTTP 客户端
  */
 public class TokenAuthClient <: JoyHttpClient {
     public TokenAuthClient(let http: JoyHttpClient, let token!: String, let position!: String = "header:Authorization",
@@ -21,11 +21,11 @@ public class TokenAuthClient <: JoyHttpClient {
     }
 
     /**
-     * Send HTTP request with token-based authentication
+     * 发送带基于令牌认证的 HTTP 请求
      *
-     * @param ctx request context
-     * @param request HTTP request
-     * @return HTTP response
+     * @param ctx 请求上下文
+     * @param request HTTP 请求
+     * @return HTTP 响应
      */
     public func send(ctx: Context, request: JoyHttpRequest): JoyHttpResponse {
         createFunc(token, position, authSchema)(request)
@@ -33,7 +33,7 @@ public class TokenAuthClient <: JoyHttpClient {
     }
 
     /**
-     * @throws IllegalArgumentException if position format is invalid
+     * @throws IllegalArgumentException 如果位置格式无效
      */
     private func createFunc(token: String, position: String, authSchema: String): (request: JoyHttpRequest) -> Unit {
         let sn = position.split(":")

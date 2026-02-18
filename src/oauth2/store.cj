@@ -14,102 +14,102 @@ import std.collection.concurrent.ConcurrentHashMap
 import std.time.DateTime
 
 /**
- * TokenStore interface for storing token information
+ * TokenStore 接口用于存储令牌信息
  */
 public interface TokenStore {
     /**
-     * Creates and stores new token information
+     * 创建并存储新的令牌信息
      *
-     * @param tokenInfo Token information to store
+     * @param tokenInfo 要存储的令牌信息
      */
     func create(tokenInfo: TokenInfo): Unit
 
     /**
-     * Removes token information by authorization code
+     * 根据授权码删除令牌信息
      *
-     * @param code Authorization code
+     * @param code 授权码
      */
     func removeByCode(code: String): Unit
 
     /**
-     * Removes token information by access token
+     * 根据访问令牌删除令牌信息
      *
-     * @param access Access token
+     * @param access 访问令牌
      */
     func removeByAccess(access: String): Unit
 
     /**
-     * Removes token information by refresh token
+     * 根据刷新令牌删除令牌信息
      *
-     * @param refresh Refresh token
+     * @param refresh 刷新令牌
      */
     func removeByRefresh(refresh: String): Unit
 
     /**
-     * Gets token information by authorization code
+     * 根据授权码获取令牌信息
      *
-     * @param code Authorization code
-     * @return Token information or None if not found
+     * @param code 授权码
+     * @return 令牌信息，如果未找到则返回 None
      */
     func getByCode(code: String): ?TokenInfo
 
     /**
-     * Gets token information by access token
+     * 根据访问令牌获取令牌信息
      *
-     * @param access Access token
-     * @return Token information or None if not found
+     * @param access 访问令牌
+     * @return 令牌信息，如果未找到则返回 None
      */
     func getByAccess(access: String): ?TokenInfo
 
     /**
-     * Gets token information by refresh token
+     * 根据刷新令牌获取令牌信息
      *
-     * @param refresh Refresh token
-     * @return Token information or None if not found
+     * @param refresh 刷新令牌
+     * @return 令牌信息，如果未找到则返回 None
      */
     func getByRefresh(refresh: String): ?TokenInfo
 }
 
 /**
- * ClientStore interface for storing client information
+ * ClientStore 接口用于存储客户端信息
  */
 public interface ClientStore {
     /**
-     * Gets client information by client ID
+     * 根据客户端 ID 获取客户端信息
      *
-     * @param id Client ID
-     * @return Client information or None if not found
+     * @param id 客户端 ID
+     * @return 客户端信息，如果未找到则返回 None
      */
     func getById(id: String): ?ClientInfo
 
     /**
-     * Adds client information to the store
+     * 将客户端信息添加到存储中
      *
-     * @param clientInfo Client information to add
+     * @param clientInfo 要添加的客户端信息
      */
     func add(clientInfo: ClientInfo): Unit
 }
 
 /**
- * Memory-based client store implementation
+ * 基于内存的客户端存储实现
  */
 public class MemoryClientStore <: ClientStore {
     private let _data: ConcurrentHashMap<String, ClientInfo> = ConcurrentHashMap()
 
     /**
-     * get client info by id
+     * 根据 ID 获取客户端信息
      *
-     * @param id:  client id
-     * @return: client info or None if not found
+     * @param id 客户端 ID
+     * @return 客户端信息，如果未找到则返回 None
      */
     public func getById(id: String): ?ClientInfo {
         _data.get(id)
     }
 
     /**
-     * add client info to store
+     * 向存储中添加客户端信息
      *
-     * @param clientInfo:  client info to add
+     * @param clientInfo 要添加的客户端信息
      */
     public func add(clientInfo: ClientInfo): Unit {
         _data.add(clientInfo.id, clientInfo)
@@ -122,14 +122,14 @@ class TokenStoreItem {
 }
 
 /**
- * Memory-based token store implementation with automatic cleanup
+ * 带有自动清理功能的基于内存的令牌存储实现
  */
 public class MemoryTokenStore <: TokenStore {
     private let _data: ConcurrentHashMap<String, TokenStoreItem>
     private let _future: Future<Unit>
 
     /**
-     * initialize memory token store
+     * 初始化内存令牌存储
      */
     public init() {
         let data = ConcurrentHashMap<String, TokenStoreItem>()
@@ -143,7 +143,7 @@ public class MemoryTokenStore <: TokenStore {
     }
 
     /**
-     * destroy the token store and stop cleanup task
+     * 销毁令牌存储并停止清理任务
      */
     public func destroy(): Unit {
         _future.cancel()
@@ -174,9 +174,9 @@ public class MemoryTokenStore <: TokenStore {
     }
 
     /**
-     * create and store token information
+     * 创建并存储令牌信息
      *
-     * @param tokenInfo:  token information to store
+     * @param tokenInfo 要存储的令牌信息
      */
     public func create(tokenInfo: TokenInfo): Unit {
         if (tokenInfo.code != "") {
@@ -199,57 +199,57 @@ public class MemoryTokenStore <: TokenStore {
     }
 
     /**
-     * remove token by authorization code
+     * 根据授权码删除令牌
      *
-     * @param code:  authorization code
+     * @param code 授权码
      */
     public func removeByCode(code: String): Unit {
         _data.remove(code)
     }
 
     /**
-     * remove token by access token
+     * 根据访问令牌删除令牌
      *
-     * @param access:  access token
+     * @param access 访问令牌
      */
     public func removeByAccess(access: String): Unit {
         _data.remove(access)
     }
 
     /**
-     * remove token by refresh token
+     * 根据刷新令牌删除令牌
      *
-     * @param refresh:  refresh token
+     * @param refresh 刷新令牌
      */
     public func removeByRefresh(refresh: String): Unit {
         _data.remove(refresh)
     }
 
     /**
-     * get token info by authorization code
+     * 根据授权码获取令牌信息
      *
-     * @param code:  authorization code
-     * @return: token info or None if not found
+     * @param code 授权码
+     * @return 令牌信息，如果未找到则返回 None
      */
     public func getByCode(code: String): ?TokenInfo {
         _data.get(code).map {it: TokenStoreItem => it._info}
     }
 
     /**
-     * get token info by access token
+     * 根据访问令牌获取令牌信息
      *
-     * @param access:  access token
-     * @return: token info or None if not found
+     * @param access 访问令牌
+     * @return 令牌信息，如果未找到则返回 None
      */
     public func getByAccess(access: String): ?TokenInfo {
         _data.get(access).map {it: TokenStoreItem => it._info}
     }
 
     /**
-     * get token info by refresh token
+     * 根据刷新令牌获取令牌信息
      *
-     * @param refresh:  refresh token
-     * @return: token info or None if not found
+     * @param refresh 刷新令牌
+     * @return 令牌信息，如果未找到则返回 None
      */
     public func getByRefresh(refresh: String): ?TokenInfo {
         _data.get(refresh).map {it: TokenStoreItem => it._info}

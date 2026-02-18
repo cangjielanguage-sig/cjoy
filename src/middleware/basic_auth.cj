@@ -16,17 +16,17 @@ import cjoy.{JoyMiddlewareHandler, JoyRequestHandlerChain, JoyContext, JoyHttpCo
 import cjoy.log.macros.*
 
  /**
- * Function type to filter whether basic auth is required
+ * 用于过滤是否需要基本认证的函数类型
  */
 public type BasicAuthFilterFunc = (ctx: JoyContext) -> Bool
 
 /**
- * Function type to validate username and password
+ * 用于验证用户名和密码的函数类型
  */
 public type BasicAuthValidationFunc = (ctx: JoyContext, username: String, password: String) -> Bool
 
 /**
- * the Basic authentication middleware
+ * 基本认证中间件
  */
 public class BasicAuth <: JoyMiddlewareHandler {
     public BasicAuth(let realm: String, let creds: HashMap<String, String>,

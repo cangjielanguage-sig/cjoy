@@ -18,70 +18,69 @@ import cjoy.context.ServiceContainer
 import cjoy.log.macros.*
 
 /**
- * Bean factory manager for IoC container.
+ * IoC 容器的 Bean 工厂管理器。
  *
- * Central factory for managing bean registration, dependency resolution,
- * and lifecycle management. Automatically registers itself as a service
- * and ensures cleanup on application exit.
+ * 用于管理 Bean 注册、依赖解析和生命周期管理的中央工厂。
+ * 自动将自己注册为服务，并确保在应用退出时进行清理。
  */
 public class BeanFactoryManager {
     private static let CONTEXT: DefaultApplicationContext = DefaultApplicationContext()
     private static let POST_FUNCS: ArrayList<() -> Unit> = ArrayList()
-    
+
     static let EXECUTED: AtomicBool = AtomicBool(false)
 
     /**
-     * Get application context.
+     * 获取应用上下文。
      *
-     * @return application context instance
+     * @return 应用上下文实例
      */
     public static func getApplicationContext(): ApplicationContext {
         CONTEXT
     }
 
     /**
-     * Register bean factory with dependencies.
+     * 注册带有依赖的 Bean 工厂。
      *
-     * @param beanType bean type name
-     * @param depends array of bean type names this bean depends on
-     * @param factory bean factory
+     * @param beanType Bean 类型名称
+     * @param depends 此 Bean 依赖的 Bean 类型名称数组
+     * @param factory Bean 工厂
      */
     public static func register(beanType: String, depends: Array<String>, factory: BeanFactory): Unit {
-        @JoyLogInfo("[IOC] register bean info, beanType=${beanType}, depends=${depends}")
+        @JoyLogInfo("[IOC] 注册 Bean 信息, beanType=${beanType}, depends=${depends}")
         CONTEXT._factories.add(beanType, factory)
         CONTEXT._beanDependManager.addDepends(beanType, depends)
     }
 
     /**
-     * Register bean types for interfaces.
+     * 为接口注册 Bean 类型。
      *
-     * @param beanType bean type name
-     * @param interfaces array of interface type names this bean implements
+     * @param beanType Bean 类型名称
+     * @param interfaces 此 Bean 实现的接口类型名称数组
      */
     public static func registerTypes(beanType: String, interfaces: Array<String>): Unit {
-        @JoyLogInfo("[IOC] register bean types, beanType=${beanType}, interfaces=${interfaces}")
+        @JoyLogInfo("[IOC] 注册 Bean 类型, beanType=${beanType}, interfaces=${interfaces}")
         CONTEXT._beanDependManager.addTypes(beanType, interfaces)
     }
 
     /**
-     * Register post initialization function.
+     * 注册后初始化函数。
      *
-     * @param name function name
-     * @param fn function to execute after bean initialization
+     * @param name 函数名称
+     * @param fn Bean 初始化后要执行的函数
      */
     public static func registerPostFunc(name: String, fn: () -> Unit): Unit {
-        @JoyLogInfo("[IOC] register post func, name=${name}")
+        @JoyLogInfo("[IOC] 注册后初始化函数, name=${name}")
         POST_FUNCS.add(fn)
     }
 
     /**
-     * Execute registered post functions.
+     * 执行注册的后函数。
      *
-     * Each function is called exactly once during bean initialization.
+     * 每个函数在 Bean 初始化期间仅被调用一次。
      */
     private static func executePostFuncs(): Unit {
         if (EXECUTED.compareAndSwap(false, true)) {
-            @JoyLogInfo("[IOC] execute registered post func")
+            @JoyLogInfo("[IOC] 执行注册的后初始化函数")
             for (fn in POST_FUNCS) {
                 fn()
             }
@@ -89,10 +88,10 @@ public class BeanFactoryManager {
     }
 
     /**
-     * Initialize all beans in dependency order.
+     * 按依赖顺序初始化所有 Bean。
      *
-     * Creates all singleton beans and invokes afterInit callbacks.
-     * Also executes registered post functions.
+     * 创建所有单例 Bean 并调用 afterInit 回调。
+     * 同时执行注册的后函数。
      */
     public static func initAllBeans(): Unit {
         CONTEXT.createAllBeans()
@@ -100,26 +99,26 @@ public class BeanFactoryManager {
     }
 
     /**
-     * Destroy all beans in reverse dependency order.
+     * 按反向依赖顺序销毁所有 Bean。
      *
-     * Invokes beforeDestroy callbacks on all beans and clears the context.
+     * 对所有 Bean 调用 beforeDestroy 回调并清除上下文。
      */
     public static func destroyAllBeans(): Unit {
         CONTEXT.destroyAllBeans()
     }
 
     /**
-     * Get bean factory by type.
+     * 按类型获取 Bean 工厂。
      *
-     * @param beanType bean type name
-     * @return bean factory, or None if not found
+     * @param beanType Bean 类型名称
+     * @return Bean 工厂，如果未找到则返回 None
      */
     public static func get(beanType: String): ?BeanFactory {
         CONTEXT._factories.get(beanType)
     }
 }
 
-// Register IoC context as a global service
+// 将 IoC 上下文注册为全局服务
 private let _: Unit = ServiceContainer.GLOBAL.addService("ioc", BeanFactoryManager.getApplicationContext())
-// Register cleanup handler on application exit
+// 在应用退出时注册清理处理程序
 private let _: Unit = atExit {BeanFactoryManager.destroyAllBeans()}

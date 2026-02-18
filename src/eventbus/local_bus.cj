@@ -17,12 +17,12 @@ import cjoy.context.{Context, MapContext, ServiceContainer}
 import cjoy.log.macros.*
 
 /**
- * A thread-safe local event bus implementation
- * Supports async event processing with a blocking queue and consumer threads
+ * 线程安全的本地事件总线实现
+ * 支持使用阻塞队列和消费者线程的异步事件处理
  */
 public class LocalEventBus <: EventBus {
     /**
-     * Singleton instance of the event bus
+     * 事件总线的单例实例
      */
     public static let INSTANCE: EventBus = LocalEventBus()
 
@@ -37,10 +37,10 @@ public class LocalEventBus <: EventBus {
     private let _inited: AtomicBool = AtomicBool(false)
 
     /**
-     * Creates a new LocalEventBus
+     * 创建新的 LocalEventBus
      *
-     * @param queueSize: the capacity of the internal event queue (default: 500)
-     * @param consumerNum: the number of consumer threads (default: 20)
+     * @param queueSize: 内部事件队列的容量（默认：500）
+     * @param consumerNum: 消费者线程数（默认：20）
      */
     public init(
         queueSize!: Int = 500,
@@ -127,8 +127,8 @@ public class LocalEventBus <: EventBus {
     }
 
     /**
-     * Closes the event bus and waits for all async events to complete
-     * Cancels all consumer threads and waits for them to finish
+     * 关闭事件总线并等待所有异步事件完成
+     * 取消所有消费者线程并等待它们完成
      */
     public func closeAndWait(): Unit {
         for (f in _consumers) {

@@ -153,4 +153,4 @@ Follow conventional commits (English):
 - `revert:`: Revert previous commit
 - `version:`: Version management
 
-All code contributions must include test coverage that does not decrease overall coverage. Exported functions must have English documentation. Use Chinese for internal code comments.
+All code contributions must include test coverage that does not decrease overall coverage. Exported functions must have Chinese documentation. Use Chinese for internal code comments.

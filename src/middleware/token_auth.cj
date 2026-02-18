@@ -16,20 +16,20 @@ import cjoy.{JoyMiddlewareHandler, JoyRequestHandlerChain, JoyContext, JoyHttpCo
 import cjoy.log.macros.*
 
 /**
- * Function type to validate token
+ * 用于验证令牌的函数类型
  */
 public type TokenAuthValidatorFunc = (ctx: JoyContext, token: String) -> Bool
 
 /**
- * authentication function
+ * 认证函数
  *
- * @param ctx:  context
- * @return true if authenticated, false otherwise
+ * @param ctx: 上下文
+ * @return 如果已认证返回 true，否则返回 false
  */
 type AuthFunc = (ctx: JoyContext) -> Bool
 
 /**
- * predefined tokens validator
+ * 预定义令牌验证器
  */
 class PredefinedTokenAuthValidator {
     public PredefinedTokenAuthValidator(let tokens: Array<String>) {
@@ -41,7 +41,7 @@ class PredefinedTokenAuthValidator {
 }
 
 /**
- * default authentication failure handler
+ * 默认认证失败处理器
  */
 class DefaultAuthFailureHandler <: JoyRequestHandler {
     static let INSTANCE = DefaultAuthFailureHandler()
@@ -53,7 +53,7 @@ class DefaultAuthFailureHandler <: JoyRequestHandler {
 }
 
 /**
- * token authentication middleware
+ * 令牌认证中间件
  */
 public class TokenAuth <: JoyMiddlewareHandler {
     private let _errorHandler: JoyRequestHandler
@@ -62,18 +62,18 @@ public class TokenAuth <: JoyMiddlewareHandler {
     private let _authFunc: AuthFunc
 
     /**
-     * @param validator: a function which validates token
-     * @param lookupKey: a string in the form of "<source>:<name>" that is used to extract key from the request.
-     *      Possible values:
+     * @param validator: 验证令牌的函数
+     * @param lookupKey: 格式为 "<source>:<name>" 的字符串，用于从请求中提取密钥。
+     *      可能的值：
      *       - "header:<name>"
      *       - "query:<name>"
      *       - "form:<name>"
      *       - "param:<name>"
      *       - "cookie:<name>"
-     * @param errorHandleFunc: a function which is executed for an invalid key.
-     * @param successHandleFunc: a function which is executed for a valid key.
-     * @param authSchema: be used in the Authorization header.
-     * @param filterHandleFunc: a function to skip middleware.
+     * @param errorHandleFunc: 为无效密钥执行的函数。
+     * @param successHandleFunc: 为有效密钥执行的函数。
+     * @param authSchema: 用于 Authorization 头。
+     * @param filterHandleFunc: 跳过中间件的函数。
      */
     public init(validator: TokenAuthValidatorFunc, lookupKey!: String = "header:Authorization",
         errorHandleFunc!: ?JoyRequestHandlerFunc = None, successHandleFunc!: ?JoyRequestHandlerFunc = None,

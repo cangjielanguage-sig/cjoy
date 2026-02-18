@@ -16,7 +16,7 @@ import cjoy.utils.{MapToString, MapListGetFunc, randStr}
 import cjoy.utils.ast.parserAttrs
 
 /**
- * function info for resource macro
+ * 资源宏的函数信息
  */
 class ResoureFuncInfo <: FuncInfo {
     var uri: String = ""

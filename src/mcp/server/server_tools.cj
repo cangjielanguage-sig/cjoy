@@ -20,39 +20,38 @@ import cjoy.log.macros.*
 import cjoy.json.JsonTool
 
 /**
- * Manager class for MCP tools
+ * MCP 工具管理器类
  *
- * Handles tool registration, discovery, and invocation. Provides methods for
- * adding tools, registering tool handlers, and executing tool calls.
+ * 处理工具注册、发现和调用。提供添加工具、注册工具处理程序和执行工具调用的方法。
  */
 public class McpTools {
-    // tools
+    // 工具
     /**
-     * ConcurrentHashMap for storing registered MCP tools
+     * 用于存储已注册 MCP 工具的 ConcurrentHashMap
      */
     let tools: ConcurrentHashMap<String, McpTool> = ConcurrentHashMap()
 
     /**
-     * ConcurrentHashMap for storing tool call handlers
+     * 用于存储工具调用处理程序的 ConcurrentHashMap
      */
     let callToolHandlers: ConcurrentHashMap<String, McpCallToolHandler> = ConcurrentHashMap()
 
     private let _pageSize = 10
 
     /**
-     * Adds a tool call handler for a specific method
+     * 为特定方法添加工具调用处理程序
      *
-     * @param method The method name to handle
-     * @param handler The handler implementation
+     * @param method 要处理的方法名
+     * @param handler 处理程序实现
      */
     public func addCallToolHandler(method: String, handler: McpCallToolHandler) {
         callToolHandlers.add(method, handler)
     }
 
     /**
-     * Adds an MCP tool to the manager
+     * 向管理器添加 MCP 工具
      *
-     * @param tool The McpTool instance to add
+     * @param tool 要添加的 McpTool 实例
      */
     public func addTool(tool: McpTool): Unit {
         if (tools.contains(tool.name)) {
@@ -62,10 +61,10 @@ public class McpTools {
     }
 
     /**
-     * Lists all available MCP tools with pagination support
+     * 列出所有可用的 MCP 工具，支持分页
      *
-     * @param page PaginatedRequest containing cursor for pagination
-     * @return ListToolsResult containing list of tools and next cursor
+     * @param page 包含分页游标的 PaginatedRequest
+     * @return 包含工具列表和下一个游标的 ListToolsResult
      */
     public func listTools(page: PaginatedRequest): ListToolsResult {
         let res: ArrayList<McpTool> = ArrayList()
@@ -85,9 +84,9 @@ public class McpTools {
     }
 
     /**
-     * Removes the tools with the given names
+     * 移除具有给定名称的工具
      *
-     * @param names The names of the tools to remove
+     * @param names 要移除的工具名称数组
      */
     public func removeTools(names: Array<String>): Unit {
         for (name in names) {
@@ -97,20 +96,20 @@ public class McpTools {
     }
 
     /**
-     * Removes a single tool with the given name
+     * 移除具有给定名称的单个工具
      *
-     * @param name The name of the tool to remove
+     * @param name 要移除的工具名称
      */
     public func removeTool(name: String): Unit {
         removeTools([name])
     }
 
     /**
-     * Calls an MCP tool with the given request
+     * 使用给定请求调用 MCP 工具
      *
-     * @param ctx The JoyContext for the request
-     * @param request CallToolRequest containing tool name and arguments
-     * @return CallToolResult containing the tool's response or error information
+     * @param ctx 请求的 JoyContext
+     * @param request 包含工具名和参数的 CallToolRequest
+     * @return 包含工具响应或错误信息的 CallToolResult
      */
     public func callTool(ctx: JoyContext, request: CallToolRequest): CallToolResult {
         if (let Some(handler) <- callToolHandlers.get(request.name)) {
@@ -148,10 +147,10 @@ public class McpTools {
     }
 
     /**
-     * Creates a TextContent instance with the given text
+     * 创建具有给定文本的 TextContent 实例
      *
-     * @param text The text to wrap
-     * @return TextContent instance with type "text"
+     * @param text 要包装的文本
+     * @return 类型为 "text" 的 TextContent 实例
      */
     private static func createTextContent(text: String): Content {
         let content = TextContent(text: text)

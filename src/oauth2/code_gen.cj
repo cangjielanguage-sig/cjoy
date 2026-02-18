@@ -17,27 +17,27 @@ import stdx.crypto.crypto.SecureRandom
 import cjoy.utils.{rawBase64URLEncode}
 
 /**
- * The interface to generate authorization codes
+ * 授权码生成接口
  */
 public interface CodeGenerate {
     /**
-     * Generates an authorization code
+     * 生成授权码
      *
-     * @param data The basic data for code generation
-     * @return The generated authorization code
+     * @param data 生成授权码的基础数据
+     * @return 生成的授权码
      */
     func generate(data: GenerateBasic): String
 }
 
 /**
- * Authorization code generator using secure random
+ * 使用安全随机数的授权码生成器
  */
 public class SecureRandCodeGenerate <: CodeGenerate {
     /**
-     * Generates an authorization code using secure random
+     * 使用安全随机数生成授权码
      *
-     * @param data The basic data for generation
-     * @return The generated authorization code
+     * @param data 生成授权码的基础数据
+     * @return 生成的授权码
      */
     public func generate(data: GenerateBasic): String {
         let buffer = ByteBuffer()

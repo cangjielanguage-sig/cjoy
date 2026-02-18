@@ -15,22 +15,22 @@ import cjoy.{JoyMiddlewareHandler, JoyRequestHandlerChain, JoyContext, JoyHttpCo
 import cjoy.log.macros.*
 
 /**
- * Function type to check if an origin is allowed
+ * 用于检查是否允许某个来源的函数类型
  */
 public type AllowOriginFunc = (ctx: JoyContext, origin: String) -> Bool
 
 /**
- * CORS wildcard pattern for origin matching
+ * 用于来源匹配的 CORS 通配符模式
  */
 public class CorsWildcard {
     public CorsWildcard(let prefix: String, let suffix: String) {
     }
 
     /**
-     * check if string matches the wildcard pattern
+     * 检查字符串是否匹配通配符模式
      *
-     * @param str: string to check
-     * @return: true if matches, false otherwise
+     * @param str: 要检查的字符串
+     * @return: 如果匹配返回 true，否则返回 false
      */
     public func canMatch(str: String): Bool {
         str.size >= prefix.size + suffix.size && str.startsWith(prefix) && str.endsWith(suffix)
@@ -38,52 +38,51 @@ public class CorsWildcard {
 }
 
 /**
- * CORS middleware for handling cross-origin requests
+ * 用于处理跨域请求的 CORS 中间件
  */
 public class Cors <: JoyMiddlewareHandler {
-    // Set to true when allowed origins contains a "*"
+    // 当允许的来源包含 "*" 时设为 true
     var _allowedOriginsAll: Bool = false
-    // List of allowed origins containing wildcards
+    // 包含通配符的允许来源列表
     var _allowedWOrigins: ArrayList<CorsWildcard> = ArrayList()
 
-    // AllowedOrigins is a list of origins a cross-domain request can be executed from.
-    // If the special "*" value is present in the list, all origins will be allowed.
-    // An origin may contain a wildcard (*) to replace 0 or more characters
-    // (i.e.: http://*.domain.com). Usage of wildcards implies a small performance penalty.
-    // Only one wildcard can be used per origin.
-    // Default value is ["*"]
+    // AllowedOrigins 是允许跨域请求来源的列表。
+    // 如果列表中存在特殊值 "*"，则允许所有来源。
+    // 来源可以包含通配符 (*) 来替换 0 个或多个字符
+    //（例如：http://*.domain.com）。使用通配符会带来一定的性能损失。
+    // 每个来源只能使用一个通配符。
+    // 默认值为 ["*"]
     var _allowedOrigins: ArrayList<String> = ArrayList()
 
-    // AllowOriginFunc is a custom function to validate the origin. It takes the origin
-    // as argument and returns true if allowed or false otherwise. If this option is
-    // set, the content of AllowedOrigins is ignored.
+    // AllowOriginFunc 是一个自定义函数，用于验证来源。它接受来源作为参数，
+    // 如果允许则返回 true，否则返回 false。如果设置此选项，
+    // AllowedOrigins 的内容将被忽略。
     let _allowOriginFunc: ?AllowOriginFunc
 
-    // AllowedMethods is a list of methods the client is allowed to use with
-    // cross-domain requests. Default value is simple methods (HEAD, GET and POST).
+    // AllowedMethods 是客户端允许在跨域请求中使用的方法列表。
+    // 默认值为简单方法（HEAD、GET 和 POST）。
     let _allowedMethods: ArrayList<String>
 
-    // Set to true when allowed headers contains a "*"
+    // 当允许的头部包含 "*" 时设为 true
     var _allowedHeadersAll: Bool = false
 
-    // AllowedHeaders is list of non simple headers the client is allowed to use with
-    // cross-domain requests.
-    // If the special "*" value is present in the list, all headers will be allowed.
-    // Default value is [] but "Origin" is always appended to the list.
+    // AllowedHeaders 是客户端允许在跨域请求中使用的非简单头部列表。
+    // 如果列表中存在特殊值 "*"，则允许所有头部。
+    // 默认值为 []，但 "Origin" 始终会被添加到列表中。
     let _allowedHeaders: ArrayList<String>
 
-    // ExposedHeaders indicates which headers are safe to expose to the API of a CORS API specification
+    // ExposedHeaders 表示哪些头部可以安全地公开给 CORS API 规范
     let _exposedHeaders: Array<String>
 
-    // AllowCredentials indicates whether the request can include user credentials like
-    // cookies, HTTP authentication or client side SSL certificates.
+    // AllowCredentials 表示请求是否可以包含用户凭据，如
+    // cookie、HTTP 认证或客户端 SSL 证书。
     let _allowCredentials: Bool
 
-    // MaxAge indicates how long (in seconds) the results of a preflight request can be cached 
+    // MaxAge 表示预检请求的结果可以缓存的时间（秒）
     let _maxAge: Int
 
-    // OptionsPassthrough instructs preflight to let other potential next handlers to
-    // process the OPTIONS method. Turn this on if your application handles OPTIONS.
+    // OptionsPassthrough 指示预检是否让其他潜在的处理程序
+    // 处理 OPTIONS 方法。如果应用程序处理 OPTIONS，则打开此选项。
     let _optionsPassthrough: Bool
 
     public static func allowAll(): Cors {

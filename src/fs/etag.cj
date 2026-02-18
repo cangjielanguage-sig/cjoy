@@ -13,39 +13,39 @@ package cjoy.fs
 import std.time.DateTime
 
 /**
- * Utility class for parsing and generating HTTP ETags
+ * 用于解析和生成 HTTP ETags 的工具类
  */
 class JoyHttpEtag {
     private static let PREFIX = "W/"
 
     /**
-     * Checks if two ETags match strongly
+     * 检查两个 ETag 是否强匹配
      *
-     * @param a The first ETag to compare
-     * @param b The second ETag to compare
-     * @return True if the ETags match strongly, False otherwise
+     * @param a 要比较的第一个 ETag
+     * @param b 要比较的第二个 ETag
+     * @return 如果 ETag 强匹配返回 True，否则返回 False
      */
     static func strongMatch(a: String, b: String): Bool {
         a == b && a != "" && a[0] == b'"'
     }
 
     /**
-     * Checks if two ETags match weakly
+     * 检查两个 ETag 是否弱匹配
      *
-     * @param a The first ETag to compare
-     * @param b The second ETag to compare
-     * @return True if the ETags match weakly, False otherwise
+     * @param a 要比较的第一个 ETag
+     * @param b 要比较的第二个 ETag
+     * @return 如果 ETag 弱匹配返回 True，否则返回 False
      */
     static func weakMatch(a: String, b: String): Bool {
         a.trimStart(PREFIX) == b.trimStart(PREFIX)
     }
 
     /**
-     * Generates an ETag for a file based on size and modification time
+     * 基于文件大小和修改时间生成 ETag
      *
-     * @param size File size in bytes
-     * @param modTime File modification time
-     * @return Generated ETag string
+     * @param size 文件大小（字节）
+     * @param modTime 文件修改时间
+     * @return 生成的 ETag 字符串
      */
     static func generate(size: Int64, modTime: DateTime): String {
         // 简单处理，使用文件大小、修改时间和文件名生成ETag
@@ -55,10 +55,10 @@ class JoyHttpEtag {
     }
 
     /**
-     * Scans a string to extract an ETag
+     * 扫描字符串以提取 ETag
      *
-     * @param str The string to scan for an ETag
-     * @return Tuple containing (extracted ETag, remaining string)
+     * @param str 要扫描 ETag 的字符串
+     * @return 包含（提取的 ETag，剩余字符串）的元组
      */
     static func scan(str: String): (String, String) {
         // ETag is either W/"text" or "text"

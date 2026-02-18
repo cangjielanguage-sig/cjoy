@@ -15,11 +15,11 @@ import std.collection.{ArrayList, HashSet}
 import cjoy.utils.{MapToString, MapListGetFunc}
 
 /**
- * checks attribute names against list of valid attribute names
+ * 根据有效属性名称列表检查属性名称
  *
- * @param attrNames: array of attribute names to check
- * @param validAttrNames: array of valid attribute names
- * @return: tuple of (is valid, error message if invalid)
+ * @param attrNames: 要检查的属性名称数组
+ * @param validAttrNames: 有效属性名称数组
+ * @return: (是否有效, 如果无效的错误消息) 的元组
  */
 func checkAttr(attrNames: Array<String>, validAttrNames: Array<String>): (Bool, String) {
     let names = HashSet(attrNames)
@@ -34,13 +34,13 @@ func checkAttr(attrNames: Array<String>, validAttrNames: Array<String>): (Bool, 
 }
 
 /**
- * parses macro attributes with validation
+ * 解析带有验证的宏属性
  *
- * @param tokens: tokens to parse
- * @param validKeys: list of valid attribute keys
- * @param macroName: name of the macro for error messages
- * @return: parsed attribute map
- * @throws if attributes are invalid
+ * @param tokens: 要解析的令牌
+ * @param validKeys: 有效属性键列表
+ * @param macroName: 用于错误消息的宏名称
+ * @return: 解析后的属性映射
+ * @throws 如果属性无效
  */
 protected func parserAttrs(tokens: Tokens, validKeys!: Array<String>, macroName!: String): MapToString {
     let visitor = TokenStrValueVisitor()
@@ -55,11 +55,11 @@ protected func parserAttrs(tokens: Tokens, validKeys!: Array<String>, macroName!
 }
 
 /**
- * joins multiple token lists with a separator token
+ * 使用分隔符令牌连接多个令牌列表
  *
- * @param tokensList: list of token lists to join
- * @param separator: token to insert between lists
- * @return: joined tokens
+ * @param tokensList: 要连接的令牌列表
+ * @param separator: 在列表之间插入的令牌
+ * @return: 连接的令牌
  */
 protected func joinTokens(tokensList: ArrayList<Tokens>, separator: Token): Tokens {
     if (tokensList.isEmpty()) {
@@ -76,10 +76,10 @@ protected func joinTokens(tokensList: ArrayList<Tokens>, separator: Token): Toke
 }
 
 /**
- * gets default value tokens from a variable declaration
+ * 从变量声明获取默认值令牌
  *
- * @param varDecl: the variable declaration
- * @return: tokens representing default value, or type-based default
+ * @param varDecl: 变量声明
+ * @return: 表示默认值的令牌，或基于类型的默认值
  */
 protected func getDefValueOfType(varDecl: VarDecl): Option<Tokens> {
     try {
@@ -95,10 +95,10 @@ protected func getDefValueOfType(varDecl: VarDecl): Option<Tokens> {
 }
 
 /**
- * gets default value tokens based on type
+ * 基于类型获取默认值令牌
  *
- * @param typeNode: the type node
- * @return: tokens representing default value based on type, or None
+ * @param typeNode: 类型节点
+ * @return: 基于类型的默认值令牌，或 None
  */
 protected func getDefValueOfType(typeNode: TypeNode): Option<Tokens> {
     match (typeNode) {
@@ -130,10 +130,10 @@ protected func getDefValueOfType(typeNode: TypeNode): Option<Tokens> {
 }
 
 /**
- * gets generic type parameter tokens from a declaration
+ * 从声明获取泛型类型参数令牌
  *
- * @param decl: the declaration
- * @return: generic type parameter tokens
+ * @param decl: 声明
+ * @return: 泛型类型参数令牌
  */
 protected func getGenericTypeParamsTokens(decl: Decl): Tokens {
     try {

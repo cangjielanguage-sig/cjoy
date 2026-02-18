@@ -16,10 +16,9 @@ import cjoy.utils.{StrExt, secureRandStr}
 import cjoy.framework.{JoyHttpConsts}
 
 /**
- * Multipart content writer
+ * 多部分内容写入器
  *
- * JoyMultiPartWriter is responsible for writing multipart content to an output stream
- * according to the multipart MIME specification.
+ * JoyMultiPartWriter 负责根据多部分 MIME 规范将多部分内容写入输出流
  */
 public class JoyMultiPartWriter <: Resource {
     private let _buffer: BufferedOutputStream<OutputStream>
@@ -28,10 +27,10 @@ public class JoyMultiPartWriter <: Resource {
     private var _closed: Bool = false
 
     /**
-     * Initializes a new instance of JoyMultiPartWriter
+     * 初始化 JoyMultiPartWriter 的新实例
      *
-     * @param output The output stream to write to
-     * @param boundry Optional boundary string (will be generated if not provided)
+     * @param output 要写入的输出流
+     * @param boundry 可选的边界字符串（如果未提供将自动生成）
      */
     public init(output: OutputStream, boundry!: ?String = None) {
         _buffer = BufferedOutputStream(output)
@@ -44,9 +43,9 @@ public class JoyMultiPartWriter <: Resource {
     }
 
     /**
-     * Gets the boundary string
+     * 获取边界字符串
      *
-     * @return The boundary string
+     * @return 边界字符串
      */
     public prop boundary: String {
         get() {
@@ -55,9 +54,9 @@ public class JoyMultiPartWriter <: Resource {
     }
 
     /**
-     * Gets the Content-Type header value for multipart form data
+     * 获取多部分表单数据的 Content-Type 头值
      *
-     * @return The Content-Type string
+     * @return Content-Type 字符串
      */
     public prop formDataContentType: String {
         get() {
@@ -70,11 +69,11 @@ public class JoyMultiPartWriter <: Resource {
     }
 
     /**
-     * Creates a new part with the specified headers
+     * 使用指定的 header 创建新部分
      *
-     * @param headers The headers for the new part
-     * @return The current JoyMultiPartWriter instance for method chaining
-     * @throws IllegalArgumentException if the writer is closed
+     * @param headers 新部分的 header
+     * @return 当前 JoyMultiPartWriter 实例以支持方法链式调用
+     * @throws IllegalArgumentException 如果写入器已关闭
      */
     public func createPart(headers: HttpHeaders): JoyMultiPartWriter {
         if (_closed) {
@@ -101,11 +100,11 @@ public class JoyMultiPartWriter <: Resource {
     }
 
     /**
-     * Writes data to the current part
+     * 向当前部分写入数据
      *
-     * @param bs The data to write
-     * @return The current JoyMultiPartWriter instance for method chaining
-     * @throws IllegalArgumentException if no part is currently active or if the part is closed
+     * @param bs 要写入的数据
+     * @return 当前 JoyMultiPartWriter 实例以支持方法链式调用
+     * @throws IllegalArgumentException 如果当前没有活动部分或部分已关闭
      */
     public func writePartData(bs: Array<Byte>): JoyMultiPartWriter {
         if (_lastPart.isNone()) {
@@ -121,12 +120,12 @@ public class JoyMultiPartWriter <: Resource {
     }
 
     /**
-     * Creates a file part with the specified fieldname, filename, and content type
+     * 使用指定的字段名、文件名和内容类型创建文件部分
      *
-     * @param fieldname The fieldname for the part
-     * @param filename The filename
-     * @param contentType The content type (default: application/octet-stream)
-     * @return The current JoyMultiPartWriter instance for method chaining
+     * @param fieldname 部分的字段名
+     * @param filename 文件名
+     * @param contentType 内容类型（默认为 application/octet-stream）
+     * @return 当前 JoyMultiPartWriter 实例以支持方法链式调用
      */
     public func createFromFile(fieldname: String, filename: String,
         contentType!: String = JoyHttpConsts.MIME_APP_OCTET_STREAM): JoyMultiPartWriter {
@@ -138,10 +137,10 @@ public class JoyMultiPartWriter <: Resource {
     }
 
     /**
-     * Creates a form field part with the specified fieldname
+     * 使用指定的字段名创建表单字段部分
      *
-     * @param fieldname The fieldname for the part
-     * @return The current JoyMultiPartWriter instance for method chaining
+     * @param fieldname 部分的字段名
+     * @return 当前 JoyMultiPartWriter 实例以支持方法链式调用
      */
     public func createFormField(fieldname: String): JoyMultiPartWriter {
         let headers = HttpHeaders()
@@ -150,13 +149,13 @@ public class JoyMultiPartWriter <: Resource {
     }
 
     /**
-     * Writes a file part with the specified content
+     * 使用指定内容写入文件部分
      *
-     * @param fieldname The fieldname for the part
-     * @param filename The filename
-     * @param fileContent The file content bytes
-     * @param contentType The content type (default: application/octet-stream)
-     * @return The current JoyMultiPartWriter instance for method chaining
+     * @param fieldname 部分的字段名
+     * @param filename 文件名
+     * @param fileContent 文件内容字节
+     * @param contentType 内容类型（默认为 application/octet-stream）
+     * @return 当前 JoyMultiPartWriter 实例以支持方法链式调用
      */
     public func writeFile(fieldname: String, filename: String, fileContent: Array<Byte>,
         contentType!: String = JoyHttpConsts.MIME_APP_OCTET_STREAM): JoyMultiPartWriter {
@@ -165,11 +164,11 @@ public class JoyMultiPartWriter <: Resource {
     }
 
     /**
-     * Writes a form field part with the specified value
+     * 使用指定值写入表单字段部分
      *
-     * @param fieldname The fieldname for the part
-     * @param value The field value
-     * @return The current JoyMultiPartWriter instance for method chaining
+     * @param fieldname 部分的字段名
+     * @param value 字段值
+     * @return 当前 JoyMultiPartWriter 实例以支持方法链式调用
      */
     public func writeField(fieldname: String, value: String): JoyMultiPartWriter {
         createFormField(fieldname)
@@ -203,10 +202,10 @@ public class JoyMultiPartWriter <: Resource {
     }
 
     /**
-     * Closes the writer and flushes all data to the output stream
+     * 关闭写入器并将所有数据刷新到输出流
      *
-     * This method writes the final boundary to indicate the end of the multipart content
-     * and flushes all buffered data to the output stream.
+     * 此方法写入最终边界以表示多部分内容的结束，
+     * 并将所有缓冲数据刷新到输出流。
      */
     public func close(): Unit {
         if (_closed) {

@@ -18,16 +18,16 @@ import cjoy.utils.{MapToString, MapListGetFunc, converterMap}
 import cjoy.utils.ast.parserAttrs
 
 /**
- * JSON field metadata for macro processing
- * - originName: original field name
- * - newName: custom JSON key name
- * - ignore: whether to skip this field
- * - omitempty: whether to omit empty values
- * - timeformat: datetime format string
- * - raw: deserialize as raw bytes
- * - description: field description for schema
- * - required: whether field is required in schema
- * - schema: custom schema string
+ * 宏处理的 JSON 字段元数据
+ * - originName: 原始字段名
+ * - newName: 自定义 JSON 键名
+ * - ignore: 是否跳过此字段
+ * - omitempty: 是否省略空值
+ * - timeformat: 日期时间格式字符串
+ * - raw: 作为原始字节反序列化
+ * - description: schema 的字段描述
+ * - required: schema 中字段是否必需
+ * - schema: 自定义 schema 字符串
  */
 class JsonFieldInfo {
     let originName: String
@@ -103,13 +103,13 @@ class JsonFieldInfo {
 }
 
 /**
- * Base class for generating JSON serialization/deserialization tokens for fields
+ * 为字段生成 JSON 序列化/反序列化令牌的基础类
  *
- * - varId: field identifier token
- * -  varType: field type node
- * -  info: JSON field metadata
- * -  isOption: whether field type is Option
- * -  notSchema: whether field type has no schema (Any, HashMap)
+ * - varId: 字段标识符令牌
+ * - varType: 字段类型节点
+ * - info: JSON 字段元数据
+ * - isOption: 字段类型是否为 Option
+ * - notSchema: 字段类型是否没有 schema（Any, HashMap）
  */
 open class JsonFieldGenerator {
     protected let varId: Token

@@ -10,5 +10,5 @@
 
 package cjoy.validation
 
-// Re-export commonly used types for validation
+// 重新导出常用的验证类型
 public import std.convert.Parsable

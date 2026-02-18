@@ -93,10 +93,10 @@ private let _MIMES: HashMap<String, String> = HashMap(
 )
 
 /**
- * Returns the MIME type for a given file extension
+ * 返回给定文件扩展名的 MIME 类型
  *
- * @param ext The file extension (including leading dot, e.g., ".txt")
- * @return The corresponding MIME type or None if not found
+ * @param ext 文件扩展名（包括前导点，例如 ".txt"）
+ * @return 对应的 MIME 类型，如果未找到则返回 None
  */
 public func getMimeTypeByExt(ext: String): ?String {
     _MIMES.get(ext)

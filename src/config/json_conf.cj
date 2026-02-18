@@ -17,7 +17,7 @@ import stdx.encoding.json.stream.{JsonReader}
 import cjoy.json.JsonTool
 
 /**
- * json file config
+ * JSON 文件配置
  */
 public class JsonConfigLoader <: ConfigLoader {
     public JsonConfigLoader(let filePath: String, let priorityNum!: Int = 1) {}

@@ -16,25 +16,25 @@ import std.collection.{ArrayList, HashMap}
 import cjoy.log.macros.*
 
 /**
- * Represents a route endpoint that stores handler, pattern and parameter keys
+ * 表示存储处理器、模式和参数键的路由端点
  *
- * @param T The type of the handler
+ * @param T 处理器类型
  */
 class Endpoint<T> <: ToString {
     /**
-     * Creates a new endpoint instance
+     * 创建新的端点实例
      *
-     * @param handler The route handler
-     * @param pattern The URL pattern
-     * @param paramKeys The parameter keys for the route
+     * @param handler 路由处理器
+     * @param pattern URL 模式
+     * @param paramKeys 路由的参数键
      */
     Endpoint(let handler: T, let pattern: String, let paramKeys: Array<String>) {
     }
 
     /**
-     * Converts the endpoint to a string representation
+     * 将端点转换为字符串表示
      *
-     * @return String representation of the endpoint
+     * @return 端点的字符串表示
      */
     public func toString(): String {
         return "(pattern:${pattern},paramKeys:${paramKeys})"
@@ -42,16 +42,16 @@ class Endpoint<T> <: ToString {
 }
 
 /**
- * Type alias for endpoints map, key is HTTP method, value is Endpoint
+ * 端点映射的类型别名，键是 HTTP 方法，值是 Endpoint
  *
- * @param T The type of the handler
+ * @param T 处理器的类型
  */
 type Endpoints<T> = HashMap<String, Endpoint<T>>
 
 /**
- * Route information that stores matched route data
+ * 存储匹配路由数据的路由信息
  *
- * @param T The type of the handler
+ * @param T 处理器的类型
  */
 public class RouteInfo<T> {
     public RouteInfo(
@@ -66,9 +66,9 @@ public class RouteInfo<T> {
     }
 
     /**
-     * get the route params map
+     * 获取路由参数映射
      *
-     * @return the map of route params
+     * @return 路由参数的映射
      */
     public func getParams(): HashMap<String, String> {
         let paramMap: HashMap<String, String> = HashMap()
@@ -86,7 +86,7 @@ public class RouteInfo<T> {
 }
 
 /**
- * node type for route tree
+ * 路由树的节点类型
  */
 type NodeType = Int
 
@@ -108,36 +108,36 @@ extend NodeType {
 }
 
 /**
- * tree node for route matching
+ * 路由匹配的树节点
  */
 public class TreeNode<T> {
-    // regex matcher for regexp nodes
+    // 正则节点的正则匹配器
     var _regex: ?Regex = None
 
-    // handler endpoints on the leaf node
+    // 叶子节点上的处理器端点
     var _endpoints: Endpoints<T> = Endpoints()
 
-    // prefix is the common prefix we ignore
+    // 前缀是我们忽略的公共前缀
     var _prefix: String = ""
 
-    // child nodes should be stored in-order for iteration in groups of the node type.
+    // 子节点应按节点类型的组迭代顺序存储
     var _children: Array<TreeNodes<T>> = Array<TreeNodes<T>>(NT_CATCH_ALL + 1, {_ => TreeNodes<T>()})
 
-    // node type
+    // 节点类型
     var _type: NodeType = 0
 
-    // first byte of the prefix
+    // 前缀的第一个字节
     var _label: Byte = b'\0'
-    // first byte of the child prefix
+    // 子前缀的第一个字节
     var _tail: Byte = b'\0'
 
     /**
-     * Creates a new tree node with specified type, label, prefix and tail
+     * 使用指定的类型、标签、前缀和尾部创建新的树节点
      *
-     * @param cat The node type (static, regex, param, catchAll)
-     * @param label The first byte of the prefix
-     * @param prefix The common prefix for this node
-     * @param tail The first byte of the child prefix
+     * @param cat 节点类型（静态、正则、参数、全匹配）
+     * @param label 前缀的第一个字节
+     * @param prefix 此节点的公共前缀
+     * @param tail 子前缀的第一个字节
      */
     init(cat: NodeType, label: Byte, prefix: String, tail!: Byte = b'\0') {
         _type = cat
@@ -147,18 +147,18 @@ public class TreeNode<T> {
     }
 
     /**
-     * Creates a new static tree node with default values
+     * 使用默认值创建新的静态树节点
      */
     public init() {
         this(NT_STATIC, b'\0', "")
     }
 
     /**
-     * Sets the endpoint for a specific HTTP method
+     * 设置特定 HTTP 方法的端点
      *
-     * @param method The HTTP method
-     * @param pattern The URL pattern
-     * @param handler The route handler
+     * @param method HTTP 方法
+     * @param pattern URL 模式
+     * @param handler 路由处理器
      */
     private func setEndpoint(method: String, pattern: String, handler: T) {
         let paramKeys = Segment.parseParamKeys(pattern)
@@ -166,12 +166,12 @@ public class TreeNode<T> {
     }
 
     /**
-     * Replaces a child node with the given label and tail
+     * 用给定的标签和尾部替换子节点
      *
-     * @param label The label byte of the child to replace
-     * @param tail The tail byte of the child to replace
-     * @param child The new child node
-     * @throws IllegalStateException if the child to replace is not found
+     * @param label 要替换的子节点的标签字节
+     * @param tail 要替换的子节点的尾部字节
+     * @param child 新的子节点
+     * @throws IllegalStateException 如果未找到要替换的子节点
      */
     private func replaceChild(label: Byte, tail: Byte, child: TreeNode<T>) {
         let ns = _children[child._type]
@@ -187,17 +187,17 @@ public class TreeNode<T> {
     }
 
     /**
-     * Adds a child node with the given prefix to this node
+     * 将具有给定前缀的子节点添加到此节点
      *
-     * @param child The child node to add
-     * @param prefix The prefix for the child node
-     * @return The added child node
+     * @param child 要添加的子节点
+     * @param prefix 子节点的前缀
+     * @return 添加的子节点
      */
     private func addChild(child: TreeNode<T>, prefix: String): TreeNode<T> {
         var search = prefix
         var hn = child
 
-        // parse next segment
+        // 解析下一个段
         let seg = Segment.parseNext(search)
         if (seg.typ == NT_REGEXP) {
             child._prefix = seg.rex
@@ -241,12 +241,12 @@ public class TreeNode<T> {
     }
 
     /**
-     * add a route to the tree
+     * 向树中添加路由
      *
-     * @param method the HTTP method (GET, POST, etc.)
-     * @param pattern the URL pattern (e.g., "/users/{id}")
-     * @param handler the route handler
-     * @return the tree node
+     * @param method HTTP 方法（GET、POST 等）
+     * @param pattern URL 模式（例如："/users/{id}"）
+     * @param handler 路由处理器
+     * @return 树节点
      */
     public func addRoute(method: String, pattern: String, handler: T): TreeNode<T> {
         var parent = this
@@ -320,12 +320,12 @@ public class TreeNode<T> {
     }
 
     /**
-     * Finds a static route in the given tree nodes
+     * 在给定的树节点中查找静态路由
      *
-     * @param nds The tree nodes to search in
-     * @param search The search path
-     * @param label The label byte to match
-     * @return Tuple of (found node, remaining search path)
+     * @param nds 要搜索的树节点
+     * @param search 搜索路径
+     * @param label 要匹配的标签字节
+     * @return （找到的节点，剩余搜索路径）的元组
      */
     private func findStaticRoute(nds: ArrayList<TreeNode<T>>, search: String, label: Byte): (?TreeNode<T>, String) {
         let en = nds.findEdge(label)
@@ -339,20 +339,20 @@ public class TreeNode<T> {
     }
 
     /**
-     * Finds a param or regex route in the given tree nodes
+     * 在给定的树节点中查找参数或正则路由
      *
-     * @param ri The route info to store matched data
-     * @param nds The tree nodes to search in
-     * @param nt The node type to search for
-     * @param search The search path
-     * @param method The HTTP method
-     * @return Tuple of (found node, remaining search path, is matched)
+     * @param ri 用于存储匹配数据的路由信息
+     * @param nds 要搜索的树节点
+     * @param nt 要搜索的节点类型
+     * @param search 搜索路径
+     * @param method HTTP 方法
+     * @return （找到的节点，剩余搜索路径，是否匹配）的元组
      */
     private func findParamOrRegexRoute(ri: RouteInfo<T>, nds: ArrayList<TreeNode<T>>, nt: NodeType, search: String,
         method: String): (?TreeNode<T>, String, Bool) {
         var xsearch = search
         var ret: ?TreeNode<T> = None
-        // serially loop through each node grouped by the tail delimiter
+        // 逐个遍历按尾部分组的节点
         for (n in nds) {
             let xn = n
             ret = n
@@ -397,13 +397,13 @@ public class TreeNode<T> {
     }
 
     /**
-     * Finds the route handler by method in the given tree node
+     * 在给定的树节点中按方法查找路由处理器
      *
-     * @param ri The route info to store matched data
-     * @param xn The tree node to search in
-     * @param method The HTTP method
-     * @param search The remaining search path
-     * @return The found tree node or None if not found
+     * @param ri 用于存储匹配数据的路由信息
+     * @param xn 要搜索的树节点
+     * @param method HTTP 方法
+     * @param search 剩余的搜索路径
+     * @return 找到的树节点，如果未找到则返回 None
      */
     private func findRouteByMethod(ri: RouteInfo<T>, xn: TreeNode<T>, method: String, search: String): ?TreeNode<T> {
         if (search.isEmpty() && xn.isLeaf()) {
@@ -414,7 +414,7 @@ public class TreeNode<T> {
             }
 
             ri.methodsAllowed.add(all: xn._endpoints.keys())
-            // flag that the routing context found a route, but not a corresponding supported method
+            // 标记：路由上下文已找到路由，但未找到相应的受支持的方法
             ri.methodNotAllowed = true
         }
 
@@ -423,12 +423,12 @@ public class TreeNode<T> {
     }
 
     /**
-     * Finds the route handler by method and path in the tree
+     * 在树中按方法和路径查找路由处理器
      *
-     * @param ri The route info to store matched data
-     * @param method The HTTP method
-     * @param path The URL path to search for
-     * @return The found tree node or None if not found
+     * @param ri 用于存储匹配数据的路由信息
+     * @param method HTTP 方法
+     * @param path 要搜索的 URL 路径
+     * @return 找到的树节点，如果未找到则返回 None
      */
     func findRoute(ri: RouteInfo<T>, method: String, path: String): ?TreeNode<T> {
         var search = path
@@ -477,7 +477,7 @@ public class TreeNode<T> {
                 return fin
             }
 
-            // did not find final handler, let's remove the param here if it was set
+            // 未找到最终处理程序，如果已设置路由参数，在此处将其移除
             if (tnode._type > NT_STATIC) {
                 if (!ri.routeParamValues.isEmpty()) {
                     ri.routeParamValues = ri.routeParamValues[0..(ri.routeParamValues.size - 1)]
@@ -488,12 +488,12 @@ public class TreeNode<T> {
     }
 
     /**
-     * find the route handler by method and path
+     * 按方法和路径查找路由处理器
      *
-     * @param ri the route info to store matched route data
-     * @param method the HTTP method
-     * @param path the URL path
-     * @return the tree node if found, None otherwise
+     * @param ri 用于存储匹配路由数据的路由信息
+     * @param method HTTP 方法
+     * @param path URL 路径
+     * @return 如果找到返回树节点，否则返回 None
      */
     public func findRouteHandler(ri: RouteInfo<T>, method: String, path: String): ?TreeNode<T> {
         let rn = findRoute(ri, method, path)
@@ -509,10 +509,10 @@ public class TreeNode<T> {
     }
 
     /**
-     * Checks if the tree contains a route with the given pattern
+     * 检查树是否包含具有给定模式的路由
      *
-     * @param pattern The route pattern to check
-     * @return True if the pattern exists, False otherwise
+     * @param pattern 要检查的路由模式
+     * @return 如果模式存在返回 True，否则返回 False
      */
     func findPattern(pattern: String): Bool {
         for (nds in _children) {
@@ -549,11 +549,11 @@ public class TreeNode<T> {
     }
 
     /**
-     * Finds an edge in the children nodes by type and label
+     * 按类型和标签在子节点中查找边
      *
-     * @param ntype The node type to search for
-     * @param label The label byte to search for
-     * @return The found tree node or None if not found
+     * @param ntype 要搜索的节点类型
+     * @param label 要搜索的标签字节
+     * @return 找到的树节点，如果未找到则返回 None
      */
     private func findEdge(ntype: NodeType, label: Byte): ?TreeNode<T> {
         let nds = _children[ntype]
@@ -565,22 +565,22 @@ public class TreeNode<T> {
     }
 
     /**
-     * Checks if the node is a leaf node (has endpoints)
+     * 检查节点是否为叶子节点（有端点）
      *
-     * @return True if the node is a leaf, False otherwise
+     * @return 如果节点是叶子返回 True，否则返回 False
      */
     private func isLeaf(): Bool {
         return !_endpoints.isEmpty()
     }
 
     /**
-     * Gets an edge from the children nodes by type, label, tail and prefix
+     * 按类型、标签、尾部和前缀从子节点中获取边
      *
-     * @param nt The node type to search for
-     * @param label The label byte to search for
-     * @param tail The tail byte to search for
-     * @param prefix The prefix to match (for regex nodes)
-     * @return The found tree node or None if not found
+     * @param nt 要搜索的节点类型
+     * @param label 要搜索的标签字节
+     * @param tail 要搜索的尾部字节
+     * @param prefix 要匹配的前缀（用于正则节点）
+     * @return 找到的树节点，如果未找到则返回 None
      */
     private func getEdge(nt: NodeType, label: Byte, tail: Byte, prefix: String): ?TreeNode<T> {
         let nds = _children[nt]
@@ -596,12 +596,12 @@ public class TreeNode<T> {
     }
 
     /**
-     * Recursively dumps the tree structure to a string builder
+     * 递归将树结构转储到字符串构建器
      *
-     * @param builder The string builder to write to
-     * @param layer The current layer/depth in the tree
-     * @param prefix The prefix string for indentation
-     * @param node The current tree node to dump
+     * @param builder 要写入的字符串构建器
+     * @param layer 树中的当前层/深度
+     * @param prefix 用于缩进的前缀字符串
+     * @param node 要转储的当前树节点
      */
     private static func dumpTreeInner(builder: StringBuilder, layer: Int, prefix: String, node: TreeNode<T>): Unit {
         var num = 0
@@ -630,9 +630,9 @@ public class TreeNode<T> {
     }
 
     /**
-     * dump the tree structure as a string for debugging
+     * 将树结构转储为字符串用于调试
      *
-     * @return the tree structure string
+     * @return 树结构字符串
      */
     public func dumpTree(): String {
         let builder = StringBuilder()
@@ -641,11 +641,11 @@ public class TreeNode<T> {
     }
 
     /**
-     * Finds the length of the longest common prefix between two strings
+     * 查找两个字符串之间最长公共前缀的长度
      *
-     * @param s1 The first string to compare
-     * @param s2 The second string to compare
-     * @return The length of the longest common prefix
+     * @param s1 要比较的第一个字符串
+     * @param s2 要比较的第二个字符串
+     * @return 最长公共前缀的长度
      */
     private static func longestPrefix(s1: String, s2: String): Int {
         let len = min(s1.size, s2.size)
@@ -662,27 +662,27 @@ public class TreeNode<T> {
 }
 
 /**
- * Type alias for list of tree nodes
+ * 树节点列表的类型别名
  *
- * @param T The type of the handler
+ * @param T 处理器的类型
  */
 type TreeNodes<T> = ArrayList<TreeNode<T>>
 
 /**
- * Extension functions for TreeNodes
+ * TreeNodes 的扩展函数
  *
- * @param T The type of the handler
+ * @param T 处理器的类型
  */
 extend<T> TreeNodes<T> {
     /**
-     * Sorts the tree nodes by label and tail delimiter
-     * Static nodes are sorted by label
-     * Param nodes with '/' tail are pushed to the end
+     * 按标签和尾部分隔符对树节点进行排序
+     * 静态节点按标签排序
+     * 带有 '/' 尾部的参数节点被推到列表末尾
      */
     func sortByLableTail() {
-        // sort the list of nodes by label
+        // 根据标签对节点列表进行排序
         sort(this, by: {a, b => a._label.compare(b._label)})
-        // pushes nodes with '/' as the tail to the end of the list for param nodes.
+        // 将尾部为 '/' 的参数节点推到列表末尾
         let last = this.size - 1
         for (i in last..=0 : -1) {
             if (this[i]._type > NT_STATIC && this[i]._tail == b'/') {
@@ -693,10 +693,10 @@ extend<T> TreeNodes<T> {
     }
 
     /**
-     * Finds an edge in the tree nodes list by label using binary search
+     * 使用二分查找按标签在树节点列表中查找边
      *
-     * @param label The label byte to search for
-     * @return The found tree node or None if not found
+     * @param label 要搜索的标签字节
+     * @return 找到的树节点，如果未找到则返回 None
      */
     func findEdge(label: Byte): ?TreeNode<T> {
         let num = this.size
@@ -710,7 +710,7 @@ extend<T> TreeNodes<T> {
             } else if (label < this[idx]._label) {
                 j = idx - 1
             } else {
-                // break the while loop
+                // 退出 while 循环
                 i = num
             }
         }
@@ -724,7 +724,7 @@ extend<T> TreeNodes<T> {
 }
 
 /**
- * Represents a segment of a route pattern, used for parsing and matching routes
+ * 表示路由模式的段，用于解析和匹配路由
  */
 private class Segment {
     var typ: NodeType = NT_STATIC
@@ -750,10 +750,10 @@ private class Segment {
     }
 
     /**
-     * @throws IllegalArgumentException if miss closing delimiter '}'
+     * @throws IllegalArgumentException 如果缺少关闭分隔符 '}'
      */
     private static func findEndIdx(pattern: String, ps: Int): Int {
-        // read to closing } taking into account opens and closes in curl count (cc)
+        // 读取到关闭的 }，考虑到在大括号计数 (cc) 中的打开和关闭
         var cc = 0
         var pe = ps
 
@@ -777,11 +777,11 @@ private class Segment {
     }
 
     /**
-     * Parses the next segment from the given pattern
+     * 从给定模式解析下一个段
      *
-     * @param pattern The route pattern to parse
-     * @return The parsed segment
-     * @throws IllegalArgumentException if the pattern is invalid
+     * @param pattern 要解析的路由模式
+     * @return 解析的段
+     * @throws IllegalArgumentException 如果模式无效
      */
     static func parseNext(pattern: String): Segment {
         let seg = Segment()
@@ -790,10 +790,10 @@ private class Segment {
     }
 
     /**
-     * Parses the segment from the given pattern
+     * 从给定模式解析段
      *
-     * @param pattern The route pattern to parse
-     * @throws IllegalArgumentException if the pattern is invalid
+     * @param pattern 要解析的路由模式
+     * @throws IllegalArgumentException 如果模式无效
      */
     private func parse(pattern: String): Unit {
         let ps = pattern.indexOf(b'{') ?? -1
@@ -842,11 +842,11 @@ private class Segment {
     }
 
     /**
-     * Parses the parameter keys from a route pattern
+     * 从路由模式解析参数键
      *
-     * @param pattern The route pattern to parse
-     * @return Array of parameter keys
-     * @throws IllegalArgumentException if the pattern contains duplicate param keys or is invalid
+     * @param pattern 要解析的路由模式
+     * @return 参数键数组
+     * @throws IllegalArgumentException 如果模式包含重复参数键或无效
      */
     static func parseParamKeys(pattern: String): Array<String> {
         var pat = pattern

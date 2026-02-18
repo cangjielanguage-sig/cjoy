@@ -16,10 +16,10 @@ import std.io.{ByteBuffer}
 import stdx.net.http.HttpHeaders
 
 /**
- * Represents a multipart content part
+ * 表示多部分内容部分
  *
- * A JoyMultiPart instance contains all information about a single part of a multipart request,
- * including headers, content type, name, filename, and content data.
+ * JoyMultiPart 实例包含多部分请求单个部分的所有信息，
+ * 包括头信息、内容类型、名称、文件名和内容数据。
  */
 public class JoyMultiPart {
     let _headers: HttpHeaders = HttpHeaders()
@@ -32,19 +32,19 @@ public class JoyMultiPart {
     var _diskHandler: ?JoyDiskMultiPartHandler = None
 
     /**
-     * Gets the value of a specific header from the part
+     * 从部分获取特定头信息的值
      *
-     * @param name The name of the header to retrieve
-     * @return The header value or None if not found
+     * @param name 要检索的头信息名称
+     * @return 头值，如果未找到则返回 None
      */
     public func header(name: String): ?String {
         _headers.getFirst(name)
     }
 
     /**
-     * Gets the Content-Type header of the part
+     * 获取部分的 Content-Type 头信息
      *
-     * @return The Content-Type string
+     * @return Content-Type 字符串
      */
     public prop contentType: String {
         get() {
@@ -53,9 +53,9 @@ public class JoyMultiPart {
     }
 
     /**
-     * Gets the name of the part from Content-Disposition header
+     * 从 Content-Disposition 头信息获取部分名称
      *
-     * @return The part name
+     * @return 部分名称
      */
     public prop name: String {
         get() {
@@ -65,16 +65,16 @@ public class JoyMultiPart {
     }
 
     /**
-     * Sets the name for testing purposes
+     * 为测试目的设置名称
      */
     func setName(name: String): Unit {
         _dispositionParams["name"] = name
     }
 
     /**
-     * Gets the filename of the part from Content-Disposition header
+     * 从 Content-Disposition 头信息获取部分文件名
      *
-     * @return The filename or empty string if not a file part
+     * @return 文件名，如果不是文件部分则返回空字符串
      */
     public prop fileName: String {
         get() {
@@ -84,9 +84,9 @@ public class JoyMultiPart {
     }
 
     /**
-     * Gets the text content of the part from memory
+     * 从内存获取部分的文本内容
      *
-     * @return The text content as string or None if not available
+     * @return 文本内容字符串，如果不可用则返回 None
      */
     public prop text: ?String {
         get() {
@@ -95,9 +95,9 @@ public class JoyMultiPart {
     }
 
     /**
-     * Gets the file reference of the part from disk cache
+     * 从磁盘缓存获取部分的文件引用
      *
-     * @return The File instance or None if not available
+     * @return File 实例，如果不可用则返回 None
      */
     public prop file: ?File {
         get() {
@@ -106,9 +106,9 @@ public class JoyMultiPart {
     }
 
     /**
-     * Gets the file content of the part from memory
+     * 从内存获取部分的文件内容
      *
-     * @return The file content as ByteBuffer or None if not available
+     * @return 文件内容为 ByteBuffer，如果不可用则返回 None
      */
     public prop fileContent: ?ByteBuffer {
         get() {

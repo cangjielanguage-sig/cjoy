@@ -18,21 +18,21 @@ import cjoy.utils.ast.{parserAttrs, TypeNodeInfo}
 open class ParamInfo {
     let marcroName: String
 
-    // the name of param in content
+    // 内容中的参数名称
     var name: String = ""
 
-    // the name of decl param
+    // 声明参数的名称
     var pname: Token = Token()
 
-    // the type info of param
+    // 参数的类型信息
     var typeNode: TypeNodeInfo
 
-    // the defalt value for query, postform, header
+    // 查询、postform、header 的默认值
     var defValue: String = ""
 
     var paramType: ?TypeNode = None
 
-    // the timeformat of datatime
+    // 日期时间的格式
     var timeformat: String = ""
 
     // 是否有具有默认值的函数参数的变量初始化节点
@@ -57,7 +57,7 @@ open class ParamInfo {
     }
 
     /**
-     * @throws Exception if no macro in param
+     * @throws Exception 如果没有宏参数
      */
     public open func genTokens(): Tokens {
         if (typeNode.vtype.value == "JoyContext") {
@@ -68,7 +68,7 @@ open class ParamInfo {
             }
         } else {
             throw Exception(
-                "must using macro for param `${getName()}: ${typeNode.vtype.value}` like @PathParam, @QueryParam")
+                "必须为参数 `${getName()}: ${typeNode.vtype.value}` 使用宏，如 @PathParam, @QueryParam")
         }
     }
 
@@ -305,7 +305,7 @@ class HeaderBindParamVarGenerator <: ParamInfo {
                 quote(let $(pname): $(typeNode.vtype) = ctx.bindHeader<$(typeNode.vtype)>() ?? $expr)
             } else {
                 quote(let $(pname): $(typeNode.vtype) = ctx.bindHeader<$(typeNode.vtype)>().getOrThrow({=>throw Exception($(msg))}))
-            }
+        }
         }
     }
 }

@@ -13,28 +13,28 @@ macro package cjoy.ioc.macros
 import std.ast.Tokens
 
 /*
- * This macro applies to the struct of class pulish to a bean.
- * When a Bean can be injected by its base class and interface, the extends property needs to be specified
+ * 此宏适用于要发布为 Bean 的类或结构体。
+ * 当一个 Bean 可以通过其基类和接口注入时，需要指定 extends 属性
  *
- * @attribute name: the bean name
- * @attribute scope：the bean scope, value is singleton or prototype
- * @attribute extends: a array of the bean base class or interface type
+ * @attribute name: Bean 名称
+ * @attribute scope：Bean 作用域，值为 singleton 或 prototype
+ * @attribute extends: Bean 基类或接口类型的数组
  */
 public macro Component(attr: Tokens, input: Tokens): Tokens {
     parseComponent(attr, input)
 }
 
 /*
- * This macro applies to the struct of class pulish to a bean.
+ * 此宏适用于要发布为 Bean 的类或结构体。
  */
 public macro Component(input: Tokens): Tokens {
     parseComponent(None, input)
 }
 
 /**
- * This macro applies to the parameters of the init function, inject beans according to the specified name
+ * 此宏适用于构造函数的参数，根据指定名称注入 Bean
  *
- * @attribute name: the depend bean name
+ * @attribute name: 依赖的 Bean 名称
  */
 public macro Autowired(attr: Tokens, input: Tokens): Tokens {
     parseAutowired(attr, input)
@@ -42,7 +42,7 @@ public macro Autowired(attr: Tokens, input: Tokens): Tokens {
 }
 
 /**
- * This macro applies to the parameters of the Init function
+ * 此宏适用于构造函数的参数
  */
 public macro Autowired(input: Tokens): Tokens {
     parseAutowired(None, input)
@@ -50,32 +50,32 @@ public macro Autowired(input: Tokens): Tokens {
 }
 
 /*
- * This macro applies to the struct of class pulish to a bean used for publishing Restful interfaces,
- * with interface methods marked with @Get and other macros.
- * When a Bean can be injected by its base class and interface, the extends property needs to be specified
+ * 此宏适用于要发布为用于发布 Restful 接口的 Bean 的类或结构体，
+ * 接口方法使用 @Get 等宏标记。
+ * 当一个 Bean 可以通过其基类和接口注入时，需要指定 extends 属性
  *
- * @attribute name: the bean name
- * @attribute scope：the bean scope, value is singleton or prototype
- * @attribute extends: a array of the bean base class or interface type
- * @attribute path: the base path of resutful api
+ * @attribute name: Bean 名称
+ * @attribute scope：Bean 作用域，值为 singleton 或 prototype
+ * @attribute extends: Bean 基类或接口类型的数组
+ * @attribute path: Restful API 的基路径
  */
 public macro Controller(attr: Tokens, input: Tokens): Tokens {
     parseController(attr, input)
 }
 
 /*
- * This macro applies to the struct of class pulish to a bean used for publishing Restful interfaces,
- * with interface methods marked with @Get and other macros.
+ * 此宏适用于要发布为用于发布 Restful 接口的 Bean 的类或结构体，
+ * 接口方法使用 @Get 等宏标记。
  */
 public macro Controller(input: Tokens): Tokens {
     parseController(None, input)
 }
 
 /**
- * This macro applies to the field of struct of class for referring to config value,
+ * 此宏适用于类或结构体的字段，用于引用配置值，
  *
- * @attribute value: the express of config
+ * @attribute value: 配置表达式
  */
 public macro Value(attr: Tokens, input: Tokens): Tokens {
-    parseVaue(attr, input)
+    parseValue(attr, input)
 }

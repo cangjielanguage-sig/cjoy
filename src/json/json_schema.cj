@@ -16,20 +16,19 @@ import std.time.DateTime
 import std.math.numeric.{BigInt, Decimal}
 
 /**
- * JSON schema field information.
+ * JSON schema 字段信息。
  *
- * Represents a field in a JSON schema with its type, description,
- * and requirement status.
+ * 表示 JSON schema 中的字段及其类型、描述和必需状态。
  */
 public class JsonSchemaInfo {
     /**
-     * Create JsonSchemaInfo instance.
+     * 创建 JsonSchemaInfo 实例。
      *
-     * @param name field name
-     * @param schemaType JSON schema type
-     * @param description field description
-     * @param required whether field is required (default: true)
-     * @param schema custom schema string
+     * @param name 字段名称
+     * @param schemaType JSON schema 类型
+     * @param description 字段描述
+     * @param required 字段是否必需（默认：true）
+     * @param schema 自定义 schema 字符串
      */
     public JsonSchemaInfo(
         public let name: String,
@@ -40,9 +39,9 @@ public class JsonSchemaInfo {
     ) {}
 
     /**
-     * Convert to JsonSerializable.
+     * 转换为 JsonSerializable。
      *
-     * @return JSON serializable object representing the schema
+     * @return 表示 schema 的 JSON 可序列化对象
      */
     public func toJson(): JsonSerializable {
         if (schema != "") {
@@ -53,15 +52,15 @@ public class JsonSchemaInfo {
 }
 
 /**
- * JSON schema type enum for JSON schema specification.
+ * JSON schema 规范的类型枚举。
  *
- * Possible values:
- * - Str: string type
- * - Int: integer type
- * - Number: number type (includes floats)
- * - Boolean: boolean type
- * - Arr(JsonSchemaType): array type with item schema
- * - Obj(Array<JsonSchemaInfo>): object type with field schemas
+ * 可能的值：
+ * - Str: 字符串类型
+ * - Int: 整数类型
+ * - Number: 数字类型（包括浮点数）
+ * - Boolean: 布尔类型
+ * - Arr(JsonSchemaType): 带项目 schema 的数组类型
+ * - Obj(Array<JsonSchemaInfo>): 带字段 schema 的对象类型
  */
 public enum JsonSchemaType {
     | Str
@@ -72,10 +71,10 @@ public enum JsonSchemaType {
     | Obj(Array<JsonSchemaInfo>)
 
     /**
-     * Convert to JsonSerializable schema.
+     * 转换为 JsonSerializable schema。
      *
-     * @param description schema description
-     * @return JSON serializable schema object
+     * @param description schema 描述
+     * @return JSON 可序列化 schema 对象
      */
     public func toJson(description!: String = ""): JsonSerializable {
         let res: HashMap<String, JsonSerializable> = HashMap()
@@ -120,32 +119,32 @@ public enum JsonSchemaType {
 }
 
 /**
- * Interface for types that can generate JSON schemas.
+ * 可以生成 JSON schema 的类型接口。
  *
- * Provides methods to convert to JSON Schema format.
+ * 提供转换为 JSON Schema 格式的方法。
  */
 public interface Jsonable {
     /**
-     * Get JSON schema type.
+     * 获取 JSON schema 类型。
      *
-     * @return JSON schema type
+     * @return JSON schema 类型
      */
     static func toSchema(): JsonSchemaType
 
     /**
-     * Convert to JSON schema serializable.
+     * 转换为 JSON schema 可序列化对象。
      *
-     * @return JSON serializable schema object
+     * @return JSON 可序列化 schema 对象
      */
     static func toJsonSchema(): JsonSerializable {
         toSchema().toJson()
     }
 
     /**
-     * Convert to JSON schema serializable with description.
+     * 转换为带描述的 JSON schema 可序列化对象。
      *
-     * @param description schema description
-     * @return JSON serializable schema object
+     * @param description schema 描述
+     * @return JSON 可序列化 schema 对象
      */
     static func toJsonSchema(description: String): JsonSerializable {
         toSchema().toJson(description: description)

@@ -19,25 +19,24 @@ import cjoy.ioc.BeanFactoryManager
 import cjoy.log.macros.*
 
 /**
- * Router interface for defining and managing routes
+ * 用于定义和管理路由的路由器接口
  */
 public interface JoyRouters {
     /**
-     * Gets the distributor instance
+     * 获取分发器实例
      *
-     * @return The distributor instance
+     * @return 分发器实例
      */
     prop distributor: HttpRequestDistributor
 
     /**
-     * appends a middleware handler to the middleware stack.
+     * 将中间件处理器追加到中间件栈。
      *
-     * The middleware stack for any router will execute before searching for a matching
-     * route to a specific handler, which provides opportunity to respond early,
-     * change the course of the request execution.
+     * 任何路由器的中间件栈都会在搜索匹配路由到特定处理器之前执行，
+     * 这提供了提前响应、改变请求执行流程的机会。
      *
-     * @param mws the array of middleware handlers to add
-     * @return the current router instance for method chaining
+     * @param mws 要添加的中间件处理器数组
+     * @return 当前路由器实例，用于方法链式调用
      */
     func use(mws: Array<JoyMiddlewareHandler>): JoyRouters
     func use(mw: JoyMiddlewareFunc): JoyRouters {
@@ -45,10 +44,10 @@ public interface JoyRouters {
     }
 
     /**
-     * adds inline middlewares for an endpoint handler.
+     * 为端点处理器添加内联中间件。
      *
-     * @param mws the array of middleware handlers to add
-     * @return the current router instance for method chaining
+     * @param mws 要添加的中间件处理器数组
+     * @return 当前路由器实例，用于方法链式调用
      */
     func apply(mws: Array<JoyMiddlewareHandler>): JoyRouters
     func apply(mw: JoyMiddlewareFunc): JoyRouters {
@@ -56,39 +55,38 @@ public interface JoyRouters {
     }
 
     /**
-     * creates a new inline router with a copy of middleware stack. it's useful
-     * for a group of handlers along the same routing path that use an additional
-     * set of middlewares.
+     * 创建一个带有中间件栈副本的新内联路由器。这对于使用额外中间件集合的
+     * 同一路径上的一组处理器非常有用。
      *
-     * @param relativePath the relative path for the new group
-     * @return the new router group instance
+     * @param relativePath 新组的相对路径
+     * @return 新的路由器组实例
      */
     func group(relativePath: String): JoyRouters
 
     /**
-     * Finds a group by the full path
+     * 通过完整路径查找组
      *
-     * @param path The full path of the group to find
-     * @return The matching router group
+     * @param path 要查找的组的完整路径
+     * @return 匹配的路由器组
      */
     func findGroup(path: String): JoyRouters
 
     /**
-     * Recursively creates a set of routes split by '/'. Invoking createGroups("/a/b/c") is the same as
-     * invoking group("/a").group("/b").group("/c")
+     * 递归创建一组按 '/' 分割的路由。调用 createGroups("/a/b/c") 等同于
+     * 调用 group("/a").group("/b").group("/c")
      *
-     * @param path The path to create groups from
-     * @return The last created router group
+     * @param path 用于创建组的路径
+     * @return 最后创建的路由器组
      */
     func createGroups(path: String): JoyRouters
 
     /**
-     * used to define routes with a common prefix inside the supplied function.
-     * it reuses the group method to create a sub-router.
+     * 用于在提供的函数内定义具有公共前缀的路由。
+     * 它重用 group 方法来创建子路由器。
      *
-     * @param relativePath the relative path for the route group
-     * @param fn the function to define routes within the group
-     * @return the created router group
+     * @param relativePath 路由组的相对路径
+     * @param fn 用于在组内定义路由的函数
+     * @return 创建的路由器组
      */
     func route(relativePath: String, fn: (router: JoyRouters) -> Unit): JoyRouters {
         let g = group(relativePath)
@@ -97,18 +95,18 @@ public interface JoyRouters {
     }
 
     /**
-     * Gets the route base prefix path
+     * 获取路由基础前缀路径
      *
-     * @return The base prefix path
+     * @return 基础前缀路径
      */
     func basePath(): String
 
     /**
-     * adds the route `pattern` that matches `GET` http method to execute the `handler`.
+     * 添加匹配 `GET` HTTP 方法的路由 `pattern` 来执行 `handler`。
      *
-     * @param pattern the route pattern
-     * @param handler the request handler
-     * @return the current router instance for method chaining
+     * @param pattern 路由模式
+     * @param handler 请求处理器
+     * @return 当前路由器实例，用于方法链式调用
      */
     func get(pattern: String, handler: JoyRequestHandler): JoyRouters
     func get(pattern: String, handler: JoyRequestHandlerFunc): JoyRouters {
@@ -116,11 +114,11 @@ public interface JoyRouters {
     }
 
     /**
-     * adds the route `pattern` that matches `POST` http method to execute the `handler`.
+     * 添加匹配 `POST` HTTP 方法的路由 `pattern` 来执行 `handler`。
      *
-     * @param pattern the route pattern
-     * @param handler the request handler
-     * @return the current router instance for method chaining
+     * @param pattern 路由模式
+     * @param handler 请求处理器
+     * @return 当前路由器实例，用于方法链式调用
      */
     func post(pattern: String, handler: JoyRequestHandler): JoyRouters
     func post(pattern: String, handler: JoyRequestHandlerFunc): JoyRouters {
@@ -128,11 +126,11 @@ public interface JoyRouters {
     }
 
     /**
-     * adds the route `pattern` that matches `PUT` http method to execute the `handler`.
+     * 添加匹配 `PUT` HTTP 方法的路由 `pattern` 来执行 `handler`。
      *
-     * @param pattern the route pattern
-     * @param handler the request handler
-     * @return the current router instance for method chaining
+     * @param pattern 路由模式
+     * @param handler 请求处理器
+     * @return 当前路由器实例，用于方法链式调用
      */
     func put(pattern: String, handler: JoyRequestHandler): JoyRouters
     func put(pattern: String, handler: JoyRequestHandlerFunc): JoyRouters {
@@ -140,11 +138,11 @@ public interface JoyRouters {
     }
 
     /**
-     * adds the route `pattern` that matches `DELETE` http method to execute the `handler`.
+     * 添加匹配 `DELETE` HTTP 方法的路由 `pattern` 来执行 `handler`。
      *
-     * @param pattern the route pattern
-     * @param handler the request handler
-     * @return the current router instance for method chaining
+     * @param pattern 路由模式
+     * @param handler 请求处理器
+     * @return 当前路由器实例，用于方法链式调用
      */
     func delete(pattern: String, handler: JoyRequestHandler): JoyRouters
     func delete(pattern: String, handler: JoyRequestHandlerFunc): JoyRouters {
@@ -152,11 +150,11 @@ public interface JoyRouters {
     }
 
     /**
-     * adds the route `pattern` that matches `PATCH` http method to execute the `handler`.
+     * 添加匹配 `PATCH` HTTP 方法的路由 `pattern` 来执行 `handler`。
      *
-     * @param pattern the route pattern
-     * @param handler the request handler
-     * @return the current router instance for method chaining
+     * @param pattern 路由模式
+     * @param handler 请求处理器
+     * @return 当前路由器实例，用于方法链式调用
      */
     func patch(pattern: String, handler: JoyRequestHandler): JoyRouters
     func patch(pattern: String, handler: JoyRequestHandlerFunc): JoyRouters {
@@ -164,11 +162,11 @@ public interface JoyRouters {
     }
 
     /**
-     * adds the route `pattern` that matches `OPTIONS` http method to execute the `handler`.
+     * 添加匹配 `OPTIONS` HTTP 方法的路由 `pattern` 来执行 `handler`。
      *
-     * @param pattern the route pattern
-     * @param handler the request handler
-     * @return the current router instance for method chaining
+     * @param pattern 路由模式
+     * @param handler 请求处理器
+     * @return 当前路由器实例，用于方法链式调用
      */
     func options(pattern: String, handler: JoyRequestHandler): JoyRouters
     func options(pattern: String, handler: JoyRequestHandlerFunc): JoyRouters {
@@ -176,11 +174,11 @@ public interface JoyRouters {
     }
 
     /**
-     * adds the route `pattern` that matches `HEAD` http method to execute the `handler`.
+     * 添加匹配 `HEAD` HTTP 方法的路由 `pattern` 来执行 `handler`。
      *
-     * @param pattern the route pattern
-     * @param handler the request handler
-     * @return the current router instance for method chaining
+     * @param pattern 路由模式
+     * @param handler 请求处理器
+     * @return 当前路由器实例，用于方法链式调用
      */
     func head(pattern: String, handler: JoyRequestHandler): JoyRouters
     func head(pattern: String, handler: JoyRequestHandlerFunc): JoyRouters {
@@ -188,12 +186,12 @@ public interface JoyRouters {
     }
 
     /**
-     * adds the route `pattern` that matches `method` http method to execute the `handler`.
+     * 添加匹配 `method` HTTP 方法的路由 `pattern` 来执行 `handler`。
      *
-     * @param methods the array of http methods
-     * @param pattern the route pattern
-     * @param handler the request handler
-     * @return the current router instance for method chaining
+     * @param methods HTTP 方法数组
+     * @param pattern 路由模式
+     * @param handler 请求处理器
+     * @return 当前路由器实例，用于方法链式调用
      */
     func handle(methods: Array<String>, pattern: String, handler: JoyRequestHandler): JoyRouters
     func handle(methods: Array<String>, pattern: String, handler: JoyRequestHandlerFunc): JoyRouters {
@@ -201,36 +199,36 @@ public interface JoyRouters {
     }
 
     /**
-     * Serves files with URL path `relativePath` from the given file system `root`.
+     * 从给定的文件系统 `root` 提供 URL 路径为 `relativePath` 的文件。
      *
-     * @param relativePath The relative URL path
-     * @param root The local filesystem root directory
-     * @return The current router instance for method chaining
+     * @param relativePath 相对 URL 路径
+     * @param root 本地文件系统根目录
+     * @return 当前路由器实例，用于方法链式调用
      */
     func staticFs(relativePath: String, root: String): JoyRouters
 
     /**
-     * Registers a single route with URL path `relativePath` to serve a single file of the local filesystem.
+     * 注册单个路由，使用 URL 路径 `relativePath` 来提供本地文件系统的单个文件。
      *
-     * @param relativePath The relative URL path
-     * @param filepath The local filesystem file path
-     * @return The current router instance for method chaining
+     * @param relativePath 相对 URL 路径
+     * @param filepath 本地文件系统文件路径
+     * @return 当前路由器实例，用于方法链式调用
      */
     func staticFile(relativePath: String, filepath: String): JoyRouters
 
     /**
-     * Adds the route `pattern` that matches `GET` HTTP method to process websocket request.
+     * 添加匹配 `GET` HTTP 方法的路由 `pattern` 来处理 WebSocket 请求。
      *
-     * @param pattern The route pattern
-     * @param handler The websocket handler
-     * @return The current router instance for method chaining
+     * @param pattern 路由模式
+     * @param handler WebSocket 处理器
+     * @return 当前路由器实例，用于方法链式调用
      */
     func websocket(pattern: String, handler: JoyWebSocketHandler): JoyRouters
 
     /**
-     * Dumps the route tree
+     * 打印路由树
      *
-     * @return The string representation of the route tree
+     * @return 路由树的字符串表示
      */
     func dump(): String
 }
@@ -247,21 +245,21 @@ class TreeRouteDistributor <: HttpRequestDistributor & HttpRequestHandler {
     }
 
     /**
-     * registers a handler with the given name and handler instance
+     * 使用给定名称和处理程序实例注册一个处理程序
      *
-     * @param _: the handler name
-     * @param _: the handler instance
-     * @throws UnsupportedException always thrown, as this method is not supported
+     * @param _: 处理程序名称
+     * @param _: 处理程序实例
+     * @throws UnsupportedException 始终抛出，因为此方法不被支持
      */
     public func register(_: String, _: HttpRequestHandler): Unit {
         throw UnsupportedException("unsupported this method")
     }
 
     /**
-     * distributes the request to the appropriate handler
+     * 将请求分发到适当的处理程序
      *
-     * @param _: the request path
-     * @return this instance as the handler
+     * @param _: 请求路径
+     * @return 返回自身作为处理程序
      */
     public func distribute(_: String): HttpRequestHandler {
         // redirect to handle method
@@ -269,9 +267,9 @@ class TreeRouteDistributor <: HttpRequestDistributor & HttpRequestHandler {
     }
 
     /**
-     * Handles the incoming HTTP request
+     * 处理传入的 HTTP 请求
      *
-     * @param ctx The HTTP context
+     * @param ctx HTTP 上下文
      */
     public func handle(ctx: HttpContext): Unit {
         let target: RouteInfo<JoyRequestHandler> = lookup(ctx.request)
@@ -321,9 +319,9 @@ class TreeRouteDistributor <: HttpRequestDistributor & HttpRequestHandler {
     }
 
     /**
-     * dump the route tree as a string for debugging
+     * 将路由树以字符串形式输出用于调试
      *
-     * @return the route tree structure string
+     * @return 路由树的结构字符串
      */
     public func dump(): String {
         _root.dumpTree()
@@ -353,19 +351,19 @@ class JoyRouteGroup <: JoyRouters {
     }
 
     /**
-     * dump the route tree as a string for debugging
+     * 将路由树以字符串形式输出用于调试
      *
-     * @return the route tree structure string
+     * @return 路由树的结构字符串
      */
     public func dump(): String {
         _distributor._root.dumpTree()
     }
 
     /**
-     * appends middleware handlers to the middleware stack
+     * 将中间件处理器追加到中间件栈
      *
-     * @param mws the array of middleware handlers to add
-     * @return the current router instance for method chaining
+     * @param mws 要添加的中间件处理器数组
+     * @return 当前路由器实例，支持方法链式调用
      */
     public func use(mws: Array<JoyMiddlewareHandler>): JoyRouters {
         mws |> forEach {mw => _middlewares.add(mw)}
@@ -373,10 +371,10 @@ class JoyRouteGroup <: JoyRouters {
     }
 
     /**
-     * adds inline middleware handlers for subsequent route registrations
+     * 为后续路由注册添加内联中间件处理器
      *
-     * @param mws the array of middleware handlers to add
-     * @return the current router instance for method chaining
+     * @param mws 要添加的中间件处理器数组
+     * @return 当前路由器实例，支持方法链式调用
      */
     public func apply(mws: Array<JoyMiddlewareHandler>): JoyRouters {
         mws |> forEach {mw => _applyMWs.add(mw)}
@@ -384,11 +382,11 @@ class JoyRouteGroup <: JoyRouters {
     }
 
     /**
-     * creates a new router group with a copy of the current middleware stack
+     * 创建一个带有当前中间件栈副本的新路由组
      *
-     * @param relativePath the relative path for the new group
-     * @return the new router group instance
-     * @throws IllegalArgumentException if the relative path is empty
+     * @param relativePath 新组的相对路径
+     * @return 新的路由组实例
+     * @throws IllegalArgumentException 如果相对路径为空
      */
     public func group(relativePath: String): JoyRouters {
         if (relativePath.isEmpty()) {
@@ -415,10 +413,10 @@ class JoyRouteGroup <: JoyRouters {
     }
 
     /**
-     * Finds the router group that matches the given path
+     * 查找与给定路径匹配的路由组
      *
-     * @param path The path to search for
-     * @return The matching router group, or the current router if no match is found
+     * @param path 要搜索的路径
+     * @return 匹配的路由组，如果未找到则返回当前路由
      */
     public func findGroup(path: String): JoyRouters {
         var router: JoyRouters = this
@@ -443,10 +441,10 @@ class JoyRouteGroup <: JoyRouters {
     }
 
     /**
-     * recursively creates a set of nested router groups from the given path
+     * 递归从给定路径创建一组嵌套的路由组
      *
-     * @param path: the path to create groups from (e.g., "/a/b/c" creates three nested groups)
-     * @return the last created router group
+     * @param path: 用于创建分组的路径（示例："/a/b/c" 将创建三个嵌套分组）
+     * @return 最后创建的路由组
      */
     public func createGroups(path: String): JoyRouters {
         checkPath(path)
@@ -471,7 +469,7 @@ class JoyRouteGroup <: JoyRouters {
     }
 
     /**
-     * @throws IllegalArgumentException if the path not is end with slash
+     * @throws IllegalArgumentException 如果路径不是以斜杠结尾
      */
     private static func checkPath(path: String): Unit {
         if (path.size > 1 && path[0] != b'/') {
@@ -483,7 +481,7 @@ class JoyRouteGroup <: JoyRouters {
     }
 
     /**
-     * @throws IllegalArgumentException if the group path has existed
+     * @throws IllegalArgumentException 如果分组路径已存在
      */
     private func setGroupDefaultHandler(): Unit {
         if (_distributor._root.findPattern(_path + "*") || _distributor._root.findPattern(_path + "/*")) {

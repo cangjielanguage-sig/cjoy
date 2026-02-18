@@ -16,23 +16,23 @@ import stdx.net.http.HttpHeaders
 import cjoy.log.macros.*
 
 /**
- * Map container that implements JoyBindSource.
+ * 实现 JoyBindSource 的 Map 容器类
  *
- * Provides a HashMap-based data source for parameter binding.
+ * 为参数绑定提供基于 HashMap 的数据源
  */
 public class MapContainer <: JoyBindSource & ToString {
     /**
-     * Create a new MapContainer.
+     * 创建一个新的 MapContainer 实例
      *
-     * @param data the map data
+     * @param data 地图数据
      */
     public MapContainer(let data: HashMap<String, Any>) {}
 
     /**
-     * Get one value by name from source.
+     * 根据名称从源中获取一个值
      *
-     * @param name the value name
-     * @return the value, or None if not found
+     * @param name 值的名称
+     * @return 值，如果未找到则返回 None
      */
     public func getOne<T>(name: String): ?T {
         let v = data.get(name)
@@ -40,10 +40,10 @@ public class MapContainer <: JoyBindSource & ToString {
     }
 
     /**
-     * Get all values by name from source.
+     * 根据名称从源中获取所有值
      *
-     * @param name the value name
-     * @return the collection of values
+     * @param name 值的名称
+     * @return 值的集合
      */
     public func getList<T>(name: String): Collection<T> {
         let res = ArrayList<T>()
@@ -67,19 +67,19 @@ public class MapContainer <: JoyBindSource & ToString {
     }
 
     /**
-     * Convert to string.
+     * 转换为字符串表示
      *
-     * @return the string representation
+     * @return 字符串表示
      */
     public func toString(): String {
         mapToString(data)
     }
 
     /**
-     * Convert map to string.
+     * 将地图转换为字符串
      *
-     * @param data the map data
-     * @return the string representation
+     * @param data 地图数据
+     * @return 字符串表示
      */
     public static func mapToString(data: Map<String, Any>): String {
         let builder = StringBuilder()
@@ -106,10 +106,10 @@ public class MapContainer <: JoyBindSource & ToString {
     }
 
     /**
-     * Convert collection to string.
+     * 将集合转换为字符串
      *
-     * @param data the collection data
-     * @return the string representation
+     * @param data 集合数据
+     * @return 字符串表示
      */
     public static func colToString(data: Collection<Any>): String {
         let builder = StringBuilder()
@@ -130,14 +130,14 @@ public class MapContainer <: JoyBindSource & ToString {
 }
 
 /**
- * Extend Form to implement JoyBindSource for form data binding.
+ * 扩展 Form 类以实现 JoyBindSource，用于表单数据绑定
  */
 extend Form <: JoyBindSource {
     /**
-     * Get one value by name from form.
+     * 从表单中获取一个值
      *
-     * @param name the value name
-     * @return the value, or None if not found
+     * @param name 值的名称
+     * @return 值，如果未找到则返回 None
      */
     public func getOne<T>(name: String): ?T {
         let v = this.get(name)
@@ -145,10 +145,10 @@ extend Form <: JoyBindSource {
     }
 
     /**
-     * Get all values by name from form.
+     * 从表单中获取所有值
      *
-     * @param name the value name
-     * @return the collection of values
+     * @param name 值的名称
+     * @return 值的集合
      */
     public func getList<T>(name: String): Collection<T> {
         let list = this.getAll(name)
@@ -164,14 +164,14 @@ extend Form <: JoyBindSource {
 }
 
 /**
- * Extend HttpHeaders to implement JoyBindSource for header binding.
+ * 扩展 HttpHeaders 类以实现 JoyBindSource，用于请求头绑定
  */
 extend HttpHeaders <: JoyBindSource {
     /**
-     * Get one value by name from headers.
+     * 从请求头中获取一个值
      *
-     * @param name the header name
-     * @return the header value, or None if not found
+     * @param name 请求头名称
+     * @return 请求头值，如果未找到则返回 None
      */
     public func getOne<T>(name: String): ?T {
         let v = this.getFirst(name)
@@ -179,10 +179,10 @@ extend HttpHeaders <: JoyBindSource {
     }
 
     /**
-     * Get all values by name from headers.
+     * 从请求头中获取所有值
      *
-     * @param name the header name
-     * @return the collection of header values
+     * @param name 请求头名称
+     * @return 请求头值的集合
      */
     public func getList<T>(name: String): Collection<T> {
         let list = this.get(name)
@@ -198,14 +198,14 @@ extend HttpHeaders <: JoyBindSource {
 }
 
 /**
- * Extend HashMap<String, String> to implement JoyBindSource for map binding.
+ * 扩展 HashMap<String, String> 类以实现 JoyBindSource，用于地图绑定
  */
 extend HashMap<String, String> <: JoyBindSource {
     /**
-     * Get one value by name from hashmap.
+     * 从 HashMap 中获取一个值
      *
-     * @param name the key name
-     * @return the value, or None if not found
+     * @param name 键名称
+     * @return 值，如果未找到则返回 None
      */
     public func getOne<T>(name: String): ?T {
         let v = this.get(name)
@@ -213,10 +213,10 @@ extend HashMap<String, String> <: JoyBindSource {
     }
 
     /**
-     * Get list from hashmap (always return empty).
+     * 从 HashMap 获取列表（始终返回空）
      *
-     * @param _ the key name (not used)
-     * @return the empty collection
+     * @param _ 键名称（未使用）
+     * @return 空集合
      */
     public func getList<T>(_: String): Collection<T> {
         @JoyLogWarn("[Bind] get list from HashMap<String, String> return empty")

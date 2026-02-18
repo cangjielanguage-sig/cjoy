@@ -13,13 +13,13 @@ package cjoy.config
 import std.collection.{HashMap, Map}
 
 /**
- * application program cli arguments config
+ * 应用程序命令行参数配置
  */
 public class ArgConfigLoader <: ConfigLoader {
     public ArgConfigLoader(let args: Array<String>, let priorityNum!: Int = 50) {}
 
     /**
-     * @throws ConfigException if the config express is invalid
+     * @throws ConfigException 如果配置表达式无效
      */
     public func load(): Map<String, Any> {
         let data = HashMap<String, Any>()

@@ -14,7 +14,7 @@ import std.ast.*
 import cjoy.utils.{MapToString, MapListGetFunc}
 import cjoy.utils.ast.TypeNodeInfo
 
-func parseVaue(attr: Tokens, input: Tokens): Tokens {
+func parseValue(attr: Tokens, input: Tokens): Tokens {
     if (!insideParentContext("Controller") && !insideParentContext("Component")) {
         diagReport(DiagReportLevel.ERROR, attr, "@Value macro must be wrappered by @Controller or @Component", "")
         return Tokens()

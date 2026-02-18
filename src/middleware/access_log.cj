@@ -16,7 +16,10 @@ import cjoy.{JoyMiddlewareHandler, JoyRequestHandlerChain, JoyContext, JoyReques
 import cjoy.log.JoyLoggerFactory
 
 /**
- * access log middleware for logging HTTP request information
+ * 记录 HTTP 请求信息的访问日志中间件
+ *
+ * @param logger 日志器实例
+ * @param filterFn 过滤函数，用于决定是否记录某个请求
  */
 public class AccessLog <: JoyMiddlewareHandler {
     private let _logger: Logger

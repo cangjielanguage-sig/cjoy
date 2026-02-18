@@ -15,10 +15,10 @@ import stdx.net.http.HttpRequest
 import cjoy.framework.{JoyContext, JoyHttpConsts}
 
 /**
- * Form data handler for multipart content
+ * 多部分表单数据处理器
  *
- * JoyMultiPartForm provides functionality to parse and handle multipart form data requests.
- * It supports both in-memory and disk-based storage of parts.
+ * JoyMultiPartForm 提供解析和处理多部分表单数据请求的功能。
+ * 它支持部分的内存储存和基于磁盘的存储。
  */
 public class JoyMultiPartForm <: JoyMultiPartHandler & Resource & Iterable<JoyMultiPart> {
     private static let INSTANCE: JoyMultiPartForm = JoyMultiPartForm()
@@ -30,22 +30,22 @@ public class JoyMultiPartForm <: JoyMultiPartHandler & Resource & Iterable<JoyMu
     private var _isClosed = false
 
     /**
-     * Creates a MultiPartForm to parse the multipart request
+     * 创建 MultiPartForm 来解析多部分请求
      *
-     * @param ctx The context
-     * @param config The multipart config
-     * @throws MultiPartParseException if parsing multipart fails
+     * @param ctx 上下文
+     * @param config 多部分配置
+     * @throws MultiPartParseException 如果解析多部分失败
      */
     public static func create(ctx: JoyContext, config: JoyMultiPartConfig): JoyMultiPartForm {
         create(ctx.httpContext.request, config)
     }
 
     /**
-     * Creates a MultiPartForm to parse the multipart request
+     * 创建 MultiPartForm 来解析多部分请求
      *
-     * @param request The HTTP request
-     * @param config The multipart config
-     * @throws MultiPartParseException if parsing multipart fails
+     * @param request HTTP 请求
+     * @param config 多部分配置
+     * @throws MultiPartParseException 如果解析多部分失败
      */
     public static func create(request: HttpRequest, config: JoyMultiPartConfig): JoyMultiPartForm {
         if (let Some(header) <- request.headers.getFirst(JoyHttpConsts.HEADER_CONTENT_TYPE)) {
@@ -74,14 +74,14 @@ public class JoyMultiPartForm <: JoyMultiPartHandler & Resource & Iterable<JoyMu
     }
 
     /**
-     * Parses the multipart parts
+     * 解析多部分部分
      */
     public func parse(): Unit {
         _parser?.parseParts()
     }
 
     /**
-     * Returns true when content-type is `multipart/form-data`
+     * 当 content-type 是 `multipart/form-data` 时返回 true
      */
     public prop isFormData: Bool {
         get() {
@@ -90,20 +90,20 @@ public class JoyMultiPartForm <: JoyMultiPartHandler & Resource & Iterable<JoyMu
     }
 
     /**
-     * Returns multipart info by name
+     * 根据名称获取多部分信息
      *
-     * @param name The name of the part
-     * @return The JoyMultiPart instance or None if not found
+     * @param name 部分的名称
+     * @return JoyMultiPart 实例，如果未找到则返回 None
      */
     public func getPart(name: String): ?JoyMultiPart {
         _parser?.getPart(name) ?? None
     }
 
     /**
-     * Iterates over the multipart parts
+     * 遍历多部分部分
      *
-     * @return The iterator of JoyMultiPart
-     * @throws IllegalStateException if parsing multipart failed
+     * @return JoyMultiPart 的迭代器
+     * @throws IllegalStateException 如果解析多部分失败
      */
     public func iterator(): Iterator<JoyMultiPart> {
         if (let Some(p) <- _parser) {
@@ -149,27 +149,27 @@ public class JoyMultiPartForm <: JoyMultiPartHandler & Resource & Iterable<JoyMu
     }
 
     /**
-     * register a handler to save the body of MultiPart
+     * 注册一个处理器来保存 MultiPart 的主体
      *
-     * @param name: the name of MultiPart
-     * @param handler: the handler of body
+     * @param name MultiPart 的名称
+     * @param handler 主体的处理器
      */
     public func handlePart(name: String, handler: JoyMultiPartHandler) {
         _handlers.add(name, handler)
     }
 
     /**
-     * register a handler to save the body of MultiPart
+     * 注册一个处理器来保存 MultiPart 的主体
      *
-     * @param name: the name of MultiPart
-     * @param handler: the handler of body
+     * @param name MultiPart 的名称
+     * @param handler 主体的处理器
      */
     public func handlePart(name: String, handler: (JoyMultiPart, Array<Byte>) -> Unit) {
         handlePart(name, JoyMultiPartFuncHandler(handler))
     }
 
     /**
-     * clear the temp file
+     * 清除临时文件
      */
     public func close(): Unit {
         if (_isClosed) {

@@ -14,51 +14,51 @@ import std.collection.{ArrayList, HashMap, HashSet, map, forEach, any, filter, c
 import std.sort.sort
 
 /**
- * Bean dependency node.
+ * Bean 依赖节点。
  *
- * Represents a bean type in the dependency graph,
- * tracking its dependencies and dependents with depth calculation.
+ * 表示依赖图中的 Bean 类型，
+ * 跟踪其依赖关系和被依赖关系，并计算深度。
  */
 class BeanDepend <: Equatable<BeanDepend> & Hashable & ToString {
     /**
-     * Create bean dependency node.
+     * 创建 Bean 依赖节点。
      *
-     * @param beanType bean type name
+     * @param beanType Bean 类型名称
      */
     BeanDepend(let beanType: String,
-        // dependent bean types
+        // 依赖的 Bean 类型
         let depends!: HashSet<BeanDepend> = HashSet(),
-        // dependent on bean types
+        // 被依赖的 Bean 类型
         let depons!: HashSet<BeanDepend> = HashSet(),
-            // tree reverse depth
+            // 树的反向深度
             var depth!: Int = Int.Max,
-            // class or interface
+            // 是否是类（而非接口）
             var isClass!: Bool = false) {
     }
 
     /**
-     * Generate hash code for this bean dependency.
+     * 生成此 Bean 依赖的哈希码。
      *
-     * @return hash code
+     * @return 哈希码
      */
     public func hashCode(): Int64 {
         beanType.hashCode()
     }
 
     /**
-     * Check equality with another bean dependency.
+     * 检查与另一个 Bean 依赖的相等性。
      *
-     * @param rhs bean dependency to compare
-     * @return true if bean types are equal
+     * @param rhs 要比较的 Bean 依赖
+     * @return 如果 Bean 类型相等则返回 true
      */
     public operator func ==(rhs: BeanDepend): Bool {
         this.beanType == rhs.beanType
     }
 
     /**
-     * Convert to string representation.
+     * 转换为字符串表示形式。
      *
-     * @return string containing bean type and depth
+     * @return 包含 Bean 类型和深度的字符串
      */
     public func toString(): String {
         "{beanType:${beanType},depth:${depth}}"
@@ -66,22 +66,22 @@ class BeanDepend <: Equatable<BeanDepend> & Hashable & ToString {
 }
 
 /**
- * Bean dependency manager.
+ * Bean 依赖管理器。
  *
- * Manages the dependency graph for beans, calculating
- * proper initialization order and detecting circular dependencies.
+ * 管理 Bean 的依赖图，计算
+ * 正确的初始化顺序并检测循环依赖。
  */
 class BeanDependManager {
-    // key: beanType
+    // 键：beanType
     private let _beanTypes: HashMap<String, BeanDepend> = HashMap()
-    // key: interface type, value: array of beanType
+    // 键：接口类型，值：beanType 数组
     private let _extends: HashMap<String, HashSet<String>> = HashMap()
 
     /**
-     * Get or create bean dependency node.
+     * 获取或创建 Bean 依赖节点。
      *
-     * @param beanType bean type name
-     * @return bean dependency node
+     * @param beanType Bean 类型名称
+     * @return Bean 依赖节点
      */
     private func get(beanType: String): BeanDepend {
         let bd = _beanTypes.get(beanType)
@@ -95,10 +95,10 @@ class BeanDependManager {
     }
 
     /**
-     * Add dependency relationship.
+     * 添加依赖关系。
      *
-     * @param beanType bean type name
-     * @param depends array of bean type names this bean depends on
+     * @param beanType Bean 类型名称
+     * @param depends 此 Bean 依赖的 Bean 类型名称数组
      */
     func addDepends(beanType: String, depends: Array<String>): Unit {
         let bt = get(beanType)
@@ -112,10 +112,10 @@ class BeanDependManager {
     }
 
     /**
-     * Add interface implementations.
+     * 添加接口实现。
      *
-     * @param beanType bean type name
-     * @param interfaces array of interface type names this bean implements
+     * @param beanType Bean 类型名称
+     * @param interfaces 此 Bean 实现的接口类型名称数组
      */
     func addTypes(beanType: String, interfaces: Array<String>): Unit {
         for (it in interfaces) {
@@ -128,24 +128,24 @@ class BeanDependManager {
     }
 
     /**
-     * Get class types by interface or class name.
+     * 按接口或类名称获取类类型。
      *
-     * @param btype interface or class type name
-     * @return hash set of class type names
+     * @param btype 接口或类类型名称
+     * @return 类类型名称的哈希集合
      */
     func getClassType(btype: String): HashSet<String> {
         _extends.get(btype) ?? HashSet<String>([btype])
     }
 
     /**
-     * Get sorted bean dependencies.
+     * 获取排序后的 Bean 依赖。
      *
-     * Calculates dependency depth and returns beans sorted
-     * in proper initialization order.
+     * 计算依赖深度并返回按
+     * 正确初始化顺序排序的 Bean。
      *
-     * @param onlyClass true to return only class beans, false to include interfaces
-     * @return array of bean dependencies sorted by depth
-     * @throws IocException if circular dependency exists
+     * @param onlyClass true 表示只返回类 Bean，false 表示包含接口
+     * @return 按深度排序的 Bean 依赖数组
+     * @throws IocException 如果存在循环依赖
      */
     func getSortedBeanDepends(onlyClass!: Bool = true): Array<BeanDepend> {
         let noSetDepth = _beanTypes.values() |> any {it => it.depth == Int.Max}
@@ -157,7 +157,7 @@ class BeanDependManager {
 
         let list = ArrayList<BeanDepend>()
         list.add(all: _beanTypes.values())
-        // sort by depth, bottom-most beans come first
+        // 按深度排序，最底层的 Bean 先出现
         sort(list, by: {a, b => a.depth.compare(b.depth)}, stable: true)
         if (onlyClass) {
             list |> filter {it => it.isClass} |> collectArray
@@ -167,12 +167,12 @@ class BeanDependManager {
     }
 
     /**
-     * Set depth to 0 for beans with no dependencies.
+     * 为无依赖的 Bean 设置深度为 0。
      *
-     * @throws IocException if no bean with no dependencies exists (circular dependency)
+     * @throws IocException 如果不存在无依赖的 Bean（循环依赖）
      */
     private func setDepth0(): Unit {
-        // find bottom layer (beans with no dependencies)
+        // 找到最底层（无依赖的 Bean）
         for ((k, v) in _beanTypes) {
             if (v.depends.isEmpty()) {
                 v.depth = 0
@@ -187,30 +187,30 @@ class BeanDependManager {
     }
 
     /**
-     * Add dependencies for interface types.
+     * 为接口类型添加依赖。
      *
-     * Creates dependency relationships between interfaces and their implementing classes.
+     * 在接口及其实现类之间创建依赖关系。
      *
-     * @throws IocException if implementing class is not registered
+     * @throws IocException 如果实现类未注册
      */
     private func addDependForInterface(): Unit {
-        // filter all interfaces
+        // 过滤所有接口
         _beanTypes.values() |> filter {it => !it.isClass} |> forEach {
-            // find implementing classes based on interface
+            // 根据接口查找实现类
             it: BeanDepend => match (_extends.get(it.beanType)) {
                 case Some(bts) =>
-                    // build interface-to-implementation class dependency relationship
+                    // 构建接口到实现类的依赖关系
                     for (klass in bts) {
                         match (_beanTypes.get(klass)) {
                             case Some(bd) => it.depends.add(bd)
-                            // haven't found corresponding implementation class registered
+                            // 未找到对应的实现类已注册
                             case _ => throw IocException(
                                 "not found class `${klass}` implements interface `${it.beanType}`")
                     }
                 }
-                // haven't found any implementing class
+                // 未找到任何实现类
                 case _ =>
-                    // commented out exception to support optional interface dependency
+                    // 注释掉异常以支持可选的接口依赖
                     // throw IocException("not found any class implements interface `${it.beanType}`")
                     ()
             }
@@ -218,14 +218,14 @@ class BeanDependManager {
     }
 
     /**
-     * Recursively calculate depth for each bean type.
+     * 递归计算每个 Bean 类型的深度。
      *
-     * @param depth current depth being
-     * @throws IocException if circular dependency detected
+     * @param depth 当前深度
+     * @throws IocException 如果检测到循环依赖
      */
     private func recursiveDepth(depth: Int): Unit {
-        // find beans going up and set Depth value (their depth in tree)
-        // bottom layer has depth 0, going up +1
+        // 找到上层 Bean 并设置深度值（它们在树中的深度）
+        // 最底层的深度为 0，向上每层 +1
         let notSetDepth = _beanTypes.values() |> filter {it => it.depth == Int.Max} |> collectHashSet
         if (notSetDepth.isEmpty()) {
             return

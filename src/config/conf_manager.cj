@@ -56,13 +56,13 @@ class ConfigData <: ToString {
 }
 
 /**
- * Central configuration manager that loads and provides access to configuration values
- * Supports multiple configuration sources with priority-based override
- * Environment variables have the highest priority
+ * 中央配置管理器，加载并提供对配置值的访问
+ * 支持多个配置源，基于优先级覆盖
+ * 环境变量具有最高优先级
  */
 public class ConfigManager <: Config {
     /**
-     * Singleton instance of the config manager
+     * 配置管理器的单例实例
      */
     public static let INSTANCE: Config = ConfigManager()
 

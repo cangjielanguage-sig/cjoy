@@ -13,51 +13,51 @@ package cjoy.framework
 import std.collection.{forEach, HashMap}
 
 /**
- * Request handler chain interface for managing middleware execution
+ * 请求处理器链接口，用于管理中间件执行
  */
 public interface JoyRequestHandlerChain {
     /**
-     * Moves to the next handler in the chain
+     * 移动到链中的下一个处理器
      *
-     * @param ctx Request/response context
+     * @param ctx 请求/响应上下文
      */
     func next(ctx: JoyContext): Unit
 }
 
 /**
- * Request middleware handler interface for processing HTTP requests
+ * 请求中间件处理器接口，用于处理 HTTP 请求
  */
 public interface JoyMiddlewareHandler {
     /**
-     * Processes the request and optionally passes it to the next middleware in the chain
+     * 处理请求并可选择将其传递给链中的下一个中间件
      *
-     * @param ctx Request/response context
-     * @param chain Middleware chain for passing the request to the next handler
+     * @param ctx 请求/响应上下文
+     * @param chain 用于将请求传递给下一个处理器的中间件链
      */
     func handle(ctx: JoyContext, chain: JoyRequestHandlerChain): Unit
 }
 
 /**
- * Type alias for middleware function
+ * 中间件函数的类型别名
  */
 public type JoyMiddlewareFunc = (ctx: JoyContext, chain: JoyRequestHandlerChain) -> Unit
 
 /**
- * Function-based middleware handler implementation
+ * 基于函数的中间件处理器实现
  */
 public class JoyMiddlewareFuncHandler <: JoyMiddlewareHandler {
     /**
-     * Creates a new JoyMiddlewareFuncHandler
+     * 创建新的 JoyMiddlewareFuncHandler
      *
-     * @param handler The middleware function
+     * @param handler 中间件函数
      */
     public JoyMiddlewareFuncHandler(let handler: JoyMiddlewareFunc) {}
 
     /**
-     * Processes the request using the middleware function
+     * 使用中间件函数处理请求
      *
-     * @param ctx Request/response context
-     * @param chain Middleware chain for passing the request to the next handler
+     * @param ctx 请求/响应上下文
+     * @param chain 用于将请求传递给下一个处理器的中间件链
      */
     public func handle(ctx: JoyContext, chain: JoyRequestHandlerChain): Unit {
         this.handler(ctx, chain)
@@ -65,25 +65,25 @@ public class JoyMiddlewareFuncHandler <: JoyMiddlewareHandler {
 }
 
 /**
- * Middleware handler registry for registering route handlers
+ * 中间件处理器注册表，用于注册路由处理器
  */
 public class JoyMiddlewares {
     private static let MIDDLEWARES: HashMap<String, JoyMiddlewareHandler> = HashMap()
 
     /**
-     * Adds a middleware handler for code generation by macros
+     * 为由宏生成的代码添加中间件处理器
      *
-     * @param groups Array of group paths to register the middleware with
-     * @param mw Middleware handler to add
+     * @param groups 要注册中间件的组路径数组
+     * @param mw 要添加的中间件处理器
      */
     public static func addHandler(groups: Array<String>, mw: JoyMiddlewareHandler): Unit {
         groups |> forEach {group => MIDDLEWARES.add(group, mw)}
     }
 
     /**
-     * Registers all middleware handlers to the Joy engine instance
+     * 将所有中间件处理器注册到 Joy 引擎实例
      *
-     * @param joy Joy engine instance to register middleware with
+     * @param joy 要注册中间件的 Joy 引擎实例
      */
     public static func registerTo(joy: Joy): Unit {
         for ((path, handler) in MIDDLEWARES) {

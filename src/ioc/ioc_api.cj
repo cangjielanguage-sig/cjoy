@@ -11,158 +11,157 @@
 package cjoy.ioc
 
 /**
- * Bean lifecycle management interface.
+ * Bean 生命周期管理接口。
  *
- * Beans implementing this interface receive lifecycle callbacks
- * during initialization and destruction phases.
+ * 实现此接口的 Bean 在初始化和销毁阶段接收生命周期回调。
  */
 public interface BeanLifecycle {
     /**
-     * Callback invoked after bean construction.
+     * Bean 构造后调用的回调。
      *
-     * Called after all bean dependencies are resolved and the bean
-     * is fully constructed. Override to perform initialization logic.
+     * 在所有 Bean 依赖解析完成且 Bean 完全构造后调用。
+     * 重写以执行初始化逻辑。
      */
     func afterInit(): Unit {
     }
 
     /**
-     * Callback invoked before bean destruction.
+     * Bean 销毁前调用的回调。
      *
-     * Called when the application context is being destroyed.
-     * Override to perform cleanup logic.
+     * 在应用上下文被销毁时调用。
+     * 重写以执行清理逻辑。
      */
     func beforeDestroy(): Unit {
     }
 }
 
 /**
- * Application context interface for bean management.
+ * 用于 Bean 管理的应用上下文接口。
  *
- * Provides methods to retrieve and manage beans in the IoC container.
+ * 提供在 IoC 容器中检索和管理 Bean 的方法。
  */
 public interface ApplicationContext {
     /**
-     * Gets a bean by name from the application context
+     * 从应用上下文中按名称获取 Bean
      *
-     * @param name The name of the bean to retrieve
-     * @return The bean instance, or None if not found
+     * @param name 要检索的 Bean 名称
+     * @return Bean 实例，如果未找到则返回 None
      */
     func getBean<T>(name: String): ?T
 
     /**
-     * Gets a bean by type from the application context
+     * 从应用上下文中按类型获取 Bean
      *
-     * @return The bean instance, or None if not found
-     * @throws IocException If multiple candidates exist
+     * @return Bean 实例，如果未找到则返回 None
+     * @throws IocException 如果存在多个候选者
      */
     func getBean<T>(): ?T
 
     /**
-     * Gets all beans by type from the application context
+     * 从应用上下文中按类型获取所有 Bean
      *
-     * @return Collection of bean instances matching type T
+     * @return 匹配类型 T 的 Bean 实例集合
      */
     func getBeans<T>(): Collection<T>
 
     /**
-     * Gets a bean by type name from the application context
+     * 从应用上下文中按类型名称获取 Bean
      *
-     * Will create a new bean if the bean scope is PROTOTYPE
+     * 如果 Bean 作用域为 PROTOTYPE，将创建新的 Bean
      *
-     * @param beanType The type name of the bean
-     * @return The bean instance (existing or newly created), or None if not found
-     * @throws IocException If bean factory not found
+     * @param beanType Bean 的类型名称
+     * @return Bean 实例（已存在或新创建的），如果未找到则返回 None
+     * @throws IocException 如果未找到 Bean 工厂
      */
     func getBeanByTypeName<T>(beanType: String): ?T
 
     /**
-     * Gets beans by type name from the application context
+     * 从应用上下文中按类型名称获取 Bean
      *
-     * Will throw IocException if bean scope is PROTOTYPE
+     * 如果 Bean 作用域为 PROTOTYPE 将抛出 IocException
      *
-     * @param beanType The type name of the bean
-     * @return Collection of bean instances
-     * @throws IocException If bean factory not found or is prototype
+     * @param beanType Bean 的类型名称
+     * @return Bean 实例集合
+     * @throws IocException 如果未找到 Bean 工厂或是原型作用域
      */
     func getBeansByTypeName<T>(beanType: String): Collection<T>
 
     /**
-     * Gets all beans from the application context
+     * 从应用上下文中获取所有 Bean
      *
-     * @return Collection of all bean instances implementing BeanLifecycle
+     * @return 所有实现 BeanLifecycle 的 Bean 实例集合
      */
     func getAllBeans(): Collection<BeanLifecycle>
 
     /**
-     * Adds a bean to the application context
+     * 向应用上下文中添加 Bean
      *
-     * @param name The name of the bean
-     * @param beanType The type name of the bean
-     * @param bean The bean instance implementing BeanLifecycle
+     * @param name Bean 的名称
+     * @param beanType Bean 的类型名称
+     * @param bean 实现 BeanLifecycle 的 Bean 实例
      */
     func addBean(name: String, beanType: String, bean: BeanLifecycle): Unit
 }
 
 /**
- * Bean scope type definition.
+ * Bean 作用域类型定义。
  *
- * Defines how bean instances are managed in the container.
+ * 定义 Bean 实例在容器中的管理方式。
  */
 public type BeanScope = String
 
 /**
- * Singleton bean scope.
+ * 单例 Bean 作用域。
  *
- * Only one instance of the bean exists in the container.
- * The same instance is returned on all requests.
+ * 容器中只存在一个 Bean 实例。
+ * 所有请求都返回同一个实例。
  */
 const SINGLETON: BeanScope = "singleton"
 
 /**
- * Prototype bean scope.
+ * 原型 Bean 作用域。
  *
- * A new instance is created on each request.
- * Instances are not managed by the container.
+ * 每个请求都会创建新的实例。
+ * 实例不受容器管理。
  */
 const PROTOTYPE: BeanScope = "prototype"
 
 /**
- * Bean factory interface for creating bean instances.
+ * 用于创建 Bean 实例的 Bean 工厂接口。
  *
- * Implementations provide the logic for creating beans
- * with their dependencies resolved.
+ * 实现类提供创建 Bean 的逻辑，
+ * 并解析其依赖关系。
  */
 public interface BeanFactory {
     /**
-     * Bean type name.
+     * Bean 类型名称。
      */
     prop beanType: String
 
     /**
-     * Bean scope (singleton or prototype).
+     * Bean 作用域（单例或原型）。
      */
     prop beanScope: BeanScope
 
     /**
-     * Create a bean instance.
+     * 创建 Bean 实例。
      *
-     * @param ctx application context for resolving dependencies
-     * @return tuple of bean name and bean instance
+     * @param ctx 用于解析依赖的应用上下文
+     * @return Bean 名称和 Bean 实例的元组
      */
     func create(ctx: ApplicationContext): (String, BeanLifecycle)
 }
 
 /**
- * IoC exception for IoC related errors.
+ * IoC 相关错误的异常。
  *
- * Thrown when bean resolution or dependency injection fails.
+ * 当 Bean 解析或依赖注入失败时抛出。
  */
 public class IocException <: Exception {
     /**
-     * Create IoC exception with message.
+     * 使用消息创建 IoC 异常。
      *
-     * @param message error message
+     * @param message 错误消息
      */
     public IocException(message: String) {
         super(message)

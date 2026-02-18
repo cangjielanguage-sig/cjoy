@@ -16,7 +16,7 @@ import cjoy.validation.JoyValidationException
 import cjoy.log.macros.*
 
 /**
- * covering catch all exception
+ * 捕获所有异常的异常处理器
  */
 public class ExceptionHandler <: JoyMiddlewareHandler {
     public func handle(ctx: JoyContext, chain: JoyRequestHandlerChain): Unit {

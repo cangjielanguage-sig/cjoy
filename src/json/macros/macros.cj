@@ -13,32 +13,32 @@ macro package cjoy.json.macros
 import std.ast.*
 
 /**
- * Json macro is used for annotation the object of class or struct can be serialized and deserialized.
+ * Json 宏用于注解类或结构体的对象可以被序列化和反序列化。
  */
 public macro Json(input: Tokens): Tokens {
     JsonClassInfo.parse(None, input)
 }
 
 /**
- * Json macro is used for annotation the object of class or struct can be serialized and deserialized.
+ * Json 宏用于注解类或结构体的对象可以被序列化和反序列化。
  *
- * @attribute description: the description of class or struct
+ * @attribute description: 类或结构体的描述
  */
 public macro Json(attr: Tokens, input: Tokens): Tokens {
     JsonClassInfo.parse(attr, input)
 }
 
 /**
- * JsonField macro is used for annotation the field of class or struct.
+ * JsonField 宏用于注解类或结构体的字段。
  *
- * @attribute name：the key new name of json
- * @attribute omitempty: vaule is true/false, whether to ignore empty strings or Options.None
- * @attribute ignore：vaule is true/false, whether to ignore the field
- * @attribute timeformat：the format for Datetime field
- * @attribute raw：vaule is true/false, deserialize to orgin raw array bytes
- * @attribute description: the description of field
- * @attribute required：vaule is true/false, required is json schame
- * @attribute schame：the full schema of field
+ * @attribute name：json 键的新名称
+ * @attribute omitempty: 值为 true/false，是否忽略空字符串或 Options.None
+ * @attribute ignore：值为 true/false，是否忽略该字段
+ * @attribute timeformat：日期时间字段的格式
+ * @attribute raw：值为 true/false，反序列化为原始字节数组
+ * @attribute description: 字段的描述
+ * @attribute required：值为 true/false，json schema 中是否必需
+ * @attribute schema：字段的完整 schema
  */
 public macro JsonField(attr: Tokens, input: Tokens): Tokens {
     JsonFieldInfo.parse(attr, input)
@@ -46,7 +46,7 @@ public macro JsonField(attr: Tokens, input: Tokens): Tokens {
 }
 
 /**
- * Convert it to JsonSerializable obj, then you can JsonTool.toJson(obj) serialize it to json string
+ * 将其转换为 JsonSerializable 对象，然后可以使用 JsonTool.toJson(obj) 将其序列化为 json 字符串
  */
 public macro ToJson(input: Tokens): Tokens {
     parseTojson(input)

@@ -17,11 +17,11 @@ import std.io.ByteBuffer
 import cjoy.utils.{StrExt, ishex, unhex}
 
 /**
- * Media type parser for Content-Type and Content-Disposition headers
+ * Content-Type 和 Content-Disposition 头的媒体类型解析器
  *
- * JoyMediaType parses media type values and optional parameters according to RFC 1521.
- * Media types are used in Content-Type and Content-Disposition headers (RFC 2183).
- * The parser handles RFC 2231 parameter continuation and encoding.
+ * JoyMediaType 根据 RFC 1521 解析媒体类型值和可选参数。
+ * 媒体类型用于 Content-Type 和 Content-Disposition 头（RFC 2183）。
+ * 解析器处理 RFC 2231 参数延续和编码。
  */
 public class JoyMediaType {
     private static let ERR = JoyMediaType("")
@@ -31,15 +31,15 @@ public class JoyMediaType {
     JoyMediaType(public let mediaType: String) {}
 
     /**
-     * Parses a media type value and any optional parameters, per RFC 1521
+     * 根据 RFC 1521 解析媒体类型值和任何可选参数
      *
-     * Media types are the values in Content-Type and Content-Disposition headers (RFC 2183).
-     * On success, parse returns the media type converted to lowercase and trimmed of white space,
-     * along with any parsed parameters. If there is an error parsing the parameters,
-     * an empty media type will be returned.
+     * 媒体类型是 Content-Type 和 Content-Disposition 头中的值（RFC 2183）。
+     * 成功时，parse 返回转换为小写并去除空格的媒体类型，
+     * 以及任何解析的参数。如果解析参数时出错，
+     * 将返回空媒体类型。
      *
-     * @param str The media type string to parse
-     * @return The parsed JoyMediaType instance
+     * @param str 要解析的媒体类型字符串
+     * @return 解析后的 JoyMediaType 实例
      */
     public static func parse(str: String): JoyMediaType {
         let (base, _, _) = str.cut(b';')

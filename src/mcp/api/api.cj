@@ -21,23 +21,23 @@ import cjoy.jsonrpc.*
 import cjoy.multipart.getMimeTypeByExt
 
 /**
- * base interface for MCP session
+ * MCP 会话的基础接口
  */
 public interface McpSession <: Resource {
     /**
-     * send a JSON-RPC request and wait for response
+     * 发送 JSON-RPC 请求并等待响应
      *
-     * @param method the method name
-     * @param requestParams the request parameters
-     * @return the response of type T
+     * @param method 方法名称
+     * @param requestParams 请求参数
+     * @return 类型 T 的响应
      */
     func sendRequest<T>(method: String, requestParams: JsonSerializable): T where T <: JsonDeserializable<T>
 
     /**
-     * send a JSON-RPC notification without waiting for response
+     * 发送 JSON-RPC 通知而不等待响应
      *
-     * @param method the notification method name
-     * @param params the notification parameters
+     * @param method 通知方法名称
+     * @param params 通知参数
      */
     func sendNotification(method: String, params: ?JsonSerializable): Unit
     func sendNotification(method: String) {
@@ -45,245 +45,245 @@ public interface McpSession <: Resource {
     }
 
     /**
-     * add a consumer for notification method
+     * 为通知方法添加消费者
      *
-     * @param method the notification method name
-     * @param consumer the consumer function to handle notification bytes
+     * @param method 通知方法名称
+     * @param consumer 处理通知字节的消费者函数
      */
     func addNotificationConsumer(method: String, consumer: (Array<Byte>) -> Unit): Unit
 }
 
 /**
- * MCP server session interface for handling incoming requests
+ * 用于处理传入请求的 MCP 服务器会话接口
  */
 public interface McpServerSession <: McpSession {
     /**
-     * Session Identifier, used to uniquely identify an MCP session
+     * 会话标识符，用于唯一标识 MCP 会话
      *
-     * The session ID is generated upon session creation and is used to track and manage communication throughout the session
-     * It is typically passed through request headers or query parameters to associate different requests with the same session
+     * 会话 ID 在会话创建时生成，用于跟踪和管理整个会话期间的通信
+     * 它通常通过请求头或查询参数传递，以将不同的请求与同一个会话关联
      */
     prop sessionId: String
 
     /**
-     * handle incoming JSON-RPC message
+     * 处理传入的 JSON-RPC 消息
      *
-     * @param ctx the context
-     * @param message the JSON-RPC message
+     * @param ctx 上下文
+     * @param message JSON-RPC 消息
      */
     func handle(ctx: JoyContext, message: JSONRPCMessage): Unit
 }
 
 /**
- * MCP client session interface for connecting to MCP server
+ * 用于连接 MCP 服务器的 MCP 客户端会话接口
  */
 public interface McpClientSession <: McpSession {
     /**
-     * connect to MCP server
+     * 连接到 MCP 服务器
      */
     func connect(): Unit
 }
 
 /**
- * MCP notification handler interface
+ * MCP 通知处理器接口
  */
 public interface McpNotificationHandler {
     /**
-     * handle notification message
+     * 处理通知消息
      *
-     * @param message the notification message
+     * @param message 通知消息
      */
     func onNotification(message: JSONRPCNotification): Unit
 }
 
 /**
- * MCP response handler interface
+ * MCP 响应处理器接口
  */
 public interface McpResponseHandler {
     /**
-     * handle response message
+     * 处理响应消息
      *
-     * @param message the response message
+     * @param message 响应消息
      */
     func onResponse(message: JSONRPCResponse): Unit
 }
 
 /**
- * MCP request handler interface
+ * MCP 请求处理器接口
  */
 public interface McpRequestHandler {
     /**
-     * handle request message
+     * 处理请求消息
      *
-     * @param ctx the context
-     * @param message the request message
+     * @param ctx 上下文
+     * @param message 请求消息
      */
     func onRequest(ctx: JoyContext, message: JSONRPCRequest): Unit
 }
 
 /**
- * MCP tool call handler interface
+ * MCP 工具调用处理器接口
  */
 public interface McpCallToolHandler {
     /**
-     * handle tool call with arguments
+     * 使用参数处理工具调用
      *
-     * @param ctx the context
-     * @param arguments the tool arguments as bytes
-     * @return the result of tool call
+     * @param ctx 上下文
+     * @param arguments 工具参数字节
+     * @return 工具调用结果
      */
     func handle(ctx: JoyContext, arguments: Array<Byte>): Any
 }
 
 /**
- * MCP resource read handler interface
+ * MCP 资源读取处理器接口
  */
 public interface McpReadResourceHandler {
     /**
-     * read resource content
+     * 读取资源内容
      *
-     * @param ctx the context
-     * @return the resource content
+     * @param ctx 上下文
+     * @return 资源内容
      */
     func readResource(ctx: JoyContext): Any
 }
 
 /**
- * MCP prompt get handler interface
+ * MCP 提示获取处理器接口
  */
 public interface McpGetPromptHandler {
     /**
-     * get prompt content with arguments
+     * 使用参数获取提示内容
      *
-     * @param ctx the context
-     * @param arguments the prompt arguments
-     * @return the prompt content
+     * @param ctx 上下文
+     * @param arguments 提示参数
+     * @return 提示内容
      */
     func getPrompt(ctx: JoyContext, arguments: HashMap<String, String>): Any
 }
 
 /**
- * MCP transport interface for message communication
+ * MCP 传输接口，用于消息通信
  */
 public interface McpTransport <: Resource {
     /**
-     * send message through transport
+     * 通过传输发送消息
      *
-     * @param message the message bytes to send
+     * @param message 要发送的消息字节
      */
     func send(message: ByteBuffer): Unit
 }
 
 /**
- * MCP client transport interface with connection support
+ * 支持连接的 MCP 客户端传输接口
  */
 public interface McpClientTransport <: McpTransport {
     /**
-     * connect to transport with message consumer
+     * 使用消息消费者连接到传输
      *
-     * @param consumer the consumer function to handle incoming messages
+     * @param consumer 处理传入消息的消费者函数
      */
     func connect(consumer: (ByteBuffer) -> Unit): Unit
 
     /**
-     * set callback when reconnected
+     * 设置重新连接时的回调
      *
-     * @param callback the callback function
+     * @param callback 回调函数
      */
     func whenReConnect(callback: () -> Unit): Unit
 }
 
 /**
- * MCP event store interface for persisting and replaying events
+ * MCP 事件存储接口，用于持久化和重放事件
  *
- * Provides a pluggable interface for storing and retrieving events for stream resumption.
- * Implementations can include in-memory, file-based, or database-backed storage.
+ * 提供可插拔接口，用于存储和检索事件以实现流恢复。
+ * 实现可以包括内存、文件或数据库支持的存储。
  */
 public interface EventStore {
     /**
-     * Opens an event stream for a specific session and stream ID
+     * 为特定会话和流 ID 打开事件流
      *
-     * @param sessionId The unique session identifier
-     * @param streamId The unique stream identifier
-     * @throws Exception If the stream cannot be opened
+     * @param sessionId 唯一会话标识符
+     * @param streamId 唯一流标识符
+     * @throws Exception 如果无法打开流
      */
     func open(sessionId: String, streamId: String): Unit
 
     /**
-     * Appends an event to the stream
+     * 向流追加事件
      *
-     * @param sessionId The unique session identifier
-     * @param streamId The unique stream identifier
-     * @param data The event data to append
-     * @throws Exception If the event cannot be appended
+     * @param sessionId 唯一会话标识符
+     * @param streamId 唯一流标识符
+     * @param data 要追加的事件数据
+     * @throws Exception 如果无法追加事件
      */
     func append(sessionId: String, streamId: String, data: ByteBuffer): Unit
 
     /**
-     * Retrieves all events from a stream after a specific index
+     * 检索特定索引后的所有事件
      *
-     * @param sessionId The unique session identifier
-     * @param streamId The unique stream identifier
-     * @param lastIndex The last event index to start from (exclusive)
-     * @return An iterator over events with their indices and data
-     * @throws Exception If events cannot be retrieved
+     * @param sessionId 唯一会话标识符
+     * @param streamId 唯一流标识符
+     * @param lastIndex 开始索引（不包含）
+     * @return 包含事件索引和数据的迭代器
+     * @throws Exception 如果无法检索事件
      */
     func after(sessionId: String, streamId: String, lastIndex: Int64): Iterator<(Int64, ByteBuffer)>
 
     /**
-     * Gets the number of events stored for a specific session and stream
+     * 获取特定会话和流存储的事件数量
      *
-     * @param sessionId The unique session identifier
-     * @param streamId The unique stream identifier
-     * @return The number of events stored
+     * @param sessionId 唯一会话标识符
+     * @param streamId 唯一流标识符
+     * @return 存储的事件数量
      */
     func getEventCount(sessionId: String, streamId: String): Int64
 
     /**
-     * Called when a session is closed to clean up resources
+     * 会话关闭时调用，用于清理资源
      *
-     * @param sessionId The unique session identifier
-     * @throws Exception If cleanup fails
+     * @param sessionId 唯一会话标识符
+     * @throws Exception 如果清理失败
      */
     func sessionClosed(sessionId: String): Unit
 }
 
 /**
- * MCP server transport interface
+ * MCP 服务器传输接口
  */
 public interface McpServerTransport <: McpTransport {}
 
 /**
- * MCP client interface for communicating with MCP server
+ * 用于与 MCP 服务器通信的 MCP 客户端接口
  */
 public interface McpClient <: Resource {
     /**
-     * return server capabilities
+     * 返回服务器能力
      */
     prop serverCapabilities: ?ServerCapabilities
 
     /**
-     * return server info
+     * 返回服务器信息
      */
     prop serverInfo: ?Implementation
 
     /**
-     * send ping request
+     * 发送 ping 请求
      */
     func ping(): Unit
 
     /**
-     * initialize connection with server
+     * 初始化与服务器的连接
      *
-     * @return the initialize result
+     * @return 初始化结果
      */
     func initialize(): InitializeResult
 
     /**
-     * list available tools
+     * 列出可用工具
      *
-     * @param cursor the pagination cursor
-     * @return the list tools result
+     * @param cursor 分页游标
+     * @return 工具列表结果
      */
     func listTools(cursor: ?String): ListToolsResult
     func listTools(): ListToolsResult {
@@ -291,18 +291,18 @@ public interface McpClient <: Resource {
     }
 
     /**
-     * call a tool
+     * 调用工具
      *
-     * @param request the tool call request
-     * @return the tool call result
+     * @param request 工具调用请求
+     * @return 工具调用结果
      */
     func callTool(request: CallToolRequest): CallToolResult
 
     /**
-     * list available resources
+     * 列出可用资源
      *
-     * @param cursor the pagination cursor
-     * @return the list resources result
+     * @param cursor 分页游标
+     * @return 资源列表结果
      */
     func listResources(cursor: ?String): ListResourcesResult
     func listResources(): ListResourcesResult {
@@ -310,10 +310,10 @@ public interface McpClient <: Resource {
     }
 
     /**
-     * list resource templates
+     * 列出资源模板
      *
-     * @param cursor the pagination cursor
-     * @return the list resource templates result
+     * @param cursor 分页游标
+     * @return 资源模板列表结果
      */
     func listResourceTemplates(cursor: ?String): ListResourceTemplatesResult
     func listResourceTemplates(): ListResourceTemplatesResult {
@@ -321,18 +321,18 @@ public interface McpClient <: Resource {
     }
 
     /**
-     * read resource content
+     * 读取资源内容
      *
-     * @param request the read resource request
-     * @return the read resource result
+     * @param request 读取资源请求
+     * @return 读取资源结果
      */
     func readResource(request: ReadResourceRequest): ReadResourceResult
 
     /**
-     * list available prompts
+     * 列出可用提示
      *
-     * @param cursor the pagination cursor
-     * @return the list prompts result
+     * @param cursor 分页游标
+     * @return 提示列表结果
      */
     func listPrompts(cursor: ?String): ListPromptResult
     func listPrompts(): ListPromptResult {
@@ -340,35 +340,34 @@ public interface McpClient <: Resource {
     }
 
     /**
-     * get prompt content
+     * 获取提示内容
      *
-     * @param request the get prompt request
-     * @return the get prompt result
+     * @param request 获取提示请求
+     * @return 获取提示结果
      */
     func getPrompt(request: GetPromptRequest): GetPromptResult
 }
 
 /**
- * Represents an image content type for MCP
+ * 表示 MCP 的图像内容类型
  *
- * This class provides functionality to load images from files or raw data
- * and convert them to ImageContent format for use in MCP responses.
+ * 该类提供了从文件或原始数据加载图像的功能，
+ * 并将其转换为 ImageContent 格式，以便在 MCP 响应中使用。
  */
 public class Image {
     /**
-     * Initializes a new Image instance
+     * 初始化新的 Image 实例
      *
-     * @param path Path to the image file (default: empty string)
-     * @param data Raw image data (default: empty array)
-     * @param format Image format (e.g., "png", "jpeg") (default: empty string)
+     * @param path 图像文件路径（默认：空字符串）
+     * @param data 原始图像数据（默认：空数组）
+     * @param format 图像格式（例如，"png", "jpeg"）（默认：空字符串）
      */
-    public Image(public let path!: String = "", public var data!: Array<Byte> = [], public let format!: String = "") {
-    }
+    public Image(public let path!: String = "", public var data!: Array<Byte> = [], public let format!: String = "") {}
 
     /**
-     * Converts the Image to ImageContent format for MCP responses
+     * 将 Image 转换为 MCP 响应的 ImageContent 格式
      *
-     * @return ImageContent instance containing the image data
+     * @return 包含图像数据的 ImageContent 实例
      */
     public func toImageContext(): Content {
         var mimeType = if (format != "") {
@@ -390,26 +389,25 @@ public class Image {
 }
 
 /**
- * Represents an audio content type for MCP
+ * 表示 MCP 的音频内容类型
  *
- * This class provides functionality to load audio from files or raw data
- * and convert them to AudioContent format for use in MCP responses.
+ * 该类提供了从文件或原始数据加载音频的功能，
+ * 并将其转换为 AudioContent 格式，以便在 MCP 响应中使用。
  */
 public class Audio {
     /**
-     * Initializes a new Audio instance
+     * 初始化新的 Audio 实例
      *
-     * @param path Path to the audio file (default: empty string)
-     * @param data Raw audio data (default: empty array)
-     * @param format Audio format (e.g., "mp3", "wav") (default: empty string)
+     * @param path 音频文件路径（默认：空字符串）
+     * @param data 原始音频数据（默认：空数组）
+     * @param format 音频格式（例如，"mp3", "wav"）（默认：空字符串）
      */
-    public Audio(public let path!: String = "", public var data!: Array<Byte> = [], public let format!: String = "") {
-    }
+    public Audio(public let path!: String = "", public var data!: Array<Byte> = [], public let format!: String = "") {}
 
     /**
-     * Converts the Audio to AudioContent format for MCP responses
+     * 将 Audio 转换为 MCP 响应的 AudioContent 格式
      *
-     * @return AudioContent instance containing the audio data
+     * @return 包含音频数据的 AudioContent 实例
      */
     public func toAudioContent(): Content {
         var mimeType = if (format != "") {
@@ -431,25 +429,24 @@ public class Audio {
 }
 
 /**
- * Represents a message type for MCP prompts
+ * 表示 MCP 提示的消息类型
  *
- * This class provides functionality to create prompt messages with
- * specific roles (e.g., user, assistant) for use in MCP responses.
+ * 该类提供了创建具有特定角色（例如，用户、助手）的提示消息的功能，
+ * 以便在 MCP 响应中使用。
  */
 public class Message {
     /**
-     * Initializes a new Message instance
+     * 初始化新的 Message 实例
      *
-     * @param content Message content (default: empty string)
-     * @param role Message sender role (e.g., "user", "assistant") (default: "assistant")
+     * @param content 消息内容（默认：空字符串）
+     * @param role 消息发送者角色（例如，"user", "assistant"）（默认："assistant"）
      */
-    public Message(public let content!: String = "", public let role!: String = "assistant") {
-    }
+    public Message(public let content!: String = "", public let role!: String = "assistant") {}
 
     /**
-     * Converts the Message to PromptMessage format for MCP responses
+     * 将 Message 转换为 MCP 响应的 PromptMessage 格式
      *
-     * @return PromptMessage instance containing the message
+     * @return 包含消息的 PromptMessage 实例
      */
     public func toPromptMessage(): PromptMessage {
         var res = TextContent(text: content)

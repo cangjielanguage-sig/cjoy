@@ -13,17 +13,17 @@ package cjoy.eventbus
 import std.collection.{HashMap}
 
 /**
- * Type alias for event data container.
+ * 事件数据容器的类型别名。
  *
- * Events carry arbitrary key-value data.
+ * 事件携带任意键值数据。
  */
 type EventData = HashMap<String, Any>
 
 /**
- * Represents an event that can be published to an event bus.
+ * 表示可以发布到事件总线的事件。
  *
- * Events contain a name, arbitrary data, and an abort flag
- * to stop further processing.
+ * 事件包含名称、任意数据和中止标志，
+ * 用于停止进一步处理。
  */
 public class Event {
     private let _name: String
@@ -31,7 +31,7 @@ public class Event {
     private var _aborted: Bool = false
 
     /**
-     * Gets event name.
+     * 获取事件名称。
      */
     public prop name: String {
         get() {
@@ -40,7 +40,7 @@ public class Event {
     }
 
     /**
-     * Gets event data as a key-value map.
+     * 以键值映射形式获取事件数据。
      */
     public prop data: EventData {
         get() {
@@ -49,9 +49,9 @@ public class Event {
     }
 
     /**
-     * Gets whether event has been aborted.
+     * 获取事件是否已被中止。
      *
-     * When true, no further subscribers will process this event.
+     * 为 true 时，不再有订阅者处理此事件。
      */
     public prop isAborted: Bool {
         get() {
@@ -64,21 +64,21 @@ public class Event {
     }
 
     /**
-     * Creates a new event with specified name.
+     * 创建具有指定名称的新事件。
      *
-     * @param name event name
-     * @return a new Event instance
+     * @param name 事件名称
+     * @return 新的事件实例
      */
     public static func of(name: String): Event {
         Event(name)
     }
 
     /**
-     * Adds data to event.
+     * 向事件添加数据。
      *
-     * @param name data key
-     * @param value data value
-     * @return this event for method chaining
+     * @param name 数据键
+     * @param value 数据值
+     * @return 此事件，用于方法链式调用
      */
     public func addData(name: String, value: Any): Event {
         _data.add(name, value)
@@ -86,9 +86,9 @@ public class Event {
     }
 
     /**
-     * Aborts event, preventing all subsequent subscribers from processing it.
+     * 中止事件，阻止所有后续订阅者处理它。
      *
-     * @return this event for method chaining
+     * @return 此事件，用于方法链式调用
      */
     public func abort(): Event {
         _aborted = true
@@ -96,11 +96,11 @@ public class Event {
     }
 
     /**
-     * Gets event data by key.
+     * 按键获取事件数据。
      *
-     * @param T expected type of data
-     * @param name data key
-     * @return data value if present and can be cast to type T, otherwise null
+     * @param T 期望的数据类型
+     * @param name 数据键
+     * @return 如果存在且可以转换为类型 T 的数据值，否则为 null
      */
     public func getData<T>(name: String): ?T {
         (_data.get(name) ?? Option<Any>.None) as T

@@ -14,6 +14,9 @@ import cjoy.log.macros.*
 
 @JoyCreateLogger("cjoy.version")
 
+/**
+ * 版本号，每次发布时修改
+ */
 public const VERSION: String = "v1.0.0"
 private const LOGO: String = ##"
  ________        ___  ________      ___    ___ 
@@ -26,6 +29,9 @@ private const LOGO: String = ##"
                                   \|___|/          VERSION
 "##
 
+/**
+ * 打印LOGO
+ */
 public func printBanner(): Unit {
     @JoyLogInfo(LOGO.replace("VERSION", VERSION))
 }

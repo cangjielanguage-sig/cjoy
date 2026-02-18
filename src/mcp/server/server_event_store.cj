@@ -18,37 +18,37 @@ import cjoy.log.macros.*
 import cjoy.mcp.api.EventStore
 
 /**
- * In-memory implementation of EventStore for MCP server
+ * MCP 服务器的内存实现 EventStore
  *
- * Provides a simple in-memory event storage for testing and development purposes.
- * Events are stored in memory and lost when the server restarts.
+ * 提供简单的内存事件存储，用于测试和开发目的。
+ * 事件存储在内存中，服务器重启时会丢失。
  */
 public class InMemoryEventStore <: EventStore {
     /**
-     * Event storage structure: sessionId ->streamId ->(timestamp, data)
+     * 事件存储结构：sessionId -> streamId -> (timestamp, data)
      */
     private let _events: ConcurrentHashMap<String, ConcurrentHashMap<String, ArrayList<(DateTime, ByteBuffer)>>> = ConcurrentHashMap()
 
     /**
-     * Event expiration time (milliseconds), default 24 hours
+     * 事件过期时间（毫秒），默认 24 小时
      */
     private let _expirationMs: Int64
 
     /**
-     * Regularly check the interval (in milliseconds) for expired events, with a default of 1 hour
+     * 定期检查过期事件的间隔（毫秒），默认 1 小时
      */
     private let _gcIntervalMs: Int64
 
     /**
-     * Flag bit, indicating whether GC task is running or not
+     * 标志位，指示 GC 任务是否正在运行
      */
     private var _gcRunning: Bool = false
 
     /**
-     * Initialize InCacheEventStore
+     * 初始化 InMemoryEventStore
      *
-     * @param expiratorMs event expiration time (in milliseconds), default is 24 hours
-     * @param gcIntervalMs GC check interval (milliseconds), default is 1 hour.
+     * @param expirationMs 事件过期时间（毫秒），默认 24 小时
+     * @param gcIntervalMs GC 检查间隔（毫秒），默认 1 小时
      */
     public init(expirationMs!: Int64 = 24 * 60 * 60 * 1000, gcIntervalMs!: Int64 = 60 * 60 * 1000) {
         _expirationMs = expirationMs
@@ -58,7 +58,7 @@ public class InMemoryEventStore <: EventStore {
     }
 
     /**
-     * Start the periodic GC task
+     * 启动定期 GC 任务
      */
     private func startGcTask(): Unit {
         if (_gcIntervalMs <= 0) {
@@ -80,7 +80,7 @@ public class InMemoryEventStore <: EventStore {
     }
 
     /**
-     * Stop GC task
+     * 停止 GC 任务
      */
     public func stopGcTask(): Unit {
         _gcRunning = false
@@ -88,7 +88,7 @@ public class InMemoryEventStore <: EventStore {
     }
 
     /**
-     * Perform event expiration check and cleanup
+     * 执行事件过期检查和清理
      */
     public func gc(): Unit {
         let currentTime = DateTime.now()
@@ -182,20 +182,20 @@ public class InMemoryEventStore <: EventStore {
     }
 
     /**
-     * Called when a session is closed to clean up resources
+     * 会话关闭时调用，用于清理资源
      *
-     * @param sessionId The unique session identifier
+     * @param sessionId 唯一会话标识符
      */
     public func sessionClosed(sessionId: String): Unit {
         _events.remove(sessionId)
     }
 
     /**
-     * Gets the number of events stored for a specific session and stream
+     * 获取特定会话和流存储的事件数量
      *
-     * @param sessionId The unique session identifier
-     * @param streamId The unique stream identifier
-     * @return The number of events stored
+     * @param sessionId 唯一会话标识符
+     * @param streamId 唯一流标识符
+     * @return 存储的事件数量
      */
     public func getEventCount(sessionId: String, streamId: String): Int64 {
         match (_events.get(sessionId)) {
@@ -208,7 +208,7 @@ public class InMemoryEventStore <: EventStore {
     }
 
     /**
-     * Clears all stored events
+     * 清除所有存储的事件
      */
     public func clear(): Unit {
         let iter = _events.iterator()

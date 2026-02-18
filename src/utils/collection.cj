@@ -15,20 +15,20 @@ import std.collection.concurrent.ConcurrentHashMap
 import std.time.DateTime
 
 /**
- * casts value to specified type
+ * 将值转换为指定类型
  *
- * @param t value to cast
- * @return value casted to type R
+ * @param t 要转换的值
+ * @return 转换为类型 R 的值
  */
 protected func cast<R>(t: Any): R {
     (t as R).getOrThrow()
 }
 
 /**
- * converts ArrayList<T> to ArrayList<R> recursively
+ * 递归地将 ArrayList<T> 转换为 ArrayList<R>
  *
- * @param list input list to convert
- * @return converted list with nested structures also converted
+ * @param list 要转换的输入列表
+ * @return 转换后的列表，嵌套结构也会被转换
  */
 protected func converterList<T, R>(list: ArrayList<T>): ArrayList<R> {
     let res = ArrayList<R>()
@@ -48,10 +48,10 @@ protected func converterList<T, R>(list: ArrayList<T>): ArrayList<R> {
 }
 
 /**
- * converts HashMap<String, T> to HashMap<String, R> recursively
+ * 递归地将 HashMap<String, T> 转换为 HashMap<String, R>
  *
- * @param map: input map to convert
- * @return: converted map with nested structures also converted
+ * @param map: 要转换的输入地图
+ * @return: 转换后的地图，嵌套结构也会被转换
  */
 protected func converterMap<T, R>(map: HashMap<String, T>): HashMap<String, R> {
     let res = HashMap<String, R>()
@@ -75,9 +75,9 @@ protected type MapToString = HashMap<String, ToString>
 protected type ListToString = ArrayList<ToString>
 
 /**
- * interface for getting typed values from map or list structures
+ * 用于从地图或列表结构中获取类型化值的接口
  *
- * @param T: key type (String for Map, Int64 for List)
+ * @param T: 键类型（地图使用 String，列表使用 Int64）
  */
 protected interface MapListGetFunc<T> {
     func getString(name: T): ?String
@@ -90,60 +90,60 @@ protected interface MapListGetFunc<T> {
 
 extend MapToString <: MapListGetFunc<String> {
     /**
-     * gets string value by key name
+     * 按键名获取字符串值
      *
-     * @param name: the key name
-     * @return: string value if exists and is string, None otherwise
+     * @param name: 键名
+     * @return: 字符串值（如果存在且是字符串类型），否则返回 None
      */
     public func getString(name: String): ?String {
         this.get(name).map({it => it.toString()})
     }
 
     /**
-     * gets int64 value by key name
+     * 按键名获取 int64 值
      *
-     * @param name: the key name
-     * @return: Int64 value if exists and is int, None otherwise
+     * @param name: 键名
+     * @return: Int64 值（如果存在且是整数类型），否则返回 None
      */
     public func getInt(name: String): ?Int64 {
         (this.get(name) ?? Option<ToString>.None) as Int64
     }
 
     /**
-     * gets float64 value by key name
+     * 按键名获取 float64 值
      *
-     * @param name: the key name
-     * @return: Float64 value if exists and is float, None otherwise
+     * @param name: 键名
+     * @return: Float64 值（如果存在且是浮点数类型），否则返回 None
      */
     public func getFloat(name: String): ?Float64 {
         (this.get(name) ?? Option<ToString>.None) as Float64
     }
 
     /**
-     * gets bool value by key name
+     * 按键名获取布尔值
      *
-     * @param name: the key name
-     * @return: Bool value if exists and is bool, None otherwise
+     * @param name: 键名
+     * @return: Bool 值（如果存在且是布尔类型），否则返回 None
      */
     public func getBool(name: String): ?Bool {
         (this.get(name) ?? Option<ToString>.None) as Bool
     }
 
     /**
-     * gets list value by key name
+     * 按键名获取列表值
      *
-     * @param name: the key name
-     * @return: ListToString value if exists and is list, None otherwise
+     * @param name: 键名
+     * @return: ListToString 值（如果存在且是列表类型），否则返回 None
      */
     public func getList(name: String): ?ListToString {
         (this.get(name) ?? Option<ToString>.None) as ListToString
     }
 
     /**
-     * gets map value by key name
+     * 按键名获取地图值
      *
-     * @param name: the key name
-     * @return: MapToString value if exists and is map, None otherwise
+     * @param name: 键名
+     * @return: MapToString 值（如果存在且是地图类型），否则返回 None
      */
     public func getMap(name: String): ?MapToString {
         (this.get(name) ?? Option<ToString>.None) as MapToString
@@ -152,60 +152,60 @@ extend MapToString <: MapListGetFunc<String> {
 
 extend ListToString <: MapListGetFunc<Int64> {
     /**
-     * gets string value by index
+     * 按索引获取字符串值
      *
-     * @param idx: the index
-     * @return: string value if exists and is string, None otherwise
+     * @param idx: 索引
+     * @return: 字符串值（如果存在且是字符串类型），否则返回 None
      */
     public func getString(idx: Int64): ?String {
         this.get(idx).map({it => it.toString()})
     }
 
     /**
-     * gets int64 value by index
+     * 按索引获取 int64 值
      *
-     * @param idx: the index
-     * @return: Int64 value if exists and is int, None otherwise
+     * @param idx: 索引
+     * @return: Int64 值（如果存在且是整数类型），否则返回 None
      */
     public func getInt(idx: Int64): ?Int64 {
         (this.get(idx) ?? Option<ToString>.None) as Int64
     }
 
     /**
-     * gets float64 value by index
+     * 按索引获取 float64 值
      *
-     * @param idx: the index
-     * @return: Float64 value if exists and is float, None otherwise
+     * @param idx: 索引
+     * @return: Float64 值（如果存在且是浮点数类型），否则返回 None
      */
     public func getFloat(idx: Int64): ?Float64 {
         (this.get(idx) ?? Option<ToString>.None) as Float64
     }
 
     /**
-     * gets bool value by index
+     * 按索引获取布尔值
      *
-     * @param idx: the index
-     * @return: Bool value if exists and is bool, None otherwise
+     * @param idx: 索引
+     * @return: Bool 值（如果存在且是布尔类型），否则返回 None
      */
     public func getBool(idx: Int64): ?Bool {
         (this.get(idx) ?? Option<ToString>.None) as Bool
     }
 
     /**
-     * gets list value by index
+     * 按索引获取列表值
      *
-     * @param idx: the index
-     * @return: ListToString value if exists and is list, None otherwise
+     * @param idx: 索引
+     * @return: ListToString 值（如果存在且是列表类型），否则返回 None
      */
     public func getList(idx: Int64): ?ListToString {
         (this.get(idx) ?? Option<ToString>.None) as ListToString
     }
 
     /**
-     * gets map value by index
+     * 按索引获取地图值
      *
-     * @param idx: the index
-     * @return: MapToString value if exists and is map, None otherwise
+     * @param idx: 索引
+     * @return: MapToString 值（如果存在且是地图类型），否则返回 None
      */
     public func getMap(idx: Int64): ?MapToString {
         (this.get(idx) ?? Option<ToString>.None) as MapToString
@@ -213,23 +213,23 @@ extend ListToString <: MapListGetFunc<Int64> {
 }
 
 /**
- * cache item wrapper with timestamp
+ * 带时间戳的缓存项包装器
  *
- * @param T: type of cached item
- * @param item: the cached value
- * @param addTime: when the item was added to cache
+ * @param T: 缓存项的类型
+ * @param item: 缓存值
+ * @param addTime: 项添加到缓存的时间
  */
 class CacheItem<T> {
     public CacheItem(public let item: T, public let addTime: DateTime) {}
 }
 
 /**
- * thread-safe cache with automatic expiration
+ * 线程安全的自动过期缓存
  *
- * @param K: key type, must be Hashable and Equatable
- * @param V: value type
- * @param expireTime: duration after which items expire
- * @param timeoutFn: callback called when items expire
+ * @param K: 键类型，必须是 Hashable 和 Equatable
+ * @param V: 值类型
+ * @param expireTime: 项过期后的持续时间
+ * @param timeoutFn: 项过期时调用的回调
  */
 protected class TimeoutCache<K, V> where K <: Hashable & Equatable<K> {
     let _expireTime: Duration
@@ -238,10 +238,10 @@ protected class TimeoutCache<K, V> where K <: Hashable & Equatable<K> {
     let _future: Future<Unit>
 
     /**
-     * creates a new timeout cache
+     * 创建一个新的超时缓存
      *
-     * @param expireTime: duration after which cached items expire
-     * @param timeoutFn: callback function called with key and value when items expire
+     * @param expireTime: 缓存项过期后的持续时间
+     * @param timeoutFn: 项过期时调用的回调函数，包含键和值
      */
     public init(expireTime: Duration, timeoutFn: (k: K, v: V) -> Unit) {
         _expireTime = expireTime
@@ -265,20 +265,20 @@ protected class TimeoutCache<K, V> where K <: Hashable & Equatable<K> {
     }
 
     /**
-     * adds or updates a value in the cache
+     * 向缓存中添加或更新值
      *
-     * @param k: the key
-     * @param v: the value to cache
+     * @param k: 键
+     * @param v: 要缓存的值
      */
     public func add(k: K, v: V): Unit {
         _map.add(k, CacheItem(v, DateTime.now()))
     }
 
     /**
-     * gets a value from the cache
+     * 从缓存中获取值
      *
-     * @param k: the key
-     * @return: cached value if exists and not expired, None otherwise
+     * @param k: 键
+     * @return: 缓存值（如果存在且未过期），否则返回 None
      */
     public func get(k: K): ?V {
         _map.get(k).map({v => v.item})

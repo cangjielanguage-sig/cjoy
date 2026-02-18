@@ -14,9 +14,22 @@ import stdx.net.http.HttpStatusCode
 import cjoy.{JoyMiddlewareHandler, JoyRequestHandlerChain, JoyContext, JoyHttpConsts}
 
 /**
- * security middleware for setting security HTTP headers
+ * 设置安全 HTTP 头部的安全中间件
  */
 public class Security <: JoyMiddlewareHandler {
+    /**
+     * 构造 Security 实例
+     *
+     * @param allowedHosts 允许的完全限定域名列表。默认为空列表，允许任何主机名
+     * @param frameDeny 如果设为 true，添加 X-Frame-Options 头，值为 DENY。默认为 false
+     * @param customFrameOptionsValue 允许使用自定义值设置 X-Frame-Options 头。覆盖 FrameDeny 选项
+     * @param contentTypeNosniff 如果为 true，添加 X-Content-Type-Options 头，值为 nosniff。默认为 false
+     * @param browserXssFilter 如果为 true，添加 X-XSS-Protection 头，值为 1; mode=block。默认为 false
+     * @param contentSecurityPolicy 允许使用自定义值设置 Content-Security-Policy 头。默认为 ""
+     * @param referrerPolicy HTTP 头 "Referrer-Policy" 控制发送的引用来源信息
+     * @param ieNoOpen 防止 Internet Explorer 在站点上下文中执行下载
+     * @param featurePolicy 新头，允许站点控制哪些功能和 API 可以在浏览器中使用
+     */
     public Security(
         // AllowedHosts is a list of fully qualified domain names that are allowed. Default is empty list, which allows any and all host names.
         let allowedHosts!: Array<String> = [],

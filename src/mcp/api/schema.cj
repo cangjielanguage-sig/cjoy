@@ -16,615 +16,615 @@ import cjoy.json.*
 import cjoy.json.macros.*
 
 /**
- * Represents a role type used for access control and permissions
+ * 表示用于访问控制和权限的角色类型
  */
 public type Role = String
 
 /**
- * Base class for paginated requests with cursor support
+ * 支持游标的分页请求基类
  */
 @Json
 public class PaginatedRequest <: BaseMessage {
     /**
-     * Cursor for pagination, indicating the next page to fetch
+     * 分页游标，指示要获取的下一页
      */
     @JsonField[omitempty = true]
     public var cursor: ?String = None
 }
 
 /**
- * Base class for paginated results with next cursor support
+ * 支持下一页游标的分页结果基类
  */
 @Json
 public class PaginatedResult <: BaseMessage {
     /**
-     * Next cursor for fetching additional pages, empty if no more results
+     * 用于获取附加页面的下一页游标，如果没有更多结果则为空
      */
     public var nextCursor: String = ""
 }
 
 /**
- * Represents annotations for MCP resources with audience and priority information
+ * 表示 MCP 资源的注释，包含受众和优先级信息
  */
 @Json
 public class Annotations <: BaseMessage {
     /**
-     * List of roles that have access to this resource
+     * 有权访问此资源的角色列表
      */
     public var audience: ArrayList<Role> = ArrayList()
 
     /**
-     * Priority level of the resource (0.0 - 1.0, higher indicates higher priority)
+     * 资源的优先级（0.0 - 1.0，值越高表示优先级越高）
      */
     public var priority: Float32 = 0.0
 }
 
 /**
- * Represents implementation information about a client or server
+ * 表示客户端或服务器的实现信息
  */
 @Json
 public class Implementation <: BaseMessage {
     /**
-     * Name of the implementation
+     * 实现名称
      */
     public var name: String = ""
 
     /**
-     * Version of the implementation
+     * 实现版本
      */
     public var version: String = ""
 }
 
 /**
- * Represents capabilities supported by an MCP client
+ * 表示 MCP 客户端支持的 capabilities
  */
 @Json
 public class ClientCapabilities <: BaseMessage {
     /**
-     * Experimental capabilities supported by the client
+     * 客户端支持的实验性 capabilities
      */
     public var experimental: HashMap<String, String> = HashMap()
 }
 
 /**
- * Represents tool-related capabilities supported by an MCP server
+ * 表示 MCP 服务器支持的工具相关 capabilities
  */
 @Json
 public class ToolCapability <: BaseMessage {
     /**
-     * Indicates whether the server supports tool list change notifications
+     * 指示服务器是否支持工具列表变更通知
      */
     public var listChanged: Bool = false
 }
 
 /**
- * Represents resource-related capabilities supported by an MCP server
+ * 表示 MCP 服务器支持的资源相关 capabilities
  */
 @Json
 public class ResourceCapability <: BaseMessage {
     /**
-     * Indicates whether the server supports resource subscription
+     * 指示服务器是否支持资源订阅
      */
     public var subscribe: Bool = false
 
     /**
-     * Indicates whether the server supports resource list change notifications
+     * 指示服务器是否支持资源列表变更通知
      */
     public var listChanged: Bool = false
 }
 
 /**
- * Represents prompt-related capabilities supported by an MCP server
+ * 表示 MCP 服务器支持的提示词相关 capabilities
  */
 @Json
 public class PromptsCapability <: BaseMessage {
     /**
-     * Indicates whether the server supports prompt list change notifications
+     * 指示服务器是否支持提示词列表变更通知
      */
     public var listChanged: Bool = false
 }
 
 /**
- * Represents all capabilities supported by an MCP server
+ * 表示 MCP 服务器支持的所有 capabilities
  */
 @Json
 public class ServerCapabilities <: BaseMessage {
     /**
-     * Tool capabilities supported by the server
+     * 服务器支持的工具 capabilities
      */
     public var tools: ?ToolCapability = None
 
     /**
-     * Resource capabilities supported by the server
+     * 服务器支持的资源 capabilities
      */
     public var resources: ?ResourceCapability = None
 
     /**
-     * Prompt capabilities supported by the server
+     * 服务器支持的提示词 capabilities
      */
     public var prompts: ?PromptsCapability = None
 }
 
 /**
- * Request for initializing an MCP session
+ * 初始化 MCP 会话的请求
  */
 @Json
 public class InitializeRequest <: BaseMessage {
     /**
-     * MCP protocol version requested by the client
+     * 客户端请求的 MCP 协议版本
      */
     public var protocolVersion: String = McpConsts.LASTEST_PROTOCOL_VERSION
 
     /**
-     * Capabilities supported by the client
+     * 客户端支持的 capabilities
      */
     public var capabilities: ?ClientCapabilities = None
 
     /**
-     * Information about the client implementation
+     * 客户端实现的详细信息
      */
     public var clientInfo: ?Implementation = None
 }
 
 /**
- * Result of the MCP session initialization
+ * MCP 会话初始化的结果
  */
 @Json
 public class InitializeResult <: BaseMessage {
     /**
-     * MCP protocol version supported by the server
+     * 服务器支持的 MCP 协议版本
      */
     public var protocolVersion: String = McpConsts.LASTEST_PROTOCOL_VERSION
 
     /**
-     * Capabilities supported by the server
+     * 服务器支持的 capabilities
      */
     public var capabilities: ?ServerCapabilities = None
 
     /**
-     * Information about the server implementation
+     * 服务器实现的详细信息
      */
     public var serverInfo: ?Implementation = None
 
     /**
-     * Instructions or guidelines for using the server
+     * 使用服务器的说明或指南
      */
     public var instructions: ?String = None
 }
 
 /**
- * Represents annotations for MCP tools with additional information and hints
+ * MCP 工具的注释，包含额外信息和提示
  */
 @Json
 public class ToolAnnotations <: BaseMessage {
     /**
-     * Display title of the tool
+     * 工具的显示标题
      */
     public var title: String = ""
 
     /**
-     * Indicates if the tool should be treated as read-only (no side effects)
+     * 指示工具是否应被视为只读（无副作用）
      */
     public var readOnlyHint: Bool = false
 
     /**
-     * Indicates if the tool can cause destructive operations
+     * 指示工具是否可能导致破坏性操作
      */
     public var destructiveHint: Bool = false
 
     /**
-     * Indicates if the tool is idempotent (multiple calls produce same result)
+     * 指示工具是否是幂等的（多次调用产生相同结果）
      */
     public var idempotentHint: Bool = false
 
     /**
-     * Indicates if the tool interacts with the open world (external systems)
+     * 指示工具是否与开放世界（外部系统）交互
      */
     public var opneWorldHint: Bool = true
 }
 
 /**
- * Represents an MCP tool with metadata and schema information
+ * MCP 工具，包含元数据和模式信息
  */
 @Json
 public class McpTool <: BaseMessage {
     /**
-     * Unique name of the tool
+     * 工具的唯一名称
      */
     public var name: String = ""
 
     /**
-     * Human-readable description of what the tool does
+     * 工具功能的人类可读描述
      */
     public var description: String = ""
 
     /**
-     * JSON schema for validating tool input arguments
+     * 用于验证工具输入参数的 JSON 模式
      */
     public var inputSchema: Any = Option<Any>.None
 
     /**
-     * Additional annotations and hints for the tool
+     * 工具的额外注释和提示
      */
     public var annotations: ?ToolAnnotations = None
 }
 
 /**
- * Result of listing available MCP tools with pagination support
+ * 列出可用 MCP 工具的结果，支持分页
  */
 @Json
 public class ListToolsResult <: BaseMessage {
     /**
-     * Next cursor for fetching additional tools, empty if no more tools
+     * 获取额外工具的下一页游标，如果没有更多工具则为空
      */
     public var nextCursor: ?String = None
 
     /**
-     * List of available tools
+     * 可用工具列表
      */
     public var tools: ArrayList<McpTool> = ArrayList()
 }
 
 /**
- * Request for calling an MCP tool with specific arguments
+ * 使用特定参数调用 MCP 工具的请求
  */
 @Json
 public class CallToolRequest <: BaseMessage {
     /**
-     * Name of the tool to call
+     * 要调用的工具名称
      */
     public var name: String = ""
 
     /**
-     * Arguments to pass to the tool (JSON serialized)
+     * 传递给工具的参数（JSON 序列化）
      */
     @JsonField[omitempty = true, raw = true]
     public var arguments: Any = Option<Any>.None
 }
 
 /**
- * Base class for all content types in MCP (text, image, audio, resource)
+ * MCP 中所有内容类型的基类（文本、图像、音频、资源）
  */
 @Json[subTypeField = "type", subTypes = { "text": "TextContent", "image": "ImageContent", "audio": "AudioContent", "resource": "EmbeddedResource" }]
 public open class Content <: BaseMessage {
     /**
-     * Type of content (text, image, audio, or resource)
+     * 内容类型（文本、图像、音频或资源）
      */
     @JsonField[name = "type"]
     public var type_: String = ""
 }
 
 /**
- * Represents text content for tool results and prompts
+ * 表示工具结果和提示的文本内容
  */
 @Json[superClass = Content]
 public class TextContent <: Content {
     /**
-     * Text content
+     * 文本内容
      */
     public var text: String = ""
 }
 
 /**
- * Represents image content with base64 encoded data
+ * 表示使用 base64 编码数据的图像内容
  */
 @Json[superClass = Content]
 public class ImageContent <: Content {
     /**
-     * Base64 encoded image data
+     * Base64 编码的图像数据
      */
     public var data: String = ""
 
     /**
-     * MIME type of the image (e.g., image/png, image/jpeg)
+     * 图像的 MIME 类型（例如：image/png, image/jpeg）
      */
     public var mimeType: String = ""
 }
 
 /**
- * Represents audio content with base64 encoded data
+ * 表示使用 base64 编码数据的音频内容
  */
 @Json[superClass = Content]
 public class AudioContent <: Content {
     /**
-     * Base64 encoded audio data
+     * Base64 编码的音频数据
      */
     public var data: String = ""
 
     /**
-     * MIME type of the audio (e.g., audio/mp3, audio/wav)
+     * 音频的 MIME 类型（例如：audio/mp3, audio/wav）
      */
     public var mimeType: String = ""
 }
 
 /**
- * Result of calling an MCP tool
+ * 调用 MCP 工具的结果
  */
 @Json
 public class CallToolResult <: BaseMessage {
     /**
-     * Indicates if an error occurred during tool execution
+     * 指示工具执行期间是否发生错误
      */
     public var isError: Bool = false
 
     /**
-     * Content returned by the tool (can include text, images, audio, or resources)
+     * 工具返回的内容（可以包含文本、图像、音频或资源）
      */
     public var content: ArrayList<Content> = ArrayList()
 }
 
 /**
- * Represents an MCP resource with metadata and access information
+ * MCP 资源，包含元数据和访问信息
  */
 @Json
 public class McpResource <: BaseMessage {
     /**
-     * Unique URI of the resource
+     * 资源的唯一 URI
      */
     public var uri: String = ""
 
     /**
-     * Human-readable name of the resource
+     * 资源的人类可读名称
      */
     public var name: String = ""
 
     /**
-     * Description of the resource
+     * 资源描述
      */
     public var description: ?String = None
 
     /**
-     * MIME type of the resource content
+     * 资源内容的 MIME 类型
      */
     public var mimeType: ?String = None
 
     /**
-     * Size of the resource in bytes
+     * 资源大小（字节）
      */
     public var size: ?Int = None
 
     /**
-     * Annotations for the resource with audience and priority information
+     * 资源的注释，包含受众和优先级信息
      */
     public var annotations: ?Annotations = None
 }
 
 /**
- * Represents a template for creating resource URIs with parameters
+ * 使用参数创建资源 URI 的模板
  */
 @Json
 public class ResourceTemplate <: BaseMessage {
     /**
-     * URI template with placeholders (e.g., /resource/{id})
+     * 带占位符的 URI 模板（例如：/resource/{id}）
      */
     public var uriTemplate: String = ""
 
     /**
-     * Human-readable name of the resource template
+     * 资源模板的人类可读名称
      */
     public var name: String = ""
 
     /**
-     * Description of the resource template
+     * 资源模板描述
      */
     public var description: ?String = None
 
     /**
-     * MIME type of the resource content
+     * 资源内容的 MIME 类型
      */
     public var mimeType: ?String = None
 
     /**
-     * Annotations for the resource template
+     * 资源模板的注释
      */
     public var annotations: ?Annotations = None
 }
 
 /**
- * Result of listing available MCP resources with pagination support
+ * 列出可用 MCP 资源的结果，支持分页
  */
 @Json
 public class ListResourcesResult <: BaseMessage {
     /**
-     * Next cursor for fetching additional resources, empty if no more resources
+     * 获取额外资源的下一页游标，如果没有更多资源则为空
      */
     public var nextCursor: ?String = None
 
     /**
-     * List of available resources
+     * 可用资源列表
      */
     public var resources: ArrayList<McpResource> = ArrayList()
 }
 
 /**
- * Result of listing available resource templates with pagination support
+ * 列出可用资源模板的结果，支持分页
  */
 @Json
 public class ListResourceTemplatesResult <: BaseMessage {
     /**
-     * Next cursor for fetching additional templates, empty if no more templates
+     * 获取额外模板的下一页游标，如果没有更多模板则为空
      */
     public var nextCursor: ?String = None
 
     /**
-     * List of available resource templates
+     * 可用资源模板列表
      */
     public var resourceTemplates: ArrayList<ResourceTemplate> = ArrayList()
 }
 
 /**
- * Request for reading content from an MCP resource
+ * 从 MCP 资源读取内容的请求
  */
 @Json
 public class ReadResourceRequest <: BaseMessage {
     /**
-     * URI of the resource to read
+     * 要读取的资源的 URI
      */
     public var uri: String = ""
 }
 
 /**
- * Base class for resource content types (text or blob)
+ * 资源内容类型的基类（文本或二进制）
  */
 @Json[subTypeAs = true, subTypes = { "text": "TextResourceContents", "blob": "BlobResourceContents" }]
 public open class ResourceContents <: BaseMessage {
     /**
-     * URI of the resource
+     * 资源的 URI
      */
     public var uri: String = ""
 
     /**
-     * MIME type of the resource content
+     * 资源内容的 MIME 类型
      */
     public var mimeType: String = ""
 }
 
 /**
- * Represents text content of a resource
+ * 资源的文本内容
  */
 @Json[superClass = ResourceContents]
 public class TextResourceContents <: ResourceContents {
     /**
-     * Text content of the resource
+     * 资源的文本内容
      */
     public var text: String = ""
 }
 
 /**
- * Represents binary content of a resource (base64 encoded)
+ * 资源的二进制内容（base64 编码）
  */
 @Json[superClass = ResourceContents]
 public class BlobResourceContents <: ResourceContents {
     /**
-     * Base64 encoded binary content of the resource
+     * 资源的 base64 编码二进制内容
      */
     public var blob: String = ""
 }
 
 /**
- * Result of reading an MCP resource
+ * 读取 MCP 资源的结果
  */
 @Json
 public class ReadResourceResult <: BaseMessage {
     /**
-     * Content of the resource (can be text or binary)
+     * 资源的内容（可以是文本或二进制）
      */
     public var contents: ArrayList<ResourceContents> = ArrayList()
 }
 
 /**
- * Represents an embedded resource within content
+ * 内容中的嵌入式资源
  */
 @Json[superClass = Content]
 public class EmbeddedResource <: Content {
     /**
-     * The embedded resource content
+     * 嵌入式资源内容
      */
     public var resource: ?ResourceContents = None
 }
 
 /**
- * Represents a single argument for an MCP prompt
+ * MCP 提示的单个参数
  */
 @Json
 public class PromptArgument <: BaseMessage {
     /**
-     * Name of the argument
+     * 参数名称
      */
     public var name: String = ""
 
     /**
-     * Description of what the argument is used for
+     * 参数用途的描述
      */
     public var description: String = ""
 
     /**
-     * Indicates if this argument is required
+     * 指示此参数是否为必需
      */
     public var required: Bool = false
 }
 
 /**
- * Represents an MCP prompt with metadata and arguments
+ * MCP 提示词，包含元数据和参数
  */
 @Json
 public class McpPrompt <: BaseMessage {
     /**
-     * Unique name of the prompt
+     * 提示词的唯一名称
      */
     public var name: String = ""
 
     /**
-     * Human-readable description of what the prompt is used for
+     * 提示词用途的人类可读描述
      */
     public var description: String = ""
 
     /**
-     * List of arguments accepted by this prompt
+     * 此提示词接受的参数列表
      */
     public var arguments: ArrayList<PromptArgument> = ArrayList()
 }
 
 /**
- * Result of listing available MCP prompts
+ * 列出可用 MCP 提示词的结果
  */
 @Json
 public class ListPromptResult <: BaseMessage {
     /**
-     * Next cursor for fetching additional prompts, empty if no more prompts
+     * 获取额外提示词的下一页游标，如果没有更多提示词则为空
      */
     public var nextCursor: ?String = None
 
     /**
-     * List of available prompts
+     * 可用提示词列表
      */
     public var prompts: ArrayList<McpPrompt> = ArrayList()
 }
 
 /**
- * Request for getting an MCP prompt with specific arguments
+ * 使用特定参数获取 MCP 提示词的请求
  */
 @Json
 public class GetPromptRequest <: BaseMessage {
     /**
-     * Name of the prompt to get
+     * 要获取的提示词名称
      */
     public var name: String = ""
 
     /**
-     * Arguments to pass to the prompt
+     * 传递给提示词的参数
      */
     public var arguments: HashMap<String, String> = HashMap()
 }
 
 /**
- * Represents a single message in a prompt conversation
+ * 提示词对话中的单个消息
  */
 @Json
 public class PromptMessage <: BaseMessage {
     /**
-     * Role of the message sender (e.g., user, assistant)
+     * 消息发送者的角色（例如：user, assistant）
      */
     public var role: Role = ""
 
     /**
-     * Content of the message (can include text, images, audio, or resources)
+     * 消息内容（可以包含文本、图像、音频或资源）
      */
     public var content: ?Content = None
 }
 
 /**
- * Result of getting an MCP prompt with rendered content
+ * 获取渲染内容的 MCP 提示词结果
  */
 @Json
 public class GetPromptResult <: BaseMessage {
     /**
-     * Description of the prompt
+     * 提示词描述
      */
     public var description: String = ""
 
     /**
-     * List of messages that make up the prompt
+     * 组成提示词的消息列表
      */
     public var messages: ArrayList<PromptMessage> = ArrayList()
 }

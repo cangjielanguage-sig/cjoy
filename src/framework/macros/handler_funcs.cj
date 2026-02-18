@@ -82,7 +82,7 @@ class FuncInfo {
         (joinTokens(vars, Token(TokenKind.NL)), joinTokens(params, Token(TokenKind.COMMA)))
     }
     /**
-     * @throws Exception
+     * 抛出异常
      */
     private func callFunc(params: Tokens): Tokens {
         var ret = Tokens()
@@ -115,15 +115,15 @@ class FuncInfo {
     }
 
     /**
-     * @throws Exception
+     * 抛出异常
      */
     private func handleTupleRet(delType: TypeNode, funcName: Token, params: Tokens): Tokens {
         let tt = (delType as TupleType).getOrThrow()
         var ret = Tokens()
         if (tt.types.size != 2) {
-            diagReport(DiagReportLevel.ERROR, decl.toTokens(),
-                "return type must is tuple with 2 element, first is Uint16, second is String or JsonSerializable",
-                "(status, body)")
+        diagReport(DiagReportLevel.ERROR, decl.toTokens(),
+            "返回类型必须是包含两个元素的元组，第一项为 Uint16，第二项为 String 或 JsonSerializable",
+            "(status, body)")
             throw Exception(
                 "return must is tuple with 2 element, first is Uint16, second is String or JsonSerializable")
         }
@@ -205,7 +205,7 @@ class FuncInfo {
 }
 
 /**
- * @throws Exception
+ * 抛出异常
  */
 func parseFunc(macroName: String, attr: Tokens, input: Tokens): Tokens {
     let decl = parseDecl(input)

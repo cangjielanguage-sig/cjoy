@@ -17,7 +17,7 @@ import std.io.{ByteBuffer, readToEnd}
 import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonReader, JsonWriter}
 
 /**
- * the file session
+ * 文件会话
  */
 class FileSession <: AbstractSession {
     let _path: Path // root path
@@ -100,17 +100,17 @@ class FileSession <: AbstractSession {
 }
 
 /**
- * create file session storage
+ * 文件会话存储
  */
 public class FileSessionStorage <: AbstractSessionStorage {
-    let _path: Path // root path
+    let _path: Path // 根路径
 
-    /*
-     * create FileSessionStorage
-     * 
-     * @param path the sessoin store root path
-     * @param maxLifetime max life time. Default is 1hour.
-     * @throws IllegalArgumentException if the path is not dir
+    /**
+     * 创建 FileSessionStorage
+     *
+     * @param path 会话存储根路径
+     * @param maxLifetime 最大存活时间，默认为 1 小时
+     * @throws IllegalArgumentException 如果路径不是目录
      */
     public init(path: String, maxLifetime!: Duration = Duration.hour) {
         super(maxLifetime)

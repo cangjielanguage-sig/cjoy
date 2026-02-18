@@ -16,67 +16,67 @@ import std.convert.Parsable
 import cjoy.utils.{ListToString, MapToString}
 
 /**
- * visitor pattern interface for parsing tokens into structured values
+ * 用于将令牌解析为结构化值的访问者模式接口
  *
- * @param T: the type of value to return from each visitor method
+ * @param T: 从每个访问者方法返回的值的类型
  */
 protected interface TokenVisitor<T> {
     /**
-     * called when array parsing begins
+     * 数组解析开始时调用
      *
-     * @return: container for array values
+     * @return: 数组值的容器
      */
     func onArrayBegin(): T
 
     /**
-     * called for each array item
+     * 为每个数组项调用
      *
-     * @param list: the array container
-     * @param value: the item value
+     * @param list: 数组容器
+     * @param value: 项值
      */
     func onArrayItem(list: T, value: T): Unit
 
     /**
-     * called when array parsing ends
+     * 数组解析结束时调用
      *
-     * @param list: the array container
+     * @param list: 数组容器
      */
     func onArrayEnd(list: T): Unit
 
     /**
-     * called when object parsing begins
+     * 对象解析开始时调用
      *
-     * @return: container for object key-value pairs
+     * @return: 对象键值对的容器
      */
     func onObjBegin(): T
 
     /**
-     * called for each object key-value pair
+     * 为每个对象键值对调用
      *
-     * @param map: the object container
-     * @param key: the key
-     * @param value: the value
+     * @param map: 对象容器
+     * @param key: 键
+     * @param value: 值
      */
     func onObjItem(map: T, key: String, value: T): Unit
 
     /**
-     * called when object parsing ends
+     * 对象解析结束时调用
      *
-     * @param map: the object container
+     * @param map: 对象容器
      */
     func onObjEnd(map: T): Unit
 
     /**
-     * called for each atomic value
+     * 为每个原子值调用
      *
-     * @param value: the value token
-     * @return: the converted value
+     * @param value: 值令牌
+     * @return: 转换后的值
      */
     func onValue(value: Token): T
 }
 
 /**
- * default visitor implementation that converts tokens to ToString values
+ * 将令牌转换为 ToString 值的默认访问者实现
  */
 protected class TokenStrValueVisitor <: TokenVisitor<ToString> {
     public func onArrayBegin(): ToString {
@@ -118,9 +118,9 @@ protected class TokenStrValueVisitor <: TokenVisitor<ToString> {
 }
 
 /**
- * generic token parser that uses visitor pattern to build values
+ * 使用访问者模式构建值的通用令牌解析器
  *
- * @param T: result type from parsing
+ * @param T: 解析结果类型
  */
 protected open class TokenParser<T> {
     let _tokens: Tokens
@@ -131,11 +131,11 @@ protected open class TokenParser<T> {
     protected var _depth = 0
 
     /**
-     * creates a new token parser
+     * 创建新的令牌解析器
      *
-     * @param visitor: the visitor for building parsed values
-     * @param tokens: tokens to parse
-     * @param pos: starting position in tokens
+     * @param visitor: 用于构建解析值的访问者
+     * @param tokens: 要解析的令牌
+     * @param pos: 令牌中的起始位置
      */
     public init(visitor: TokenVisitor<T>, tokens: Tokens, pos!: Int64 = 0) {
         _visitor = visitor

@@ -13,30 +13,30 @@ package cjoy.context
 import std.collection.concurrent.ConcurrentHashMap
 
 /**
- * Service container for managing and retrieving service instances.
+ * 用于管理和检索服务实例的服务容器。
  *
- * Provides a global service registry that allows storing and retrieving
- * services by name, enabling dependency injection and service lookup patterns.
+ * 提供全局服务注册表，允许按名称存储和检索
+ * 服务，支持依赖注入和服务查找模式。
  */
 public class ServiceContainer {
     public static let GLOBAL: ServiceContainer = ServiceContainer()
     private let _services: ConcurrentHashMap<String, Any> = ConcurrentHashMap()
 
     /**
-     * Add service to container.
+     * 向容器添加服务。
      *
-     * @param name the service name
-     * @param service the service instance
+     * @param name 服务名称
+     * @param service 服务实例
      */
     public func addService(name: String, service: Any): Unit {
         _services.add(name, service)
     }
 
     /**
-     * Get service instance from container.
+     * 从容器获取服务实例。
      *
-     * @param name the service name
-     * @return the service instance of type T, or None if not found
+     * @param name 服务名称
+     * @return 类型 T 的服务实例，如果未找到则返回 None
      */
     public func getService<T>(name: String): ?T {
         (_services.get(name) ?? Option<Any>.None) as T

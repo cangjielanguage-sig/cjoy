@@ -14,7 +14,7 @@ import cjoy.json.*
 import cjoy.json.macros.*
 
 /**
- * Base class for JSON-RPC messages
+ * JSON-RPC 消息的基类
  */
 public abstract class BaseMessage <: ToString & JsonSerializable {
     public func toString(): String {
@@ -23,12 +23,12 @@ public abstract class BaseMessage <: ToString & JsonSerializable {
 }
 
 /**
- * JSON-RPC base message class
+ * JSON-RPC 基础消息类
  */
 public abstract class JSONRPCMessage <: BaseMessage {}
 
 /**
- * JSON-RPC request message
+ * JSON-RPC 请求消息
  */
 @Json
 public class JSONRPCRequest <: JSONRPCMessage {
@@ -40,7 +40,7 @@ public class JSONRPCRequest <: JSONRPCMessage {
 }
 
 /**
- * JSON-RPC error message
+ * JSON-RPC 错误消息
  */
 @Json
 public class JSONRPCError <: BaseMessage {
@@ -50,7 +50,7 @@ public class JSONRPCError <: BaseMessage {
 }
 
 /**
- * JSON-RPC response message
+ * JSON-RPC 响应消息
  */
 @Json
 public class JSONRPCResponse <: JSONRPCMessage {
@@ -62,8 +62,7 @@ public class JSONRPCResponse <: JSONRPCMessage {
 }
 
 /**
- * JSON-RPC notification message
-(无响应的通知消息)
+ * JSON-RPC 通知消息（无响应的通知消息）
  */
 @Json
 public class JSONRPCNotification <: JSONRPCMessage {
@@ -74,7 +73,7 @@ public class JSONRPCNotification <: JSONRPCMessage {
 }
 
 /**
- * JSON-RPC exception for JSON-RPC errors
+ * JSON-RPC 异常类，用于表示 JSON-RPC 错误
  */
 public class JSONRPCException <: Exception {
     public let error: JSONRPCError

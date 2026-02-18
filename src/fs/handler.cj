@@ -21,46 +21,46 @@ import cjoy.log.macros.*
 @JoyCreateLogger("cjoy.eventbus")
 
 /**
- * Default implementation of JoyFileHandlerFactory
+ * JoyFileHandlerFactory 的默认实现
  */
 @Component[extends = ["JoyFileHandlerFactory"]]
 class DefaultJoyFileHandlerFactory <: JoyFileHandlerFactory {
     /**
-     * Creates a file serve handler for the given file path
+     * 为给定文件路径创建文件服务处理器
      *
-     * @param filePath The file path to serve
-     * @return A JoyRequestHandler for serving the file
+     * @param filePath 要服务的文件路径
+     * @return 用于服务文件的 JoyRequestHandler
      */
     public func createFileServeHandler(filePath: String): JoyRequestHandler {
         JoyFileServeHandler(filePath)
     }
 
     /**
-     * Creates a file system serve handler for the given root path
+     * 为给定根路径创建文件系统服务处理器
      *
-     * @param root The root path of the file system to serve
-     * @param confg The JoyConfig instance
-     * @return A JoyRequestHandler for serving the file system
+     * @param root 要服务的文件系统根路径
+     * @param confg JoyConfig 实例
+     * @return 用于服务文件系统的 JoyRequestHandler
      */
     public func createFileSystemServeHandler(root: Path, confg: JoyConfig): JoyRequestHandler {
         JoyFileSystemServeHandler(root, confg)
     }
 
     /**
-     * Serves a file from the given file path
+     * 从给定文件路径提供文件服务
      *
-     * @param ctx The JoyContext instance
-     * @param filePath The path of the file to serve
+     * @param ctx JoyContext 实例
+     * @param filePath 要服务的文件路径
      */
     public func serveFile(ctx: JoyContext, filePath: Path): Unit {
         JoyFileServer.serveFile(ctx, filePath)
     }
 
     /**
-     * Downloads a file as an attachment
+     * 将文件作为附件下载
      *
-     * @param ctx The JoyContext instance
-     * @param filePath The path of the file to download
+     * @param ctx JoyContext 实例
+     * @param filePath 要下载的文件路径
      */
     public func downloadFile(ctx: JoyContext, filePath: Path): Unit {
         downloadAttachment(ctx, filePath)
@@ -68,21 +68,21 @@ class DefaultJoyFileHandlerFactory <: JoyFileHandlerFactory {
 }
 
 /**
- * JoyRequestHandler for serving a single file
+ * 用于服务单个文件的 JoyRequestHandler
  */
 class JoyFileServeHandler <: JoyRequestHandler {
     /**
-     * Creates a new JoyFileServeHandler instance
+     * 创建新的 JoyFileServeHandler 实例
      *
-     * @param filePath The path of the file to serve
+     * @param filePath 要服务的文件路径
      */
     JoyFileServeHandler(let filePath: String) {
     }
 
     /**
-     * Handles the request to serve the file
+     * 处理服务文件的请求
      *
-     * @param ctx The JoyContext instance
+     * @param ctx JoyContext 实例
      */
     public func handle(ctx: JoyContext): Unit {
         JoyFileServer.serveFile(ctx, Path(filePath))
@@ -90,21 +90,21 @@ class JoyFileServeHandler <: JoyRequestHandler {
 }
 
 /**
- * JoyRequestHandler for serving a file system directory
+ * 用于服务文件系统目录的 JoyRequestHandler
  */
 class JoyFileSystemServeHandler <: JoyRequestHandler {
     /**
-     * Creates a new JoyFileSystemServeHandler instance
+     * 创建新的 JoyFileSystemServeHandler 实例
      *
-     * @param root The root path of the file system to serve
-     * @param confg The JoyConfig instance
+     * @param root 要服务的文件系统根路径
+     * @param confg JoyConfig 实例
      */
     public JoyFileSystemServeHandler(let root: Path, let confg: JoyConfig) {}
 
     /**
-     * Handles the request to serve a file from the file system
+     * 处理文件系统请求
      *
-     * @param ctx The JoyContext instance
+     * @param ctx JoyContext 实例
      */
     public func handle(ctx: JoyContext): Unit {
         let pathOpt = ctx.getParam("*")

@@ -15,42 +15,42 @@ import stdx.net.http.{notFound, HttpStatusCode, OptionsHandler}
 import cjoy.ioc.{BeanFactoryManager}
 
 /**
- * Request handler interface for processing HTTP requests
+ * 用于处理 HTTP 请求的请求处理器接口
  */
 public interface JoyRequestHandler {
     /**
-     * Processes request and replies with response using context API
+     * 使用上下文 API 处理请求并回复响应
      *
-     * @param ctx Request/response context
+     * @param ctx 请求/响应上下文
      */
     func handle(ctx: JoyContext): Unit
 }
 
 /**
- * Type alias for request handler function
+ * 请求处理器函数的类型别名
  */
 public type JoyRequestHandlerFunc = (ctx: JoyContext) -> Unit
 
 /**
- * Type alias for request filter function that returns true to continue chain
+ * 请求过滤器函数的类型别名，返回 true 以继续链
  */
 public type JoyRequestFilterFunc = (ctx: JoyContext) -> Bool
 
 /**
- * function based request handler implementation
+ * 基于函数的请求处理器实现
  */
 public class JoyFuncHandler <: JoyRequestHandler {
     /**
-     * Creates a new JoyFuncHandler
+     * 创建新的 JoyFuncHandler
      *
-     * @param handler Handler function
+     * @param handler 处理器函数
      */
     public JoyFuncHandler(let handler: JoyRequestHandlerFunc) {}
 
     /**
-     * Processes request using the handler function
+     * 使用处理器函数处理请求
      *
-     * @param ctx Request/response context
+     * @param ctx 请求/响应上下文
      */
     public func handle(ctx: JoyContext): Unit {
         this.handler(ctx)
@@ -58,7 +58,7 @@ public class JoyFuncHandler <: JoyRequestHandler {
 }
 
 /**
- * Default 404 Not Found request handler
+ * 默认的 404 Not Found 请求处理器
  */
 public class JoyNotFoundHandler <: JoyRequestHandler {
     public func handle(ctx: JoyContext): Unit {
@@ -67,7 +67,7 @@ public class JoyNotFoundHandler <: JoyRequestHandler {
 }
 
 /**
- * Default 405 Method Not Allowed request handler
+ * 默认的 405 Method Not Allowed 请求处理器
  */
 public class JoyMethodNotAllowedHandler <: JoyRequestHandler {
     public func handle(ctx: JoyContext): Unit {
@@ -78,7 +78,7 @@ public class JoyMethodNotAllowedHandler <: JoyRequestHandler {
 }
 
 /**
- * Default OPTIONS request handler
+ * 默认的 OPTIONS 请求处理器
  */
 class JoyOptionsHandler <: JoyRequestHandler {
     static let INSTANCE = JoyOptionsHandler()
@@ -89,37 +89,37 @@ class JoyOptionsHandler <: JoyRequestHandler {
 }
 
 /**
- * Handler registry for registering route handlers
+ * 用于注册路由处理器的处理器注册表
  */
 public class JoyHandlers {
     private static let HANDLERS: ArrayList<(String, Array<String>, JoyRequestHandler)> = ArrayList()
 
     /**
-     * Adds a handler for code generation by macros
+     * 为由宏生成的代码添加处理器
      *
-     * @param path Route path
-     * @param methods HTTP methods
-     * @param handler Request handler
+     * @param path 路由路径
+     * @param methods HTTP 方法
+     * @param handler 请求处理器
      */
     public static func addHandler(path: String, methods: Array<String>, handler: JoyRequestHandler): Unit {
         HANDLERS.add((path, methods, handler))
     }
 
     /**
-     * Adds a handler function for code generation by macros
+     * 为由宏生成的代码添加处理器函数
      *
-     * @param path Route path
-     * @param methods HTTP methods
-     * @param handler Request handler function
+     * @param path 路由路径
+     * @param methods HTTP 方法
+     * @param handler 请求处理器函数
      */
     public static func addHandler(path: String, methods: Array<String>, handler: JoyRequestHandlerFunc): Unit {
         HANDLERS.add((path, methods, JoyFuncHandler(handler)))
     }
 
     /**
-     * Registers all handlers to the Joy engine instance
+     * 将所有处理器注册到 Joy 引擎实例
      *
-     * @param joy Joy engine instance
+     * @param joy Joy 引擎实例
      */
     public static func registerTo(joy: Joy): Unit {
         // 依赖注入类需要先初始化

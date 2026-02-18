@@ -11,7 +11,7 @@
 package cjoy.session
 
 /**
- * the memory session
+ * 内存会话
  */
 class MemorySession <: AbstractSession {
     private let _storage: JoySessionStorage
@@ -27,11 +27,11 @@ class MemorySession <: AbstractSession {
 }
 
 /**
- * create memory session storage
+ * 内存会话存储
  */
 public class MemorySessionStorage <: AbstractSessionStorage {
-    /*
-     * @param maxLifetime: max life time. Default is 1hour.
+    /**
+     * @param maxLifetime 最大存活时间，默认为 1 小时
      */
     public init(maxLifetime!: Duration = Duration.hour) {
         super(maxLifetime)

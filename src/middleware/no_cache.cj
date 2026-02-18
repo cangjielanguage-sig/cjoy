@@ -13,7 +13,7 @@ package cjoy.middleware
 import cjoy.{JoyMiddlewareHandler, JoyRequestHandlerChain, JoyContext, JoyHttpConsts}
 
 /**
- * disable http cache
+ * 禁用 HTTP 缓存
  */
 public class NoCache <: JoyMiddlewareHandler {
     private let _etags = [JoyHttpConsts.HEADER_ETAG, JoyHttpConsts.HEADER_IF_MODIFIED_SINCE,

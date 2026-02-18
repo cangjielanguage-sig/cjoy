@@ -19,14 +19,14 @@ import cjoy.context.{Context, ServiceContainer}
 import cjoy.log.macros.*
 
 /**
- * WebSocket message type enumeration
+ * WebSocket 消息类型枚举
  */
 public enum JoyWebSocketMsgType {
     WsText | WsBinary | WsPing
 }
 
 /**
- * WebSocket close status codes defined in RFC 6455 7.4.2
+ * RFC 6455 7.4.2 定义的 WebSocket 关闭状态码
  */
 public struct JoyWebSocketCloseStatus {
     public static const NORMAL: UInt16 = 1000
@@ -44,75 +44,75 @@ public struct JoyWebSocketCloseStatus {
 }
 
 /**
- * WebSocket handler interface for processing WebSocket messages
+ * 用于处理 WebSocket 消息的 WebSocket 处理器接口
  */
 public interface JoyWebSocketHandler {
     /**
-     * Get supported sub-protocols
-     * Default is empty, indicating not supported.
-     * If configured, the top one in the upgrade request will be selected
+     * 获取支持的子协议
+     * 默认为空，表示不支持。
+     * 如果配置，升级请求中的第一个将被选择
      *
-     * @return list of supported sub-protocol names
+     * @return 支持的子协议名称列表
      */
     func supportedSubProtocols(): ArrayList<String> {
         ArrayList()
     }
 
     /**
-     * Get whitelist of origins for handshake agreement
-     * If not configured, all handshakes from any origin will be agreed upon
-     * If configured, only handshakes from configured origins will be accepted
+     * 获取握手协议的来源白名单
+     * 如果未配置，将接受来自任何来源的握手
+     * 如果配置，仅接受来自配置来源的握手
      *
-     * @return list of allowed origin strings
+     * @return 允许的来源字符串列表
      */
     func supportedOrigins(): ArrayList<String> {
         ArrayList()
     }
 
     /**
-     * Check if frames should be merged
-     * Accumulates data when receiving non-end frames, then calls onMessage when receiving end frame
+     * 检查是否应该合并帧
+     * 在接收非结束帧时累积数据，在接收到结束帧时调用 onMessage
      *
-     * @return true to merge frames, false to handle each frame separately
+     * @return true 合并帧，false 分别处理每个帧
      */
     func mergeFrames(): Bool {
         true
     }
 
     /**
-     * Called after handshake is successful
+     * 握手成功后调用
      *
-     * @param session WebSocket session instance
+     * @param session WebSocket 会话实例
      */
     func onOpen(session: JoyWebSocketSession): Unit
 
     /**
-     * Called when receiving a text or binary message
+     * 接收到文本或二进制消息时调用
      *
-     * @param session WebSocket session instance
-     * @param message received WebSocket message
+     * @param session WebSocket 会话实例
+     * @param message 接收到的 WebSocket 消息
      */
     func onMessage(session: JoyWebSocketSession, message: JoyWebSocketMessage): Unit
 
     /**
-     * Called when receiving a close message
+     * 接收到关闭消息时调用
      *
-     * @param session WebSocket session instance
-     * @param closeStatus close status code
+     * @param session WebSocket 会话实例
+     * @param closeStatus 关闭状态码
      */
     func onClose(session: JoyWebSocketSession, closeStatus: UInt16): Unit
 
     /**
-     * Called when receiving invalid message or an exception occurs
+     * 接收到无效消息或发生异常时调用
      *
-     * @param session WebSocket session instance
-     * @param ex exception that occurred
+     * @param session WebSocket 会话实例
+     * @param ex 发生的异常
      */
     func onError(session: JoyWebSocketSession, ex: Exception): Unit
 }
 
 /**
- * WebSocket message wrapper
+ * WebSocket 消息包装器
  */
 public class JoyWebSocketMessage {
     private let _msgType: JoyWebSocketMsgType
@@ -120,11 +120,11 @@ public class JoyWebSocketMessage {
     private let _data: Array<Byte>
 
     /**
-     * Create WebSocket message
+     * 创建 WebSocket 消息
      *
-     * @param msgType message type
-     * @param isLast whether this is the last frame
-     * @param data message payload bytes
+     * @param msgType 消息类型
+     * @param isLast 是否为最后一帧
+     * @param data 消息负载字节
      */
     init(msgType: JoyWebSocketMsgType, isLast: Bool, data: Array<Byte>) {
         _msgType = msgType
@@ -133,9 +133,9 @@ public class JoyWebSocketMessage {
     }
 
     /**
-     * Get whether this is the last message frame
+     * 获取是否为最后一帧消息
      *
-     * @return true if this is the last frame
+     * @return 如果为最后一帧返回 true
      */
     public prop isLast: Bool {
         get() {
@@ -144,9 +144,9 @@ public class JoyWebSocketMessage {
     }
 
     /**
-     * Get message type
+     * 获取消息类型
      *
-     * @return message type enumeration
+     * @return 消息类型枚举
      */
     public prop msgType: JoyWebSocketMsgType {
         get() {
@@ -155,10 +155,10 @@ public class JoyWebSocketMessage {
     }
 
     /**
-     * Convert message data to text
+     * 将消息数据转换为文本
      *
-     * @return text string
-     * @throws IllegalArgumentException if not a text message
+     * @return 文本字符串
+     * @throws IllegalArgumentException 如果不是文本消息
      */
     public func asText(): String {
         match (_msgType) {
@@ -168,10 +168,10 @@ public class JoyWebSocketMessage {
     }
 
     /**
-     * Convert message data to JSON deserialized object
+     * 将消息数据转换为 JSON 反序列化对象
      *
-     * @return JSON object of type T, or None if deserialization fails
-     * @throws IllegalArgumentException if not a text message
+     * @return 类型为 T 的 JSON 对象，若反序列化失败返回 None
+     * @throws IllegalArgumentException 如果不是文本消息
      */
     public func asJsonToObj<T>(): ?T where T <: JsonDeserializable<T> {
         match (_msgType) {
@@ -185,10 +185,10 @@ public class JoyWebSocketMessage {
     }
 
     /**
-     * Convert message data to binary
+     * 将消息数据转换为二进制
      *
-     * @return array of bytes
-     * @throws IllegalArgumentException if not a binary message
+     * @return 字节数组
+     * @throws IllegalArgumentException 如果不是二进制消息
      */
     public func asBinary(): Array<Byte> {
         match (_msgType) {
@@ -198,29 +198,29 @@ public class JoyWebSocketMessage {
     }
 
     /**
-     * Get raw message data bytes
+     * 获取原始消息数据字节
      *
-     * @return array of bytes
+     * @return 字节数组
      */
     func data(): Array<Byte> {
         _data
     }
 
     /**
-     * Create text message
+     * 创建文本消息
      *
-     * @param payload message text payload
-     * @return WebSocket message instance
+     * @param payload 文本消息负载
+     * @return WebSocket 消息实例
      */
     public static func createText(payload: String): JoyWebSocketMessage {
         JoyWebSocketMessage(WsText, true, payload.toArray())
     }
 
     /**
-     * Create text message from JSON serializable object
+     * 从 JSON 序列化对象创建文本消息
      *
-     * @param payload message payload which can be JSON serializable
-     * @return WebSocket message instance
+     * @param payload 可以序列化为 JSON 的对象
+     * @return WebSocket 消息实例
      */
     public static func createText<T>(payload: T): JoyWebSocketMessage where T <: JsonSerializable {
         let buffer = ByteBuffer()
@@ -231,28 +231,28 @@ public class JoyWebSocketMessage {
     }
 
     /**
-     * Create binary message
+     * 创建二进制消息
      *
-     * @param payload message binary payload
-     * @return WebSocket message instance
+     * @param payload 二进制消息负载
+     * @return WebSocket 消息实例
      */
     public static func createBinary(payload: Array<Byte>): JoyWebSocketMessage {
         JoyWebSocketMessage(WsBinary, true, payload)
     }
 
     /**
-     * Create ping message
+     * 创建 Ping 消息
      *
-     * @return WebSocket message instance with empty payload
+     * @return 具有空载荷的 WebSocket 消息实例
      */
     public static func createPing(): JoyWebSocketMessage {
         JoyWebSocketMessage(WsPing, true, Array<UInt8>(5, repeat: 0))
     }
 }
 
-/**
- * WebSocket session representing a WebSocket connection
- */
+    /**
+     * 表示一个 WebSocket 连接的会话
+     */
 public class JoyWebSocketSession <: Context {
     private let _ws: WebSocket
     private let _config: JoyConfig
@@ -263,15 +263,15 @@ public class JoyWebSocketSession <: Context {
     private let _services: ServiceContainer
 
     /**
-     * Create WebSocket session
+     * 创建 WebSocket 会话
      *
-     * @param ws underlying WebSocket connection
-     * @param config Joy configuration
-     * @param headers handshake HTTP headers
-     * @param query URL query parameters
-     * @param paramMap URL path parameters
-     * @param ctxParamMap context parameters
-     * @param services service container
+     * @param ws 底层 WebSocket 连接
+     * @param config Joy 配置
+     * @param headers 握手 HTTP 头
+     * @param query URL 查询参数
+     * @param paramMap URL 路径参数
+     * @param ctxParamMap 上下文参数
+     * @param services 服务容器
      */
     init(ws: WebSocket, config: JoyConfig, headers: HttpHeaders, query: Form, paramMap: HashMap<String, String>,
         ctxParamMap: HashMap<String, Any>, services: ServiceContainer) {
@@ -285,9 +285,9 @@ public class JoyWebSocketSession <: Context {
     }
 
     /**
-     * Get negotiated sub-protocol with the other party
+     * 获取与对端协商的子协议
      *
-     * @return sub-protocol string
+     * @return 子协议字符串
      */
     public prop subProtocol: String {
         get() {
@@ -296,40 +296,40 @@ public class JoyWebSocketSession <: Context {
     }
 
     /**
-     * Get handshake header value
+     * 获取握手头部值
      *
-     * @param name header name
-     * @return header value, or None if not found
+     * @param name 头字段名
+     * @return 头字段值，若未找到则返回 None
      */
     public func getHeader(name: String): ?String {
         _headers.getFirst(name)
     }
 
     /**
-     * Get all handshake header values
+     * 获取所有握手头部值
      *
-     * @param name header name
-     * @return collection of header values
+     * @param name 头字段名
+     * @return 头字段值集合
      */
     public func getHeaderList(name: String): Collection<String> {
         _headers.get(name)
     }
 
     /**
-     * Get handshake URL path parameter
+     * 获取握手 URL 路径参数
      *
-     * @param name parameter name
-     * @return parameter value, or None if not found
+     * @param name 参数名
+     * @return 参数值，若未找到则返回 None
      */
     public func getParam(name: String): ?String {
         _paramMap.get(name)
     }
 
     /**
-     * Get handshake context parameter
+     * 获取握手上下文参数
      *
-     * @param key parameter key name
-     * @return parameter value, or None if not found
+     * @param key 键名
+     * @return 参数值，若未找到则返回 None
      */
     public func getCtxParam<T>(key: String): ?T {
         get<T>(key)
@@ -352,27 +352,27 @@ public class JoyWebSocketSession <: Context {
     }
 
     /**
-     * Get handshake URL query parameter
+     * 获取握手 URL 查询参数
      *
-     * @param name query parameter name
-     * @return parameter value, or None if not found
+     * @param name 查询参数名
+     * @return 参数值，若未找到则返回 None
      */
     public func getQuery(name: String): ?String {
         _query.get(name)
     }
 
     /**
-     * Get all handshake URL query parameters
+     * 获取所有握手 URL 查询参数
      *
-     * @param name query parameter name
-     * @return list of query parameter values
+     * @param name 查询参数名
+     * @return 查询参数值列表
      */
     public func getQueryList(name: String): ArrayList<String> {
         _query.getAll(name)
     }
 
     /**
-     * Send close frame with default status (1000) and close connection
+     * 发送带默认状态码（1000）的关闭帧并关闭连接
      */
     public func close(): Unit {
         _ws.writeCloseFrame(status: JoyWebSocketCloseStatus.NORMAL, reason: "")
@@ -380,10 +380,10 @@ public class JoyWebSocketSession <: Context {
     }
 
     /**
-     * Send close frame with specified status and close connection
+     * 发送带指定状态码的关闭帧并关闭连接
      *
-     * @param closeStatus close status code
-     * @param reason close reason string
+     * @param closeStatus 关闭状态码
+     * @param reason 关闭原因字符串
      */
     public func close(closeStatus: UInt16, reason: String): Unit {
         _ws.writeCloseFrame(status: closeStatus, reason: reason)
@@ -391,9 +391,9 @@ public class JoyWebSocketSession <: Context {
     }
 
     /**
-     * Send WebSocket message
+     * 发送 WebSocket 消息
      *
-     * @param message WebSocket message to send
+     * @param message 要发送的 WebSocket 消息
      */
     public func send(message: JoyWebSocketMessage): Unit {
         match (message.msgType) {
@@ -404,27 +404,27 @@ public class JoyWebSocketSession <: Context {
     }
 
     /**
-     * Send text message to WebSocket
+     * 向 WebSocket 发送文本消息
      *
-     * @param text text message to send
+     * @param text 要发送的文本消息
      */
     public func send(text: String): Unit {
         send(JoyWebSocketMessage.createText(text))
     }
 
     /**
-     * Send binary message to WebSocket
+     * 向 WebSocket 发送二进制消息
      *
-     * @param data binary message bytes to send
+     * @param data 要发送的二进制字节
      */
     public func send(data: Array<Byte>): Unit {
         send(JoyWebSocketMessage.createBinary(data))
     }
 
     /**
-     * Send JSON message to WebSocket
+     * 向 WebSocket 发送 JSON 消息
      *
-     * @param json JSON serializable object to send
+     * @param json 要发送的 JSON 可序列化对象
      */
     public func send<T>(json: T): Unit where T <: JsonSerializable {
         send(JoyWebSocketMessage.createText(json))

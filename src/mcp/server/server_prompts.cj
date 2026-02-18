@@ -21,28 +21,27 @@ import cjoy.json.JsonTool
 import cjoy.jsonrpc.{JSONRPCException, JSONRPCError, JSONRPCConsts}
 
 /**
- * Manager class for MCP prompts
+ * MCP 提示管理器类
  *
- * Handles prompt registration, discovery, and retrieval. Provides methods for
- * adding prompts, registering prompt handlers, and getting prompt content.
+ * 处理提示的注册、发现和检索。提供添加提示、注册提示处理程序和获取提示内容的方法。
  */
 public class McpPrompts {
     /**
-     * ConcurrentHashMap for storing get prompt handlers
+     * 用于存储获取提示处理程序的 ConcurrentHashMap
      */
     private let getPromptHandlers: ConcurrentHashMap<String, McpGetPromptHandler> = ConcurrentHashMap()
 
     /**
-     * ConcurrentHashMap for storing registered MCP prompts
+     * 用于存储已注册 MCP 提示的 ConcurrentHashMap
      */
     let prompts: ConcurrentHashMap<String, McpPrompt> = ConcurrentHashMap()
 
     private let _pageSize = 10
 
     /**
-     * Adds an MCP prompt to the manager
+     * 向管理器添加 MCP 提示
      *
-     * @param prompt The McpPrompt instance to add
+     * @param prompt 要添加的 McpPrompt 实例
      */
     public func addPrompt(prompt: McpPrompt): Unit {
         if (prompts.contains(prompt.name)) {
@@ -52,20 +51,20 @@ public class McpPrompts {
     }
 
     /**
-     * Adds a get prompt handler for a specific prompt name
+     * 为特定提示名称添加获取提示处理程序
      *
-     * @param name The name of the prompt to handle
-     * @param handler The McpGetPromptHandler implementation
+     * @param name 要处理的提示名称
+     * @param handler McpGetPromptHandler 实现
      */
     public func addGetPromptHandler(name: String, handler: McpGetPromptHandler): Unit {
         getPromptHandlers.add(name, handler)
     }
 
     /**
-     * Lists all available MCP prompts with pagination support
+     * 列出所有可用的 MCP 提示，支持分页
      *
-     * @param page PaginatedRequest containing cursor for pagination
-     * @return ListPromptResult containing list of prompts and next cursor
+     * @param page 包含分页游标的 PaginatedRequest
+     * @return 包含提示列表和下一个游标的 ListPromptResult
      */
     public func listPrompt(page: PaginatedRequest): ListPromptResult {
         let res: ArrayList<McpPrompt> = ArrayList()
@@ -85,9 +84,9 @@ public class McpPrompts {
     }
 
     /**
-     * Removes the prompts with the given names
+     * 移除具有给定名称的提示
      *
-     * @param names The names of the prompts to remove
+     * @param names 要移除的提示名称数组
      */
     public func removePrompts(names: Array<String>): Unit {
         for (name in names) {
@@ -97,21 +96,21 @@ public class McpPrompts {
     }
 
     /**
-     * Removes a single prompt with the given name
+     * 移除具有给定名称的单个提示
      *
-     * @param name The name of the prompt to remove
+     * @param name 要移除的提示名称
      */
     public func removePrompt(name: String): Unit {
         removePrompts([name])
     }
 
     /**
-     * Gets a specific prompt with the given request
+     * 使用给定的请求获取特定的提示
      *
-     * @param ctx The JoyContext
-     * @param req GetPromptRequest containing prompt name and arguments
-     * @return GetPromptResult containing the prompt messages
-     * @throws Exception If prompt not found or handler returns unknown type
+     * @param ctx JoyContext
+     * @param req 包含提示名称和参数的 GetPromptRequest
+     * @return 包含提示消息的 GetPromptResult
+     * @throws Exception 如果找不到提示或处理程序返回未知类型
      */
     public func getPrompt(ctx: JoyContext, req: GetPromptRequest): GetPromptResult {
         let messages: Array<PromptMessage> = match (getPromptHandlers.get(req.name)) {
@@ -144,11 +143,11 @@ public class McpPrompts {
     }
 
     /**
-     * Converts content to a PromptMessage
+     * 将内容转换为 PromptMessage
      *
-     * @param content The content to convert
-     * @param role The role of the message sender (default: "assistant")
-     * @return PromptMessage instance
+     * @param content 要转换的内容
+     * @param role 消息发送者的角色（默认："assistant"）
+     * @return PromptMessage 实例
      */
     private func toPromptMessage(content: String, role!: String = "assistant"): PromptMessage {
         var res = TextContent(text: content)

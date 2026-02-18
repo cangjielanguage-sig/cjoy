@@ -13,10 +13,10 @@ package cjoy.utils.ast
 import std.ast.*
 
 /**
- * type node information parser for parsing declaration parameter types
- * used for macro parameter type validation and introspection
+ * 用于解析声明参数类型的类型节点信息解析器
+ * 用于宏参数类型验证和内省
  *
- * @param supportTypes: string describing supported types for error messages
+ * @param supportTypes: 用于错误消息的描述支持类型的字符串
  */
 protected class TypeNodeInfo {
     // the type of decl param
@@ -31,19 +31,19 @@ protected class TypeNodeInfo {
     private let supportTypes: String
 
     /**
-     * creates a new TypeNodeInfo
+     * 创建新的 TypeNodeInfo
      *
-     * @param supportTypes: string describing supported types for error messages
+     * @param supportTypes: 用于错误消息的描述支持类型的字符串
      */
     public init(supportTypes: String) {
         this.supportTypes = supportTypes
     }
 
     /**
-     * parses type node and extracts type information
+     * 解析类型节点并提取类型信息
      *
-     * @param input: tokens for error reporting
-     * @param varType: the type node to parse
+     * @param input: 用于错误报告的令牌
+     * @param varType: 要解析的类型节点
      */
     protected func parse(input: Tokens, varType: TypeNode): Unit {
         match (varType) {

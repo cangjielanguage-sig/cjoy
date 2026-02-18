@@ -13,7 +13,7 @@ macro package cjoy.mcp.macros
 import std.ast.*
 
 /**
- * parameter info for prompt parameter in macro
+ * 宏中提示词参数的参数信息
  */
 class PromptParamInfo <: ParamInfo {
     init(marcroName: String) {

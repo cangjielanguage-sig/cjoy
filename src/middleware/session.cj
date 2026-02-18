@@ -19,36 +19,36 @@ import cjoy.session.*
 private const SESSION_CTX_KEY: String = "__session__"
 
 /**
- * the sssion config
+ * 会话配置
  */
 public struct JoySessionConfig {
     public JoySessionConfig(
-        // Cookie name to save session ID. Default is "sid".
+        // 用于保存会话 ID 的 Cookie 名称。默认为 "sid"。
         public let cookieName!: String = "sid",
-        // Cookie path to store. Default is "/".
+        // 存储的 Cookie 路径。默认为 "/"。
         public let cookiePath!: String = "/",
-        // Use HTTPS only. Default is false.
+        // 仅使用 HTTPS。默认为 false。
         public let cookieSecure!: Bool = false,
-        // http only. Default is false.
+        // 仅 http。默认为 false。
         public let cookieHttpOnly!: Bool = true,
-        // Cookie life time. Default is 3600.
+        // Cookie 生命周期。默认为 3600。
         public let cookieMaxAge!: Int = 3600,
-        // Cookie domain name. Default is empty.
+        // Cookie 域名。默认为空。
         public let cookieDomain!: String = "",
-        // Session ID length. Default is 32.
+        // 会话 ID 长度。默认为 32。
         public let idLength!: Int = 32
     ) {}
 }
 
 /**
- * Get session from context
+ * 从上下文中获取会话
  */
 public func getSession(ctx: JoyContext): ?JoySession {
     ctx.getCtxParam(SESSION_CTX_KEY)
 }
 
 /**
- * create Session middleware
+ * 创建会话中间件
  */
 public class SessionManager <: JoyMiddlewareHandler {
     private let _config: JoySessionConfig

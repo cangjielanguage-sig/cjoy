@@ -18,10 +18,10 @@ import cjoy.log.macros.*
 
 public class JSONRPCTool {
     /**
-     * serialize json object to byte buffer
+     * 将 JSON 对象序列化为字节缓冲区
      *
-     * @param obj: json serializable object
-     * @return: byte buffer
+     * @param obj 可序列化为 JSON 的对象
+     * @return 字节缓冲区
      */
     public static func serialize(obj: JsonSerializable): ByteBuffer {
         let buffer = ByteBuffer()
@@ -32,10 +32,10 @@ public class JSONRPCTool {
     }
 
     /**
-     * deserialize params to T
+     * 将参数反序列化为 T 类型对象
      *
-     * @param params: params data
-     * @return: object of T
+     * @param params 参数数据
+     * @return T 类型的对象
      */
     public static func deserializeParams<T>(params: Any): T where T <: JsonDeserializable<T> {
         let data = (params as Array<Byte>) ?? Array<Byte>()
@@ -45,10 +45,10 @@ public class JSONRPCTool {
     }
 
     /**
-     * deserialize byte array to json rpc message
+     * 将字节数组反序列化为 JSON-RPC 消息
      *
-     * @param content: json rpc message bytes
-     * @return: json rpc message
+     * @param content JSON-RPC 消息字节
+     * @return JSON-RPC 消息
      */
     public static func deserialize(content: Array<Byte>): JSONRPCMessage {
         let buffer = ByteBuffer()
@@ -57,11 +57,11 @@ public class JSONRPCTool {
     }
 
     /**
-     * deserialize byte buffer to json rpc message
+     * 将字节缓冲区反序列化为 JSON-RPC 消息
      *
-     * @param buffer: byte buffer
-     * @return: json rpc message
-     * @throws JSONRPCException if the message is invalid
+     * @param buffer 字节缓冲区
+     * @return JSON-RPC 消息
+     * @throws JSONRPCException 如果消息无效
      */
     public static func deserialize(buffer: ByteBuffer): JSONRPCMessage {
         let reader = JsonReader(buffer)

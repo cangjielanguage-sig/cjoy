@@ -16,7 +16,7 @@ import stdx.net.http.{HttpHeaders, HttpResponse}
 import cjoy.framework.{JoyHttpConsts}
 
 /**
- * HTTP response wrapper
+ * HTTP 响应包装器
  */
 public class JoyHttpResponse {
     private let _response: HttpResponse
@@ -26,12 +26,18 @@ public class JoyHttpResponse {
         _response = response
     }
 
+    /**
+     * HTTP 响应状态码
+     */
     public prop status: UInt16 {
         get() {
             _response.status
         }
     }
 
+    /**
+     * 响应体的文本内容
+     */
     public prop text: String {
         get() {
             _response.text
@@ -39,9 +45,9 @@ public class JoyHttpResponse {
     }
 
     /**
-     * Parse response body as JSON
+     * 将响应体解析为 JSON
      *
-     * @return deserialized JSON object or None if failed
+     * @return 反序列化的 JSON 对象，如果失败则返回 None
      */
     public func json<T>(): ?T where T <: JsonDeserializable<T> {
         if (_response.bodySize.isSome() && _response.bodySize.getOrThrow() == 0) {
@@ -54,24 +60,36 @@ public class JoyHttpResponse {
         T.fromJson(reader)
     }
 
+    /**
+     * 响应体的输入流
+     */
     public prop data: InputStream {
         get() {
             _response.body
         }
     }
 
+    /**
+     * 响应是否包含 JSON 内容
+     */
     public prop isJson: Bool {
         get() {
             contentType.startsWith(JoyHttpConsts.MIME_APP_JSON)
         }
     }
 
+    /**
+     * 响应头
+     */
     public prop headers: HttpHeaders {
         get() {
             _response.headers
         }
     }
 
+    /**
+     * 响应的内容类型
+     */
     public prop contentType: String {
         get() {
             _response.headers.getFirst(JoyHttpConsts.HEADER_CONTENT_TYPE) ?? ""
@@ -79,10 +97,10 @@ public class JoyHttpResponse {
     }
 
     /**
-     * Get event stream
+     * 获取事件流
      *
-     * @return SSE event stream
-     * @throws IllegalArgumentException when response is not event stream
+     * @return SSE 事件流
+     * @throws IllegalArgumentException 当响应不是事件流时
      */
     public prop eventStream: JoySSEventStream {
         get() {

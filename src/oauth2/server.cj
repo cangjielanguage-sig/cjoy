@@ -18,7 +18,7 @@ import cjoy.json.*
 import cjoy.log.macros.*
 
 /**
- * OAuth2 server implementation for handling authorization and token requests
+ * OAuth2 服务器实现，用于处理授权和令牌请求
  */
 public class OAuth2Server {
     private let _cfg: ServerConfig
@@ -61,187 +61,187 @@ public class OAuth2Server {
     }
 
     /**
-     * Sets the token type for OAuth2
+     * 设置 OAuth2 的令牌类型
      *
-     * @param tt Token type string
+     * @param tt 令牌类型字符串
      */
     public func setTokenType(tt: String): Unit {
         _cfg.tokenType = tt
     }
 
     /**
-     * Sets whether to allow GET method for token requests
+     * 设置是否允许使用 GET 方法请求令牌
      *
-     * @param allow true to allow, false otherwise
+     * @param allow 允许为 true，否则为 false
      */
     public func setAllowGetAccessRequest(allow: Bool): Unit {
         _cfg.allowGetAccessRequest = allow
     }
 
     /**
-     * Sets the allowed response types
+     * 设置允许的响应类型
      *
-     * @param types Array of response types
+     * @param types 响应类型数组
      */
     public func setAllowedResponseType(types: Array<ResponseType>): Unit {
         _cfg.allowResponseTypes = types
     }
 
     /**
-     * Sets the allowed grant types
+     * 设置允许的授权类型
      *
-     * @param types Array of grant types
+     * @param types 授权类型数组
      */
     public func setAllowedGrantType(types: Array<GrantType>): Unit {
         _cfg.allowGrantTypes = types
     }
 
     /**
-     * Sets the function to get client info
+     * 设置获取客户端信息的函数
      *
-     * @param fn Function to get client info
+     * @param fn 获取客户端信息的函数
      */
     public func setClientInfoHandleFunc(fn: ClientInfoHandleFunc): Unit {
         _clientInfoHandleFunc = fn
     }
 
     /**
-     * Sets the function to authorize users
+     * 设置用户授权函数
      *
-     * @param fn Function to authorize users
+     * @param fn 用户授权函数
      */
     public func setUserAuthorizationHandleFunc(fn: UserAuthorizationHandleFunc): Unit {
         _userAuthorizationHandleFunc = fn
     }
 
     /**
-     * Sets the function to authorize users with passwords
+     * 设置密码授权函数
      *
-     * @param fn Function to authorize users with passwords
+     * @param fn 密码授权函数
      */
     public func setPasswordAuthorizationHandleFunc(fn: PasswordAuthorizationHandleFunc): Unit {
         _passwordAuthorizationHanleFunc = fn
     }
 
     /**
-     * Sets the function to handle response errors
+     * 设置响应错误处理函数
      *
-     * @param fn Function to handle response errors
+     * @param fn 响应错误处理函数
      */
     public func setResponseErrorHandleFunc(fn: ResponseErrorHandleFunc): Unit {
         _responseErrorHandleFunc = fn
     }
 
     /**
-     * Sets the function to handle internal errors
+     * 设置内部错误处理函数
      *
-     * @param fn Function to handle internal errors
+     * @param fn 内部错误处理函数
      */
     public func setInternalErrorHandleFunc(fn: InternalErrorHandleFunc): Unit {
         _internalErrorHandleFunc = fn
     }
 
     /**
-     * Sets the function to resolve access tokens
+     * 设置访问令牌解析函数
      *
-     * @param fn Function to resolve access tokens
+     * @param fn 访问令牌解析函数
      */
     public func setAccessTokenResolveHandleFunc(fn: AccessTokenResolveHandleFunc): Unit {
         _accessTokenResolveHandleFunc = fn
     }
 
     /**
-     * Sets the function to validate refresh tokens
+     * 设置刷新令牌验证函数
      *
-     * @param fn Function to validate refresh tokens
+     * @param fn 刷新令牌验证函数
      */
     public func setRefreshTokenResolveHandleFunc(fn: RefreshingValidationHandleFunc): Unit {
         _refreshingValidationHandleFunc = fn
     }
 
     /**
-     * Sets the function to check if a client is authorized
+     * 设置客户端授权检查函数
      *
-     * @param fn Function to check client authorization
+     * @param fn 客户端授权检查函数
      */
     public func setClientAuthorizedHandleFunc(fn: ClientAuthorizedHandleFunc): Unit {
         _clientAuthorizedHandleFunc = fn
     }
 
     /**
-     * Sets the function to check client scopes
+     * 设置客户端范围检查函数
      *
-     * @param fn Function to check client scopes
+     * @param fn 客户端范围检查函数
      */
     public func setClientScopeHandleFunc(fn: ClientScopeHandleFunc): Unit {
         _clientScopeHandleFunc = fn
     }
 
     /**
-     * Sets the function to validate refresh tokens
+     * 设置刷新令牌验证函数
      *
-     * @param fn Function to validate refresh tokens
+     * @param fn 刷新令牌验证函数
      */
     public func setRefreshingValidationHandleFunc(fn: RefreshingValidationHandleFunc): Unit {
         _refreshingValidationHandleFunc = fn
     }
 
     /**
-     * Sets the function to handle pre-redirect errors
+     * 设置重定向前错误处理函数
      *
-     * @param fn Function to handle pre-redirect errors
+     * @param fn 重定向前错误处理函数
      */
     public func setPreRedirectErrorHandleFunc(fn: PreRedirectErrorHandleFunc): Unit {
         _preRedirectErrorHandleFunc = fn
     }
 
     /**
-     * Sets the function to add extension fields
+     * 设置扩展字段处理函数
      *
-     * @param fn Function to add extension fields
+     * @param fn 扩展字段处理函数
      */
     public func setExtensionFieldsHandleFunc(fn: ExtensionFieldsHandleFunc): Unit {
         _extensionFieldsHandleFunc = fn
     }
 
     /**
-     * Sets the function to set access token expiration
+     * 设置访问令牌过期时间函数
      *
-     * @param fn Function to set access token expiration
+     * @param fn 访问令牌过期时间函数
      */
     public func setAccessTokenExpHandleFunc(fn: AccessTokenExpHandleFunc): Unit {
         _accessTokenExpHandleFunc = fn
     }
 
     /**
-     * Sets the function to set authorize scope
+     * 设置授权范围函数
      *
-     * @param fn Function to set authorize scope
+     * @param fn 授权范围函数
      */
     public func setAuthorizeScopeHandleFunc(fn: AuthorizeScopeHandleFunc): Unit {
         _authorizeScopeHandleFunc = fn
     }
 
     /**
-     * Sets the function to handle response tokens
+     * 设置令牌响应处理函数
      *
-     * @param fn Function to handle response tokens
+     * @param fn 令牌响应处理函数
      */
     public func setResponseTokenHandleFunc(fn: ResponseTokenHandleFunc): Unit {
         _responseTokenHandleFunc = fn
     }
 
     /**
-     * Sets the function to handle refreshing scope
+     * 设置刷新范围处理函数
      *
-     * @param fn Function to handle refreshing scope
+     * @param fn 刷新范围处理函数
      */
     public func setRefreshingScopeHandleFunc(fn: RefreshingScopeHandleFunc): Unit {
         _refreshingScopeHandleFunc = fn
     }
 
     /**
-     * handle the authorize http request, you can bind the func to url path `/authorize`
+     * 处理授权 HTTP 请求，您可以将此函数绑定到 `/authorize` 路径
      */
     public func authorizeRequestHandleFunc(ctx: JoyContext): Unit {
         try {
@@ -526,7 +526,7 @@ public class OAuth2Server {
     }
 
     /**
-     * handle the token http request, you can bind the func to url path `/token`
+     * 处理令牌 HTTP 请求，您可以将此函数绑定到 `/token` 路径
      */
     public func tokenRequestHandleFunc(ctx: JoyContext): Unit {
         try {
@@ -687,9 +687,9 @@ public class OAuth2Server {
     }
 
     /**
-     * validate the bearer token
+     * 验证持有者令牌
      *
-     * @throws OAuthException if the token is not existed or invalid
+     * @throws OAuthException 如果令牌不存在或无效
      */
     public func validateBearerToken(ctx: JoyContext): TokenInfo {
         let access = _accessTokenResolveHandleFunc(ctx)

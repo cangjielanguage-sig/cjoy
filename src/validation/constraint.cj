@@ -15,29 +15,29 @@ import std.time.DateTime
 import std.collection.HashMap
 
 /**
- * Base interface for validation constraints.
+ * 验证约束的基接口。
  *
- * All constraint types implement this interface.
+ * 所有约束类型都实现此接口。
  */
 public interface JoyConstraint {}
 
 /**
- * Size constraint for collection types.
+ * 集合类型的大小约束。
  *
- * Validates that collection size is within [min, max] range (inclusive).
+ * 验证集合大小在 [min, max] 范围内（含）。
  */
 public class SizeConstraint <: JoyConstraint {
     /**
-     * Error message describing constraint violation.
+     * 描述约束违反的错误消息。
      */
     public let message: String
 
     /**
-     * Create SizeConstraint.
+     * 创建 SizeConstraint。
      *
-     * @param min minimum size (inclusive)
-     * @param max maximum size (inclusive)
-     * @param msg custom error message (supports {min} and {max} placeholders)
+     * @param min 最小大小（含）
+     * @param max 最大大小（含）
+     * @param msg 自定义错误消息（支持 {min} 和 {max} 占位符）
      */
     public SizeConstraint(public let min: Int, public let max: Int, let msg: String) {
         if (msg.isEmpty()) {
@@ -49,22 +49,22 @@ public class SizeConstraint <: JoyConstraint {
 }
 
 /**
- * Length constraint for string types.
+ * 字符串类型的长度约束。
  *
- * Validates that string length is within [min, max] range (inclusive).
+ * 验证字符串长度在 [min, max] 范围内（含）。
  */
 public class LengthConstraint <: JoyConstraint {
     /**
-     * Error message describing constraint violation.
+     * 描述约束违反的错误消息。
      */
     public let message: String
 
     /**
-     * Create LengthConstraint.
+     * 创建 LengthConstraint。
      *
-     * @param min minimum length (inclusive)
-     * @param max maximum length (inclusive)
-     * @param msg custom error message (supports {min} and {max} placeholders)
+     * @param min 最小长度（含）
+     * @param max 最大长度（含）
+     * @param msg 自定义错误消息（支持 {min} 和 {max} 占位符）
      */
     public LengthConstraint(public let min: Int, public let max: Int, let msg: String) {
         if (msg.isEmpty()) {
@@ -76,20 +76,20 @@ public class LengthConstraint <: JoyConstraint {
 }
 
 /**
- * Not empty constraint for string types.
+ * 字符串类型的非空约束。
  *
- * Validates that string is not empty.
+ * 验证字符串不为空。
  */
 public class NotEmptyConstraint <: JoyConstraint {
     /**
-     * Error message describing constraint violation.
+     * 描述约束违反的错误消息。
      */
     public let message: String
 
     /**
-     * Create NotEmptyConstraint.
+     * 创建 NotEmptyConstraint。
      *
-     * @param msg custom error message
+     * @param msg 自定义错误消息
      */
     public NotEmptyConstraint(let msg: String) {
         if (msg.isEmpty()) {
@@ -101,20 +101,20 @@ public class NotEmptyConstraint <: JoyConstraint {
 }
 
 /**
- * Not blank constraint for string types.
+ * 字符串类型的非空白约束。
  *
- * Validates that trimmed string is not blank.
+ * 验证修剪后的字符串不为空白。
  */
 public class NotBlankConstraint <: JoyConstraint {
     /**
-     * Error message describing constraint violation.
+     * 描述约束违反的错误消息。
      */
     public let message: String
 
     /**
-     * Create NotBlankConstraint.
+     * 创建 NotBlankConstraint。
      *
-     * @param msg custom error message
+     * @param msg 自定义错误消息
      */
     public NotBlankConstraint(let msg: String) {
         if (msg.isEmpty()) {
@@ -126,22 +126,22 @@ public class NotBlankConstraint <: JoyConstraint {
 }
 
 /**
- * Range constraint for numeric types.
+ * 数值类型的范围约束。
  *
- * Validates that number is within [min, max] range (inclusive).
+ * 验证数字在 [min, max] 范围内（含）。
  */
 public class RangeConstraint <: JoyConstraint {
     /**
-     * Error message describing constraint violation.
+     * 描述约束违反的错误消息。
      */
     public let message: String
 
     /**
-     * Create RangeConstraint.
+     * 创建 RangeConstraint。
      *
-     * @param min minimum value as string (inclusive)
-     * @param max maximum value as string (inclusive)
-     * @param msg custom error message (supports {min} and {max} placeholders)
+     * @param min 最小值字符串（含）
+     * @param max 最大值字符串（含）
+     * @param msg 自定义错误消息（支持 {min} 和 {max} 占位符）
      */
     public RangeConstraint(public let min: String, public let max: String, let msg: String) {
         if (msg.isEmpty()) {
@@ -153,26 +153,26 @@ public class RangeConstraint <: JoyConstraint {
 }
 
 /**
- * Regex pattern constraint for string types.
+ * 字符串类型的正则表达式约束。
  *
- * Validates that string matches the specified regex pattern.
+ * 验证字符串是否匹配指定的正则表达式。
  */
 public class PatternConstraint <: JoyConstraint {
     /**
-     * Error describing constraint violation.
+     * 描述约束违反的错误消息。
      */
     public let message: String
 
     /**
-     * Compiled regex pattern.
+     * 编译后的正则表达式。
      */
     public let regex: Regex
 
     /**
-     * Create PatternConstraint.
+     * 创建 PatternConstraint。
      *
-     * @param regexStr regex pattern string
-     * @param msg custom error message (supports {regex} placeholder)
+     * @param regexStr 正则表达式字符串
+     * @param msg 自定义错误消息（支持 {regex} 占位符）
      */
     public PatternConstraint(let regexStr: String, let msg: String) {
         this.regex = Regex(regexStr)
@@ -185,22 +185,22 @@ public class PatternConstraint <: JoyConstraint {
 }
 
 /**
- * DateTime range constraint.
+ * DateTime 范围约束。
  *
- * Validates that DateTime is within [after, before] range.
+ * 验证 DateTime 是否在 [after, before] 范围内。
  */
 public class DateTimeRangeConstraint <: JoyConstraint {
     /**
-     * Error message describing constraint violation.
+     * 描述约束违反的错误消息。
      */
     public let message: String
 
     /**
-     * Create DateTimeRangeConstraint.
+     * 创建 DateTimeRangeConstraint。
      *
-     * @param before maximum allowed datetime
-     * @param after minimum allowed datetime
-     * @param msg custom error message (supports {after} and {before} placeholders)
+     * @param before 允许的最大日期时间
+     * @param after 允许的最小日期时间
+     * @param msg 自定义错误消息（支持 {after} 和 {before} 占位符）
      */
     public DateTimeRangeConstraint(public let before: DateTime, public let after: DateTime, public let msg: String) {
         if (msg.isEmpty()) {
@@ -212,25 +212,25 @@ public class DateTimeRangeConstraint <: JoyConstraint {
 }
 
 /**
- * Chinese mobile phone number constraint.
+ * 中国手机号码约束。
  *
- * Validates that string matches Chinese mobile phone format.
+ * 验证字符串是否匹配中国手机号码格式。
  */
 public class ChMobilePhoneConstraint <: JoyConstraint {
     /**
-     * Error message describing constraint violation.
+     * 描述约束违反的错误消息。
      */
     public let message: String
 
     /**
-     * Regex pattern for Chinese mobile phone numbers.
+     * 中国手机号码的正则表达式。
      */
     public static let REGEX: Regex = Regex(#"^(?:\+86[\s-]?)?1[3456789]\d{9}$"#)
 
     /**
-     * Create ChMobilePhoneConstraint.
+     * 创建 ChMobilePhoneConstraint。
      *
-     * @param msg custom error message
+     * @param msg 自定义错误消息
      */
     public ChMobilePhoneConstraint(let msg: String) {
         if (msg.isEmpty()) {
@@ -242,25 +242,25 @@ public class ChMobilePhoneConstraint <: JoyConstraint {
 }
 
 /**
- * Email format constraint.
+ * 邮箱格式约束。
  *
- * Validates that string matches email format.
+ * 验证字符串是否匹配邮箱格式。
  */
 public class EmailConstraint <: JoyConstraint {
     /**
-     * Error message describing constraint violation.
+     * 描述约束违反的错误消息。
      */
     public let message: String
 
     /**
-     * Regex pattern for email validation.
+     * 邮箱验证的正则表达式。
      */
     public static let REGEX: Regex = Regex(#"^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$"#)
 
     /**
-     * Create EmailConstraint.
+     * 创建 EmailConstraint。
      *
-     * @param msg custom error message
+     * @param msg 自定义错误消息
      */
     public EmailConstraint(let msg: String) {
         if (msg.isEmpty()) {
@@ -272,26 +272,26 @@ public class EmailConstraint <: JoyConstraint {
 }
 
 /**
- * IPv4 address format constraint.
+ * IPv4 地址格式约束。
  *
- * Validates that string matches IPv4 address format.
+ * 验证字符串是否匹配 IPv4 地址格式。
  */
 public class IPV4Constraint <: JoyConstraint {
     /**
-     * Error message describing constraint violation.
+     * 描述约束违反的错误消息。
      */
     public let message: String
 
     /**
-     * Regex pattern for IPv4 address validation.
+     * IPv4 地址验证的正则表达式。
      */
     public static let REGEX: Regex = Regex(
         #"^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"#)
 
     /**
-     * Create IPV4Constraint.
+     * 创建 IPV4Constraint。
      *
-     * @param msg custom error message
+     * @param msg 自定义错误消息
      */
     public IPV4Constraint(let msg: String) {
         if (msg.isEmpty()) {
@@ -303,21 +303,21 @@ public class IPV4Constraint <: JoyConstraint {
 }
 
 /**
- * Enum string constraint.
+ * 枚举字符串约束。
  *
- * Validates that string is one of the allowed enum values.
+ * 验证字符串是否为允许的枚举值之一。
  */
 public class EnumStrConstraint <: JoyConstraint {
     /**
-     * Error message describing constraint violation.
+     * 描述约束违反的错误消息。
      */
     public let message: String
 
     /**
-     * Create EnumStrConstraint.
+     * 创建 EnumStrConstraint。
      *
-     * @param values allowed string values
-     * @param msg custom error message
+     * @param values 允许的字符串值数组
+     * @param msg 自定义错误消息
      */
     public EnumStrConstraint(public let values: Array<String>, let msg: String) {
         if (msg.isEmpty()) {
@@ -329,21 +329,21 @@ public class EnumStrConstraint <: JoyConstraint {
 }
 
 /**
- * Enum integer constraint.
+ * 枚举整数约束。
  *
- * Validates that integer is one of the allowed enum values.
+ * 验证整数是否为允许的枚举值之一。
  */
 public class EnumIntConstraint <: JoyConstraint {
     /**
-     * Error message describing constraint violation.
+     * 描述约束违反的错误消息。
      */
     public let message: String
 
     /**
-     * Create EnumIntConstraint.
+     * 创建 EnumIntConstraint。
      *
-     * @param values allowed integer values
-     * @param msg custom error message
+     * @param values 允许的整数数组
+     * @param msg 自定义错误消息
      */
     public EnumIntConstraint(public let values: Array<Int>, let msg: String) {
         if (msg.isEmpty()) {
@@ -355,27 +355,27 @@ public class EnumIntConstraint <: JoyConstraint {
 }
 
 /**
- * Validation exception for constraint violation.
+ * 约束验证失败的验证异常。
  *
- * Thrown when a constraint validation fails.
+ * 当约束验证失败时抛出。
  */
 public class JoyValidationException <: Exception {
     /**
-     * Field name that failed validation.
+     * 验证失败的字段名。
      */
     public let field: String
 
     /**
-     * Constraint that was violated.
+     * 违反的约束。
      */
     public let constraint: JoyConstraint
 
     /**
-     * Create JoyValidationException.
+     * 创建 JoyValidationException。
      *
-     * @param message error message
-     * @param field field name
-     * @param constraint violated constraint
+     * @param message 错误消息
+     * @param field 字段名
+     * @param constraint 违反的约束
      */
     public init(message: String, field: String, constraint: JoyConstraint) {
         super(message)
@@ -384,9 +384,9 @@ public class JoyValidationException <: Exception {
     }
 
     /**
-     * Convert exception to map for JSON response.
+     * 将异常转换为映射用于 JSON 响应。
      *
-     * @return map containing field and error message
+     * @return 包含字段和错误消息的映射
      */
     public func toMap(): HashMap<String, String> {
         let res: HashMap<String, String> = HashMap()

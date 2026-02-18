@@ -13,15 +13,15 @@ package cjoy.oauth2
 import std.collection.HashMap
 
 /**
- * ErrorInfo represents error information for OAuth2
+ * ErrorInfo 表示 OAuth2 的错误信息
  */
 public class ErrorInfo {
     /**
-     * Constructs an ErrorInfo instance
+     * 构造 ErrorInfo 实例
      *
-     * @param statusCode HTTP status code
-     * @param code Error code
-     * @param description Error description
+     * @param statusCode HTTP 状态码
+     * @param code 错误码
+     * @param description 错误描述
      */
     public ErrorInfo(
         public var statusCode!: UInt16 = 0,
@@ -31,22 +31,22 @@ public class ErrorInfo {
 }
 
 /**
- * OAuthException represents an OAuth2 exception
+ * OAuthException 表示 OAuth2 异常
  */
 public class OAuthException <: Exception {
     /**
-     * Constructs an OAuthException instance with error information
+     * 使用错误信息构造 OAuthException 实例
      *
-     * @param errorInfo Error information
+     * @param errorInfo 错误信息
      */
     public OAuthException(public let errorInfo: ErrorInfo) {
         super(errorInfo.description)
     }
 
     /**
-     * Constructs an OAuthException instance with a message
+     * 使用消息构造 OAuthException 实例
      *
-     * @param message Exception message
+     * @param message 异常消息
      */
     public init(message: String) {
         this(ErrorInfo(statusCode: 401, description: message))
@@ -54,16 +54,16 @@ public class OAuthException <: Exception {
 }
 
 /**
- * ErrorResponse represents an OAuth2 error response
+ * ErrorResponse 表示 OAuth2 错误响应
  */
 public class ErrorResponse {
     /**
-     * Constructs an ErrorResponse instance
+     * 构造 ErrorResponse 实例
      *
-     * @param errorInfo Error information
-     * @param uri Error URI
-     * @param error Error code
-     * @param header Response headers
+     * @param errorInfo 错误信息
+     * @param uri 错误 URI
+     * @param error 错误码
+     * @param header 响应头
      */
     public ErrorResponse(
         public let errorInfo: ErrorInfo,
@@ -75,7 +75,7 @@ public class ErrorResponse {
 }
 
 /**
- * OAuth2 error constants
+ * OAuth2 错误常量
  */
 public struct OAuthErrors {
     // inner error

@@ -18,29 +18,29 @@ import stdx.crypto.crypto.SecureRandom
 import cjoy.utils.{rawBase64URLEncode}
 
 /**
- * TokenGenerate interface for generating access and refresh tokens
+ * TokenGenerate 接口用于生成访问和刷新令牌
  */
 public interface TokenGenerate {
     /**
-     * Generates access and refresh tokens
+     * 生成访问和刷新令牌
      *
-     * @param data Basic data for token generation
-     * @param isGenRefresh Whether to generate a refresh token
-     * @return Tuple of (access token, refresh token)
+     * @param data 令牌生成的基础数据
+     * @param isGenRefresh 是否生成刷新令牌
+     * @return (访问令牌, 刷新令牌) 的元组
      */
     func generate(data: GenerateBasic, isGenRefresh: Bool): (String, String)
 }
 
 /**
- * Access and refresh token generator using secure random
+ * 使用安全随机数的访问和刷新令牌生成器
  */
 public class SecureRandTokenGenerate <: TokenGenerate {
     /**
-     * Generates access and refresh tokens using secure random
+     * 使用安全随机数生成访问和刷新令牌
      *
-     * @param data Basic data for generation
-     * @param isGenRefresh Whether to generate a refresh token
-     * @return Tuple of (access token, refresh token)
+     * @param data 生成的基础数据
+     * @param isGenRefresh 是否生成刷新令牌
+     * @return (访问令牌, 刷新令牌) 的元组
      */
     public func generate(data: GenerateBasic, isGenRefresh: Bool): (String, String) {
         let buffer = ByteBuffer()

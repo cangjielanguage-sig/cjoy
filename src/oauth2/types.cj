@@ -20,7 +20,7 @@ import cjoy.framework.JoyContext
 import cjoy.utils.rawBase64URLEncode
 
 /**
- * TokenBody represents the base token information returned when invoking /token path
+ * TokenBody 表示调用 /token 路径时返回的基础令牌信息
  */
 @Json
 public class TokenBody {
@@ -37,7 +37,7 @@ public class TokenBody {
 }
 
 /**
- * TokenInfo represents token information
+ * TokenInfo 表示令牌信息
  */
 @Json
 public class TokenInfo {
@@ -63,7 +63,7 @@ public class TokenInfo {
 }
 
 /**
- * ClientInfo represents client information
+ * ClientInfo 表示客户端信息
  */
 @Json
 public class ClientInfo {
@@ -75,17 +75,17 @@ public class ClientInfo {
 }
 
 /**
- * GenerateBasic provides the basis for generated token data
+ * GenerateBasic 为生成令牌数据提供基础
  */
 public class GenerateBasic {
     /**
-     * Constructs a GenerateBasic instance
+     * 构造 GenerateBasic 实例
      *
-     * @param client Client information
-     * @param userId User ID
-     * @param createAt Token creation time
-     * @param tokenInfo Token information
-     * @param request HTTP request context
+     * @param client 客户端信息
+     * @param userId 用户 ID
+     * @param createAt 令牌创建时间
+     * @param tokenInfo 令牌信息
+     * @param request HTTP 请求上下文
      */
     public GenerateBasic(
         public let client!: ClientInfo,
@@ -98,24 +98,24 @@ public class GenerateBasic {
 }
 
 /**
- * TokenGenerateRequest provides parameters for token generation
+ * TokenGenerateRequest 为令牌生成提供参数
  */
 public class TokenGenerateRequest {
     /**
-     * Constructs a TokenGenerateRequest instance
+     * 构造 TokenGenerateRequest 实例
      *
-     * @param request HTTP request context
-     * @param clientId Client ID
-     * @param clientSecret Client secret
-     * @param userId User ID
-     * @param redirectURI Redirect URI
-     * @param scope Authorization scope
-     * @param code Authorization code
-     * @param codeChallenge Code challenge for PKCE
-     * @param codeChallengeMethod Code challenge method for PKCE
-     * @param refresh Refresh token
-     * @param codeVerifier Code verifier for PKCE
-     * @param accessTokenExp Access token expiration duration
+     * @param request HTTP 请求上下文
+     * @param clientId 客户端 ID
+     * @param clientSecret 客户端密钥
+     * @param userId 用户 ID
+     * @param redirectURI 重定向 URI
+     * @param scope 授权范围
+     * @param code 授权码
+     * @param codeChallenge PKCE 的代码挑战
+     * @param codeChallengeMethod PKCE 的代码挑战方法
+     * @param refresh 刷新令牌
+     * @param codeVerifier PKCE 的代码验证器
+     * @param accessTokenExp 访问令牌过期持续时间
      */
     public TokenGenerateRequest(
         public let request!: JoyContext,
@@ -134,15 +134,15 @@ public class TokenGenerateRequest {
 }
 
 /**
- * authorization configuration parameters
+ * 授权配置参数
  */
 public class GrantConfig {
     public GrantConfig(
-        // access token expiration time, 0 means it doesn't expire
+        // 访问令牌过期时间，0 表示永不过期
         public let accessTokenExp: Duration,
-        // refresh token expiration time, 0 means it doesn't expire
+        // 刷新令牌过期时间，0 表示永不过期
         public let refreshTokenExp: Duration,
-        // whether to generate the refreshing token
+        // 是否生成刷新令牌
         public let isGenerateRefresh: Bool
     ) {
     }
@@ -156,28 +156,28 @@ public class GrantConfig {
 }
 
 /**
- * refreshing token config
+ * 刷新令牌配置
  */
 public class RefreshingConfig {
     public RefreshingConfig(
-        // access token expiration time, 0 means it doesn't expire
+        // 访问令牌过期时间，0 表示永不过期
         public let accessTokenExp: Duration,
-        // refresh token expiration time, 0 means it doesn't expire
+        // 刷新令牌过期时间，0 表示永不过期
         public let refreshTokenExp: Duration,
-        // whether to generate the refreshing token
+        // 是否生成刷新令牌
         public let isGenerateRefresh: Bool,
-        // whether to reset the refreshing create time
+        // 是否重置刷新创建时间
         public let isResetRefreshTime: Bool,
-        // whether to remove access token
+        // 是否移除访问令牌
         public let isRemoveAccess: Bool,
-        // whether to remove refreshing token
+        // 是否移除刷新令牌
         public let isRemoveRefreshing: Bool
     ) {
     }
 }
 
 /**
- * the server configuration parameters
+ * 服务器配置参数
  */
 public class ServerConfig {
     public ServerConfig(
@@ -194,8 +194,8 @@ public class ServerConfig {
     }
 }
 
-/** 
- * authorization request
+/**
+ * 授权请求
  */
 public class AuthorizeRequest {
     public AuthorizeRequest(
@@ -214,17 +214,17 @@ public class AuthorizeRequest {
 }
 
 /**
- * PCKE method
+ * PKCE 方法
  */
 public type CodeChallengeMethod = String
 
 extend CodeChallengeMethod {
     /**
-     * validate PKCE code challenge
+     * 验证 PKCE 代码挑战
      *
-     * @param cc: the code challenge
-     * @param ver: the code verifier
-     * @return: true if valid, false otherwise
+     * @param cc 代码挑战
+     * @param ver 代码验证器
+     * @return 如果有效返回 true，否则返回 false
      */
     public func validate(cc: String, ver: String): Bool {
         match (this) {
@@ -240,17 +240,17 @@ extend CodeChallengeMethod {
 }
 
 /**
- * authorization model
+ * 授权模式
  */
 public type GrantType = String
 
 /**
- * OAuth2 response type
+ * OAuth2 响应类型
  */
 public type ResponseType = String
 
 /**
- * OAuth2 constants
+ * OAuth2 常量
  */
 public struct OAuthConsts {
     // CodeChallengeMethod

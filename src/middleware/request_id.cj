@@ -18,14 +18,14 @@ import cjoy.utils.secureRandStr
 private const REQ_ID_CTX_KEY: String = "__request_id__"
 
 /**
- * get request id from context
+ * 从上下文中获取请求 ID
  */
 public func getRequestId(ctx: JoyContext): ?String {
     ctx.getCtxParam(REQ_ID_CTX_KEY)
 }
 
 /**
- * the request id middleware, it will obtain or generate one request id
+ * 请求 ID 中间件，它将获取或生成一个请求 ID
  */
 public class RequestId <: JoyMiddlewareHandler {
     private let _prefix: String

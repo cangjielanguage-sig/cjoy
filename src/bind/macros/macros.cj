@@ -13,18 +13,18 @@ macro package cjoy.bind.macros
 import std.ast.Tokens
 
 /**
- * apply to class or structure to bind mapping of parameters
+ * 应用于类或结构体，用于绑定参数映射
  */
 public macro Bind(input: Tokens): Tokens {
     BindClassInfo.parse("Bind", input)
 }
 
 /**
- * set bind info of this member class or structure
+ * 设置类或结构体成员的绑定信息
  *
- * @attribute name: the field mapping name
- * @attribute default: the default value when parameter does not exist
- * @attribute timeformat: the format for Datetime field
+ * @attribute name: 字段映射名称
+ * @attribute default: 参数不存在时的默认值
+ * @attribute timeformat: 日期时间字段的格式
  */
 public macro BindField(attr: Tokens, input: Tokens): Tokens {
     BindFieldInfo.parse(attr, input)

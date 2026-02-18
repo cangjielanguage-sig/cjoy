@@ -17,10 +17,10 @@ import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable}
 import cjoy.utils.secureRandStr
 
 /**
- * abstract base class for session implementations
+ * 会话实现的抽象基类
  *
- * provides session data storage with thread-safe concurrent map,
- * tracks last access time for expiration, and supports invalidation
+ * 提供线程安全的并发映射存储会话数据，
+ * 跟踪最后访问时间以便过期处理，并支持失效操作
  */
 public abstract class AbstractSession <: JoySession {
     let _sid: String
@@ -29,18 +29,18 @@ public abstract class AbstractSession <: JoySession {
     var _invalidated: Bool = false
 
     /**
-     * creates a new session
+     * 创建新会话
      *
-     * @param sid session identifier
+     * @param sid 会话标识符
      */
     public init(sid: String) {
         _sid = sid
     }
 
     /**
-     * session identifier (read-only)
+     * 会话标识符（只读）
      *
-     * @return the session ID
+     * @return 会话 ID
      */
     public prop id: String {
         get() {
@@ -49,9 +49,9 @@ public abstract class AbstractSession <: JoySession {
     }
 
     /**
-     * whether session is invalidated (read-only)
+     * 会话是否已失效（只读）
      *
-     * @return true if session is invalidated
+     * @return 如果会话已失效则返回 true
      */
     public prop isInvalidated: Bool {
         get() {
@@ -60,43 +60,43 @@ public abstract class AbstractSession <: JoySession {
     }
 
     /**
-     * stores a value in session data
+     * 在会话数据中存储值
      *
-     * @param key the key
-     * @param value the value to store, must be JSON serializable
+     * @param key 键
+     * @param value 要存储的值，必须是 JSON 可序列化的
      */
     public open func set<T>(key: String, value: T): Unit where T <: JsonSerializable & JsonDeserializable<T> {
         _data.add(key, value)
     }
 
     /**
-     * retrieves a value from session data
+     * 从会话数据中检索值
      *
-     * @param key the key
-     * @return the value if exists, None otherwise
+     * @param key 键
+     * @return 值（如果存在），否则返回 None
      */
     public open func get<T>(key: String): ?T where T <: JsonSerializable & JsonDeserializable<T> {
         (_data.get(key) ?? Option<T>.None) as T
     }
 
     /**
-     * removes and returns a value from session data
+     * 从会话数据中删除并返回值
      *
-     * @param key the key to remove
-     * @return the removed value if existed, None otherwise
+     * @param key 要删除的键
+     * @return 删除的值（如果存在），否则返回 None
      */
     public open func remove<T>(key: String): ?T where T <: JsonSerializable & JsonDeserializable<T> {
         (_data.remove(key) ?? Option<T>.None) as T
     }
 
     /**
-     * persists session data to storage (override in subclasses)
+     * 将会话数据持久化到存储中（子类可以重写）
      */
     public open func flush(): Unit {
     }
 
     /**
-     * invalidates the session, marking it as no longer valid
+     * 使会话失效，标记为不再有效
      */
     public open func invalidate(): Unit {
         _invalidated = true
@@ -108,10 +108,10 @@ public abstract class AbstractSession <: JoySession {
 }
 
 /**
- * abstract base class for session storage implementations
+ * 会话存储实现的抽象基类
  *
- * manages a collection of sessions with automatic expiration cleanup,
- * provides thread-safe session creation, retrieval, and deletion
+ * 管理会话集合并自动清理过期会话，
+ * 提供线程安全的会话创建、检索和删除
  */
 public abstract class AbstractSessionStorage <: JoySessionStorage {
     let _sessions: ConcurrentHashMap<String, AbstractSession> = ConcurrentHashMap()
@@ -119,18 +119,18 @@ public abstract class AbstractSessionStorage <: JoySessionStorage {
     private let _maxLifetime: Duration
 
     /**
-     * creates a new session storage
+     * 创建新的会话存储
      *
-     * @param maxLifetime maximum session lifetime before expiration
+     * @param maxLifetime 会话过期前的最大存活时间
      */
     public init(maxLifetime: Duration) {
         _maxLifetime = maxLifetime
     }
 
     /**
-     * number of active sessions (read-only)
+     * 活动会话数量（只读）
      *
-     * @return count of sessions in memory
+     * @return 内存中的会话计数
      */
     public prop size: Int {
         get() {
@@ -139,20 +139,20 @@ public abstract class AbstractSessionStorage <: JoySessionStorage {
     }
 
     /**
-     * deletes a session from storage
+     * 从存储中删除会话
      *
-     * @param sid session ID to delete
+     * @param sid 要删除的会话 ID
      */
     public open func delete(sid: String): Unit {
         _sessions.remove(sid)
     }
 
     /**
-     * gets existing session or creates new one
+     * 获取现有会话或创建新会话
      *
-     * @param sid requested session ID (if not found, new random ID will be generated)
-     * @param idLen length for new session ID if creation is needed
-     * @return session instance (existing or newly created)
+     * @param sid 请求的会话 ID（如果未找到，将生成新的随机 ID）
+     * @param idLen 需要创建新会话 ID 时的长度
+     * @return 会话实例（现有或新创建的）
      */
     public func getOrCreate(sid: String, idLen: Int32): JoySession {
         var s = _sessions.get(sid)
@@ -160,14 +160,14 @@ public abstract class AbstractSessionStorage <: JoySessionStorage {
             synchronized(_lock) {
                 s = _sessions.get(sid)
                 if (s.isNone()) {
-                    // try load from storage
+                    // 尝试从存储加载
                     s = loadSession(sid)
                 }
                 if (let Some(ss) <- s) {
                     _sessions.add(ss.id, ss)
                     return ss
                 } else {
-                    // should create new session id when not existed
+                    // 不存在时应创建新的会话 ID
                     let newSid = secureRandStr(idLen)
                     let ns = createSession(newSid)
                     _sessions.add(newSid, ns)
@@ -182,37 +182,37 @@ public abstract class AbstractSessionStorage <: JoySessionStorage {
     }
 
     /**
-     * checks if session exists in memory
+     * 检查会话是否在内存中存在
      *
-     * @param sid session ID to check
-     * @return true if session exists
+     * @param sid 要检查的会话 ID
+     * @return 如果会话存在返回 true
      */
     public func exists(sid: String): Bool {
         _sessions.contains(sid)
     }
 
     /**
-     * creates a new session instance (must be implemented by subclass)
+     * 创建新的会话实例（必须由子类实现）
      *
-     * @param sid session ID for the new session
-     * @return new session instance
+     * @param sid 新会话的会话 ID
+     * @return 新的会话实例
      */
     protected func createSession(sid: String): AbstractSession
 
     /**
-     * loads session from persistent storage (override in subclasses)
+     * 从持久存储加载会话（子类可以重写）
      *
-     * @param sid session ID to load
-     * @return loaded session if exists, None otherwise
+     * @param sid 要加载的会话 ID
+     * @return 加载的会话（如果存在），否则返回 None
      */
     protected open func loadSession(_: String): ?AbstractSession {
         None
     }
 
     /**
-     * cleans up expired sessions from memory
+     * 清理内存中的过期会话
      *
-     * removes sessions that haven't been accessed within maxLifetime
+     * 删除在 maxLifetime 内未访问的会话
      */
     public func clean() {
         let iter = _sessions.iterator()

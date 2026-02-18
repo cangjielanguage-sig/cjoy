@@ -14,8 +14,8 @@ import std.ast.*
 import std.collection.{ArrayList, map, any, collectArrayList}
 
 /**
- * class/struct generator for macro code generation
- * extracts and analyzes class/struct member information
+ * 用于宏代码生成的类/结构体生成器
+ * 提取和分析类/结构体成员信息
  */
 protected class ClassGenentor {
     public let typeDecl: Decl
@@ -28,11 +28,11 @@ protected class ClassGenentor {
     public let funcs: ArrayList<FuncDecl>
 
     /**
-     * creates a new ClassGenentor from a class/struct declaration
+     * 从类/结构体声明创建新的 ClassGenentor
      *
-     * @param macroName: name of the macro using this generator
-     * @param typeDecl: the class or struct declaration
-     * @throws if typeDecl is not a ClassDecl or StructDecl
+     * @param macroName: 使用此生成器的宏名称
+     * @param typeDecl: 类或结构体声明
+     * @throws 如果 typeDecl 不是 ClassDecl 或 StructDecl
      */
     public init(macroName: String, typeDecl: Decl) {
         this.typeDecl = typeDecl
@@ -60,10 +60,10 @@ protected class ClassGenentor {
     }
 
     /**
-     * extracts non-static member variables from body
+     * 从主体提取非静态成员变量
      *
-     * @param body: the class/struct body
-     * @return: list of non-static variable declarations
+     * @param body: 类/结构体主体
+     * @return: 非静态变量声明列表
      */
     private static func getMemberVariables(body: Body): ArrayList<VarDecl> {
         let result = ArrayList<VarDecl>()
@@ -81,11 +81,11 @@ protected class ClassGenentor {
     }
 
     /**
-     * extracts constructor functions from body
+     * 从主体提取构造函数
      *
-     * @param typeName: name of the class/struct
-     * @param body: the class/struct body
-     * @return: list of constructor declarations (init or type-named)
+     * @param typeName: 类/结构体名称
+     * @param body: 类/结构体主体
+     * @return: 构造函数声明列表（init 或以类型命名的）
      */
     private static func getConstructors(typeName: String, body: Body): ArrayList<FuncDecl> {
         let result = ArrayList<FuncDecl>()
@@ -103,10 +103,10 @@ protected class ClassGenentor {
     }
 
     /**
-     * extracts non-static member functions from body
+     * 从主体提取非静态成员函数
      *
-     * @param body: the class/struct body
-     * @return: list of non-static function declarations
+     * @param body: 类/结构体主体
+     * @return: 非静态函数声明列表
      */
     private static func getMemberFuncs(body: Body): ArrayList<FuncDecl> {
         let result = ArrayList<FuncDecl>()
@@ -124,9 +124,9 @@ protected class ClassGenentor {
     }
 
     /**
-     * builds constructor function tokens from member variables
+     * 从成员变量构建构造函数令牌
      *
-     * @return: constructor function tokens
+     * @return: 构造函数令牌
      */
     func buildCtorFunc(): Tokens {
         let params = ArrayList<Tokens>()

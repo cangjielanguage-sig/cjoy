@@ -24,184 +24,184 @@ import cjoy.ioc.BeanFactoryManager
 import cjoy.log.macros.*
 
 /**
- * Context which holds the engine config, params, context params and any you need.
+ * 上下文，包含引擎配置、参数、上下文参数以及任何你需要的其他内容。
  */
 public interface JoyContext <: Context {
     /**
-     * Gets the underlying HTTP context
+     * 获取底层的 HTTP 上下文
      *
-     * @return The HTTP context
+     * @return HTTP 上下文
      */
     prop httpContext: HttpContext
 
     /**
-     * Gets the engine configuration
+     * 获取引擎配置
      *
-     * @return The engine configuration
+     * @return 引擎配置
      */
     prop config: JoyConfig
 
     /**
-     * Gets the path parameters extracted from the request URL
+     * 获取从请求 URL 中提取的路径参数
      *
-     * @return The path parameters
+     * @return 路径参数
      */
     prop params: HashMap<String, String>
 
     /**
-     * Gets the cookies from the request
+     * 获取请求中的 cookies
      *
-     * @return The cookies
+     * @return cookies
      */
     prop cookies: HashMap<String, String>
 
     /**
-     * Gets the HTTP request method (GET, POST, etc.)
+     * 获取 HTTP 请求方法 (GET, POST 等)
      *
-     * @return The HTTP request method
+     * @return HTTP 请求方法
      */
     prop method: String
 
     /**
-     * Gets the HTTP response status code
+     * 获取 HTTP 响应状态码
      *
-     * @return The HTTP response status code
+     * @return HTTP 响应状态码
      */
     prop respStatus: UInt16
 
     /**
-     * Gets the HTTP response body
+     * 获取 HTTP 响应体
      *
-     * @return The HTTP response body
+     * @return HTTP 响应体
      */
     prop respBody: String
 
     /**
-     * Gets the HTTP request path
+     * 获取 HTTP 请求路径
      *
-     * @return The HTTP request path
+     * @return HTTP 请求路径
      */
     prop path: String
 
     /**
-     * Gets the full HTTP request URL
+     * 获取完整的 HTTP 请求 URL
      *
-     * @return The full HTTP request URL
+     * @return 完整的 HTTP 请求 URL
      */
     prop url: URL
 
     /**
-     * Sets a parameter in the context
+     * 在上下文中设置参数
      *
-     * @param key The parameter key name
-     * @param value The parameter value
+     * @param key 参数键名
+     * @param value 参数值
      */
     func setCtxParam(key: String, value: Any): Unit {
         set(key, value)
     }
 
     /**
-     * Gets a parameter from the context
+     * 从上下文中获取参数
      *
-     * @param key The parameter key name
-     * @return The parameter value
+     * @param key 参数键名
+     * @return 参数值
      */
     func getCtxParam<T>(key: String): ?T {
         get(key)
     }
 
     /**
-     * Gets a URL path parameter from the context
+     * 从上下文中获取 URL 路径参数
      *
-     * @param name The parameter name
-     * @return The parameter value
+     * @param name 参数名
+     * @return 参数值
      */
     func getParam(name: String): ?String
 
     /**
-     * Adds a URL path parameter to the context
+     * 向上下文中添加 URL 路径参数
      *
-     * @param name The parameter name
-     * @param value The parameter value
+     * @param name 参数名
+     * @param value 参数值
      */
     func addParam(name: String, value: String): Unit
 
     /**
-     * Gets a URL query parameter from the context
+     * 从上下文中获取 URL 查询参数
      *
-     * @param name The parameter name
-     * @return The parameter value
+     * @param name 参数名
+     * @return 参数值
      */
     func getQuery(name: String): ?String
 
     /**
-     * Gets a URL query parameter from the context with default value
+     * 从上下文中获取 URL 查询参数（带默认值）
      *
-     * @param name The parameter name
-     * @param defaultValue The default value if parameter not exists
-     * @return The parameter value
+     * @param name 参数名
+     * @param defaultValue 如果参数不存在时的默认值
+     * @return 参数值
      */
     func getQuery(name: String, defaultValue: String): String
 
     /**
-     * Gets all values of a URL query parameter from the context
+     * 从上下文中获取 URL 查询参数的所有值
      *
-     * @param name The parameter name
-     * @return The parameter value list
+     * @param name 参数名
+     * @return 参数值列表
      */
     func getQueryList(name: String): ArrayList<String>
 
     /**
-     * Gets a POST form parameter from the context
+     * 从上下文中获取 POST form 参数
      *
-     * @param name The parameter name
-     * @return The parameter value
+     * @param name 参数名
+     * @return 参数值
      */
     func getPostForm(name: String): ?String
 
     /**
-     * Gets a POST form parameter from the context with default value
+     * 从上下文中获取 POST form 参数（带默认值）
      *
-     * @param name The parameter name
-     * @param defaultValue The default value if parameter not exists
-     * @return The parameter value
+     * @param name 参数名
+     * @param defaultValue 如果参数不存在时的默认值
+     * @return 参数值
      */
     func getPostForm(name: String, defaultValue: String): String
 
     /**
-     * Gets all values of a POST form parameter from the context
+     * 从上下文中获取 POST form 参数的所有值
      *
-     * @param name The parameter name
-     * @return The parameter value list
+     * @param name 参数名
+     * @return 参数值列表
      */
     func getPostFormList(name: String): ArrayList<String>
 
     /**
-     * Gets a parameter from either POST form or URL query parameters
+     * 从 POST form 或 URL 查询参数中获取参数
      *
-     * @param name The parameter name
-     * @return The parameter value
+     * @param name 参数名
+     * @return 参数值
      */
     func getForm(name: String): ?String {
         getPostForm(name) ?? getQuery(name)
     }
 
     /**
-     * Gets a parameter from either POST form or URL query parameters with default value
+     * 从 POST 表单或 URL 查询参数中获取参数（带默认值）
      *
-     * @param name The parameter name
-     * @param defaultValue The default value if parameter not exists
-     * @return The parameter value
+     * @param name 参数名
+     * @param defaultValue 参数不存在时的默认值
+     * @return 参数值
      */
     func getForm(name: String, defaultValue: String): String {
         getForm(name) ?? defaultValue
     }
 
     /**
-     * Gets all values of a parameter from either POST form or URL query parameters
+     * 从 POST 表单或 URL 查询参数中获取参数的所有值
      *
-     * @param name The parameter name
-     * @return The parameter value list
+     * @param name 参数名
+     * @return 参数值列表
      */
     func getFormList(name: String): ArrayList<String> {
         var res = getPostFormList(name)
@@ -213,267 +213,267 @@ public interface JoyContext <: Context {
     }
 
     /**
-     * Reads the request JSON body content and deserializes it to type T
+     * 读取请求 JSON 体内容并反序列化为类型 T
      *
-     * @return The deserialized object of type T, or None if deserialization fails
+     * @return 反序列化后的类型 T 对象，或 None（如果反序列化失败）
      */
     func readJson<T>(): ?T where T <: JsonDeserializable<T>
 
     /**
-     * Reads the request body content into a byte array
+     * 读取请求体内容到字节数组
      *
-     * @return The request body as a byte array
+     * @return 请求体作为字节数组
      */
     func readRawData(): Array<Byte>
 
     /**
-     * Reads the request body content into a string
+     * 读取请求体内容到字符串
      *
-     * @return The request body as a string
+     * @return 请求体作为字符串
      */
     func readString(): String
 
     /**
-     * Reads and binds the request body content into a string
+     * 读取并绑定请求体内容到字符串
      *
-     * @return The request body as a string, or None if no body
+     * @return 请求体作为字符串，或 None（如果无请求体）
      */
     func bindStringBody(): ?String
 
     /**
-     * Reads and binds query parameters to an object of type T
+     * 读取并绑定查询参数到类型 T 的对象
      *
-     * @return The bound object of type T, or None if no query parameters
+     * @return 绑定后的类型 T 对象，或 None（如果无查询参数）
      */
     func bindQuery<T>(): ?T where T <: JoyBindable<T>
 
     /**
-     * Reads and binds POST form parameters to an object of type T
+     * 读取并绑定 POST 表单参数到类型 T 的对象
      *
-     * @return The bound object of type T, or None if no form parameters
+     * @return 绑定后的类型 T 对象，或 None（如果无表单参数）
      */
     func bindPostForm<T>(): ?T where T <: JoyBindable<T>
 
     /**
-     * Reads and binds header parameters to an object of type T
+     * 读取并绑定请求头参数到类型 T 的对象
      *
-     * @return The bound object of type T, or None if no header parameters
+     * @return 绑定后的类型 T 对象，或 None（如果无请求头参数）
      */
     func bindHeader<T>(): ?T where T <: JoyBindable<T>
 
     /**
-     * Binds the request JSON body content to an object of type T
+     * 绑定请求 JSON 体内容到类型 T 的对象
      *
-     * @return The bound object of type T, or None if binding fails
+     * @return 绑定后的类型 T 对象，或 None（如果绑定失败）
      */
     func bindJsonBody<T>(): ?T where T <: JsonDeserializable<T>
 
     /**
-     * reply response with serialized json body and status code
+     * 使用序列化的 JSON 正文和状态码进行回复
      *
-     * @param body the object of T
-     * @return the current context instance for method chaining
+     * @param body T 类型对象
+     * @return 当前 JoyContext 实例，便于链式调用
      */
     func json<T>(body: T): JoyContext where T <: JsonSerializable
 
     /**
-     * reply response with json body and status code
+     * 使用 JSON 正文和状态码进行回复
      *
-     * @param body the string body
-     * @return the current context instance for method chaining
+     * @param body 字符串正文
+     * @return 当前 JoyContext 实例，便于链式调用
      */
     func json(body: String): JoyContext
 
     /**
-     * reply response with the body of content type and status code
+     * 使用指定内容类型和正文进行回复
      *
-     * @param contentType the content type
-     * @param body the string body
-     * @return the current context instance for method chaining
+     * @param contentType 内容类型
+     * @param body 字符串正文
+     * @return 当前 JoyContext 实例，便于链式调用
      */
     func string(contentType: String, body: String): JoyContext
 
     /**
-     * reply response with text plain body and status code OK(200)
+     * 使用文本/纯文本正文和 OK(200) 状态码进行回复
      *
-     * @param body the string body
-     * @return the current context instance for method chaining
+     * @param body 字符串正文
+     * @return 当前 JoyContext 实例，便于链式调用
      */
     func string(body: String): JoyContext
 
     /**
-     * reply response with text plain body and status code OK(200)
+     * 使用文本/纯文本正文和 OK(200) 状态码进行回复
      *
-     * @param body string body
-     * @return the current context instance for method chaining
+     * @param body 字符串正文
+     * @return 当前 JoyContext 实例，便于链式调用
      */
     func text(body: String): JoyContext
 
     /**
-     * reply response with html body and status code OK(200)
+     * 使用 HTML 正文和 OK(200) 状态码进行回复
      *
-     * @param body string body
-     * @return the current context instance for method chaining
+     * @param body HTML 正文字符串
+     * @return 当前 JoyContext 实例，便于链式调用
      */
     func html(body: String): JoyContext
 
     /**
-     * reply response with the body of content type and status code
+     * 使用字节数组作为响应主体并设置内容类型和状态码
      *
-     * @param body the bytes body
-     * @return the current context instance for method chaining
+     * @param body 字节数组正文
+     * @return 当前 JoyContext 实例，便于链式调用
      */
     func data(body: Array<Byte>): JoyContext
 
     /**
-     * reply response with data bytes body
+     * 使用输入流作为数据字节正文进行回复
      *
-     * @param body the stream body
-     * @return the current context instance for method chaining
+     * @param body 输入流正文
+     * @return 当前 JoyContext 实例，便于链式调用
      */
     func data(body: InputStream): JoyContext
 
     /**
-     * reply response with file data bytes body
+     * 使用文件数据字节作为响应主体进行回复
      *
-     * @param filePath the file path
-     * @return the current context instance for method chaining
+     * @param filePath 文件路径
+     * @return 当前 JoyContext 实例，便于链式调用
      */
     func file(filePath: String): JoyContext
 
     /**
-     * reply response with file data bytes attachment
+     * 将文件数据作为附件进行回复
      *
-     * @param filePath the file path
-     * @return the current context instance for method chaining
+     * @param filePath 文件路径
+     * @return 当前 JoyContext 实例，便于链式调用
      */
     func attachment(filePath: String): JoyContext
 
     /**
-     * set the content type
+     * 设置内容类型
      *
-     * @param contentType the content type
-     * @return the current context instance for method chaining
+     * @param contentType 内容类型
+     * @return 当前 JoyContext 实例，便于链式调用
      */
     func contentType(contentType: String): JoyContext
 
     /**
-     * Gets the real client IP address, considering proxy headers if configured
+     * 获取真实客户端IP地址，如果配置了代理头则考虑代理头
      *
-     * @return The real client IP address
+     * @return 真实客户端IP地址
      */
     func getClientIP(): String
 
     /**
-     * Gets the remote IP address from the connection
+     * 从连接中获取远程IP地址
      *
-     * @return The remote IP address
+     * @return 远程IP地址
      */
     func getRemoteIP(): String
 
     /**
-     * Gets the content type of the request body
+     * 获取请求体的内容类型
      *
-     * @return The content type
+     * @return 内容类型
      */
     func getContentType(): String
 
     /**
-     * Gets the first value of the specified request header
+     * 获取指定请求头的第一个值
      *
-     * @param name The header name
-     * @return The header value
+     * @param name 请求头名称
+     * @return 请求头值
      */
     func getHeader(name: String): ?String
 
     /**
-     * Gets all values of the specified request header
+     * 获取指定请求头的所有值
      *
-     * @param name The header name
-     * @return The header values
+     * @param name 请求头名称
+     * @return 请求头值的集合
      */
     func getHeaderList(name: String): Collection<String>
 
     /**
-     * Sets the HTTP status code for the response
+     * 设置响应的HTTP状态码
      *
-     * @param status The HTTP status code
-     * @return The current JoyContext instance for method chaining
+     * @param status HTTP 状态码
+     * @return 当前 JoyContext 实例，便于链式调用
      */
     func status(status: UInt16): JoyContext
 
     /**
-     * Replies with an OK(200) response
+     * 返回 OK(200) 响应
      *
-     * @return The current JoyContext instance for method chaining
+     * @return 当前 JoyContext 实例，便于链式调用
      */
     func ok(): JoyContext
 
     /**
-     * Adds a header to the response
+     * 向响应添加头信息
      *
-     * @param name The header name
-     * @param value The header value
-     * @return The current JoyContext instance for method chaining
+     * @param name 头名称
+     * @param value 头值
+     * @return 当前 JoyContext 实例，便于链式调用
      */
     func header(name: String, value: String): JoyContext
 
     /**
-     * Reads a cookie value from the request
+     * 从请求读取 Cookie 值
      *
-     * @param name The cookie name
-     * @return The cookie value
+     * @param name Cookie 名称
+     * @return Cookie 值
      */
     func getCookie(name: String): ?String
 
     /**
-     * Writes a cookie to the response
+     * 将 Cookie 写入响应
      *
-     * @param cookie The cookie object
-     * @return The current JoyContext instance for method chaining
+     * @param cookie Cookie 对象
+     * @return 当前 JoyContext 实例，便于链式调用
      */
     func cookie(cookie: Cookie): JoyContext
 
     /**
-     * Redirects to a new URL with the specified status code
+     * 重定向到带有指定状态码的新 URL
      *
-     * @param status The HTTP status code
-     * @param location The redirect location URL
+     * @param status HTTP 状态码
+     * @param location 重定向位置 URL
      */
     func redirect(status: UInt16, location: String): Unit
 
     /**
-     * Replies with a 404 Not Found response
+     * 返回 404 Not Found 响应
      */
     func notFound(): Unit
 
     /**
-     * Creates a chunked writer for streaming responses
+     * 为流式响应创建分块写入器
      *
-     * @return The chunked writer instance
+     * @return 分块写入器实例
      */
     func chunkedWriter(): JoyChunkedWriter
 
     /**
-     * Creates an SSE (Server-Sent Events) emitter
+     * 创建一个服务器发送事件（SSE）发射器
      *
-     * @return The SSE emitter instance
+     * @return SSE 发射器实例
      */
     func eventEmitter(): JoySseEmitter
 
     /**
-     * Gets basic authentication information from the request
+     * 从请求获取基础认证信息
      *
-     * @return The username and password tuple, or None if basic auth is not provided or invalid
+     * @return 包含用户名和密码的元组，若未提供或无效则返回 None
      */
     func basicAuth(): ?(String, String)
 
     /**
-     * Gets the request parameter by type and name
+     * 按类型和名称获取请求参数
      *
-     * @param type The parameter type
-     * @param name The parameter name
-     * @return The parameter value
+     * @param typ 参数类型
+     * @param name 参数名
+     * @return 参数值
      */
     func getRequestParam(typ: String, name: String): ?String {
         match (typ) {
@@ -488,11 +488,11 @@ public interface JoyContext <: Context {
     }
 
     /**
-     * Gets the request parameter by type and name
+     * 按类型和名称获取请求参数
      *
-     * @param type The parameter type
-     * @param name The parameter name
-     * @return The parameter value
+     * @param typ 参数类型
+     * @param name 参数名
+     * @return 参数值
      */
     func getRequestParam(typ: String, name: String, defaultValue: String): String {
         match (typ) {
@@ -810,9 +810,9 @@ class JoyHttpContext <: JoyContext {
     }
 
     /**
-     * reply response with text plain body and status code OK(200)
+     * 使用文本/纯文本正文和 OK(200) 状态码进行回复
      *
-     * @param body string body
+     * @param body 字符串正文
      */
     public func text(body: String): JoyContext {
         _respBody = body
@@ -821,9 +821,9 @@ class JoyHttpContext <: JoyContext {
     }
 
     /**
-     * reply response with html body and status code OK(200)
+     * 使用 HTML 正文和 OK(200) 状态码进行回复
      *
-     * @param body string body
+     * @param body HTML 正文字符串
      */
     public func html(body: String): JoyContext {
         _respBody = body
@@ -973,10 +973,10 @@ class JoyHttpContext <: JoyContext {
     }
 
     /**
-     * get service by name from service container
+     * 通过名称从服务容器获取服务
      *
-     * @param name the service name
-     * @return: the service instance or None if not found
+     * @param name 服务名称
+     * @return 服务实例，未找到时返回 None
      */
     public func getService<T>(name: String): ?T {
         _services.getService<T>(name)

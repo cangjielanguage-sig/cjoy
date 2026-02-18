@@ -13,7 +13,7 @@ package cjoy.config
 import std.collection.{Map, List, HashMap, ArrayList}
 
 /**
- * add key and value to data
+ * 将键和值添加到数据
  */
 public func addToData(data: Map<String, Any>, key: String, cfgKey: ConfigKey, value: String): Unit {
     // 有子节点
@@ -29,7 +29,7 @@ public func addToData(data: Map<String, Any>, key: String, cfgKey: ConfigKey, va
 }
 
 /**
- * @throws ConfigException if the key or value is invalid
+ * @throws ConfigException 如果键或值无效
  */
 private func addSubToDataExist(sm: Any, key: String, cfgKey: ConfigKey, subKey: ConfigKey, value: String): Unit {
     // 不是数组配置
@@ -75,7 +75,7 @@ private func addSubToDataFirst(data: Map<String, Any>, key: String, cfgKey: Conf
 }
 
 /**
- * @throws ConfigException if the key or value is invalid
+ * @throws ConfigException 如果键或值无效
  */
 private func addLastToData(data: Map<String, Any>, key: String, cfgKey: ConfigKey, value: String): Unit {
     // 不是数组配置，后面的覆盖前面的
@@ -111,7 +111,7 @@ private func addLastToData(data: Map<String, Any>, key: String, cfgKey: ConfigKe
 }
 
 /**
- * 从MapData中获取对应的值，支持key采用前缀获取
+ * 从 MapData 中获取对应的值，支持 key 采用前缀获取
  */
 func getDataValue(data: Map<String, Any>, cfgKey: ConfigKey): ?Any {
     if (let Some(sub) <- cfgKey.sub) {

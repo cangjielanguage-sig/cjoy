@@ -20,10 +20,9 @@ const PS_BODY: ParseState = 1
 const PS_END: ParseState = 2
 
 /**
- * Parser for multipart content
+ * 多部分内容解析器
  *
- * JoyMultiPartParser is responsible for parsing multipart content streams
- * according to the multipart MIME specification.
+ * JoyMultiPartParser 负责根据多部分 MIME 规范解析多部分内容流
  */
 public class JoyMultiPartParser <: Iterable<JoyMultiPart> {
     let _config: JoyMultiPartConfig
@@ -40,12 +39,12 @@ public class JoyMultiPartParser <: Iterable<JoyMultiPart> {
     private let _parts = ArrayList<JoyMultiPart>()
 
     /**
-     * Initializes a new instance of JoyMultiPartParser
+     * 初始化 JoyMultiPartParser 的新实例
      *
-     * @param config The multipart config
-     * @param handler The handler to process parts
-     * @param inputStream The input stream to parse
-     * @param boundary The boundary string for multipart parsing
+     * @param config 多部分配置
+     * @param handler 处理部分的处理器
+     * @param inputStream 要解析的输入流
+     * @param boundary 多部分解析的边界字符串
      */
     public init(config: JoyMultiPartConfig, handler: JoyMultiPartHandler, inputStream: InputStream, boundary: String) {
         _config = config
@@ -61,10 +60,10 @@ public class JoyMultiPartParser <: Iterable<JoyMultiPart> {
     }
 
     /**
-     * Parses the multipart content from the input stream
+     * 从输入流解析多部分内容
      *
-     * This method reads and parses all multipart parts from the input stream.
-     * Each part is processed by the configured handler.
+     * 此方法从输入流读取并解析所有多部分部分。
+     * 每个部分都由配置的处理器处理。
      */
     public func parseParts(): Unit {
         while (let Some(line) <- _buffer.readUntil(b'\n')) {
@@ -161,19 +160,19 @@ public class JoyMultiPartParser <: Iterable<JoyMultiPart> {
     }
 
     /**
-     * Gets the iterator of parsed multipart parts
+     * 获取解析的多部分部分的迭代器
      *
-     * @return Iterator of JoyMultiPart instances
+     * @return JoyMultiPart 实例的迭代器
      */
     public func iterator(): Iterator<JoyMultiPart> {
         _parts.iterator()
     }
 
     /**
-     * Gets a specific part by name
+     * 根据名称获取特定部分
      *
-     * @param name The name of the part to retrieve
-     * @return The JoyMultiPart instance or None if not found
+     * @param name 要获取部分的名称
+     * @return JoyMultiPart 实例，如果未找到则返回 None
      */
     public func getPart(name: String): ?JoyMultiPart {
         for (p in _parts) {

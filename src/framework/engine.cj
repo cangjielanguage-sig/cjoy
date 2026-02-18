@@ -24,19 +24,19 @@ import cjoy.version.printBanner
 @JoyCreateLogger("cjoy.framework")
 
 /**
- * Configuration options for CJoy web server
+ * CJoy Web 服务器的配置选项
  */
 public class JoyConfig {
     /**
-     * Creates a JoyConfig instance with default or specified values
+     * 使用默认值或指定值创建 JoyConfig 实例
      *
-     * @param remoteIPHeaders List of header names to check for real client IP (e.g., "X-Forwarded-For")
-     * @param enableDebugLog Enable debug logging (deprecated, use JoyLoggerFactory instead)
-     * @param caseInsensitive Whether route matching is case-insensitive
-     * @param escapeAddedRoutes Whether to escape special characters in route patterns
-     * @param notFoundHandler Handler for 404 Not Found responses
-     * @param methodNotAllowedHandler Handler for 405 Method Not Allowed responses
-     * @param maxRequestBodySize Maximum request body size in bytes (default: 32MB)
+     * @param remoteIPHeaders 用于检查真实客户端 IP 的头部名称列表（例如 "X-Forwarded-For"）
+     * @param enableDebugLog 启用调试日志（已弃用，请使用 JoyLoggerFactory）
+     * @param caseInsensitive 路由匹配是否区分大小写
+     * @param escapeAddedRoutes 是否对路由模式中的特殊字符进行转义
+     * @param notFoundHandler 404 Not Found 响应的处理器
+     * @param methodNotAllowedHandler 405 Method Not Allowed 响应的处理器
+     * @param maxRequestBodySize 最大请求体大小，单位为字节（默认：32MB）
      */
     public JoyConfig(
         public let remoteIPHeaders!: Array<String> = [],
@@ -50,7 +50,7 @@ public class JoyConfig {
 }
 
 /**
- * a wrapper for net.http.Server
+ * net.http.Server 的包装类
  */
 public class Joy {
     private static let _INSTANCES: ConcurrentHashMap<String, Joy> = ConcurrentHashMap()
@@ -70,7 +70,7 @@ public class Joy {
     }
 
     /**
-     * return net.http.Server
+     * 返回 net.http.Server 实例
      */
     public prop server: Server {
         get() {
@@ -79,13 +79,13 @@ public class Joy {
     }
 
     /**
-     * Returns the default Joy engine instance
+     * 返回默认的 Joy 引擎实例
      *
-     * @return The default Joy engine instance
+     * @return 默认的 Joy 引擎实例
      */
     public static func default(): Joy {
-        // ~_~，bad sdk api, not have computeIfAbsent func in map
-        // func is not atomic
+        // ~_~，糟糕的 SDK API，map 中没有 computeIfAbsent 函数
+        // 函数不是原子的
         if (_INSTANCES.contains("default")) {
             return _INSTANCES.get("default").getOrThrow()
         }
@@ -93,22 +93,22 @@ public class Joy {
     }
 
     /**
-     * Creates a Joy engine instance with default configuration
+     * 使用默认配置创建 Joy 引擎实例
      *
-     * @param name Instance name (default: "default")
-     * @return New Joy engine instance
+     * @param name 实例名称（默认："default"）
+     * @return 新的 Joy 引擎实例
      */
     public static func create(name!: String = "default"): Joy {
         create(JoyConfig(), name: name)
     }
 
     /**
-     * Creates a Joy engine instance with custom configuration
+     * 使用自定义配置创建 Joy 引擎实例
      *
-     * @param config Global configuration
-     * @param name Instance name (default: "default")
-     * @return New Joy engine instance
-     * @throws IllegalArgumentException If an instance with the same name already exists
+     * @param config 全局配置
+     * @param name 实例名称（默认："default"）
+     * @return 新的 Joy 引擎实例
+     * @throws IllegalArgumentException 如果已存在相同名称的实例
      */
     public static func create(config: JoyConfig, name!: String = "default"): Joy {
         if (_INSTANCES.contains(name)) {
@@ -122,24 +122,24 @@ public class Joy {
     }
 
     /**
-     * Runs the HTTP server at the specified address and port
+     * 在指定地址和端口运行 HTTP 服务器
      *
-     * @param addr Listen address
-     * @param port Listen port
+     * @param addr 监听地址
+     * @param port 监听端口
      */
     public func run(addr: String, port: UInt16): Unit {
         run(ServerBuilder().addr(addr).port(port))
     }
 
     /**
-     * Runs the HTTPS server at the specified address and port with certificate files
+     * 使用证书文件在指定地址和端口运行 HTTPS 服务器
      *
-     * @param addr Listen address
-     * @param port Listen port
-     * @param certFilePath Certificate server file path
-     * @param keyFilePath Certificate server key file path
-     * @param password Password of certificate server key (optional)
-     * @param h2 Whether to run as HTTP/2 (default: false)
+     * @param addr 监听地址
+     * @param port 监听端口
+     * @param certFilePath 证书服务器文件路径
+     * @param keyFilePath 证书服务器密钥文件路径
+     * @param password 证书服务器密钥密码（可选）
+     * @param h2 是否以 HTTP/2 模式运行（默认：false）
      */
     public func run(addr: String, port: UInt16, certFilePath: String, keyFilePath: String, password!: ?String = None,
         h2!: Bool = false): Unit {
@@ -151,9 +151,9 @@ public class Joy {
     }
 
     /**
-     * Runs the HTTP(S) server using a ServerBuilder
+     * 使用 ServerBuilder 运行 HTTP(S) 服务器
      *
-     * @param serverBuilder Server builder with configured options
+     * @param serverBuilder 配置了选项的服务器构建器
      */
     public func run(serverBuilder: ServerBuilder): Unit {
         let server = serverBuilder
@@ -170,9 +170,9 @@ public class Joy {
     }
 
     /**
-     * Shuts down the server
+     * 关闭服务器
      *
-     * @param gracefully Whether to shutdown gracefully (default: true)
+     * @param gracefully 是否优雅地关闭（默认：true）
      */
     public func shutdown(gracefully!: Bool = true): Unit {
         if (let Some(server) <- _server) {
@@ -187,11 +187,11 @@ public class Joy {
     }
 
     /**
-     * Adds a service to the Joy instance
+     * 向 Joy 实例添加服务
      *
-     * @param name Service unique name
-     * @param service Service instance object
-     * @return Current Joy instance for method chaining
+     * @param name 服务唯一名称
+     * @param service 服务实例对象
+     * @return 当前 Joy 实例，用于方法链式调用
      */
     public func addService(name: String, service: Any): Joy {
         _services.addService(name, service)
@@ -199,10 +199,10 @@ public class Joy {
     }
 
     /**
-     * Gets a service by name from the service container
+     * 从服务容器中按名称获取服务
      *
-     * @param name Service name
-     * @return Service instance or None if not found
+     * @param name 服务名称
+     * @return 服务实例，如果未找到则返回 None
      */
     public func getService<T>(name: String): ?T {
         _services.getService<T>(name)

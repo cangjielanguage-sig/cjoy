@@ -19,35 +19,35 @@ import cjoy.utils.{StrExt, trimString}
 import cjoy.multipart.JoyMultiPartWriter
 
 /**
- * Represents an HTTP range for byte-range requests
+ * 表示 HTTP 字节范围请求
  */
 class JoyHttpRange {
     private static let PREFIX = "bytes="
 
     /**
-     * Creates a new HTTP range instance
+     * 创建新的 HTTP 范围实例
      *
-     * @param start The start position of the range
-     * @param length The length of the range
+     * @param start 范围的起始位置
+     * @param length 范围的长度
      */
     public JoyHttpRange(let start!: Int = 0, let length!: Int = 0) {}
 
     /**
-     * Gets the content range string for the given size
+     * 获取给定大小的内容范围字符串
      *
-     * @param size The total size of the content
-     * @return The content range string
+     * @param size 内容的总大小
+     * @return 内容范围字符串
      */
     public func contentRange(size: Int): String {
         "bytes ${start}-${start + length - 1}/${size}"
     }
 
     /**
-     * Gets the MIME headers for the range
+     * 获取范围的 MIME 头
      *
-     * @param contentType The content type
-     * @param size The total size of the content
-     * @return The HTTP headers for the range
+     * @param contentType 内容类型
+     * @param size 内容的总大小
+     * @return 范围的 HTTP 头
      */
     public func mimeHeaders(contentType: String, size: Int): HttpHeaders {
         let headers = HttpHeaders()
@@ -57,12 +57,12 @@ class JoyHttpRange {
     }
 
     /**
-     * Parses an HTTP range header string
+     * 解析 HTTP Range 头字符串
      *
-     * @param str The range header string to parse
-     * @param size The total size of the content
-     * @return The parsed HTTP ranges
-     * @throws IllegalArgumentException if the range string is invalid
+     * @param str 要解析的 Range 头字符串
+     * @param size 内容的总大小
+     * @return 解析后的 HTTP 范围列表
+     * @throws IllegalArgumentException 如果范围字符串无效
      */
     public static func parse(str: String, size: Int): JoyHttpRangs {
         let res: JoyHttpRangs = JoyHttpRangs()
@@ -145,18 +145,18 @@ class JoyHttpRange {
 }
 
 /**
- * Type alias for a list of HTTP ranges
+ * HTTP 范围列表的类型别名
  */
 type JoyHttpRangs = ArrayList<JoyHttpRange>
 
 /**
- * Extension functions for JoyHttpRangs
+ * JoyHttpRangs 的扩展函数
  */
 extend JoyHttpRangs {
     /**
-     * Calculates the total size of all ranges combined
+     * 计算所有范围的总大小
      *
-     * @return The total size of all ranges
+     * @return 所有范围的总大小
      */
     func sumSize(): Int {
         var size = 0
@@ -167,11 +167,11 @@ extend JoyHttpRangs {
     }
 
     /**
-     * Calculates the MIME size of the ranges when served as multipart/byteranges
+     * 计算范围作为 multipart/byteranges 时的 MIME 大小
      *
-     * @param contentType The content type of the response
-     * @param size The total size of the content
-     * @return The MIME size of the ranges
+     * @param contentType 响应的内容类型
+     * @param size 内容的总大小
+     * @return 范围的 MIME 大小
      */
     func mimeSize(contentType: String, size: Int): Int {
         let writer = CountingWriter()
@@ -188,15 +188,15 @@ extend JoyHttpRangs {
 }
 
 /**
- * A counting writer that tracks the number of bytes written
+ * 追踪写入字节数的计数器
  */
 class CountingWriter <: OutputStream {
     var len = 0
 
     /**
-     * Writes the given buffer to the writer and increments the byte count
+     * 将给定缓冲区写入写入器并增加字节计数
      *
-     * @param buffer The buffer to write
+     * @param buffer 要写入的缓冲区
      */
     public func write(buffer: Array<Byte>): Unit {
         len += buffer.size

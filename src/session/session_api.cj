@@ -13,103 +13,103 @@ package cjoy.session
 import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable}
 
 /**
- * the http session
+ * HTTP 会话
  */
 public interface JoySession {
     /**
-     * return the session id
+     * 返回会话 ID
      *
-     * @return the session id
+     * @return 会话 ID
      */
     prop id: String
 
     /**
-     * return the invalidated status
+     * 返回失效状态
      *
-     * @return true if the session is invalidated
+     * @return 如果会话已失效返回 true
      */
     prop isInvalidated: Bool
 
     /**
-     * set value to given key in session.
+     * 在会话中设置键值对。
      *
-     * @param key the session key
-     * @param value the session value
+     * @param key 会话键
+     * @param value 会话值
      */
     func set<T>(key: String, value: T): Unit where T <: JsonSerializable & JsonDeserializable<T>
 
     /**
-     * get value by given key in session.
+     * 从会话中获取指定键的值。
      *
-     * @param key the session key
-     * @return the session value
+     * @param key 会话键
+     * @return 会话值
      */
     func get<T>(key: String): ?T where T <: JsonSerializable & JsonDeserializable<T>
 
     /**
-     * delete and return a key from session.
+     * 从会话中删除并返回指定键的值。
      *
-     * @param key the session key
-     * @return the removed session value
+     * @param key 会话键
+     * @return 被删除的会话值
      */
     func remove<T>(key: String): ?T where T <: JsonSerializable & JsonDeserializable<T>
 
     /**
-     * flush to storage when handling http request finished
+     * 处理 HTTP 请求完成后刷新到存储
      *
-     * @throws IOException if flush fails
+     * @throws IOException 如果刷新失败
      */
     func flush(): Unit
 
     /**
-     * delete the session
+     * 删除会话
      *
-     * @throws IOException if delete fails
+     * @throws IOException 如果删除失败
      */
     func invalidate(): Unit
 }
 
 /**
- * Store the sesson to storage
+ * 将会话存储到存储介质
  */
 public interface JoySessionStorage {
     /**
-     * the size of sessions
+     * 会话数量
      *
-     * @return the number of sessions
+     * @return 会话数量
      */
     prop size: Int
 
     /**
-     * delete session in storage
+     * 删除存储中的会话
      *
-     * @param sid the session id
-     * @throws IOException if delete fails
+     * @param sid 会话 ID
+     * @throws IOException 如果删除失败
      */
     func delete(sid: String): Unit
 
     /**
-     * get or create new session
+     * 获取或创建新会话
      *
-     * @param sid the session id
-     * @param idLen the session id length for new sessions
-     * @return the session
-     * @throws IOException if operation fails
+     * @param sid 会话 ID
+     * @param idLen 新会话的会话 ID 长度
+     * @return 会话
+     * @throws IOException 如果操作失败
      */
     func getOrCreate(sid: String, idLen: Int32): JoySession
 
     /**
-     * exist or not
+     * 是否存在
      *
-     * @param sid the session id
-     * @return true if session exists
+     * @param sid 会话 ID
+     * @return 如果会话存在返回 true
      */
     func exists(sid: String): Bool
 
     /**
-     * clean expired sessions
+     * 清理过期会话
      *
-     * @throws IOException if clean fails
+     * @throws IOException 如果清理失败
      */
     func clean(): Unit
 }

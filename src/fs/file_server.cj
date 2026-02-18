@@ -21,7 +21,7 @@ import cjoy.multipart.{getMimeTypeByExt, JoyMultiPartWriter}
 import cjoy.utils.{trimString}
 
 /**
- * HTTP conditional result
+ * HTTP 条件结果
  */
 enum JoyCondResult {
     | MatchNone
@@ -30,7 +30,7 @@ enum JoyCondResult {
 }
 
 /**
- * File server for serving static files
+ * 用于提供静态文件的文件服务器
  *
  */
 public class JoyFileServer {
@@ -41,11 +41,11 @@ public class JoyFileServer {
     private static const INDEX_PAGE: String = "index.html"
 
     /**
-     * Serve file from local filesystem
+     * 从本地文件系统提供文件
      *
-     * @param ctx joy context
-     * @param filePath path of file which will to serve
-     * @throws IOException if file is not existed
+     * @param ctx joy 上下文
+     * @param filePath 要提供服务的文件路径
+     * @throws IOException 如果文件不存在
      */
     public static func serveFile(ctx: JoyContext, filePath: Path): Unit {
         if (!exists(filePath)) {
@@ -64,13 +64,13 @@ public class JoyFileServer {
     }
 
     /**
-     * Serve content from provided read seeker
+     * 从提供的读取器提供内容
      *
-     * @param ctx joy context
-     * @param filePath path of file which will to serve
-     * @param modTime modification time of content, None means use file modification time
-     * @param eTag ETag of content, None means auto generate
-     * @throws IOException if file is not existed
+     * @param ctx joy 上下文
+     * @param filePath 要提供服务的文件路径
+     * @param modTime 内容修改时间，None 表示使用文件修改时间
+     * @param eTag 内容的 ETag，None 表示自动生成
+     * @throws IOException 如果文件不存在
      */
     public static func serveContent(ctx: JoyContext, filePath: Path, modTime: ?DateTime, eTag: ?String): Unit {
         if (!exists(filePath)) {
@@ -133,12 +133,12 @@ public class JoyFileServer {
     }
 
     /**
-     * Serve directory with index.html or directory listing
+     * 使用 index.html 或目录列表服务目录
      *
-     * @param ctx joy context
-     * @param dirPath path of directory
-     * @param fileInfo directory file info
-     * @throws IOException if directory is not existed
+     * @param ctx joy 上下文
+     * @param dirPath 目录路径
+     * @param fileInfo 目录文件信息
+     * @throws IOException 如果目录不存在
      */
     private static func serveDirectory(ctx: JoyContext, dirPath: Path, fileInfo: FileInfo): Unit {
         // 检查URL路径是否以/结尾
@@ -192,13 +192,13 @@ public class JoyFileServer {
     }
 
     /**
-     * Handle range request
+     * 处理 Range 请求
      *
-     * @param ctx joy context
-     * @param filePath path of file
-     * @param rangeStr range header string
-     * @param size file size
-     * @param contentType content type
+     * @param ctx joy 上下文
+     * @param filePath 文件路径
+     * @param rangeStr Range 头字符串
+     * @param size 文件大小
+     * @param contentType 内容类型
      */
     private static func handleRangeRequest(ctx: JoyContext, filePath: Path, rangeStr: String, size: Int64,
         contentType: String): Unit {
@@ -266,12 +266,12 @@ public class JoyFileServer {
     }
 
     /**
-     * Send file content
+     * 发送文件内容
      *
-     * @param ctx joy context
-     * @param filePath path of file
-     * @param offset offset to start reading
-     * @param length length to read
+     * @param ctx joy 上下文
+     * @param filePath 文件路径
+     * @param offset 读取起始偏移量
+     * @param length 读取长度
      */
     private static func sendFile(ctx: JoyContext, filePath: Path, offset: Int64, length: Int64): Unit {
         let writer = JoyHttpResponseWriter(ctx)
@@ -308,12 +308,12 @@ public class JoyFileServer {
     }
 
     /**
-     * Check preconditions (If-Match, If-None-Match, If-Modified-Since, etc.)
+     * 检查预条件（If-Match、If-None-Match、If-Modified-Since 等）
      *
-     * @param ctx joy context
-     * @param modTime modification time
+     * @param ctx joy 上下文
+     * @param modTime 修改时间
      * @param eTag ETag
-     * @return (done, rangeHeader) - done means response already sent
+     * @return (done, rangeHeader) - done 表示响应已发送
      */
     private static func checkPreconditions(ctx: JoyContext, modTime: DateTime, eTag: String): (Bool, String) {
         // 检查If-Match
@@ -370,11 +370,11 @@ public class JoyFileServer {
     }
 
     /**
-     * Check If-Match header
+     * 检查 If-Match 头
      *
-     * @param ctx joy context
-     * @param eTag ETag to check
-     * @return cond result
+     * @param ctx joy 上下文
+     * @param eTag 要检查的 ETag
+     * @return 条件结果
      */
     private static func checkIfMatch(ctx: JoyContext, eTag: String): JoyCondResult {
         let ifMatch = ctx.getHeader(JoyHttpConsts.HEADER_IF_MATCH)
@@ -411,11 +411,11 @@ public class JoyFileServer {
     }
 
     /**
-     * Check If-None-Match header
+     * 检查 If-None-Match 头
      *
-     * @param ctx joy context
-     * @param eTag ETag to check
-     * @return cond result
+     * @param ctx joy 上下文
+     * @param eTag 要检查的 ETag
+     * @return 条件结果
      */
     private static func checkIfNoneMatch(ctx: JoyContext, eTag: String): JoyCondResult {
         let ifNoneMatch = ctx.getHeader(JoyHttpConsts.HEADER_IF_NONE_MATCH)
@@ -453,11 +453,11 @@ public class JoyFileServer {
     }
 
     /**
-     * Check If-Modified-Since header
+     * 检查 If-Modified-Since 头
      *
-     * @param ctx joy context
-     * @param modTime modification time
-     * @return cond result
+     * @param ctx joy 上下文
+     * @param modTime 修改时间
+     * @return 条件结果
      */
     private static func checkIfIfModifiedSince(ctx: JoyContext, modTime: DateTime): JoyCondResult {
         if (ctx.method != JoyHttpConsts.METHOD_GET && ctx.method != JoyHttpConsts.METHOD_HEAD) {
@@ -490,11 +490,11 @@ public class JoyFileServer {
     }
 
     /**
-     * Check If-Unmodified-Since header
+     * 检查 If-Unmodified-Since 头
      *
-     * @param ctx joy context
-     * @param modTime modification time
-     * @return cond result
+     * @param ctx joy 上下文
+     * @param modTime 修改时间
+     * @return 条件结果
      */
     private static func checkIfUnmodifiedSince(ctx: JoyContext, modTime: DateTime): JoyCondResult {
         let ifUnmodifiedSince = ctx.getHeader(JoyHttpConsts.HEADER_IF_UNMODIFIED_SINCE)
@@ -523,12 +523,12 @@ public class JoyFileServer {
     }
 
     /**
-     * Check If-Range header
+     * 检查 If-Range 头
      *
-     * @param ctx joy context
-     * @param modTime modification time
+     * @param ctx joy 上下文
+     * @param modTime 修改时间
      * @param eTag ETag
-     * @return cond result
+     * @return 条件结果
      */
     private static func checkIfRange(ctx: JoyContext, modTime: DateTime, eTag: String): JoyCondResult {
         if (ctx.method != JoyHttpConsts.METHOD_GET && ctx.method != JoyHttpConsts.METHOD_HEAD) {
@@ -567,10 +567,10 @@ public class JoyFileServer {
     }
 
     /**
-     * Set Last-Modified header
+     * 设置 Last-Modified 头
      *
-     * @param ctx joy context
-     * @param modTime modification time
+     * @param ctx joy 上下文
+     * @param modTime 修改时间
      */
     private static func setLastLastModified(ctx: JoyContext, modTime: DateTime): Unit {
         let timeStr = formatHttpTime(modTime)
@@ -578,19 +578,19 @@ public class JoyFileServer {
     }
 
     /**
-     * Format DateTime to HTTP time format
+     * 将 DateTime 格式化为 HTTP 时间格式
      *
-     * @param time: local date time
-     * @return formatted HTTP time string
+     * @param time 本地日期时间
+     * @return 格式化的 HTTP 时间字符串
      */
     private static func formatHttpTime(time: DateTime): String {
         time.format(DateTimeFormat.RFC1123)
     }
 
     /**
-     * Write 304 Not Modified response
+     * 写入 304 Not Modified 响应
      *
-     * @param ctx joy context
+     * @param ctx joy 上下文
      */
     private static func writeNotModified(ctx: JoyContext): Unit {
         // RFC 7232 section 4.1:
@@ -607,11 +607,11 @@ public class JoyFileServer {
     }
 
     /**
-     * Write error response
+     * 写入错误响应
      *
-     * @param ctx joy context
-     * @param text error text
-     * @param code HTTP status code
+     * @param ctx joy 上下文
+     * @param text 错误文本
+     * @param code HTTP 状态码
      */
     private static func writeError(ctx: JoyContext, text: String, code: UInt16): Unit {
         ctx.status(code)
@@ -619,11 +619,11 @@ public class JoyFileServer {
     }
 
     /**
-     * Build directory listing HTML
+     * 构建目录列表 HTML
      *
-     * @param dirPath directory path
-     * @param requestPath request URL path
-     * @return HTML string
+     * @param dirPath 目录路径
+     * @param requestPath 请求 URL 路径
+     * @return HTML 字符串
      */
     private static func buildDirList(dirPath: Path, requestPath: String): String {
         let sb = StringBuilder()
@@ -665,10 +665,10 @@ public class JoyFileServer {
     }
 
     /**
-     * Get parent path from URL path
+     * 从 URL 路径获取父路径
      *
-     * @param path URL path
-     * @return parent path
+     * @param path URL 路径
+     * @return 父路径
      */
     private static func getParentPath(path: String): String {
         if (path.isEmpty()) {
@@ -691,10 +691,10 @@ public class JoyFileServer {
     }
 
     /**
-     * Escape HTML special characters
+     * 转义 HTML 特殊字符
      *
-     * @param str string to escape
-     * @return escaped string
+     * @param str 要转义的字符串
+     * @return 转义后的字符串
      */
     private static func escapeHtml(str: String): String {
         str.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;").replace("'", "&#39;")

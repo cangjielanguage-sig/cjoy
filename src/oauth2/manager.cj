@@ -17,84 +17,84 @@ import cjoy.log.macros.*
 @JoyCreateLogger("cjoy.oauth2")
 
 /**
- * OAuth2Manager interface for authorization management
+ * OAuth2Manager 接口用于授权管理
  */
 public interface OAuth2Manager {
     /**
-     * Gets client information by client ID
+     * 根据客户端 ID 获取客户端信息
      *
-     * @param clientId Client ID
-     * @return Client information
-     * @throws OAuthException if client not found
+     * @param clientId 客户端 ID
+     * @return 客户端信息
+     * @throws OAuthException 如果客户端未找到
      */
     func getClient(clientId: String): ClientInfo
 
     /**
-     * Generates an authorization token
+     * 生成授权令牌
      *
-     * @param rt Response type
-     * @param request Token generation request
-     * @return Generated token information
-     * @throws OAuthException if generation fails
+     * @param rt 响应类型
+     * @param request 令牌生成请求
+     * @return 生成的令牌信息
+     * @throws OAuthException 如果生成失败
      */
     func generateAuthToken(rt: ResponseType, request: TokenGenerateRequest): TokenInfo
 
     /**
-     * Generates an access token
+     * 生成访问令牌
      *
-     * @param gt Grant type
-     * @param request Token generation request
-     * @return Generated token information
-     * @throws OAuthException if generation fails
+     * @param gt 授权类型
+     * @param request 令牌生成请求
+     * @return 生成的令牌信息
+     * @throws OAuthException 如果生成失败
      */
     func generateAccessToken(gt: GrantType, request: TokenGenerateRequest): TokenInfo
 
     /**
-     * Refreshes an access token
+     * 刷新访问令牌
      *
-     * @param request Token generation request
-     * @return Refreshed token information
-     * @throws OAuthException if refresh fails
+     * @param request 令牌生成请求
+     * @return 刷新后的令牌信息
+     * @throws OAuthException 如果刷新失败
      */
     func refreshAccessToken(request: TokenGenerateRequest): TokenInfo
 
     /**
-     * Removes an access token
+     * 移除访问令牌
      *
-     * @param access Access token to remove
-     * @throws OAuthException if token is invalid
+     * @param access 要移除的访问令牌
+     * @throws OAuthException 如果令牌无效
      */
     func removeAccessToken(access: String): Unit
 
     /**
-     * Removes a refresh token
+     * 移除刷新令牌
      *
-     * @param refresh Refresh token to remove
-     * @throws OAuthException if token is invalid
+     * @param refresh 要移除的刷新令牌
+     * @throws OAuthException 如果令牌无效
      */
     func removeRefreshToken(refresh: String): Unit
 
     /**
-     * Loads and validates an access token
+     * 加载并验证访问令牌
      *
-     * @param access Access token
-     * @return Token information
-     * @throws OAuthException if token is invalid or expired
+     * @param access 访问令牌
+     * @return 令牌信息
+     * @throws OAuthException 如果令牌无效或已过期
      */
     func loadAccessToken(access: String): TokenInfo
 
     /**
-     * Loads and validates a refresh token
+     * 加载并验证刷新令牌
      *
-     * @param refresh Refresh token
-     * @return Token information
-     * @throws OAuthException if token is invalid or expired
+     * @param refresh 刷新令牌
+     * @return 令牌信息
+     * @throws OAuthException 如果令牌无效或已过期
      */
     func loadRefreshToken(refresh: String): TokenInfo
 }
 
 /**
- * Default OAuth2 manager implementation
+ * 默认的 OAuth2 管理器实现
  */
 public class DefaultOAuth2Manager <: OAuth2Manager {
     private let _clientStore: ClientStore
@@ -129,20 +129,20 @@ public class DefaultOAuth2Manager <: OAuth2Manager {
     }
 
     /**
-     * Sets the grant configuration for a specific grant type
+     * 为特定授权类型设置授权配置
      *
-     * @param grantType Grant type
-     * @param config Grant configuration
+     * @param grantType 授权类型
+     * @param config 授权配置
      */
     public func setGrantConfig(grantType: GrantType, config: GrantConfig) {
         _gtcfg.add(grantType, config)
     }
 
     /**
-     * Gets the grant configuration for a specific grant type
+     * 获取特定授权类型的授权配置
      *
-     * @param grantType Grant type
-     * @return Grant configuration
+     * @param grantType 授权类型
+     * @return 授权配置
      */
     public func getGrantConfig(grantType: GrantType): GrantConfig {
         let cfg = _gtcfg.get(grantType)
@@ -159,20 +159,20 @@ public class DefaultOAuth2Manager <: OAuth2Manager {
     }
 
     /**
-     * set refresh token config
+     * 设置刷新令牌配置
      *
-     * @param config:  refreshing configuration
+     * @param config 刷新配置
      */
     public func setRefreshingConfig(config: RefreshingConfig) {
         _rfcfg = config
     }
 
     /**
-     * get client info by id
+     * 根据客户端 ID 获取客户端信息
      *
-     * @param clientId:  client id
-     * @return:  client info
-     * @throws OAuthException if client not found
+     * @param clientId 客户端 ID
+     * @return 客户端信息
+     * @throws OAuthException 如果客户端未找到
      */
     public func getClient(clientId: String): ClientInfo {
         let client = _clientStore.getById(clientId)
@@ -184,12 +184,12 @@ public class DefaultOAuth2Manager <: OAuth2Manager {
     }
 
     /**
-     * generate authorization token
+     * 生成授权令牌
      *
-     * @param rt:  response type
-     * @param request:  token generation request
-     * @return:  token info
-     * @throws OAuthException if generation fails
+     * @param rt 响应类型
+     * @param request 令牌生成请求
+     * @return 令牌信息
+     * @throws OAuthException 如果生成失败
      */
     public func generateAuthToken(rt: ResponseType, request: TokenGenerateRequest): TokenInfo {
         let client = getClient(request.clientId)
@@ -241,12 +241,12 @@ public class DefaultOAuth2Manager <: OAuth2Manager {
     }
 
     /**
-     * generate access token
+     * 生成访问令牌
      *
-     * @param gt:  grant type
-     * @param request:  token generation request
-     * @return:  token info
-     * @throws OAuthException if generation fails
+     * @param gt 授权类型
+     * @param request 令牌生成请求
+     * @return 令牌信息
+     * @throws OAuthException 如果生成失败
      */
     public func generateAccessToken(gt: GrantType, request: TokenGenerateRequest): TokenInfo {
         let client = getClient(request.clientId)
@@ -308,11 +308,11 @@ public class DefaultOAuth2Manager <: OAuth2Manager {
     }
 
     /**
-     * refresh access token
+     * 刷新访问令牌
      *
-     * @param request:  token generation request
-     * @return:  token info
-     * @throws OAuthException if refresh fails
+     * @param request 令牌生成请求
+     * @return 令牌信息
+     * @throws OAuthException 如果刷新失败
      */
     public func refreshAccessToken(request: TokenGenerateRequest): TokenInfo {
         let token = loadRefreshToken(request.refresh)
@@ -356,10 +356,10 @@ public class DefaultOAuth2Manager <: OAuth2Manager {
     }
 
     /**
-     * remove access token
+     * 移除访问令牌
      *
-     * @param access:  access token to remove
-     * @throws OAuthException if token is empty
+     * @param access 要移除的访问令牌
+     * @throws OAuthException 如果令牌为空
      */
     public func removeAccessToken(access: String): Unit {
         if (access == "") {
@@ -370,10 +370,10 @@ public class DefaultOAuth2Manager <: OAuth2Manager {
     }
 
     /**
-     * remove refresh token
+     * 移除刷新令牌
      *
-     * @param refresh:  refresh token to remove
-     * @throws OAuthException if token is empty
+     * @param refresh 要移除的刷新令牌
+     * @throws OAuthException 如果令牌为空
      */
     public func removeRefreshToken(refresh: String): Unit {
         if (refresh == "") {
@@ -384,11 +384,11 @@ public class DefaultOAuth2Manager <: OAuth2Manager {
     }
 
     /**
-     * load access token and validate it
+     * 加载访问令牌并验证
      *
-     * @param access:  access token
-     * @return:  token info
-     * @throws OAuthException if token is invalid or expired
+     * @param access 访问令牌
+     * @return 令牌信息
+     * @throws OAuthException 如果令牌无效或已过期
      */
     public func loadAccessToken(access: String): TokenInfo {
         if (access == "") {
@@ -417,11 +417,11 @@ public class DefaultOAuth2Manager <: OAuth2Manager {
     }
 
     /**
-     * load refresh token and validate it
+     * 加载刷新令牌并验证
      *
-     * @param refresh:  refresh token
-     * @return:  token info
-     * @throws OAuthException if token is invalid or expired
+     * @param refresh 刷新令牌
+     * @return 令牌信息
+     * @throws OAuthException 如果令牌无效或已过期
      */
     public func loadRefreshToken(refresh: String): TokenInfo {
         if (refresh == "") {

@@ -42,7 +42,7 @@ func defaultNoVerifyHttpCert(url: String, verify: Bool): ClientBuilder {
 }
 
 /**
- * HTTP client service with connection pooling
+ * 支持连接池的 HTTP 客户端服务
  */
 public class JoyHttpClientService <: JoyHttpClient & Resource {
     private let _client: Client
@@ -50,11 +50,11 @@ public class JoyHttpClientService <: JoyHttpClient & Resource {
     private var _isClosed = false
 
     /**
-     * Create HTTP client service with given base URL
+     * 使用给定基础 URL 创建 HTTP 客户端服务
      *
-     * @param url base URL
-     * @param verify whether to verify SSL certificate
-     * @param budilerFn optional client builder function
+     * @param url 基础 URL
+     * @param verify 是否验证 SSL 证书
+     * @param budilerFn 可选的客户端构建器函数
      */
     public init(url: String, verify!: Bool = false,
         budilerFn!: (url: String, verify: Bool) -> ClientBuilder = defaultNoVerifyHttpCert) {
@@ -67,14 +67,14 @@ public class JoyHttpClientService <: JoyHttpClient & Resource {
     }
 
     /**
-     * Destroy the client service
+     * 销毁客户端服务
      */
     public func destroy(): Unit {
         close()
     }
 
     /**
-     * Close the client connection
+     * 关闭客户端连接
      */
     public func close(): Unit {
         if (_isClosed) {
@@ -85,20 +85,20 @@ public class JoyHttpClientService <: JoyHttpClient & Resource {
     }
 
     /**
-     * Check if client is closed
+     * 检查客户端是否已关闭
      *
-     * @return true if closed
+     * @return 如果已关闭返回 true
      */
     public func isClosed(): Bool {
         _isClosed
     }
 
     /**
-     * Send HTTP request
+     * 发送 HTTP 请求
      *
-     * @param ctx request context
-     * @param request HTTP request
-     * @return HTTP response
+     * @param ctx 请求上下文
+     * @param request HTTP 请求
+     * @return HTTP 响应
      */
     public func send(ctx: Context, request: JoyHttpRequest): JoyHttpResponse {
         let url = mergeUrl(request)
@@ -115,10 +115,10 @@ public class JoyHttpClientService <: JoyHttpClient & Resource {
     }
 
     /**
-     * Merge base URL with request path and queries
+     * 将基础 URL 与请求路径和查询参数合并
      *
-     * @param request HTTP request
-     * @return full URL
+     * @param request HTTP 请求
+     * @return 完整 URL
      */
     private func mergeUrl(request: JoyHttpRequest): String {
         var url = if (request._path.startsWith("/")) {
@@ -142,10 +142,10 @@ public class JoyHttpClientService <: JoyHttpClient & Resource {
     }
 
     /**
-     * Write request body to request builder
+     * 将请求体写入请求构建器
      *
-     * @param request HTTP request
-     * @param rb HTTP request builder
+     * @param request HTTP 请求
+     * @param rb HTTP 请求构建器
      */
     private func writeBody(request: JoyHttpRequest, rb: HttpRequestBuilder): Unit {
         if (let Some(f) <- request._form) {

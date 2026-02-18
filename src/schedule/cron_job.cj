@@ -17,7 +17,7 @@ import std.time.DateTime
 import cjoy.log.macros.*
 
 /**
- * Cron job for scheduled task execution
+ * 定时任务执行的 Cron 任务
  */
 public class CronJob <: Equatable<CronJob> & ToString {
     private static let REG_SPACES = Regex(##"\s+"##)
@@ -58,12 +58,12 @@ public class CronJob <: Equatable<CronJob> & ToString {
     }
 
     /**
-     * Parse cron expression to create cron job
+     * 解析 Cron 表达式创建 Cron 任务
      *
-     * @param name job name
-     * @param exp cron expression
-     * @param fn task execution function
-     * @return parsed cron job
+     * @param name 任务名称
+     * @param exp Cron 表达式
+     * @param fn 任务执行函数
+     * @return 解析后的 Cron 任务
      * @throws ScheduleException
      */
     public static func parse(name: String, exp: String, fn: ScheduleFunc): CronJob {
@@ -126,9 +126,9 @@ public class CronJob <: Equatable<CronJob> & ToString {
     }
 
     /**
-     * Run the scheduled task
+     * 执行定时任务
      *
-     * @param start task start time
+     * @param start 任务开始时间
      */
     public func run(start: DateTime): Unit {
         @JoyLogInfo("[Schedule] starting cron job: ${_name}")
@@ -157,7 +157,7 @@ public class CronJob <: Equatable<CronJob> & ToString {
     }
 
     /**
-     * Parse step pattern for cron field
+     * 解析 Cron 字段的步进模式
      *
      * @throws ScheduleException
      */
@@ -185,7 +185,7 @@ public class CronJob <: Equatable<CronJob> & ToString {
     }
 
     /**
-     * Parse range pattern for cron field
+     * 解析 Cron 字段的范围模式
      *
      * @throws ScheduleException
      */
@@ -203,7 +203,7 @@ public class CronJob <: Equatable<CronJob> & ToString {
     }
 
     /**
-     * Parse single value or range for cron field
+     * 解析 Cron 字段的单值或范围
      *
      * @throws ScheduleException
      */

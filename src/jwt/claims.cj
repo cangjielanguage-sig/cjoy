@@ -16,7 +16,7 @@ import std.math.trunc
 import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonWriter, JsonReader, JsonToken}
 
 /**
- * JWT exception for JWT related errors
+ * JWT 相关错误的 JWT 异常
  */
 public class JwtException <: Exception {
     public init(message: String) {
@@ -30,10 +30,10 @@ public class NumberData <: JsonSerializable & JsonDeserializable<NumberData> {
     public NumberData(public let value: DateTime) {}
 
     /**
-     * create number data from float64
+     * 从 float64 创建数字数据
      *
-     * @param number float64 number
-     * @return number data
+     * @param number float64 数字
+     * @return 数字数据
      */
     public static func of(number: Float64): NumberData {
         let a = trunc(number)
@@ -42,10 +42,10 @@ public class NumberData <: JsonSerializable & JsonDeserializable<NumberData> {
     }
 
     /**
-     * create number data from int64
+     * 从 int64 创建数字数据
      *
-     * @param number int64 number
-     * @return number data
+     * @param number int64 数字
+     * @return 数字数据
      */
     public static func of(number: Int64): NumberData {
         NumberData(DateTime.ofEpoch(second: number, nanosecond: 0))
@@ -77,7 +77,7 @@ public class ClaimStrings <: JsonSerializable & JsonDeserializable<ClaimStrings>
     }
 
     /**
-     * @throws JwtException if it is invalid  payload json
+     * @throws JwtException 如果负载 JSON 无效
      */
     public static func fromJson(reader: JsonReader): ClaimStrings {
         let token = reader.peek()
@@ -92,9 +92,9 @@ public class ClaimStrings <: JsonSerializable & JsonDeserializable<ClaimStrings>
     }
 
     /**
-     * get first claim value
+     * 获取第一个声明值
      *
-     * @return first claim value or empty string
+     * @return 第一个声明值或空字符串
      */
     public func getFirstValue(): String {
         if (claims.size >= 1) {
@@ -106,125 +106,125 @@ public class ClaimStrings <: JsonSerializable & JsonDeserializable<ClaimStrings>
 
 public interface Claims {
     /**
-     * get expiration time
+     * 获取过期时间
      *
-     * @return expiration time or None
+     * @return 过期时间或 None
      */
     func getExpirationTime(): ?NumberData
 
     /**
-     * get issued at time
+     * 获取签发时间
      *
-     * @return issued at time or None
+     * @return 签发时间或 None
      */
     func getIssuedAt(): ?NumberData
 
     /**
-     * get not before time
+     * 获取生效时间
      *
-     * @return not before time or None
+     * @return 生效时间或 None
      */
     func getNotBefore(): ?NumberData
 
     /**
-     * get issuer
+     * 获取签发者
      *
-     * @return issuer or None
+     * @return 签发者或 None
      */
     func getIssuer(): ?String
 
     /**
-     * get subject
+     * 获取主题
      *
-     * @return subject or None
+     * @return 主题或 None
      */
     func getSubject(): ?String
 
     /**
-     * get audience
+     * 获取受众
      *
-     * @return audience or None
+     * @return 受众或 None
      */
     func getAudience(): ?ClaimStrings
 
     /**
-     * get claim string by name
+     * 按名称获取声明字符串
      *
-     * @param name claim name
-     * @return claim value or None
+     * @param name 声明名称
+     * @return 声明值或 None
      */
     func getClaimString(name: String): ?String
 
     /**
-     * get claim strings by name
+     * 按名称获取声明字符串数组
      *
-     * @param name claim name
-     * @return claim value or None
+     * @param name 声明名称
+     * @return 声明值或 None
      */
     func getClaimStrings(name: String): ?ClaimStrings
 
     /**
-     * set expiration time
+     * 设置过期时间
      *
-     * @param exp expiration time
-     * @return claims
+     * @param exp 过期时间
+     * @return 声明
      */
     func expirationTime(exp: DateTime): Claims
 
     /**
-     * set issued at time
+     * 设置签发时间
      *
-     * @param iat issued at time
-     * @return claims
+     * @param iat 签发时间
+     * @return 声明
      */
     func issuedAt(iat: DateTime): Claims
 
     /**
-     * set not before time
+     * 设置生效时间
      *
-     * @param nbf not before time
-     * @return claims
+     * @param nbf 生效时间
+     * @return 声明
      */
     func notBefore(nbf: DateTime): Claims
 
     /**
-     * set issuer
+     * 设置签发者
      *
-     * @param iss issuer
-     * @return claims
+     * @param iss 签发者
+     * @return 声明
      */
     func issuer(iss: String): Claims
 
     /**
-     * set subject
+     * 设置主题
      *
-     * @param sub subject
-     * @return claims
+     * @param sub 主题
+     * @return 声明
      */
     func subject(sub: String): Claims
 
     /**
-     * set audience
+     * 设置受众
      *
-     * @param aud audience
-     * @return claims
+     * @param aud 受众
+     * @return 声明
      */
     func audience(aud: String): Claims
 
     /**
-     * set audiences
+     * 设置多个受众
      *
-     * @param auds audiences
-     * @return claims
+     * @param auds 受众数组
+     * @return 声明
      */
     func audiences(auds: Array<String>): Claims
 
     /**
-     * set claim
+     * 设置声明
      *
-     * @param name claim name
-     * @param value claim json string
-     * @return claims
+     * @param name 声明名称
+     * @param value 声明值数组
+     * @return 声明
      */
     func claim(name: String, value: Array<String>): Claims
 }

@@ -14,94 +14,103 @@ import std.collection.{Map}
 import cjoy.bind.JoyBindable
 
 /*
- * the config manger api
+ * 配置管理器接口。
  *
- * the key of config support env variable and a multi level key separated with `.`, e.g:
- * - single level key:
- *   - abc, cdf
- * - multi level key:
+ * config的键支持env变量和一个用`.`分隔的多层键，例如：
+ *
+ * - 单级键：
+ *   - abc
+ *   - cdf
+ * - 多级键：
  *   - a.b.c
- * - array key:
- *   - a[0], a[1]
- *   - a.b[0].c, a.b[1].c
- * - env variable:
- *  - HOME, USER
+ * - 数组键：
+ *   - a[0]，a[1]
+ *   - a.b[0].c，a.b[1].c
+ * -env变量：
+ *   - HOME, USER
  *
- * if the key contains uppercase letter, it will be converted to underline+lowercase, e.g:
- *   - aBc -> a_bc
- *   - aBC -> a_bc
+ * 如果密钥包含大写字母，它将被转换为下划线+小写，例如：
+ *
+ * - aBc->a_bc
+ * - aBC->a_bc
  */
 public interface Config {
     /**
-     * return true if the key is existed
+     * 如果键存在则返回 true
      *
-     * @param key: the config key
-     * @return true if the key exists
+     * @param key 配置键
+     * @return 如果键存在则返回 true
      */
     func hashKey(key: String): Bool
 
     /**
-     * get value by key
+     * 根据键获取值
      *
-     * @param key: the config key
-     * @return the config value
+     * @param key 配置键
+     * @return 配置值
      */
     func getValue(key: String): ?String
 
     /**
-     * get value by key with default value
+     * 根据键获取值（带默认值）
      *
-     * @param key: the config key
-     * @param defaultValue: the default value
-     * @return the config value
+     * @param key 配置键
+     * @param defaultValue 默认值
+     * @return 配置值
      */
     func getValue(key: String, defaultValue: String): String
 
     /**
-     * bind config to object
+     * 将配置绑定到对象
      *
-     * @param key: the config key
-     * @return the bound object
+     * @param key 配置键
+     * @return 绑定的对象
      */
     func bind<T>(key: String): ?T where T <: JoyBindable<T>
 
     /**
-     * resolves config values into a string, eg: ${host}:${port} -> 127.0.0.1:18881
+     * 将配置值解析为字符串，例如：${host}:${port} -> 127.0.0.1:18881
      *
-     * @param exp: the expression string with placeholders
-     * @return the resolved string
+     * @param exp 带占位符的表达式字符串
+     * @return 解析后的字符串
      */
     func resolve(exp: String): String
 
     /**
-     * add config loaders
+     * 添加配置加载器
      *
-     * @param loaders: the config loaders to add
+     * @param loaders 要添加的配置加载器
      */
     func addLoader(loaders: Array<ConfigLoader>): Unit
 }
 
+/**
+ * 配置加载器，由用户实现扩展不同配置文件类型加载。
+ */
 public interface ConfigLoader {
     /**
-     * load configs to map
+     * 将配置加载到映射中
      *
-     * @return the loaded configs
+     * @return 加载的配置
      */
     func load(): Map<String, Any>
 
     /**
-     * high priority will overwrite the config item value whit low priority
+     * 高优先级将覆盖低优先级的配置项值
      *
-     * @return the priority value
+     * @return 优先级值
      */
     prop priority: Int
 }
 
+/**
+ * 配置异常。
+ */
 public class ConfigException <: Exception {
     /**
-     * create a new config exception
+     * 创建新的配置异常
      *
-     * @param message: the error message
+     * @param message 错误消息
      */
     public ConfigException(message: String) {
         super(message)

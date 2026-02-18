@@ -16,150 +16,150 @@ import cjoy.bind.macros.*
 
 
 /**
- * Main configuration class for CJoy application, used to load and store application configuration
+ * CJoy 应用的主配置类，用于加载和存储应用配置
  *
- * This class supports configuration file binding through `@Bind` annotation, containing basic application information and server configuration.
+ * 此类通过 `@Bind` 注解支持配置文件绑定，包含基本应用信息和服务器配置。
  */
 @Bind
 @Derive[ToString]
 public class JoyProperties {
-    /** Application name, default value is "default" */
+    /** 应用名称，默认值为 "default" */
     public var name: String = "default"
 
-    /** Server configuration */
+    /** 服务器配置 */
     public var server: JoyServerProperties = JoyServerProperties()
 }
 
 /**
- * Server configuration class, containing server address, port, TLS, HTTP and thread pool configuration
+ * 服务器配置类，包含服务器地址、端口、TLS、HTTP 和线程池配置
  */
 @Bind
 @Derive[ToString]
 public class JoyServerProperties {
-    /** Server listen address, default value is "127.0.0.1" */
+    /** 服务器监听地址，默认值为 "127.0.0.1" */
     public var address: String = "127.0.0.1"
 
-    /** Server listen port, default value is 18880 */
+    /** 服务器监听端口，默认值为 18880 */
     public var port: UInt16 = 18880
 
-    /** TLS configuration */
+    /** TLS 配置 */
     public var tls: JoyServerTlsProperties = JoyServerTlsProperties()
 
-    /** HTTP configuration */
+    /** HTTP 配置 */
     public var http: JoyServerHttpProperties = JoyServerHttpProperties()
 
-    /** Thread pool configuration */
+    /** 线程池配置 */
     public var pool: JoyServerPoolProperties = JoyServerPoolProperties()
 }
 
 /**
- * TLS configuration class, used to configure HTTPS and TLS related parameters
+ * TLS 配置类，用于配置 HTTPS 和 TLS 相关参数
  */
 @Bind
 @Derive[ToString]
 public class JoyServerTlsProperties {
-    /** Whether to enable TLS (HTTPS), default value is false */
+    /** 是否启用 TLS (HTTPS)，默认值为 false */
     public var enabled: Bool = false
 
-    /** TLS version, supports "1.2" or "1.3", default value is empty */
+    /** TLS 版本，支持 "1.2" 或 "1.3"，默认值为空 */
     public var version: String = "" // 1.2, 1.3
 
-    /** Cipher suite list, comma-separated, default value is empty */
-    public var ciphers: String = "" // RSA_PKCS1_SHA256, RSA_PKCS1_SHA384 etc..
+    /** 密码套件列表，逗号分隔，默认值为空 */
+    public var ciphers: String = "" // RSA_PKCS1_SHA256, RSA_PKCS1_SHA384 等..
 
-    /** Whether to enable client authentication, default value is false */
+    /** 是否启用客户端认证，默认值为 false */
     public var clientAuth: Bool = false
 
-    /** Private key password, default value is empty */
+    /** 私钥密码，默认值为空 */
     public var keyPassword: String = ""
 
-    /** Private key file path, default value is empty */
+    /** 私钥文件路径，默认值为空 */
     public var keyFile: String = ""
 
-    /** Certificate file path, default value is empty */
+    /** 证书文件路径，默认值为空 */
     public var certFile: String = ""
 
-    /** Trust certificate file path, default value is empty */
+    /** 信任证书文件路径，默认值为空 */
     public var trustFile: String = ""
 
-    /** Whether to trust all client certificates, default value is false */
+    /** 是否信任所有客户端证书，默认值为 false */
     public var trustAll: Bool = false
 }
 
 /**
- * HTTP server configuration class, containing HTTP protocol related parameters
+ * HTTP 服务器配置类，包含 HTTP 协议相关参数
  */
 @Bind
 @Derive[ToString]
 public class JoyServerHttpProperties {
-    /** Read request header timeout (milliseconds), default value is 0 */
+    /** 读取请求头超时时间（毫秒），默认值为 0 */
     public var readHeaderTimeout: Int64 = 0
 
-    /** Read request body timeout (milliseconds), default value is 0 */
+    /** 读取请求体超时时间（毫秒），默认值为 0 */
     public var readTimeout: Int64 = 0
 
-    /** Write response timeout (milliseconds), default value is 0 */
+    /** 写入响应超时时间（毫秒），默认值为 0 */
     public var writeTimeout: Int64 = 0
 
-    /** Whether route matching is case-insensitive, default value is false */
+    /** 路由匹配是否不区分大小写，默认值为 false */
     public var caseInsensitive: Bool = false
 
-    /** Whether to escape added routes, default value is false */
+    /** 是否转义添加的路由，默认值为 false */
     public var escapeAddedRoutes: Bool = false
 
-    /** Request header list for getting real client IP, comma-separated, default value is empty */
+    /** 用于获取真实客户端 IP 的请求头列表，逗号分隔，默认值为空 */
     public var remoteIpHeaders: String = ""
 
-    /** Maximum request body size (bytes), default value is 32MB */
+    /** 最大请求体大小（字节），默认值为 32MB */
     public var maxRequestBodySize: Int64 = 32 * 1024 * 1024
 
-    /** Maximum request header size (bytes), default value is 0 */
+    /** 最大请求头大小（字节），默认值为 0 */
     public var maxRequestHeaderSize: Int64 = 0
 
-    /** HTTP/2 configuration */
+    /** HTTP/2 配置 */
     public var h2: JoyServerHttp2Properties = JoyServerHttp2Properties()
 }
 
 /**
- * HTTP/2 server configuration class, containing HTTP/2 protocol related parameters
+ * HTTP/2 服务器配置类，包含 HTTP/2 协议相关参数
  */
 @Bind
 @Derive[ToString]
 public class JoyServerHttp2Properties {
-    /** Whether to enable HTTP/2 protocol, default value is false */
+    /** 是否启用 HTTP/2 协议，默认值为 false */
     public var enabled: Bool = false
 
-    /** Whether to enable connect protocol, default value is false */
+    /** 是否启用连接协议，默认值为 false */
     public var enableConnectProtocol: Bool = false
 
-    /** Header table size, default value is 4096 */
+    /** 头部表大小，默认值为 4096 */
     public var headerTableSize: UInt32 = 4096
 
-    /** Initial window size, default value is 0 */
+    /** 初始窗口大小，默认值为 0 */
     public var initialWindowSize: UInt32 = 0
 
-    /** Maximum concurrent streams, default value is 100 */
+    /** 最大并发流数，默认值为 100 */
     public var maxConcurrentStreams: UInt32 = 100
 
-    /** Maximum frame size, default value is 16384 */
+    /** 最大帧大小，默认值为 16384 */
     public var maxFrameSize: UInt32 = 16384
 
-    /** Maximum header list size, default value is UInt32.Max */
+    /** 最大头部列表大小，默认值为 UInt32.Max */
     public var maxHeaderListSize: UInt32 = UInt32.Max
 }
 
 /**
- * Server thread pool configuration class, containing thread pool capacity, queue size and preheat parameters
+ * 服务器线程池配置类，包含线程池容量、队列大小和预热参数
  */
 @Bind
 @Derive[ToString]
 public class JoyServerPoolProperties {
-    /** Thread pool capacity, default value is 10000 */
+    /** 线程池容量，默认值为 10000 */
     public var capacity: Int64 = 10 ** 4
 
-    /** Task queue capacity, default value is 10000 */
+    /** 任务队列容量，默认值为 10000 */
     public var queueCapacity: Int64 = 10 ** 4
 
-    /** Preheat thread count, default value is 0 */
+    /** 预热线程数，默认值为 0 */
     public var preheat: Int64 = 0
 }

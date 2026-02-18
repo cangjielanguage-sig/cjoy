@@ -18,7 +18,7 @@ import cjoy.context.ServiceContainer
 import cjoy.log.macros.*
 
 /**
- * Crontab for managing multiple cron jobs
+ * 管理多个 Cron 任务的定时任务表
  */
 public class Crontab <: Resource {
     public static let INSTANCE: Crontab = Crontab()
@@ -56,12 +56,12 @@ public class Crontab <: Resource {
     }
 
     /**
-     * Add a cron job to the crontab
+     * 添加 Cron 任务到定时任务表
      *
-     * @param name job name
-     * @param cronExp cron expression
-     * @param fn task execution function
-     * @throws ScheduleException if the name already exists
+     * @param name 任务名称
+     * @param cronExp Cron 表达式
+     * @param fn 任务执行函数
+     * @throws ScheduleException 如果名称已存在
      */
     public func addJob(name: String, cronExp: String, fn: ScheduleFunc): Unit {
         if (exists(name)) {
@@ -73,11 +73,11 @@ public class Crontab <: Resource {
     }
 
     /**
-     * Add a cron job to the crontab if it does not exist
+     * 如果不存在则添加 Cron 任务到定时任务表
      *
-     * @param name job name
-     * @param cronExp cron expression
-     * @param fn task execution function
+     * @param name 任务名称
+     * @param cronExp Cron 表达式
+     * @param fn 任务执行函数
      */
     public func addJobIfAbsent(name: String, cronExp: String, fn: ScheduleFunc): Unit {
         let job = CronJob.parse(name, cronExp, fn)
@@ -87,29 +87,29 @@ public class Crontab <: Resource {
     }
 
     /**
-     * Check if a job exists by name
+     * 检查任务是否存在
      *
-     * @param name job name
-     * @return true if job exists
+     * @param name 任务名称
+     * @return 如果任务存在返回 true
      */
     public func exists(name: String): Bool {
         _jobs.contains(name)
     }
 
     /**
-     * Remove a cron job from the crontab
+     * 从定时任务表移除 Cron 任务
      *
-     * @param name job name
-     * @return true if job was removed, false if job not found
+     * @param name 任务名称
+     * @return 如果任务被移除返回 true，未找到返回 false
      */
     public func removeJob(name: String): Bool {
         _jobs.remove(name).isSome()
     }
 
     /**
-     * Get all job names in the crontab
+     * 获取定时任务表中所有任务名称
      *
-     * @return array of job names
+     * @return 任务名称数组
      */
     public func getJobNames(): Array<String> {
         let names = ArrayList<String>()

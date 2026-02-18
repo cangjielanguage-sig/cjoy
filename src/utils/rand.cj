@@ -17,10 +17,10 @@ import stdx.crypto.crypto.SecureRandom
 
 
 /**
- * string utility functions for random string generation
+ * 用于生成随机字符串的字符串工具函数
  *
- * @param len length of random string to generate
- * @return random string of specified length
+ * @param len 要生成的随机字符串长度
+ * @return 指定长度的随机字符串
  */
 protected func randStr(len: Int32): String {
     let r = Random()
@@ -30,10 +30,10 @@ protected func randStr(len: Int32): String {
 }
 
 /**
- * secure random string generation using SecureRandom
+ * 使用 SecureRandom 生成安全随机字符串
  *
- * @param len length of random string to generate
- * @return secure random string of specified length
+ * @param len 要生成的随机字符串长度
+ * @return 指定长度的安全随机字符串
  */
 protected func secureRandStr(len: Int32): String {
     let r = SecureRandom()

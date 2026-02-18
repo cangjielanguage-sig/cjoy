@@ -11,13 +11,13 @@
 package cjoy.multipart
 
 /**
- * Exception thrown when multipart parsing fails
+ * 当多部分解析失败时抛出的异常
  */
 public class MultiPartParseException <: Exception {
     /**
-     * Initializes a new instance of MultiPartParseException with the specified message
+     * 使用指定的消息初始化 MultiPartParseException 的新实例
      *
-     * @param message The exception message
+     * @param message 异常消息
      */
     public init(message: String) {
         super(message)
@@ -25,13 +25,13 @@ public class MultiPartParseException <: Exception {
 }
 
 /**
- * Exception thrown when multipart size limit is reached
+ * 当达到多部分大小限制时抛出的异常
  */
 public class MultiPartLimitReachedException <: Exception {
     /**
-     * Initializes a new instance of MultiPartLimitReachedException with the specified message
+     * 使用指定的消息初始化 MultiPartLimitReachedException 的新实例
      *
-     * @param message The exception message
+     * @param message 异常消息
      */
     public init(message: String) {
         super(message)
@@ -39,7 +39,7 @@ public class MultiPartLimitReachedException <: Exception {
 }
 
 /**
- * Data size constants for measuring memory and file sizes
+ * 用于测量内存和文件大小的数据大小常量
  */
 public struct JoyDataSize {
     private let _value: Int
@@ -47,25 +47,25 @@ public struct JoyDataSize {
         _value = value
     }
 
-    /** Kilobyte size constant (1024 bytes) */
+    /** 千字节大小常量 (1024 字节) */
     public static const KB: JoyDataSize = JoyDataSize(1 << 10)
-    /** Megabyte size constant (1024 kilobytes) */
+    /** 兆字节大小常量 (1024 千字节) */
     public static const MB: JoyDataSize = JoyDataSize(1 << 20)
-    /** Gigabyte size constant (1024 megabytes) */
+    /** 吉字节大小常量 (1024 兆字节) */
     public static const GB: JoyDataSize = JoyDataSize(1 << 30)
 
     /**
-     * Multiplies the data size by an integer value
+     * 将数据大小乘以整数值
      *
-     * @param r The integer multiplier
-     * @return The resulting data size
+     * @param r 整数乘数
+     * @return 结果数据大小
      */
     public operator func *(r: Int): JoyDataSize {
         JoyDataSize(_value * r)
     }
 
     /**
-     * Gets the raw integer value of the data size
+     * 获取数据大小的原始整数值
      */
     public prop value: Int {
         get() {
@@ -75,13 +75,13 @@ public struct JoyDataSize {
 }
 
 /**
- * Configuration for multipart parsing and handling
+ * 多部分解析和处理的配置
  *
- * @property maxParts Maximum number of parts allowed in a multipart request
- * @property maxHeaders Maximum number of headers allowed per part
- * @property maxMemSize Maximum memory size allowed for all parts combined
- * @property maxFileSize Maximum file size allowed for a single part
- * @property fileCacheDir Directory for caching uploaded files
+ * @property maxParts 多部分请求中允许的最大部分数
+ * @property maxHeaders 每个部分允许的最大头数
+ * @property maxMemSize 所有部分组合的允许最大内存大小
+ * @property maxFileSize 单个部分允许的最大文件大小
+ * @property fileCacheDir 上传文件缓存目录
  */
 public struct JoyMultiPartConfig {
     public var maxParts: Int = 10

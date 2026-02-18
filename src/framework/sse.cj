@@ -14,7 +14,7 @@ import std.io.ByteBuffer
 import stdx.net.http.{HttpContext, HttpResponseWriter}
 
 /**
- * Builder for server-sent event (SSE)
+ * 服务器发送事件 (SSE) 构建器
  */
 public class JoySseBuilder {
     private var _name: ?String = None
@@ -24,10 +24,10 @@ public class JoySseBuilder {
     private var _comment: ?String = None
 
     /**
-     * Sets the event name
+     * 设置事件名称
      *
-     * @param event The event name
-     * @return This JoySseBuilder instance for method chaining
+     * @param event 事件名称
+     * @return 此 JoySseBuilder 实例，用于方法链式调用
      */
     public func event(event: String): JoySseBuilder {
         _name = event
@@ -35,10 +35,10 @@ public class JoySseBuilder {
     }
 
     /**
-     * Sets the event id
+     * 设置事件 ID
      *
-     * @param id The event id
-     * @return This JoySseBuilder instance for method chaining
+     * @param id 事件 ID
+     * @return 此 JoySseBuilder 实例，用于方法链式调用
      */
     public func id(id: String): JoySseBuilder {
         _id = id
@@ -46,10 +46,10 @@ public class JoySseBuilder {
     }
 
     /**
-     * Sets the event data
+     * 设置事件数据
      *
-     * @param data The event data
-     * @return This JoySseBuilder instance for method chaining
+     * @param data 事件数据
+     * @return 此 JoySseBuilder 实例，用于方法链式调用
      */
     public func data(data: String): JoySseBuilder {
         _data = data
@@ -57,10 +57,10 @@ public class JoySseBuilder {
     }
 
     /**
-     * Sets the retry time
+     * 设置重试时间
      *
-     * @param retry The retry time in milliseconds
-     * @return This JoySseBuilder instance for method chaining
+     * @param retry 重试时间（毫秒）
+     * @return 此 JoySseBuilder 实例，用于方法链式调用
      */
     public func retry(retry: UInt): JoySseBuilder {
         _retry = retry
@@ -68,10 +68,10 @@ public class JoySseBuilder {
     }
 
     /**
-     * Adds a comment to the event
+     * 向事件添加注释
      *
-     * @param comment The comment string
-     * @return This JoySseBuilder instance for method chaining
+     * @param comment 注释字符串
+     * @return 此 JoySseBuilder 实例，用于方法链式调用
      */
     public func comment(comment: String): JoySseBuilder {
         _comment = comment
@@ -79,9 +79,9 @@ public class JoySseBuilder {
     }
 
     /**
-     * Builds the server-sent event string
+     * 构建服务器发送事件字符串
      *
-     * @return The SSE formatted string
+     * @return SSE 格式化字符串
      */
     public func build(): Array<Byte> {
         let buffer: ByteBuffer = ByteBuffer()
@@ -123,7 +123,7 @@ public class JoySseBuilder {
 }
 
 /**
- * Writer for server-sent events (SSE)
+ * 服务器发送事件 (SSE) 写入器
  */
 public class JoySseEmitter <: ChunkedWriter {
     init(httpContext: HttpContext) {
@@ -134,10 +134,10 @@ public class JoySseEmitter <: ChunkedWriter {
     }
 
     /**
-     * Writes data which is encoded to SSE
+     * 写入编码为 SSE 的数据
      *
-     * @param data The event
-     * @return This JoySseEmitter instance for method chaining
+     * @param data 事件
+     * @return 此 JoySseEmitter 实例，用于方法链式调用
      */
     public func sendEvent(data: JoySseBuilder): JoySseEmitter {
         checkEnd()

@@ -15,7 +15,7 @@ import std.fs.{File, OpenMode}
 import std.io.StringReader
 
 /**
- * properties file config
+ * Properties 文件配置
  */
 public class PropertiesConfigLoader <: ConfigLoader {
     public PropertiesConfigLoader(let filePath: String, let priorityNum!: Int = 0) {}

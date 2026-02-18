@@ -55,17 +55,17 @@ public struct JoySSEvent {
 }
 
 /**
- * Server-sent events stream iterator
+ * 服务器发送事件流迭代器
  */
 public class JoySSEventStream <: Iterator<JoySSEvent> {
     JoySSEventStream(private let httpStream: JoyHttpStream) {}
 
     /**
-     * Read next SSE event from stream
+     * 从流中读取下一个 SSE 事件
      *
-     * @return SSE event or None if EOF
-     * @throws IllegalArgumentException if invalid SSE message format
-     * @throws IllegalStateException if unreachable code
+     * @return SSE 事件，如果到达文件末尾返回 None
+     * @throws IllegalArgumentException 如果 SSE 消息格式无效
+     * @throws IllegalStateException 如果代码不可达
      */
     public func next(): Option<JoySSEvent> {
         var data = JoySSEvent()
@@ -94,7 +94,7 @@ public class JoySSEventStream <: Iterator<JoySSEvent> {
     }
 
     /**
-     * Close SSE stream
+     * 关闭 SSE 流
      */
     public func close(): Unit {
         this.httpStream.close()

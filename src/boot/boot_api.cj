@@ -21,37 +21,37 @@ import cjoy.config.*
 import cjoy.log.macros.*
 
 /**
- * Callback type before application starts, called after Joy instance is created and before server starts
+ * 应用程序启动前的回调类型，在 Joy 实例创建后、服务器启动前调用
  *
- * @param cfg Framework configuration object
- * @param joy Joy engine instance
+ * @param cfg 框架配置对象
+ * @param joy Joy 引擎实例
  */
 public type JoyFunc = (cfg: JoyConfig, joy: Joy) -> Unit
 
 /**
- * HTTP server callback function type, used after server binds to port or when server shuts down
+ * HTTP 服务器回调函数类型，在服务器绑定到端口后或服务器关闭时使用
  */
 public type HttpServerFunc = () -> Unit
 
 /**
- * Config extension callback function type, called after config files are loaded
+ * 配置扩展回调函数类型，在配置文件加载后调用
  *
- * @param config Configuration manager instance
- * @param cfgRootPath Configuration file root directory path
+ * @param config 配置管理器实例
+ * @param cfgRootPath 配置文件根目录路径
  */
 public type ConfigExtendFunc = (config: Config, cfgRootPath: String) -> Unit
 
 /**
- * CJoy application bootstrapper.
+ * CJoy 应用程序引导器。
  *
- * JoyBoot is responsible for:
- * 1. Loading configuration files (command-line arguments, properties, json)
- * 2. Initializing framework configuration
- * 3. Creating Joy engine instance
- * 4. Registering macro-generated middlewares and route handlers
- * 5. Building and starting HTTP server
+ * JoyBoot 负责：
+ * 1. 加载配置文件（命令行参数、properties、json）
+ * 2. 初始化框架配置
+ * 3. 创建 Joy 引擎实例
+ * 4. 注册宏生成的中间件和路由处理器
+ * 5. 构建并启动 HTTP 服务器
  *
- * Example usage:
+ * 示例用法：
  * ```
  * main(): Int64 {
  *     JoyBoot.of(args).run()
@@ -59,15 +59,15 @@ public type ConfigExtendFunc = (config: Config, cfgRootPath: String) -> Unit
  * }
  * ```
  *
- * With optional callbacks:
+ * 使用可选回调：
  * ```
  * JoyBoot.of(args)
  *     .cfgPath("./config")
  *     .beforeJoyStart { cfg, joy =>
- *         // Custom initialization
+ *         // 自定义初始化
  *     }
  *     .afterBind {
- *         // After server binds
+ *         // 服务器绑定后
  *     }
  *     .run()
  * ```
@@ -81,7 +81,7 @@ public class JoyBoot {
     private var _onShutdown: ?HttpServerFunc
 
     /**
-     * Private constructor, use JoyBoot.of() to create instance
+     * 私有构造函数，使用 JoyBoot.of() 创建实例
      */
     private init(args: Array<String>) {
         this._args = args
@@ -93,20 +93,20 @@ public class JoyBoot {
     }
 
     /**
-     * Creates a new JoyBoot instance with the given command-line arguments
+     * 使用给定的命令行参数创建新的 JoyBoot 实例
      *
-     * @param args Command-line arguments
-     * @return New JoyBoot instance
+     * @param args 命令行参数
+     * @return 新的 JoyBoot 实例
      */
     public static func of(args: Array<String>): JoyBoot {
         JoyBoot(args)
     }
 
     /**
-     * Sets the configuration file root path
+     * 设置配置文件根路径
      *
-     * @param path Configuration file root path, default is "./config"
-     * @return This JoyBoot instance for method chaining
+     * @param path 配置文件根路径，默认为 "./config"
+     * @return 此 JoyBoot 实例，用于方法链式调用
      */
     public func cfgPath(path: String): JoyBoot {
         this._cfgPath = path
@@ -114,14 +114,13 @@ public class JoyBoot {
     }
 
     /**
-     * Sets the callback function to extend configuration
+     * 设置扩展配置的回调函数
      *
-     * Called after config files (properties, json) are loaded but before
-     * they are used. Can be used to add custom config loaders or
-     * modify configuration values.
+     * 在配置文件（properties、json）加载后、使用前调用。
+     * 可用于添加自定义配置加载器或修改配置值。
      *
-     * @param fn Callback function that receives Config instance and config root path
-     * @return This JoyBoot instance for method chaining
+     * @param fn 接收 Config 实例和配置根路径的回调函数
+     * @return 此 JoyBoot 实例，用于方法链式调用
      */
     public func extendConfig(fn: ConfigExtendFunc): JoyBoot {
         this._extendConfig = fn
@@ -129,13 +128,13 @@ public class JoyBoot {
     }
 
     /**
-     * Sets the callback function before application Joy starts
+     * 设置应用程序 Joy 启动前的回调函数
      *
-     * Called after Joy instance is created and before server starts.
-     * Can be used for custom configuration and initialization.
+     * 在 Joy 实例创建后、服务器启动前调用。
+     * 可用于自定义配置和初始化。
      *
-     * @param fn Callback function that receives JoyConfig and Joy instance
-     * @return This JoyBoot instance for method chaining
+     * @param fn 接收 JoyConfig 和 Joy 实例的回调函数
+     * @return 此 JoyBoot 实例，用于方法链式调用
      */
     public func beforeJoyStart(fn: JoyFunc): JoyBoot {
         this._beforeJoyStart = fn
@@ -143,10 +142,10 @@ public class JoyBoot {
     }
 
     /**
-     * Sets the callback function after server binds to port
+     * 设置服务器绑定到端口后的回调函数
      *
-     * @param fn Callback function executed after successful port binding
-     * @return This JoyBoot instance for method chaining
+     * @param fn 成功绑定端口后执行的回调函数
+     * @return 此 JoyBoot 实例，用于方法链式调用
      */
     public func afterBind(fn: HttpServerFunc): JoyBoot {
         this._afterBind = fn
@@ -154,10 +153,10 @@ public class JoyBoot {
     }
 
     /**
-     * Sets the callback function before server shuts down
+     * 设置服务器关闭前的回调函数
      *
-     * @param fn Callback function executed before server shutdown
-     * @return This JoyBoot instance for method chaining
+     * @param fn 服务器关闭前执行的回调函数
+     * @return 此 JoyBoot 实例，用于方法链式调用
      */
     public func onShutdown(fn: HttpServerFunc): JoyBoot {
         this._onShutdown = fn
@@ -165,10 +164,10 @@ public class JoyBoot {
     }
 
     /**
-     * Runs the CJoy application
+     * 运行 CJoy 应用程序
      *
-     * This method executes the full bootstrap process and starts the HTTP server.
-     * It will block until the server is stopped.
+     * 此方法执行完整的引导过程并启动 HTTP 服务器。
+     * 它会阻塞直到服务器停止。
      */
     public func run(): Unit {
         let config = loadConfig(_args, _cfgPath, _extendConfig)

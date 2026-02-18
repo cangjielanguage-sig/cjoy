@@ -13,10 +13,10 @@ package cjoy.utils
 import stdx.encoding.base64.{toBase64String, fromBase64String}
 
 /**
- * encodes bytes to base64 URL-safe format
+ * 将字节编码为 base64 URL 安全格式
  *
- * @param bs input bytes to encode
- * @return base64 URL-safe encoded string (no padding, uses '-' and '_' instead of '+' and '/')
+ * @param bs 要编码的输入字节
+ * @return base64 URL 安全编码字符串（无填充，使用 '-' 和 '_' 代替 '+' 和 '/'）
  */
 protected func rawBase64URLEncode(bs: Array<Byte>): String {
     var res: String = toBase64String(bs)
@@ -27,10 +27,10 @@ protected func rawBase64URLEncode(bs: Array<Byte>): String {
 }
 
 /**
- * decodes base64 URL-safe string to bytes
+ * 将 base64 URL 安全字符串解码为字节
  *
- * @param str base64 URL-safe string to decode (may be missing padding)
- * @return decoded bytes, or None if invalid base64 format
+ * @param str 要解码的 base64 URL 安全字符串（可能缺少填充）
+ * @return 解码后的字节，如果 base64 格式无效则返回 None
  */
 protected func rawBase64URLDecode(str: String): ?Array<Byte> {
     var v = str

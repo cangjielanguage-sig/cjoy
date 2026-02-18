@@ -15,17 +15,17 @@ import std.collection.{HashMap, ArrayList}
 import std.time.DateTime
 
 /**
- * Extend String: bind source to String.
+ * 扩展 String 类型：将绑定源绑定到 String 类型
  */
 extend String <: JoyBindable<String> {
     /**
-     * Bind source to string.
+     * 将绑定源绑定到字符串
      *
-     * @param source the bind source
-     * @param name the field name
-     * @param defaultValue the default value
-     * @param _ the time format (unused)
-     * @return the string value, or None
+     * @param source 绑定源
+     * @param name 字段名
+     * @param defaultValue 默认值
+     * @param _ 时间格式（未使用）
+     * @return 字符串值，如果未找到则返回 None
      */
     public static func bind(source: JoyBindSource, name: String, defaultValue: ?String, _: ?String): ?String {
         let val = source.getOne<ToString>(name)
@@ -44,17 +44,17 @@ private func getString(a: ?ToString, b: ?String): ?String {
 }
 
 /**
- * Extend Option: bind source to optional value.
+ * 扩展 Option 类型：将绑定源绑定到可选值
  */
 extend<T> Option<T> <: JoyBindable<Option<T>> where T <: JoyBindable<T> {
     /**
-     * Bind source to optional value.
+     * 将绑定源绑定到可选值
      *
-     * @param source the bind source
-     * @param name the field name
-     * @param defaultValue the default value
-     * @param timeformat the datetime format
-     * @return the optional value
+     * @param source 绑定源
+     * @param name 字段名
+     * @param defaultValue 默认值
+     * @param timeformat 日期时间格式
+     * @return 可选值
      */
     public static func bind(source: JoyBindSource, name: String, defaultValue: ?String, timeformat: ?String): ?Option<T> {
         T.bind(source, name, defaultValue, timeformat)
@@ -78,17 +78,17 @@ private func bindParsable<T>(val: ?ToString, defaultValue: ?String): ?T where T 
 }
 
 /**
- * Extend Int8: bind source to Int8.
+ * 扩展 Int8 类型：将绑定源绑定到 Int8 类型
  */
 extend Int8 <: JoyBindable<Int8> {
     /**
-     * Bind source to int8.
+     * 将绑定源绑定到 int8 类型
      *
-     * @param source the bind source
-     * @param name the field name
-     * @param defaultValue the default value
-     * @param _ the time format (unused)
-     * @return the int8 value, or None
+     * @param source 绑定源
+     * @param name 字段名
+     * @param defaultValue 默认值
+     * @param _ 时间格式（未使用）
+     * @return int8 值，如果未找到则返回 None
      */
     public static func bind(source: JoyBindSource, name: String, defaultValue: ?String, _: ?String): ?Int8 {
         bindParsable<Int8>(source, name, defaultValue)
@@ -96,17 +96,17 @@ extend Int8 <: JoyBindable<Int8> {
 }
 
 /**
- * Extend Int16: bind source to Int16.
+ * 扩展 Int16 类型：将绑定源绑定到 Int16 类型
  */
 extend Int16 <: JoyBindable<Int16> {
     /**
-     * Bind source to int16.
+     * 将绑定源绑定到 int16 类型
      *
-     * @param source the bind source
-     * @param name the field name
-     * @param defaultValue the default value
-     * @param _ the time format (unused)
-     * @return the int16 value, or None
+     * @param source 绑定源
+     * @param name 字段名
+     * @param defaultValue 默认值
+     * @param _ 时间格式（未使用）
+     * @return int16 值，如果未找到则返回 None
      */
     public static func bind(source: JoyBindSource, name: String, defaultValue: ?String, _: ?String): ?Int16 {
         bindParsable<Int16>(source, name, defaultValue)
@@ -114,17 +114,17 @@ extend Int16 <: JoyBindable<Int16> {
 }
 
 /**
- * Extend Int32: bind source to Int32.
+ * 扩展 Int32 类型：将绑定源绑定到 Int32 类型
  */
 extend Int32 <: JoyBindable<Int32> {
     /**
-     * Bind source to int32.
+     * 将绑定源绑定到 int32 类型
      *
-     * @param source the bind source
-     * @param name the field name
-     * @param defaultValue the default value
-     * @param _ the time format (unused)
-     * @return the int32 value, or None
+     * @param source 绑定源
+     * @param name 字段名
+     * @param defaultValue 默认值
+     * @param _ 时间格式（未使用）
+     * @return int32 值，如果未找到则返回 None
      */
     public static func bind(source: JoyBindSource, name: String, defaultValue: ?String, _: ?String): ?Int32 {
         bindParsable<Int32>(source, name, defaultValue)
@@ -132,17 +132,17 @@ extend Int32 <: JoyBindable<Int32> {
 }
 
 /**
- * Extend Int64: bind source to Int64.
+ * 扩展 Int64 类型：将绑定源绑定到 Int64 类型
  */
 extend Int64 <: JoyBindable<Int64> {
     /**
-     * Bind source to int64.
+     * 将绑定源绑定到 int64 类型
      *
-     * @param source the bind source
-     * @param name the field name
-     * @param defaultValue the default value
-     * @param _ the time format (unused)
-     * @return the int64 value, or None
+     * @param source 绑定源
+     * @param name 字段名
+     * @param defaultValue 默认值
+     * @param _ 时间格式（未使用）
+     * @return int64 值，如果未找到则返回 None
      */
     public static func bind(source: JoyBindSource, name: String, defaultValue: ?String, _: ?String): ?Int64 {
         bindParsable<Int64>(source, name, defaultValue)
@@ -150,17 +150,17 @@ extend Int64 <: JoyBindable<Int64> {
 }
 
 /**
- * Extend UInt8: bind source to UInt8.
+ * 扩展 UInt8 类型：将绑定源绑定到 UInt8 类型
  */
 extend UInt8 <: JoyBindable<UInt8> {
     /**
-     * Bind source to uint8.
+     * 将绑定源绑定到 uint8 类型
      *
-     * @param source the bind source
-     * @param name the field name
-     * @param defaultValue the default value
-     * @param _ the time format (unused)
-     * @return the uint8 value, or None
+     * @param source 绑定源
+     * @param name 字段名
+     * @param defaultValue 默认值
+     * @param _ 时间格式（未使用）
+     * @return uint8 值，如果未找到则返回 None
      */
     public static func bind(source: JoyBindSource, name: String, defaultValue: ?String, _: ?String): ?UInt8 {
         bindParsable<UInt8>(source, name, defaultValue)
@@ -168,17 +168,17 @@ extend UInt8 <: JoyBindable<UInt8> {
 }
 
 /**
- * Extend UInt16: bind source to UInt16.
+ * 扩展 UInt16 类型：将绑定源绑定到 UInt16 类型
  */
 extend UInt16 <: JoyBindable<UInt16> {
     /**
-     * Bind source to uint16.
+     * 将绑定源绑定到 uint16 类型
      *
-     * @param source the bind source
-     * @param name the field name
-     * @param defaultValue the default value
-     * @param _ the time format (unused)
-     * @return the uint16 value, or None
+     * @param source 绑定源
+     * @param name 字段名
+     * @param defaultValue 默认值
+     * @param _ 时间格式（未使用）
+     * @return uint16 值，如果未找到则返回 None
      */
     public static func bind(source: JoyBindSource, name: String, defaultValue: ?String, _: ?String): ?UInt16 {
         bindParsable<UInt16>(source, name, defaultValue)
@@ -186,17 +186,17 @@ extend UInt16 <: JoyBindable<UInt16> {
 }
 
 /**
- * Extend UInt32: bind source to UInt32.
+ * 扩展 UInt32 类型：将绑定源绑定到 UInt32 类型
  */
 extend UInt32 <: JoyBindable<UInt32> {
     /**
-     * Bind source to uint32.
+     * 将绑定源绑定到 uint32 类型
      *
-     * @param source the bind source
-     * @param name the field name
-     * @param defaultValue the default value
-     * @param _ the time format (unused)
-     * @return the uint32 value, or None
+     * @param source 绑定源
+     * @param name 字段名
+     * @param defaultValue 默认值
+     * @param _ 时间格式（未使用）
+     * @return uint32 值，如果未找到则返回 None
      */
     public static func bind(source: JoyBindSource, name: String, defaultValue: ?String, _: ?String): ?UInt32 {
         bindParsable<UInt32>(source, name, defaultValue)
@@ -204,17 +204,17 @@ extend UInt32 <: JoyBindable<UInt32> {
 }
 
 /**
- * Extend UInt64: bind source to UInt64.
+ * 扩展 UInt64 类型：将绑定源绑定到 UInt64 类型
  */
 extend UInt64 <: JoyBindable<UInt64> {
     /**
-     * Bind source to uint64.
+     * 将绑定源绑定到 uint64 类型
      *
-     * @param source the bind source
-     * @param name the field name
-     * @param defaultValue the default value
-     * @param _ the time format (unused)
-     * @return the uint64 value, or None
+     * @param source 绑定源
+     * @param name 字段名
+     * @param defaultValue 默认值
+     * @param _ 时间格式（未使用）
+     * @return uint64 值，如果未找到则返回 None
      */
     public static func bind(source: JoyBindSource, name: String, defaultValue: ?String, _: ?String): ?UInt64 {
         bindParsable<UInt64>(source, name, defaultValue)
@@ -222,17 +222,17 @@ extend UInt64 <: JoyBindable<UInt64> {
 }
 
 /**
- * Extend Float16: bind source to Float16.
+ * 扩展 Float16 类型：将绑定源绑定到 Float16 类型
  */
 extend Float16 <: JoyBindable<Float16> {
     /**
-     * Bind source to float16.
+     * 将绑定源绑定到 float16 类型
      *
-     * @param source the bind source
-     * @param name the field name
-     * @param defaultValue the default value
-     * @param _ the time format (unused)
-     * @return the float16 value, or None
+     * @param source 绑定源
+     * @param name 字段名
+     * @param defaultValue 默认值
+     * @param _ 时间格式（未使用）
+     * @return float16 值，如果未找到则返回 None
      */
     public static func bind(source: JoyBindSource, name: String, defaultValue: ?String, _: ?String): ?Float16 {
         bindParsable<Float16>(source, name, defaultValue)
@@ -240,17 +240,17 @@ extend Float16 <: JoyBindable<Float16> {
 }
 
 /**
- * Extend Float32: bind source to Float32.
+ * 扩展 Float32 类型：将绑定源绑定到 Float32 类型
  */
 extend Float32 <: JoyBindable<Float32> {
     /**
-     * Bind source to float32.
+     * 将绑定源绑定到 float32 类型
      *
-     * @param source the bind source
-     * @param name the field name
-     * @param defaultValue the default value
-     * @param _ the time format (unused)
-     * @return the float32 value, or None
+     * @param source 绑定源
+     * @param name 字段名
+     * @param defaultValue 默认值
+     * @param _ 时间格式（未使用）
+     * @return float32 值，如果未找到则返回 None
      */
     public static func bind(source: JoyBindSource, name: String, defaultValue: ?String, _: ?String): ?Float32 {
         bindParsable<Float32>(source, name, defaultValue)
@@ -258,17 +258,17 @@ extend Float32 <: JoyBindable<Float32> {
 }
 
 /**
- * Extend Float64: bind source to Float64.
+ * 扩展 Float64 类型：将绑定源绑定到 Float64 类型
  */
 extend Float64 <: JoyBindable<Float64> {
     /**
-     * Bind source to float64.
+     * 将绑定源绑定到 float64 类型
      *
-     * @param source the bind source
-     * @param name the field name
-     * @param defaultValue the default value
-     * @param _ the time format (unused)
-     * @return the float64 value, or None
+     * @param source 绑定源
+     * @param name 字段名
+     * @param defaultValue 默认值
+     * @param _ 时间格式（未使用）
+     * @return float64 值，如果未找到则返回 None
      */
     public static func bind(source: JoyBindSource, name: String, defaultValue: ?String, _: ?String): ?Float64 {
         bindParsable<Float64>(source, name, defaultValue)
@@ -276,39 +276,39 @@ extend Float64 <: JoyBindable<Float64> {
 }
 
 /**
- * Extend Bool: bind source to Bool.
+ * 扩展 Bool 类型：将绑定源绑定到 Bool 类型
  */
 extend Bool <: JoyBindable<Bool> {
     /**
-     * Bind source to bool.
+     * 将绑定源绑定到布尔值
      *
-     * @param source the bind source
-     * @param name the field name
-     * @param defaultValue the default value
-     * @param _ the time format (unused)
-     * @return the bool value, or None
+     * @param source 绑定源
+     * @param name 字段名
+     * @param defaultValue 默认值
+     * @param _ 时间格式（未使用）
+     * @return 布尔值，如果未找到则返回 None
      */
     public static func bind(source: JoyBindSource, name: String, defaultValue: ?String, _: ?String): ?Bool {
         bindParsable<Bool>(source, name, defaultValue)
     }
 }
 
-// currently not considering T is Option
+// 目前未考虑 T 是 Option 类型的情况
 /**
- * Extend Array: bind source to Array.
+ * 扩展 Array 类型：将绑定源绑定到 Array 类型
  */
 extend<T> Array<T> <: JoyBindable<Array<T>> where T <: JoyBindable<T> {
     /**
-     * Bind source to array.
+     * 将绑定源绑定到数组
      *
-     * @param source the bind source
-     * @param name the field name
-     * @param _ the default value (unused)
-     * @param _ the time format (unused)
-     * @return the array value, or None
+     * @param source 绑定源
+     * @param name 字段名
+     * @param _ 默认值（未使用）
+     * @param _ 时间格式（未使用）
+     * @return 数组值，如果未找到则返回 None
      */
     public static func bind(source: JoyBindSource, name: String, _: ?String, _: ?String): ?Array<T> {
-        // try to get by same type, e.g. Array<String>
+        // 尝试通过相同类型获取，例如 Array<String>
         let arr: Collection<T> = source.getList<T>(name)
         if (!arr.isEmpty()) {
             return arr.toArray()
@@ -320,8 +320,8 @@ extend<T> Array<T> <: JoyBindable<Array<T>> where T <: JoyBindable<T> {
 }
 
 private func bindCollection<T>(col: Collection<Any>): ArrayList<T> where T <: JoyBindable<T> {
-    // get by any type, need to call T.bind to convert corresponding type
-    // e.g. Array<Int>, generate temporary map first
+    // 通过任意类型获取，需要调用 T.bind 转换为对应类型
+    // 例如 Array<Int>，首先生成临时地图
     let map = HashMap<String, Any>()
     let container = MapContainer(map)
     let res = ArrayList<T>()
@@ -335,19 +335,19 @@ private func bindCollection<T>(col: Collection<Any>): ArrayList<T> where T <: Jo
     res
 }
 
-// currently not considering T is Option
+// 目前未考虑 T 是 Option 类型的情况
 /**
- * Extend ArrayList: bind source to ArrayList.
+ * 扩展 ArrayList 类型：将绑定源绑定到 ArrayList 类型
  */
 extend<T> ArrayList<T> <: JoyBindable<ArrayList<T>> where T <: JoyBindable<T> {
     /**
-     * Bind source to array list.
+     * 将绑定源绑定到数组列表
      *
-     * @param source the bind source
-     * @param name the field name
-     * @param _ the default value (unused)
-     * @param _ the time format (unused)
-     * @return the array list value, or None
+     * @param source 绑定源
+     * @param name 字段名
+     * @param _ 默认值（未使用）
+     * @param _ 时间格式（未使用）
+     * @return 数组列表值，如果未找到则返回 None
      */
     public static func bind(source: JoyBindSource, name: String, _: ?String, _: ?String): ?ArrayList<T> {
         let arr: Collection<T> = source.getList<T>(name)
@@ -361,17 +361,17 @@ extend<T> ArrayList<T> <: JoyBindable<ArrayList<T>> where T <: JoyBindable<T> {
 }
 
 /**
- * Extend DateTime: bind source to DateTime.
+ * 扩展 DateTime 类型：将绑定源绑定到 DateTime 类型
  */
 extend DateTime <: JoyBindable<DateTime> {
     /**
-     * Bind source to datetime.
+     * 将绑定源绑定到日期时间
      *
-     * @param source the bind source
-     * @param name the field name
-     * @param defaultValue the default value
-     * @param timeformat the datetime format
-     * @return the datetime value, or None
+     * @param source 绑定源
+     * @param name 字段名
+     * @param defaultValue 默认值
+     * @param timeformat 日期时间格式
+     * @return 日期时间值，如果未找到则返回 None
      */
     public static func bind(source: JoyBindSource, name: String, defaultValue: ?String, timeformat: ?String): ?DateTime {
         func parse(str: ?ToString): ?DateTime {

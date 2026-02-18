@@ -16,10 +16,10 @@ import std.sync.{Mutex, AtomicBool}
 import cjoy.log.macros.*
 
 /**
- * Default application context implementation.
+ * 默认应用上下文实现。
  *
- * Provides thread-safe bean storage and retrieval using ConcurrentHashMap.
- * Manages both named and typed bean lookup.
+ * 使用 ConcurrentHashMap 提供线程安全的 Bean 存储和检索。
+ * 管理命名和类型化的 Bean 查找。
  */
 class DefaultApplicationContext <: ApplicationContext {
     private let _beans = ConcurrentHashMap<String, BeanLifecycle>()
@@ -31,10 +31,10 @@ class DefaultApplicationContext <: ApplicationContext {
     let _inited: AtomicBool = AtomicBool(false)
 
     /**
-     * Get bean by name.
+     * 按名称获取 Bean。
      *
-     * @param name bean name
-     * @return bean instance, or None if not found
+     * @param name Bean 名称
+     * @return Bean 实例，如果未找到则返回 None
      */
     public func getBean<T>(name: String): ?T {
         let res = _beans.get(name)
@@ -52,10 +52,10 @@ class DefaultApplicationContext <: ApplicationContext {
     }
 
     /**
-     * Get bean by type.
+     * 按类型获取 Bean。
      *
-     * @return bean instance, or None if not found
-     * @throws IocException if multiple candidates exist
+     * @return Bean 实例，如果未找到则返回 None
+     * @throws IocException 如果存在多个候选者
      */
     public func getBean<T>(): ?T {
         let res = getBeansByType<T>()
@@ -64,25 +64,25 @@ class DefaultApplicationContext <: ApplicationContext {
         } else if (res.size == 1) {
             res[0]
         } else {
-            throw IocException("there are multiple candidate implementations")
+            throw IocException("存在多个候选实现")
         }
     }
 
     /**
-     * Get all beans by type.
+     * 按类型获取所有 Bean。
      *
-     * @return collection of bean instances
+     * @return Bean 实例集合
      */
     public func getBeans<T>(): Collection<T> {
         return getBeansByType<T>()
     }
 
     /**
-     * Get bean by type name.
+     * 按类型名称获取 Bean。
      *
-     * @param beanType bean type name
-     * @return bean instance, or None if not found
-     * @throws IocException if multiple candidates exist
+     * @param beanType Bean 类型名称
+     * @return Bean 实例，如果未找到则返回 None
+     * @throws IocException 如果存在多个候选者
      */
     public func getBeanByTypeName<T>(beanType: String): ?T {
         let res = getBeanByTypeNameInner(beanType)
@@ -90,11 +90,11 @@ class DefaultApplicationContext <: ApplicationContext {
     }
 
     /**
-     * Get bean by type name (internal).
+     * 按类型名称获取 Bean（内部）。
      *
-     * @param beanType bean type name
-     * @return bean lifecycle, or None if not found
-     * @throws IocException if multiple candidates exist
+     * @param beanType Bean 类型名称
+     * @return Bean 生命周期，如果未找到则返回 None
+     * @throws IocException 如果存在多个候选者
      */
     private func getBeanByTypeNameInner(beanType: String): ?BeanLifecycle {
         let classTypes = _beanDependManager.getClassType(beanType)
@@ -120,13 +120,13 @@ class DefaultApplicationContext <: ApplicationContext {
     }
 
     /**
-     * Get bean by type name and factory (internal).
+     * 按类型名称和工厂获取 Bean（内部）。
      *
-     * @param f bean factory
-     * @param bt bean type name
-     * @param classTypeSize number of class types
-     * @return bean lifecycle, or None if not found
-     * @throws IocException if multiple candidates exist
+     * @param f Bean 工厂
+     * @param bt Bean 类型名称
+     * @param classTypeSize 类类型数量
+     * @return Bean 生命周期，如果未找到则返回 None
+     * @throws IocException 如果存在多个候选者
      */
     private func getBeanByTypeNameInner(f: BeanFactory, bt: String, classTypeSize: Int): ?BeanLifecycle {
         if (f.beanScope == SINGLETON) {
@@ -136,7 +136,7 @@ class DefaultApplicationContext <: ApplicationContext {
                 case _ => return None
             }
         } else {
-            // Prototype Bean only supports single get
+            // 原型 Bean 仅支持单次获取
             if (classTypeSize == 1) {
                 let (_, bean) = f.create(this)
                 bean.afterInit()
@@ -148,23 +148,23 @@ class DefaultApplicationContext <: ApplicationContext {
     }
 
     /**
-     * Get all beans by type name.
+     * 按类型名称获取所有 Bean。
      *
-     * @param beanType bean type name
-     * @return collection of bean instances
-     * @throws IocException if bean is not T type
+     * @param beanType Bean 类型名称
+     * @return Bean 实例集合
+     * @throws IocException 如果 Bean 不是 T 类型
      */
     public func getBeansByTypeName<T>(beanType: String): Collection<T> {
         let res = getBeansByTypeNameInner(beanType)
-        res |> map {it => convert<T>(it).getOrThrow({=> IocException("${beanType} object is not T type")})} |>
+        res |> map {it => convert<T>(it).getOrThrow({=> IocException("${beanType} 对象不是 T 类型")})} |>
             collectArray
     }
 
     /**
-     * Get all beans by type name (internal).
+     * 按类型名称获取所有 Bean（内部）。
      *
-     * @param beanType bean type name
-     * @return collection of bean lifecycles
+     * @param beanType Bean 类型名称
+     * @return Bean 生命周期集合
      */
     private func getBeansByTypeNameInner(beanType: String): Collection<BeanLifecycle> {
         let classTypes = _beanDependManager.getClassType(beanType)
@@ -184,9 +184,9 @@ class DefaultApplicationContext <: ApplicationContext {
     }
 
     /**
-     * Get all beans.
+     * 获取所有 Bean。
      *
-     * @return collection of all bean lifecycles
+     * @return 所有 Bean 生命周期集合
      */
     public func getAllBeans(): Collection<BeanLifecycle> {
         let iter = _beans.iterator()
@@ -198,16 +198,16 @@ class DefaultApplicationContext <: ApplicationContext {
     }
 
     /**
-     * Get beans by type (internal).
+     * 按类型获取 Bean（内部）。
      *
-     * @return array of beans matching type T
+     * @return 匹配类型 T 的 Bean 数组
      */
     private func getBeansByType<T>(): ArrayList<T> {
         let iter = _beans.iterator()
         let res = ArrayList<T>()
         while (let Some((k, v)) <- iter.next()) {
             match (v) {
-                // T可以Bean实现的接口，遍历所有Bean查找匹配T的Bean
+                // T 可以是 Bean 实现的接口，遍历所有 Bean 查找匹配 T 的 Bean
                 case x: T => res.add(x)
                 case _ => ()
             }
@@ -216,11 +216,11 @@ class DefaultApplicationContext <: ApplicationContext {
     }
 
     /**
-     * Add bean to context.
+     * 向上下文添加 Bean。
      *
-     * @param name bean name
-     * @param beanType bean type name
-     * @param bean bean instance
+     * @param name Bean 名称
+     * @param beanType Bean 类型名称
+     * @param bean Bean 实例
      */
     public func addBean(name: String, beanType: String, bean: BeanLifecycle): Unit {
         // 按Bean Name建立关系
@@ -230,9 +230,9 @@ class DefaultApplicationContext <: ApplicationContext {
     }
 
     /**
-     * Create all beans in dependency order.
+     * 按依赖顺序创建所有 Bean。
      *
-     * @throws IocException if bean factory not found
+     * @throws IocException 如果未找到 Bean 工厂
      */
     public func createAllBeans(): Unit {
         if (_inited.compareAndSwap(false, true)) {
@@ -241,13 +241,13 @@ class DefaultApplicationContext <: ApplicationContext {
             for (b in beans) {
                 match (_factories.get(b.beanType)) {
                     case Some(factory) =>
-                        // Prototype Bean creates new instance each time getBeanByTypeName is called, not stored to avoid memory leak
+                        // Prototype Bean 每次调用 getBeanByTypeName 时创建新实例，不存储以避免内存泄漏
                         if (factory.beanScope == SINGLETON) {
                             let (name, bean) = factory.create(this)
                             @JoyLogInfo("[IOC] created bean, name=${name}, beanType=${b.beanType}")
                             addBean(name, b.beanType, bean)
                         }
-                    case _ => throw IocException("not found bean factory for `${b.beanType}`")
+                    case _ => throw IocException("未找到 `${b.beanType}` 的 Bean 工厂")
                 }
             }
 
@@ -259,9 +259,9 @@ class DefaultApplicationContext <: ApplicationContext {
     }
 
     /**
-     * Destroy all beans.
+     * 销毁所有 Bean。
      *
-     * Invokes beforeDestroy on all beans and removes them from context.
+     * 调用所有 Bean 的 beforeDestroy 方法并从上下文中移除它们。
      */
     public func destroyAllBeans(): Unit {
         let beans = getAllBeans()

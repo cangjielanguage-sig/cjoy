@@ -22,50 +22,49 @@ import cjoy.json.JsonTool
 import cjoy.jsonrpc.{JSONRPCException, JSONRPCError, JSONRPCConsts}
 
 /**
- * Manager class for MCP resources
+ * MCP 资源管理器类
  *
- * Handles resource registration, discovery, and content reading. Provides methods for
- * adding resources, registering resource handlers, and accessing resource contents.
+ * 处理资源注册、发现和内容读取。提供添加资源、注册资源处理程序和访问资源内容的方法。
  */
 public class McpResources {
     /**
-     * ConcurrentHashMap for storing registered MCP resources
+     * 用于存储已注册 MCP 资源的 ConcurrentHashMap
      */
     let resources: ConcurrentHashMap<String, McpResource> = ConcurrentHashMap()
 
     /**
-     * ConcurrentHashMap for storing resource templates
+     * 用于存储资源模板的 ConcurrentHashMap
      */
     let resourceTempls: ConcurrentHashMap<String, ResourceTemplate> = ConcurrentHashMap()
 
     /**
-     * Root node of the routing tree for resource handlers
+     * 资源处理程序路由树的根节点
      */
     private let _root: TreeNode<McpReadResourceHandler> = TreeNode()
 
     private let _pageSize = 10
 
     /**
-     * Adds a read resource handler for a specific URI
+     * 为特定 URI 添加读取资源处理程序
      *
-     * @param uri The URI to handle
-     * @param handler The McpReadResourceHandler implementation
+     * @param uri 要处理的 URI
+     * @param handler McpReadResourceHandler 实现
      */
     public func addReadResourceHandler(uri: String, handler: McpReadResourceHandler): Unit {
         _root.addRoute("GET", normUrl(uri), handler)
     }
 
     /**
-     * Dumps the resource handler routing tree for debugging purposes
+     * 转储资源处理程序路由树，用于调试目的
      */
     public func dump() {
         @JoyLogInfo("[MCP] resource handler:\n${_root.dumpTree()}")
     }
 
     /**
-     * Adds an MCP resource to the manager
+     * 向管理器添加 MCP 资源
      *
-     * @param resource The McpResource instance to add
+     * @param resource 要添加的 McpResource 实例
      */
     public func addResource(resource: McpResource): Unit {
         if (resources.contains(resource.uri)) {
@@ -85,10 +84,10 @@ public class McpResources {
     }
 
     /**
-     * Lists all available MCP resources with pagination support
+     * 列出所有可用的 MCP 资源，支持分页
      *
-     * @param page PaginatedRequest containing cursor for pagination
-     * @return ListResourcesResult containing list of resources and next cursor
+     * @param page 包含分页游标的 PaginatedRequest
+     * @return 包含资源列表和下一个游标的 ListResourcesResult
      */
     public func listResources(page: PaginatedRequest): ListResourcesResult {
         let res: ArrayList<McpResource> = ArrayList()
@@ -108,10 +107,10 @@ public class McpResources {
     }
 
     /**
-     * Lists all available resource templates with pagination support
+     * 列出所有可用的资源模板，支持分页
      *
-     * @param page PaginatedRequest containing cursor for pagination
-     * @return ListResourceTemplatesResult containing list of templates and next cursor
+     * @param page 包含分页游标的 PaginatedRequest
+     * @return 包含模板列表和下一个游标的 ListResourceTemplatesResult
      */
     public func listResourceTemplates(page: PaginatedRequest): ListResourceTemplatesResult {
         let res: ArrayList<ResourceTemplate> = ArrayList()
@@ -131,9 +130,9 @@ public class McpResources {
     }
 
     /**
-     * Removes the resources with the given URIs
+     * 移除具有给定 URI 的资源
      *
-     * @param uris The URIs of the resources to remove
+     * @param uris 要移除的资源 URI 数组
      */
     public func removeResources(uris: Array<String>): Unit {
         for (uri in uris) {
@@ -143,19 +142,19 @@ public class McpResources {
     }
 
     /**
-     * Removes a single resource with the given URI
+     * 移除具有给定 URI 的单个资源
      *
-     * @param uri The URI of the resource to remove
+     * @param uri 要移除的资源 URI
      */
     public func removeResource(uri: String): Unit {
         removeResources([uri])
     }
 
     /**
-     * Adds route parameters to the JoyContext
+     * 向 JoyContext 添加路由参数
      *
-     * @param ctx The JoyContext
-     * @param ri The RouteInfo containing route parameters
+     * @param ctx JoyContext
+     * @param ri 包含路由参数的 RouteInfo
      */
     private func addCtxParam(ctx: JoyContext, ri: RouteInfo<McpReadResourceHandler>) {
         if (!ri.routeParamKeys.isEmpty()) {
@@ -170,12 +169,12 @@ public class McpResources {
     }
 
     /**
-     * Reads the content of a specific resource
+     * 读取特定资源的内容
      *
-     * @param ctx The JoyContext
-     * @param request ReadResourceRequest containing the URI to read
-     * @return ReadResourceResult containing the resource content
-     * @throws Exception If resource not found or read error occurs
+     * @param ctx JoyContext
+     * @param request 包含要读取的 URI 的 ReadResourceRequest
+     * @return 包含资源内容的 ReadResourceResult
+     * @throws Exception 如果未找到资源或读取错误
      */
     public func readResource(ctx: JoyContext, request: ReadResourceRequest): ReadResourceResult {
         let uri = normUrl(request.uri)
@@ -226,21 +225,21 @@ public class McpResources {
     }
 
     /**
-     * Gets the MIME type from context or returns a default
+     * 从上下文获取 MIME 类型或返回默认值
      *
-     * @param ctx The JoyContext
-     * @param defaultValue The default MIME type to return
-     * @return The MIME type from context or default value
+     * @param ctx JoyContext
+     * @param defaultValue 默认的 MIME 类型
+     * @return 上下文中的 MIME 类型或默认值
      */
     private static func getMimeType(ctx: JoyContext, defaultValue: String): String {
         ctx.getParam("mimeType") ?? defaultValue
     }
 
     /**
-     * Determines MIME type from string content
+     * 从字符串内容确定 MIME 类型
      *
-     * @param str The string to analyze
-     * @return MIME type (JSON if starts with { or [, otherwise plain text)
+     * @param str 要分析的字符串
+     * @return MIME 类型（如果以 { 或 [ 开头则为 JSON，否则为纯文本）
      */
     private static func getMimeType(str: String): String {
         if (str.startsWith("{") || str.startsWith("[")) {
@@ -251,22 +250,22 @@ public class McpResources {
     }
 
     /**
-     * Normalizes a URI for routing
+     * 规范化 URI 用于路由
      *
-     * @param uri The URI to normalize
-     * @return Normalized URI
+     * @param uri 要规范化的 URI
+     * @return 规范化后的 URI
      */
     private static func normUrl(uri: String): String {
         "/" + uri.replace("://", "/").replace("//", "/")
     }
 
     /**
-     * Creates a TextResourceContents instance
+     * 创建 TextResourceContents 实例
      *
-     * @param uri The URI of the resource
-     * @param text The text content
-     * @param mimeType The MIME type of the content
-     * @return TextResourceContents instance
+     * @param uri 资源的 URI
+     * @param text 文本内容
+     * @param mimeType 内容的 MIME 类型
+     * @return TextResourceContents 实例
      */
     private static func createTextResourceContents(uri: String, text: String, mimeType: String): ResourceContents {
         let res = TextResourceContents(text: text)
@@ -276,12 +275,12 @@ public class McpResources {
     }
 
     /**
-     * Creates a BlobResourceContents instance
+     * 创建 BlobResourceContents 实例
      *
-     * @param uri The URI of the resource
-     * @param blob The base64 encoded blob content
-     * @param mimeType The MIME type of the content
-     * @return BlobResourceContents instance
+     * @param uri 资源的 URI
+     * @param blob base64 编码的 blob 内容
+     * @param mimeType 内容的 MIME 类型
+     * @return BlobResourceContents 实例
      */
     private static func createBlobResourceContents(uri: String, blob: String, mimeType: String): ResourceContents {
         let res = BlobResourceContents(blob: blob)

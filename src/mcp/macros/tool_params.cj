@@ -16,7 +16,7 @@ import cjoy.utils.{MapToString, MapListGetFunc}
 import cjoy.utils.ast.{parserAttrs, TypeNodeInfo}
 
 /**
- * parameter info for tool parameter in macro
+ * 宏中工具参数的参数信息
  */
 open class ParamInfo {
     let marcroName: String

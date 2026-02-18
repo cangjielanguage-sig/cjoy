@@ -22,10 +22,10 @@ const csrfSecretCtxKey = "__csrf_secret__"
 const csrfTokenCtxKey = "__csrf_token__"
 const csrfSaltCtxKey = "__csrf_salt__"
 
-// the extract token function
+// 提取令牌的函数
 type CsrfExtractFunc = (ctx: JoyContext) -> (String, String)
 
-// the default authentication failure handler 
+// 默认的认证失败处理器
 class DefaultCsrfErrorHandler <: JoyRequestHandler {
     static let INSTANCE = DefaultCsrfErrorHandler()
 
@@ -60,7 +60,7 @@ public func getCsrfToken(ctx: JoyContext): String {
 }
 
 /**
- * token Csrf protect middleware
+ * CSRF 令牌保护中间件
  */
 public class CsrfProtect <: JoyMiddlewareHandler {
     private let _secret: String
@@ -70,16 +70,16 @@ public class CsrfProtect <: JoyMiddlewareHandler {
     private let _errorHandler: JoyRequestHandler
 
     /**
-     * @param secret: used to generate token.
-     * @param ignoreMethods: will be considered no protection required.
-     * @param lookupKey: is a string in the form of "<source>:<key>" that is used to extract the token from the request.
-     *       Possible values:
-     *        - "header:<name>"
-     *        - "query:<name>"
-     *        - "param:<name>"
-     *        - "form:<name>"
-     * @param filterHandler: a function to skip this middleware.
-     * @param errorHandler: a function to executed when an error.
+     * @param secret: 用于生成令牌的密钥
+     * @param ignoreMethods: 将被视为不需要保护的HTTP方法列表
+     * @param lookupKey: 用于从请求中提取令牌的字符串，格式为 "<source>:<key>"。
+     *       可能的值:
+     *        - "header:<name>"（从请求头中提取）
+     *        - "query:<name>"（从查询参数中提取）
+     *        - "param:<name>"（从路径参数中提取）
+     *        - "form:<name>"（从表单数据中提取）
+     * @param filterHandler: 用于跳过此中间件的函数
+     * @param errorHandler: 发生错误时执行的函数
      */
     public init(secret: String,
         ignoreMethods!: Array<String> = [JoyHttpConsts.METHOD_GET, JoyHttpConsts.METHOD_HEAD,

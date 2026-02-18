@@ -13,52 +13,55 @@ package cjoy.jwt
 import std.collection.concurrent.ConcurrentHashMap
 
 /**
- * the interface for singing algorithm
+ * 签名算法的接口
  */
 public interface SigningMethod {
     /**
-     * return the algorithm identifier for this method (example: 'HS256')
+     * 返回此方法的算法标识符（示例：'HS256'）
      */
     prop alg: String
 
     /**
-     * signing the token using the key with the algorithm
+     * 使用算法的密钥对令牌进行签名
      *
-     * @param signing the string will be sign
-     * @param key the key of algorithm, like Array<Byte> or RSAPrivateKey
-     * @throws JwtException if sige failed
+     * @param signing 将被签名的字符串
+     * @param key 算法的密钥，如 Array<Byte> 或 RSAPrivateKey
+     * @throws JwtException 如果签名失败
      */
     func sign(signing: String, key: Any): Array<Byte>
 
     /**
-     * verify the token using the key with the algorithm
+     * 使用算法的密钥验证令牌
      *
-     * @param signing the signing string
-     * @param sig the signed data for checking
-     * @param key the key of algorithm, like Array<Byte> or RSAPublicKey
-     * @throws JwtException if verify failed
+     * @param signing 签名字符串
+     * @param sig 用于检查的签名数据
+     * @param key 算法的密钥，如 Array<Byte> 或 RSAPublicKey
+     * @throws JwtException 如果验证失败
      */
     func verify(signing: String, sig: Array<Byte>, key: Any): Unit
 }
 
+/**
+ * 签名方法管理器，用于注册和获取签名方法实例
+ */
 public class SigningMethods {
     public static let METHODS: ConcurrentHashMap<String, SigningMethod> = ConcurrentHashMap()
 
     /**
-     * register signing method
+     * 注册签名方法
      *
-     * @param alg algorithm identifier
-     * @param method: signing method
+     * @param alg 算法标识符
+     * @param method 签名方法
      */
     public static func register(alg: String, method: SigningMethod): Unit {
         METHODS.add(alg, method)
     }
 
     /**
-     * get signing method by algorithm
+     * 按算法获取签名方法
      *
-     * @param alg algorithm identifier
-     * @return signing method or None if not found
+     * @param alg 算法标识符
+     * @return 签名方法，如果未找到则返回 None
      */
     public static func getMethod(alg: String): ?SigningMethod {
         METHODS.get(alg)

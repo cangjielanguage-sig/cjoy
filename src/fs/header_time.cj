@@ -14,20 +14,19 @@ package cjoy.fs
 import std.time.{DateTime, TimeParseException, DateTimeFormat}
 
 /**
- * ANSIC format: "Mon Jan _2 15:04:05 2006"
- * Corresponds to Go's time.ANSIC constant.
- * This may not parse single-digit day values like Go does.
+ * ANSIC 格式："Mon Jan _2 15:04:05 2006"
+ * 对应 Go 的 time.ANSIC 常量
+ * 此格式可能无法解析像 Go 一样的单位数日期值
  */
 const ANSIC: String = "www MMM dd HH:mm:ss yyyy"
 
 /**
- * ParseHttpTime parses a time header (such as the Date: header),
- * trying each of the three formats allowed by HTTP/1.1:
- * RFC1123, RFC850, and ANSIC.
+ * 解析 HTTP 时间头（如 Date: 头）
+ * 尝试 HTTP/1.1 允许的三种格式：RFC1123、RFC850 和 ANSIC
  *
- * @param text The time string to parse.
- * @return A DateTime if parsing succeeds.
- * @throws TimeParseException if all format parsing attempts fail.
+ * @param text 要解析的时间字符串
+ * @return 解析成功返回 DateTime
+ * @throws TimeParseException 如果所有格式解析尝试都失败
  */
 public func parseHttpTime(text: String): DateTime {
     let formats = [DateTimeFormat.RFC1123, DateTimeFormat.RFC850, ANSIC]
@@ -36,7 +35,6 @@ public func parseHttpTime(text: String): DateTime {
         try {
             return DateTime.parse(text, format)
         } catch (e: TimeParseException) {
-            e.printStackTrace()
             // Try next format
         } catch (_: IllegalArgumentException) {
             // Try next format
@@ -47,11 +45,11 @@ public func parseHttpTime(text: String): DateTime {
 }
 
 /**
- * TryParseHttpTime attempts to parse a time header string,
- * trying each of the three formats allowed by HTTP/1.1.
+ * 尝试解析 HTTP 时间头字符串
+ * 尝试 HTTP/1.1 允许的三种格式
  *
- * @param text The time string to parse.
- * @return Option<DateTime> with the parsed time, or None if parsing fails.
+ * @param text 要解析的时间字符串
+ * @return 解析成功返回 Option<DateTime>，失败返回 None
  */
 public func tryParseHttpTime(text: String): Option<DateTime> {
     try {

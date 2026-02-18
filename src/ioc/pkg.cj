@@ -13,6 +13,6 @@ package cjoy.ioc
 import cjoy.log.macros.*
 
 /**
- * Create logger for IoC module.
+ * 为 IoC 模块创建日志记录器。
  */
 @JoyCreateLogger("cjoy.ioc")

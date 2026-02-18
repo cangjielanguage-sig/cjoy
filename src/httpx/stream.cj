@@ -20,7 +20,7 @@ enum StreamData {
 }
 
 /**
- * HTTP byte stream that supports both line-by-line iteration and raw byte reading
+ * HTTP 字节流，支持逐行迭代和原始字节读取
  */
 public class JoyHttpStream <: Iterator<String> & InputStream {
     private let _queue = LinkedBlockingQueue<StreamData>()
@@ -34,10 +34,10 @@ public class JoyHttpStream <: Iterator<String> & InputStream {
     }
 
     /**
-     * Read bytes from stream
+     * 从流中读取字节
      *
-     * @return true if bytes read successfully, false if EOF
-     * @throws Exception if receive a error
+     * @return 如果成功读取字节返回 true，如果到达文件末尾返回 false
+     * @throws Exception 如果接收到错误
      */
     private func readBytes(): Bool {
         if (_finished) {
@@ -55,10 +55,10 @@ public class JoyHttpStream <: Iterator<String> & InputStream {
     }
 
     /**
-     * Read bytes from stream
+     * 从流中读取字节
      *
-     * @param buffer byte buffer to read into
-     * @return number of bytes read
+     * @param buffer 要读取到的字节缓冲区
+     * @return 读取的字节数
      */
     public func read(buffer: Array<Byte>): Int64 {
         if (_byteBuffer.isEmpty() && !this.readBytes()) {
@@ -97,41 +97,41 @@ public class JoyHttpStream <: Iterator<String> & InputStream {
     }
 
     /**
-     * Read next line from stream
+     * 从流中读取下一行
      *
-     * @return line string or None if EOF
+     * @return 行字符串，如果到达文件末尾返回 None
      */
     public func next(): Option<String> {
         return this.reader.readln()
     }
 
     /**
-     * Put byte data to stream
+     * 将字节数据放入流
      *
-     * @param data byte data
+     * @param data 字节数据
      */
     public func put(data: Array<Byte>): Unit {
         _queue.add(StreamData.Bytes(data))
     }
 
     /**
-     * Mark end of file
+     * 标记文件结束
      */
     public func markEOF(): Unit {
         _queue.add(StreamData.EOF)
     }
 
     /**
-     * Mark error on stream
+     * 在流上标记错误
      *
-     * @param err error message
+     * @param err 错误消息
      */
     public func markError(err: String): Unit {
         _queue.add(StreamData.Error(err))
     }
 
     /**
-     * Close stream
+     * 关闭流
      */
     public func close(): Unit {
         this.markEOF()

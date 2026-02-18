@@ -21,32 +21,32 @@ import cjoy.jsonrpc.{JSONRPCError, JSONRPCConsts, JSONRPCTool}
 import cjoy.log.macros.*
 
 /**
- * MCP server transport for Server-Sent Events (SSE) communication
+ * 用于服务器发送事件（SSE）通信的 MCP 服务器传输
  *
- * Handles incoming SSE connections and message exchange between MCP server and clients
- * using SSE protocol for real-time communication.
+ * 处理传入的 SSE 连接和 MCP 服务器与客户端之间的消息交换，
+ * 使用 SSE 协议进行实时通信。
  */
 class McpSseServerTransport <: McpServerTransport {
     /**
-     * ConcurrentHashMap for storing active server sessions
+     * 用于存储活动服务器会话的 ConcurrentHashMap
      */
     private let _sessions: ConcurrentHashMap<String, SessionInfo> = ConcurrentHashMap()
 
     /**
-     * The endpoint for message exchange
+     * 消息交换的端点
      */
     private let _messageEndpoint: String
 
     /**
-     * Flag indicating if DNS rebinding protection for localhost is disabled
+     * 指示是否禁用 localhost 的 DNS 重绑定保护的标志
      */
     private let _disableLocalhostProtection: Bool
 
     /**
-     * Initializes a new McpSseServerTransport
+     * 初始化新的 McpSseServerTransport
      *
-     * @param messageEndpoint The endpoint for message exchange
-     * @param disableLocalhostProtection Whether to disable DNS rebinding protection for localhost (default: false)
+     * @param messageEndpoint 消息交换的端点
+     * @param disableLocalhostProtection 是否禁用 localhost 的 DNS 重绑定保护（默认：false）
      */
     init(messageEndpoint: String, disableLocalhostProtection!: Bool = false) {
         this._messageEndpoint = messageEndpoint
@@ -54,9 +54,9 @@ class McpSseServerTransport <: McpServerTransport {
     }
 
     /**
-     * Handles incoming SSE requests
+     * 处理传入的 SSE 请求
      *
-     * @param ctx The JoyContext for the request
+     * @param ctx 请求的 JoyContext
      */
     public func handleSseRequest(ctx: JoyContext): Unit {
         if (!validateLocalhostProtection(ctx, _disableLocalhostProtection)) {
@@ -91,9 +91,9 @@ class McpSseServerTransport <: McpServerTransport {
     }
 
     /**
-     * Handles incoming POST requests for message exchange
+     * 处理传入的 POST 请求进行消息交换
      *
-     * @param ctx The JoyContext for the request
+     * @param ctx 请求的 JoyContext
      */
     public func handlePostRequest(ctx: JoyContext): Unit {
         if (!validateLocalhostProtection(ctx, _disableLocalhostProtection)) {
@@ -129,24 +129,24 @@ class McpSseServerTransport <: McpServerTransport {
     }
 
     /**
-     * Sends a message through this transport (not implemented for SSE)
+     * 通过此传输发送消息（SSE 未实现）
      *
-     * @param message The message to send
+     * @param message 要发送的消息
      */
     public func send(_: ByteBuffer): Unit {
         // nothing
     }
 
     /**
-     * Closes the transport
+     * 关闭传输
      */
     public func close(): Unit {
     }
 
     /**
-     * Checks if the transport is closed
+     * 检查传输是否已关闭
      *
-     * @return Always false for SSE transport
+     * @return SSE 传输始终返回 false
      */
     public func isClosed(): Bool {
         false
@@ -154,53 +154,53 @@ class McpSseServerTransport <: McpServerTransport {
 }
 
 /**
- * MCP server session transport for Server-Sent Events (SSE) communication
+ * 用于服务器发送事件（SSE）通信的 MCP 服务器会话传输
  *
- * Manages communication between server and client over an SSE connection for a specific session.
+ * 管理特定会话中服务器与客户端通过 SSE 连接的通信。
  */
 class McpSseServerSessionTransport <: McpTransport {
     /**
-     * The SSE emitter for sending events to client
+     * 用于向客户端发送事件的 SSE 发射器
      */
     let _emitter: JoySseEmitter
 
     /**
-     * The session state manager
+     * 会话状态管理器
      */
     let _state: McpServerSessionState
 
     /**
-     * Reference to all active sessions
+     * 对所有活动会话的引用
      */
     let _sessions: ConcurrentHashMap<String, SessionInfo>
 
     /**
-     * Time of last message sent
+     * 最后发送消息的时间
      */
     private var _lastMsgTime: DateTime = DateTime.now()
 
     /**
-     * Flag indicating if transport is running
+     * 指示传输是否正在运行的标志
      */
     private var _running: Bool = true
 
     /**
-     * Flag indicating if transport is closed
+     * 指示传输是否已关闭的标志
      */
     private var _isClosed: Bool = false
 
     /**
-     * Flag indicating if session should be removed on error
+     * 指示发生错误时是否应移除会话的标志
      */
     private let _removeOnErr: Bool
 
     /**
-     * Initializes a new McpSseServerSessionTransport
+     * 初始化新的 McpSseServerSessionTransport
      *
-     * @param emitter The SSE emitter for this session
-     * @param state The session state manager
-     * @param sessions Reference to all active sessions
-     * @param removeOnErr Whether to remove session on error (default: true)
+     * @param emitter 此会话的 SSE 发射器
+     * @param state 会话状态管理器
+     * @param sessions 对所有活动会话的引用
+     * @param removeOnErr 发生错误时是否移除会话（默认：true）
      */
     init(emitter: JoySseEmitter, state: McpServerSessionState, sessions: ConcurrentHashMap<String, SessionInfo>,
         removeOnErr!: Bool = true) {
@@ -221,7 +221,7 @@ class McpSseServerSessionTransport <: McpTransport {
     }
 
     /**
-     * Closes the session transport
+     * 关闭会话传输
      */
     public func close(): Unit {
         if (_isClosed) {
@@ -232,16 +232,16 @@ class McpSseServerSessionTransport <: McpTransport {
     }
 
     /**
-     * Checks if the transport is closed
+     * 检查传输是否已关闭
      *
-     * @return True if transport is closed, false otherwise
+     * @return 如果传输已关闭返回 true，否则返回 false
      */
     public func isClosed(): Bool {
         _isClosed
     }
 
     /**
-     * Sends a ping event to keep the SSE connection alive
+     * 发送 ping 事件以保持 SSE 连接活跃
      */
     private func sendPing(): Unit {
         try {
@@ -256,9 +256,9 @@ class McpSseServerSessionTransport <: McpTransport {
     }
 
     /**
-     * Sends a message through the SSE transport
+     * 通过 SSE 传输发送消息
      *
-     * @param message The message to send as ByteBuffer
+     * @param message 要发送的消息，类型为 ByteBuffer
      */
     public func send(message: ByteBuffer): Unit {
         let data = String.fromUtf8(message.bytes())
@@ -266,9 +266,9 @@ class McpSseServerSessionTransport <: McpTransport {
     }
 
     /**
-     * Sends a message through the SSE transport
+     * 通过 SSE 传输发送消息
      *
-     * @param data The message to send as string
+     * @param data 要发送的消息，类型为字符串
      */
     public func send(data: String): Unit {
         try {
@@ -287,11 +287,11 @@ class McpSseServerSessionTransport <: McpTransport {
 }
 
 /**
- * Helper function to send an SSE event
+ * 发送 SSE 事件的辅助函数
  *
- * @param emitter The SSE emitter to use
- * @param eventType The type of event
- * @param data The event data
+ * @param emitter 要使用的 SSE 发射器
+ * @param eventType 事件类型
+ * @param data 事件数据
  */
 func sendEvent(emitter: JoySseEmitter, eventType: String, data: String) {
     emitter.sendEvent(JoySseBuilder().event(eventType).data(data))
