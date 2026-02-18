@@ -30,9 +30,9 @@ import cjoy.log.macros.*
  */
 class McpStreamableServerTransport <: McpServerTransport {
     /**
-     * ConcurrentHashMap for storing active server sessions
+     * ConcurrentHashMap for storing active server sessions with user info
      */
-    private let _sessions: ConcurrentHashMap<String, McpServerSession> = ConcurrentHashMap()
+    private let _sessions: ConcurrentHashMap<String, SessionInfo> = ConcurrentHashMap()
 
     /**
      * Map for tracking session timestamps: sessionId -> last activity time
@@ -75,6 +75,11 @@ class McpStreamableServerTransport <: McpServerTransport {
     private let _statelessMode: Bool
 
     /**
+     * Flag indicating if DNS rebinding protection for localhost is disabled
+     */
+    private let _disableLocalhostProtection: Bool
+
+    /**
      * Initializes a new McpStreamableServerTransport
      *
      * @param isJsonResp Whether to return JSON responses instead of SSE streams
@@ -82,15 +87,18 @@ class McpStreamableServerTransport <: McpServerTransport {
      * @param sessionTimeoutMs Session timeout duration in milliseconds (default: 30 minutes)
      * @param sessionCheckIntervalMs Time interval for checking and cleaning up timeout sessions (default: 5 minutes)
      * @param statelessMode Whether to enable stateless mode (default: false)
+     * @param disableLocalhostProtection Whether to disable DNS rebinding protection for localhost (default: false)
      */
     public init(isJsonResp: Bool, eventStore!: ?EventStore = None, sessionTimeoutMs!: Int64 = 30 * 60 * 1000,
-        sessionCheckIntervalMs!: Int64 = 5 * 60 * 1000, statelessMode!: Bool = false) {
+        sessionCheckIntervalMs!: Int64 = 5 * 60 * 1000, statelessMode!: Bool = false,
+        disableLocalhostProtection!: Bool = false) {
         _isJsonResp = isJsonResp
         _eventStore = eventStore
         _sessionTimeoutMs = sessionTimeoutMs
         _sessionCheckIntervalMs = sessionCheckIntervalMs
         _sessionTimeoutEnabled = (sessionTimeoutMs > 0 && sessionCheckIntervalMs > 0)
         _statelessMode = statelessMode
+        _disableLocalhostProtection = disableLocalhostProtection
 
         if (_statelessMode) {
             @JoyLogInfo("[MCP] started streamable transport with stateless mode enabled")
@@ -108,6 +116,12 @@ class McpStreamableServerTransport <: McpServerTransport {
         } else {
             @JoyLogInfo("[MCP] started streamable transport with session timeout management disabled")
         }
+
+        if (_disableLocalhostProtection) {
+            @JoyLogInfo("[MCP] DNS protection disabled")
+        } else {
+            @JoyLogInfo("[MCP] DNS protection enabled")
+        }
     }
 
     /**
@@ -116,6 +130,10 @@ class McpStreamableServerTransport <: McpServerTransport {
      * @param ctx The JoyContext for the request
      */
     public func handleGetRequest(ctx: JoyContext): Unit {
+        if (!validateProtocolVersion(ctx) || !validateLocalhostProtection(ctx, _disableLocalhostProtection)) {
+            return
+        }
+
         let (_, hasSse) = checkAcceptHeader(ctx)
         if (!hasSse) {
             @JoyLogError("[MCP] handle get request faild, Not Acceptable")
@@ -145,6 +163,10 @@ class McpStreamableServerTransport <: McpServerTransport {
      * @param ctx The JoyContext for the request
      */
     public func handlePostRequest(ctx: JoyContext): Unit {
+        if (!validateProtocolVersion(ctx) || !validateLocalhostProtection(ctx, _disableLocalhostProtection)) {
+            return
+        }
+
         let (hasJson, hasSse) = checkAcceptHeader(ctx)
         if (!(hasJson && hasSse)) {
             @JoyLogError("[MCP] handle post request faild, Not Acceptable")
@@ -183,6 +205,10 @@ class McpStreamableServerTransport <: McpServerTransport {
      * @param ctx The JoyContext for the request
      */
     public func handleDelRequest(ctx: JoyContext): Unit {
+        if (!validateProtocolVersion(ctx) || !validateLocalhostProtection(ctx, _disableLocalhostProtection)) {
+            return
+        }
+
         let session = validateSession(ctx)
         if (let Some(s) <- session) {
             terminateSession(s)
@@ -213,7 +239,7 @@ class McpStreamableServerTransport <: McpServerTransport {
         @JoyLogDebug("[MCP] checking for timeout sessions, current time: ${currentTime}, timeout threshold: ${timeoutThreshold}ms")
 
         let sessionIter = _sessions.iterator()
-        while (let Some((sessionId, session)) <- sessionIter.next()) {
+        while (let Some((sessionId, sessionInfo)) <- sessionIter.next()) {
             // Get session's last activity time
             let lastActivityTime = _sessionTimestamps.get(sessionId)
 
@@ -224,12 +250,12 @@ class McpStreamableServerTransport <: McpServerTransport {
                     // Cleanup session
                     _sessions.remove(sessionId)
                     _sessionTimestamps.remove(sessionId)
-                    terminateSession(session)
+                    terminateSession(sessionInfo.session)
                 }
             } else {
                 // Session without timestamp, consider it as timeout and clean up
                 @JoyLogInfo("[MCP] session without timestamp, consider as timeout: ${sessionId}")
-                terminateSession(session)
+                terminateSession(sessionInfo.session)
             }
         }
     }
@@ -262,7 +288,27 @@ class McpStreamableServerTransport <: McpServerTransport {
     }
 
     /**
-     * Validates the session from the request
+     * Validates the protocol version from the request
+     *
+     * @param ctx The JoyContext for the request
+     * @return True if protocol version is valid and supported
+     */
+    private func validateProtocolVersion(ctx: JoyContext): Bool {
+        let protocolVersion = ctx.getHeader(McpConsts.HEADER_PROTOCOL_VERSION) ?? McpConsts.PROTOCOL_VERSION_20250326
+
+        if (!McpConsts.supportedProtocolVersions().contains(protocolVersion)) {
+            @JoyLogError("[MCP] unsupported protocol version")
+            let err = createErrorMsg("Bad Request: Unsupported protocol version")
+            ctx.status(HttpStatusCode.STATUS_BAD_REQUEST).json(err)
+            return false
+        }
+
+        @JoyLogDebug("[MCP] protocol version validated")
+        return true
+    }
+
+    /**
+     * Validates the session from the request and prevents session hijacking
      *
      * @param ctx The JoyContext for the request
      * @param mustExist Whether the session must exist (default: true)
@@ -271,9 +317,17 @@ class McpStreamableServerTransport <: McpServerTransport {
     private func validateSession(ctx: JoyContext, mustExist!: Bool = true): ?McpServerSession {
         let sessionId = ctx.getHeader(McpConsts.HEADER_MCP_SESSION_ID)
         if (let Some(id) <- sessionId) {
-            let session = _sessions.get(id)
-            if (let Some(s) <- session) {
-                return s
+            let sessionInfo = _sessions.get(id)
+            if (let Some(info) <- sessionInfo) {
+                // 防止会话劫持：检查用户身份是否匹配
+                let requestUserID = getUserIDFromContext(ctx)
+                if (info.userID != "" && requestUserID != info.userID) {
+                    @JoyLogError("[MCP] session user mismatch")
+                    let err = createErrorMsg("Forbidden: Session user mismatch")
+                    ctx.status(HttpStatusCode.STATUS_FORBIDDEN).json(err)
+                    return None
+                }
+                return info.session
             } else {
                 @JoyLogError("[MCP] not found streamable session, sessionId: ${id}")
                 let err = createErrorMsg("Not Found: Invalid or expired session id")
@@ -298,18 +352,6 @@ class McpStreamableServerTransport <: McpServerTransport {
     private func terminateSession(session: McpServerSession): Unit {
         session.close()
         _sessions.remove(session.sessionId)
-    }
-
-    /**
-     * Creates a JSONRPCResponse with an error message
-     *
-     * @param msg The error message
-     * @param code The error code (default: JSONRPCConsts.ERR_INVALID_REQUEST)
-     * @return The JSONRPCResponse with error information
-     */
-    private func createErrorMsg(msg: String, code!: Int = JSONRPCConsts.ERR_INVALID_REQUEST): JSONRPCResponse {
-        let err = JSONRPCError(code: code, message: msg)
-        JSONRPCResponse(id: "server-error", error: err)
     }
 
     /**
@@ -364,7 +406,8 @@ class McpStreamableServerTransport <: McpServerTransport {
     private func createTransport(ctx: JoyContext, sessionId: String): McpSseServerSessionTransport {
         let emitter = ctx.eventEmitter()
         let state = McpServerSessionState(sessionId, emitter)
-        McpSseServerSessionTransport(emitter, state, _sessions, removeOnErr: false)
+        McpSseServerSessionTransport(emitter, state, _sessions,
+            removeOnErr: false)
     }
 
     /**
@@ -434,68 +477,90 @@ class McpStreamableServerTransport <: McpServerTransport {
      */
     private func handleRequest(ctx: JoyContext, m: JSONRPCRequest): Unit {
         var session: ?McpServerSession = None
-        if (m.method == McpConsts.METHOD_INITIALIZE) {
-            session = validateSession(ctx, mustExist: !_statelessMode)
-            if (session.isNone()) {
-                let sessionId = secureRandStr(16)
-                let sess = createSession(ctx, sessionId)
-                if (_statelessMode) {
-                    @JoyLogInfo("[MCP] create stateless session, sessionId: ${sessionId}")
-                } else {
-                    @JoyLogInfo("[MCP] create streamable session, sessionId: ${sessionId}")
-                }
-                session = sess
-                _sessions.add(sessionId, sess)
-                sessionCreated(sessionId) // 记录会话创建时间
-            } else {
-                // 更新已存在会话的活动时间
-                if (let Some(s) <- session) {
-                    updateSessionActivity(s.sessionId)
-                }
+        let isInitializeRequest = m.method == McpConsts.METHOD_INITIALIZE
+
+        // 统一会话创建和验证逻辑
+        session = if (isInitializeRequest) {
+            initializeSession(ctx)
+        } else if (_statelessMode) {
+            createTemporarySession(ctx, "non-initialize")
+        } else {
+            validateAndUpdateSession(ctx)
+        }
+
+        // 处理请求
+        if (let Some(s) <- session) {
+            if (!_isJsonResp && !isInitializeRequest) {
+                updateTransport(ctx, session)
             }
-            session?.handle(ctx, m)
-            if (!_isJsonResp) {
+
+            s.handle(ctx, m)
+
+            if (!_isJsonResp && isInitializeRequest) {
                 closeTransport(session)
             }
 
             // 无状态模式下，处理完请求后立即关闭会话
             if (_statelessMode) {
-                session?.close()
-                if (let Some(s) <- session) {
-                    _sessions.remove(s.sessionId)
-                    _sessionTimestamps.remove(s.sessionId)
-                }
-            }
-        } else {
-            // 无状态模式下，对于非初始化请求也创建临时会话
-            if (_statelessMode) {
-                let sessionId = secureRandStr(16)
-                let sess = createSession(ctx, sessionId)
-                @JoyLogInfo("[MCP] create stateless session for non-initialize request, sessionId: ${sessionId}")
-                session = sess
-                _sessions.add(sessionId, sess)
-                sessionCreated(sessionId) // 记录会话创建时间
-            } else {
-                session = validateSession(ctx)
-                if (let Some(s) <- session) {
-                    updateSessionActivity(s.sessionId) // 更新会话活动时间
-                }
-            }
-
-            if (!_isJsonResp) {
-                updateTransport(ctx, session)
-            }
-            session?.handle(ctx, m)
-
-            // 无状态模式下，处理完请求后立即关闭会话
-            if (_statelessMode) {
-                session?.close()
-                if (let Some(s) <- session) {
-                    _sessions.remove(s.sessionId)
-                    _sessionTimestamps.remove(s.sessionId)
-                }
+                s.close()
+                _sessions.remove(s.sessionId)
+                _sessionTimestamps.remove(s.sessionId)
             }
         }
+    }
+
+    /**
+     * 处理初始化请求的会话创建和验证
+     */
+    private func initializeSession(ctx: JoyContext): ?McpServerSession {
+        let session = validateSession(ctx, mustExist: false)
+
+        if (session.isNone()) {
+            let sessionId = secureRandStr(16)
+            let sess = createSession(ctx, sessionId)
+            @JoyLogInfo("[MCP] create ${if (_statelessMode) {"stateless" }else {"streamable"}} session, sessionId: ${sessionId}")
+
+            let userID = getUserIDFromContext(ctx)
+            let sessionInfo = SessionInfo(sess, userID)
+            _sessions.add(sessionId, sessionInfo)
+            sessionCreated(sessionId)
+
+            return sess
+        }
+
+        // 更新已存在会话的活动时间
+        if (let Some(s) <- session) {
+            updateSessionActivity(s.sessionId)
+        }
+
+        return session
+    }
+
+    /**
+     * 创建临时会话
+     */
+    private func createTemporarySession(ctx: JoyContext, requestType: String): ?McpServerSession {
+        let sessionId = secureRandStr(16)
+        let sess = createSession(ctx, sessionId)
+        @JoyLogInfo("[MCP] create stateless session for ${requestType} request, sessionId: ${sessionId}")
+
+        let userID = getUserIDFromContext(ctx)
+        let sessionInfo = SessionInfo(sess, userID)
+        _sessions.add(sessionId, sessionInfo)
+        sessionCreated(sessionId)
+
+        return sess
+    }
+
+    /**
+     * 验证并更新会话
+     */
+    private func validateAndUpdateSession(ctx: JoyContext): ?McpServerSession {
+        let session = validateSession(ctx)
+        if (let Some(s) <- session) {
+            updateSessionActivity(s.sessionId)
+        }
+        return session
     }
 
     /**

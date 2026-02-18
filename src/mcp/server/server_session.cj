@@ -24,6 +24,22 @@ import cjoy.json.JsonTool
 import cjoy.framework.{JoyContext, JoySseEmitter}
 
 /**
+ * 会话信息结构，用于防止会话劫持
+ */
+class SessionInfo {
+    let session: McpServerSession
+    let userID: String
+
+    /**
+     * 初始化会话信息
+     */
+    init(session: McpServerSession, userID: String) {
+        this.session = session
+        this.userID = userID
+    }
+}
+
+/**
  * Session state manager for MCP server
  *
  * Tracks the state of an MCP session, managing session lifecycle and
@@ -105,6 +121,31 @@ class DefaultMcpServerSession <: McpServerSession & McpRequestHandler & McpRespo
     private var _events: ArrayList<(String, ByteBuffer)> = ArrayList()
     private var _eventIdCounter: Int64 = 0
     private let _eventStore: ?EventStore
+
+    /**
+     * Keepalive interval in milliseconds
+     */
+    private var _keepaliveIntervalMs: Int64 = 0
+
+    /**
+     * Keepalive timeout in milliseconds
+     */
+    private var _keepaliveTimeoutMs: Int64 = 0
+
+    /**
+     * Last time a ping was sent
+     */
+    private var _lastPingTime: Int64 = 0
+
+    /**
+     * Flag indicating if a ping response was received
+     */
+    private var _pingResponseReceived: Bool = true
+
+    /**
+     * Timer for sending ping messages
+     */
+    private var _keepaliveTimer: ?Any = None
 
     public prop sessionId: String {
         get() {
@@ -491,8 +532,29 @@ class DefaultMcpServerSession <: McpServerSession & McpRequestHandler & McpRespo
      * @return The InitializeResult
      */
     private func onRecvInitRequest(request: InitializeRequest): InitializeResult {
-        // TODO check the request params
-        McpServer.exchangeInit()
+        // Protocol version negotiation
+        let negotiatedVersion = negotiateProtocolVersion(request.protocolVersion)
+        let result = McpServer.exchangeInit()
+        result.protocolVersion = negotiatedVersion
+        @JoyLogInfo("[MCP] protocol version negotiated")
+        result
+    }
+
+    /**
+     * Negotiates the protocol version based on client request and server support
+     *
+     * @param clientVersion The protocol version requested by the client
+     * @return The negotiated protocol version
+     */
+    private func negotiateProtocolVersion(clientVersion: String): String {
+        // Check if client version is supported
+        if (McpConsts.supportedProtocolVersions().contains(clientVersion)) {
+            return clientVersion
+        }
+
+        // If client version is not supported, return latest supported version
+        @JoyLogWarn("[MCP] client requested unsupported protocol version")
+        return McpConsts.LASTEST_PROTOCOL_VERSION
     }
 
     /**

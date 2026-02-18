@@ -16,15 +16,18 @@ async def main():
         print(f"Available tools: {tools}")
         for i in range(2):
             result = await client.call_tool("add", {"a": 5, "b": i})
-            print(result[0].text) 
+            print(result)
+            print(result.content[0].text) 
             await asyncio.sleep(1)
         for i in range(2):
             result = await client.call_tool("add2", {"a": 5, "b": i})
-            print(result[0].text) 
+            print(result)
+            print(result.content[0].text) 
             await asyncio.sleep(1)
         for i in range(2):
             result = await client.call_tool("add3", {"a": 5, "b": i})
-            print(result[0].text) 
+            print(result)
+            print(result.content[0].text) 
             await asyncio.sleep(1)
         resources = await client.list_resources()
         print(f"Available resources: {resources}")

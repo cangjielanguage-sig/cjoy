@@ -30,7 +30,7 @@ class McpSseServerTransport <: McpServerTransport {
     /**
      * ConcurrentHashMap for storing active server sessions
      */
-    private let _sessions: ConcurrentHashMap<String, McpServerSession> = ConcurrentHashMap()
+    private let _sessions: ConcurrentHashMap<String, SessionInfo> = ConcurrentHashMap()
 
     /**
      * The endpoint for message exchange
@@ -38,12 +38,19 @@ class McpSseServerTransport <: McpServerTransport {
     private let _messageEndpoint: String
 
     /**
+     * Flag indicating if DNS rebinding protection for localhost is disabled
+     */
+    private let _disableLocalhostProtection: Bool
+
+    /**
      * Initializes a new McpSseServerTransport
      *
      * @param messageEndpoint The endpoint for message exchange
+     * @param disableLocalhostProtection Whether to disable DNS rebinding protection for localhost (default: false)
      */
-    init(messageEndpoint: String) {
+    init(messageEndpoint: String, disableLocalhostProtection!: Bool = false) {
         this._messageEndpoint = messageEndpoint
+        this._disableLocalhostProtection = disableLocalhostProtection
     }
 
     /**
@@ -52,6 +59,10 @@ class McpSseServerTransport <: McpServerTransport {
      * @param ctx The JoyContext for the request
      */
     public func handleSseRequest(ctx: JoyContext): Unit {
+        if (!validateLocalhostProtection(ctx, _disableLocalhostProtection)) {
+            return
+        }
+
         @JoyLogInfo("[MCP] recv sse request from ${ctx.getClientIP()}")
         let emitter = ctx.eventEmitter()
         // create session
@@ -59,7 +70,7 @@ class McpSseServerTransport <: McpServerTransport {
         let state = McpServerSessionState(sessionId, emitter)
         let transport = McpSseServerSessionTransport(emitter, state, _sessions)
         let session = DefaultMcpServerSession(sessionId, transport, false, false)
-        _sessions.add(sessionId, session)
+        _sessions.add(sessionId, SessionInfo(session, getUserIDFromContext(ctx)))
 
         // notify endpoint
         try {
@@ -85,6 +96,10 @@ class McpSseServerTransport <: McpServerTransport {
      * @param ctx The JoyContext for the request
      */
     public func handlePostRequest(ctx: JoyContext): Unit {
+        if (!validateLocalhostProtection(ctx, _disableLocalhostProtection)) {
+            return
+        }
+
         let sessionId = ctx.getQuery("sessionId", "")
         if (sessionId == "") {
             let err = JSONRPCError(code: JSONRPCConsts.ERR_INVALID_PARAMS, message: "sessionId missing in url")
@@ -99,7 +114,7 @@ class McpSseServerTransport <: McpServerTransport {
             let data = ctx.readRawData()
             let message = JSONRPCTool.deserialize(data)
             try {
-                sess.handle(ctx, message)
+                sess.session.handle(ctx, message)
                 ctx.ok()
             } catch (ex: Exception) {
                 @JoyLogError("[MCP] handle message faild, session: ${sessionId}, error: ${ex.message}")
@@ -157,7 +172,7 @@ class McpSseServerSessionTransport <: McpTransport {
     /**
      * Reference to all active sessions
      */
-    let _sessions: ConcurrentHashMap<String, McpServerSession>
+    let _sessions: ConcurrentHashMap<String, SessionInfo>
 
     /**
      * Time of last message sent
@@ -187,7 +202,7 @@ class McpSseServerSessionTransport <: McpTransport {
      * @param sessions Reference to all active sessions
      * @param removeOnErr Whether to remove session on error (default: true)
      */
-    init(emitter: JoySseEmitter, state: McpServerSessionState, sessions: ConcurrentHashMap<String, McpServerSession>,
+    init(emitter: JoySseEmitter, state: McpServerSessionState, sessions: ConcurrentHashMap<String, SessionInfo>,
         removeOnErr!: Bool = true) {
         _emitter = emitter
         _state = state

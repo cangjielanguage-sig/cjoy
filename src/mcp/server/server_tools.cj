@@ -68,24 +68,18 @@ public class McpTools {
      * @return ListToolsResult containing list of tools and next cursor
      */
     public func listTools(page: PaginatedRequest): ListToolsResult {
-        let startIndex = page.cursor.map {it: String => Int.tryParse(it) ?? 0} ?? 0
         let res: ArrayList<McpTool> = ArrayList()
 
-        var index = 0
+        // 将 ConcurrentHashMap 转换为 ArrayList 以便分页
         for ((_, value) in tools) {
-            if (index >= startIndex && res.size < _pageSize) {
-                res.add(value)
-            }
-            index += 1
+            res.add(value)
         }
 
-        let nextCursor = if (index > startIndex + _pageSize) {
-            "${startIndex + _pageSize}"
-        } else {
-            Option<String>.None
-        }
+        // 使用统一的分页工具
+        let utils = McpPaginationUtils(pageSize: _pageSize)
+        let (paginatedRes, nextCursor) = utils.paginate(res, page)
 
-        let result = ListToolsResult(tools: res)
+        let result = ListToolsResult(tools: paginatedRes)
         result.nextCursor = nextCursor
         result
     }

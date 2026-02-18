@@ -633,12 +633,27 @@ public class GetPromptResult <: BaseMessage {
 // Const
 
 public struct McpConsts {
-    // protocol
-    public static const LASTEST_PROTOCOL_VERSION = "2025-03-26"
+    // protocol versions
+    public static const PROTOCOL_VERSION_20250326 = "2025-03-26"
+    public static const PROTOCOL_VERSION_20250618 = "2025-06-18"
+    public static const PROTOCOL_VERSION_20251125 = "2025-11-25"
+    public static const LASTEST_PROTOCOL_VERSION = PROTOCOL_VERSION_20251125
 
-    // role 
+    // supported protocol versions
+    public static func supportedProtocolVersions(): Array<String> {
+        [
+            PROTOCOL_VERSION_20250326,
+            PROTOCOL_VERSION_20250618,
+            PROTOCOL_VERSION_20251125
+        ]
+    }
+
+    // role
     public static const ROLE_USER = "user"
     public static const ROLE_ASSISTANT = "assistant"
+
+    // headers
+    public static const HEADER_PROTOCOL_VERSION = "Mcp-Protocol-Version"
 
     // methods
     public static const METHOD_INITIALIZE = "initialize"

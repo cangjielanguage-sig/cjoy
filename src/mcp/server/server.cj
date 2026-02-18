@@ -27,7 +27,7 @@ public class McpServerFeatures {
     /**
      * MCP protocol version supported by the server
      */
-    public var protocolVesion: String = McpConsts.LASTEST_PROTOCOL_VERSION
+    public var protocolVersion: String = McpConsts.LASTEST_PROTOCOL_VERSION
 
     /**
      * Information about the server implementation
@@ -43,6 +43,22 @@ public class McpServerFeatures {
      * Instructions or guidelines for using the server
      */
     public var instructions: ?String = None
+
+    /**
+     * Keepalive interval for MCP sessions in milliseconds
+     *
+     * If set to a positive value, the server will send ping messages at the specified interval
+     * to keep the connection alive. If set to 0 or negative, keepalive is disabled.
+     */
+    public var keepaliveIntervalMs: Int64 = 0
+
+    /**
+     * Keepalive timeout for MCP sessions in milliseconds
+     *
+     * If no response to a ping is received within this time, the session will be closed.
+     * Defaults to half of the keepalive interval.
+     */
+    public var keepaliveTimeoutMs: Int64 = 0
 }
 
 /**
@@ -78,7 +94,7 @@ public class McpServer {
      */
     public static func exchangeInit(): InitializeResult {
         let features = McpServer.serverFeatures.getOrThrow()
-        InitializeResult(protocolVersion: features.protocolVesion, capabilities: features.capabilities,
+        InitializeResult(protocolVersion: features.protocolVersion, capabilities: features.capabilities,
             serverInfo: features.serverInfo, instructions: features.instructions)
     }
 
@@ -89,12 +105,13 @@ public class McpServer {
      * @param ssePath The path for SSE connections (default: "/sse")
      * @param messagePath The path for message exchange (default: "/messages")
      * @param serverFeatures The server features configuration (default: McpServerFeatures())
+     * @param disableLocalhostProtection Whether to disable DNS rebinding protection for localhost (default: false)
      */
     public static func registerSseTo(joy: Joy, ssePath!: String = "/sse", messagePath!: String = "/messages",
-        serverFeatures!: McpServerFeatures = McpServerFeatures()): Unit {
+        serverFeatures!: McpServerFeatures = McpServerFeatures(), disableLocalhostProtection!: Bool = false): Unit {
         updateFeatures(serverFeatures)
 
-        let transport = McpSseServerTransport(messagePath)
+        let transport = McpSseServerTransport(messagePath, disableLocalhostProtection: disableLocalhostProtection)
         // sse
         let rg1 = joy.router.findGroup(ssePath)
         let rpath1 = ssePath[rg1.basePath().size..]
@@ -116,11 +133,14 @@ public class McpServer {
      * @param isJsonResp Whether to return JSON responses directly instead of SSE streams (default: false)
      * @param eventStore Optional event store for persisting events (default: None)
      * @param serverFeatures The server features configuration (default: McpServerFeatures())
+     * @param disableLocalhostProtection Whether to disable DNS rebinding protection for localhost (default: false)
      */
     public static func registerStreamableTo(joy: Joy, path!: String = "/mcp", isJsonResp!: Bool = false,
-        eventStore!: ?EventStore = None, serverFeatures!: McpServerFeatures = McpServerFeatures()): Unit {
+        eventStore!: ?EventStore = None, serverFeatures!: McpServerFeatures = McpServerFeatures(),
+        disableLocalhostProtection!: Bool = false): Unit {
         updateFeatures(serverFeatures)
-        let transport = McpStreamableServerTransport(isJsonResp, eventStore: eventStore)
+        let transport = McpStreamableServerTransport(isJsonResp, eventStore: eventStore,
+            disableLocalhostProtection: disableLocalhostProtection)
 
         let rg = joy.router.findGroup(path)
         let rpath = path[rg.basePath().size..]

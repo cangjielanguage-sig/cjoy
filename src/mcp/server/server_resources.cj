@@ -90,24 +90,18 @@ public class McpResources {
      * @return ListResourcesResult containing list of resources and next cursor
      */
     public func listResources(page: PaginatedRequest): ListResourcesResult {
-        let startIndex = page.cursor.map {it: String => Int.tryParse(it) ?? 0} ?? 0
         let res: ArrayList<McpResource> = ArrayList()
 
-        var index = 0
+        // 将 ConcurrentHashMap 转换为 ArrayList 以便分页
         for ((_, value) in resources) {
-            if (index >= startIndex && res.size < _pageSize) {
-                res.add(value)
-            }
-            index += 1
+            res.add(value)
         }
 
-        let nextCursor = if (index > startIndex + _pageSize) {
-            "${startIndex + _pageSize}"
-        } else {
-            Option<String>.None
-        }
+        // 使用统一的分页工具
+        let utils = McpPaginationUtils(pageSize: _pageSize)
+        let (paginatedRes, nextCursor) = utils.paginate(res, page)
 
-        let result = ListResourcesResult(resources: res)
+        let result = ListResourcesResult(resources: paginatedRes)
         result.nextCursor = nextCursor
         result
     }
@@ -119,24 +113,18 @@ public class McpResources {
      * @return ListResourceTemplatesResult containing list of templates and next cursor
      */
     public func listResourceTemplates(page: PaginatedRequest): ListResourceTemplatesResult {
-        let startIndex = page.cursor.map {it: String => Int.tryParse(it) ?? 0} ?? 0
         let res: ArrayList<ResourceTemplate> = ArrayList()
 
-        var index = 0
+        // 将 ConcurrentHashMap 转换为 ArrayList 以便分页
         for ((_, value) in resourceTempls) {
-            if (index >= startIndex && res.size < _pageSize) {
-                res.add(value)
-            }
-            index += 1
+            res.add(value)
         }
 
-        let nextCursor = if (index > startIndex + _pageSize) {
-            "${startIndex + _pageSize}"
-        } else {
-            Option<String>.None
-        }
+        // 使用统一的分页工具
+        let utils = McpPaginationUtils(pageSize: _pageSize)
+        let (paginatedRes, nextCursor) = utils.paginate(res, page)
 
-        let result = ListResourceTemplatesResult(resourceTemplates: res)
+        let result = ListResourceTemplatesResult(resourceTemplates: paginatedRes)
         result.nextCursor = nextCursor
         result
     }
