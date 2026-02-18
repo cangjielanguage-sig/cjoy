@@ -82,7 +82,7 @@ class DefaultMcpClient <: McpClient {
 
     public func ping(): Unit {
         checkInitialized()
-        let _: String = _session.sendRequest(McpConsts.METHOD_PING, "")
+        let _ = _session.sendRequest<String>(McpConsts.METHOD_PING, "")
     }
 
     public func initialize(): InitializeResult {

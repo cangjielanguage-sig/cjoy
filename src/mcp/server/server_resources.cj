@@ -19,6 +19,7 @@ import cjoy.mcp.api.*
 import cjoy.framework.{JoyContext, RouteInfo, TreeNode, JoyHttpConsts}
 import cjoy.log.macros.*
 import cjoy.json.JsonTool
+import cjoy.jsonrpc.{JSONRPCException, JSONRPCError, JSONRPCConsts}
 
 /**
  * Manager class for MCP resources
@@ -213,12 +214,14 @@ public class McpResources {
                         getMimeType(ctx, JoyHttpConsts.MIME_TEXT_PLAIN))]
                     case _ =>
                         @JoyLogWarn("[MCP] read resource `${request.uri}`unknow return type")
-                        [createTextResourceContents(request.uri, "", getMimeType(ctx, JoyHttpConsts.MIME_TEXT_PLAIN))]
+                        let error = JSONRPCError(code: JSONRPCConsts.ERR_INVALID_REQUEST, message: "unknow resource")
+                        throw JSONRPCException(error)
                 }
                 ReadResourceResult(contents: ArrayList<ResourceContents>(contents))
             case _ =>
                 @JoyLogError("[MCP] not found resource handler, uri=${request.uri}")
-                throw Exception("not found resource handler")
+                let error = JSONRPCError(code: JSONRPCConsts.ERR_INVALID_REQUEST, message: "not found resource")
+                throw JSONRPCException(error)
         }
     }
 

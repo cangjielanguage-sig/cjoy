@@ -98,7 +98,7 @@ public class JSONRPCTool {
 
         if (id.isSome() && method != "") {
             return JSONRPCRequest(id: id.getOrThrow(), method: method, params: params)
-        } else if (id.isSome() && (result is Array<Byte>)) {
+        } else if (id.isSome() && (result is Array<Byte> || error.isSome())) {
             return JSONRPCResponse(id: id.getOrThrow(), result: result, error: error)
         } else if (id.isNone() && method != "") {
             return JSONRPCNotification(method: method, params: params)

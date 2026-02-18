@@ -460,51 +460,60 @@ class DefaultMcpServerSession <: McpServerSession & McpRequestHandler & McpRespo
      */
     public func onRequest(ctx: JoyContext, message: JSONRPCRequest): Unit {
         var jsonResp: Bool = false
-        let result = match (message.method) {
-            case "ping" =>
-                @JoyLogInfo("[MCP] recv `ping` request")
-                message.params
-            case "initialize" =>
-                let request: InitializeRequest = JSONRPCTool.deserializeParams(message.params)
-                @JoyLogInfo("[MCP] recv `initialize` request: ${request}, sessionId: ${_sessionId}")
-                jsonResp = _streamable
-                onRecvInitRequest(request)
-            case "tools/list" =>
-                let page: PaginatedRequest = JSONRPCTool.deserializeParams(message.params)
-                @JoyLogInfo("[MCP] recv `tools/list` request: ${page}, sessionId: ${_sessionId}")
-                McpServer.TOOLS.listTools(page)
-            case "tools/call" =>
-                let req: CallToolRequest = JSONRPCTool.deserializeParams(message.params)
-                @JoyLogDebug("[MCP] recv `tools/call` request: ${req}, sessionId: ${_sessionId}")
-                McpServer.TOOLS.callTool(ctx, req)
-            case "resources/list" =>
-                let page: PaginatedRequest = JSONRPCTool.deserializeParams(message.params)
-                @JoyLogInfo("[MCP] recv `resources/list` request: ${page}, sessionId: ${_sessionId}")
-                McpServer.RESOURCES.listResources(page)
-            case "resources/templates/list" =>
-                let page: PaginatedRequest = JSONRPCTool.deserializeParams(message.params)
-                @JoyLogInfo("[MCP] recv `resources/templates/list` request: ${page}, sessionId: ${_sessionId}")
-                McpServer.RESOURCES.listResourceTemplates(page)
-            case "resources/read" =>
-                let req: ReadResourceRequest = JSONRPCTool.deserializeParams(message.params)
-                @JoyLogDebug("[MCP] recv `resources/read` request: ${req}, sessionId: ${_sessionId}")
-                McpServer.RESOURCES.readResource(ctx, req)
-            case "prompts/list" =>
-                let page: PaginatedRequest = JSONRPCTool.deserializeParams(message.params)
-                @JoyLogInfo("[MCP] recv `prompts/list` request: ${page}, sessionId: ${_sessionId}")
-                McpServer.PROMPTS.listPrompt(page)
-            case "prompts/get" =>
-                let req: GetPromptRequest = JSONRPCTool.deserializeParams(message.params)
-                @JoyLogDebug("[MCP] recv `prompts/get` request: ${req}, sessionId: ${_sessionId}")
-                McpServer.PROMPTS.getPrompt(ctx, req)
-            case _ =>
-                @JoyLogError("[MCP] recv unknown `${message.method}` request, sessionId: ${_sessionId}")
-                let error = JSONRPCError(code: JSONRPCConsts.ERR_METHOD_NOT_FOUND, message: "not found method")
-                let resp = JSONRPCResponse(id: message.id, error: error)
-                return sendResp(ctx, resp, false)
+        try {
+            let result: Any = match (message.method) {
+                case "ping" =>
+                    @JoyLogInfo("[MCP] recv `ping` request")
+                    "pong"
+                case "initialize" =>
+                    let request: InitializeRequest = JSONRPCTool.deserializeParams(message.params)
+                    @JoyLogInfo("[MCP] recv `initialize` request: ${request}, sessionId: ${_sessionId}")
+                    jsonResp = _streamable
+                    onRecvInitRequest(request)
+                case "tools/list" =>
+                    let page: PaginatedRequest = JSONRPCTool.deserializeParams(message.params)
+                    @JoyLogInfo("[MCP] recv `tools/list` request: ${page}, sessionId: ${_sessionId}")
+                    McpServer.TOOLS.listTools(page)
+                case "tools/call" =>
+                    let req: CallToolRequest = JSONRPCTool.deserializeParams(message.params)
+                    @JoyLogDebug("[MCP] recv `tools/call` request: ${req}, sessionId: ${_sessionId}")
+                    McpServer.TOOLS.callTool(ctx, req)
+                case "resources/list" =>
+                    let page: PaginatedRequest = JSONRPCTool.deserializeParams(message.params)
+                    @JoyLogInfo("[MCP] recv `resources/list` request: ${page}, sessionId: ${_sessionId}")
+                    McpServer.RESOURCES.listResources(page)
+                case "resources/templates/list" =>
+                    let page: PaginatedRequest = JSONRPCTool.deserializeParams(message.params)
+                    @JoyLogInfo("[MCP] recv `resources/templates/list` request: ${page}, sessionId: ${_sessionId}")
+                    McpServer.RESOURCES.listResourceTemplates(page)
+                case "resources/read" =>
+                    let req: ReadResourceRequest = JSONRPCTool.deserializeParams(message.params)
+                    @JoyLogDebug("[MCP] recv `resources/read` request: ${req}, sessionId: ${_sessionId}")
+                    McpServer.RESOURCES.readResource(ctx, req)
+                case "prompts/list" =>
+                    let page: PaginatedRequest = JSONRPCTool.deserializeParams(message.params)
+                    @JoyLogInfo("[MCP] recv `prompts/list` request: ${page}, sessionId: ${_sessionId}")
+                    McpServer.PROMPTS.listPrompt(page)
+                case "prompts/get" =>
+                    let req: GetPromptRequest = JSONRPCTool.deserializeParams(message.params)
+                    @JoyLogDebug("[MCP] recv `prompts/get` request: ${req}, sessionId: ${_sessionId}")
+                    McpServer.PROMPTS.getPrompt(ctx, req)
+                case _ =>
+                    @JoyLogError("[MCP] recv unknown `${message.method}` request, sessionId: ${_sessionId}")
+                    let error = JSONRPCError(code: JSONRPCConsts.ERR_METHOD_NOT_FOUND, message: "not found method")
+                    let resp = JSONRPCResponse(id: message.id, error: error)
+                    return sendResp(ctx, resp, false)
+            }
+            let resp = JSONRPCResponse(id: message.id, result: result)
+            sendResp(ctx, resp, jsonResp)
+        } catch (e: JSONRPCException) {
+            let resp = JSONRPCResponse(id: message.id, error: e.error)
+            sendResp(ctx, resp, jsonResp)
+        } catch (e: Exception) {
+            let error = JSONRPCError(code: JSONRPCConsts.ERR_INTERNAL_ERROR, message: e.message)
+            let resp = JSONRPCResponse(id: message.id, error: error)
+            sendResp(ctx, resp, jsonResp)
         }
-        let resp = JSONRPCResponse(id: message.id, result: result)
-        sendResp(ctx, resp, jsonResp)
     }
 
     /**

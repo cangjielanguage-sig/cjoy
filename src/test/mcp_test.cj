@@ -14,6 +14,7 @@ import cjoy.*
 import cjoy.macros.*
 import cjoy.mcp.*
 import cjoy.mcp.client.createMcpSseClient
+import cjoy.mcp.client.McpClientFeatures
 import stdx.encoding.base64.toBase64String
 
 // Tool-----------
@@ -239,7 +240,99 @@ public class McpServerTestCaseSuit {
 
             let listResult = client.listPrompts()
             @Assert(listResult.prompts.size, 2)
-            // TODO
+
+            let check = {
+                result: GetPromptResult, value: String =>
+                @Assert(result.messages.size, 1)
+                let content = result.messages[0].content.getOrThrow()
+                let textContent = (content as TextContent).getOrThrow()
+                @Assert(textContent.text, value)
+            }
+
+            // test askUserTopic prompt
+            var callResult = client.getPrompt(GetPromptRequest(name: "askUserTopic", arguments: HashMap<String, String>([("topic", "MCP")])))
+            check(callResult, "Can you please explain the concept of MCP")
+
+            // test dataAnalysisPrompt with all parameters
+            callResult = client.getPrompt(GetPromptRequest(name: "analyze_data_request", arguments: HashMap<String, String>([("dataUri", "data://test-data"), ("analysisType", "detailed")])))
+            check(callResult, "Please perform a 'detailed' analysis on the data found at data://test-data.")
+
+            // test dataAnalysisPrompt with default analysisType
+            callResult = client.getPrompt(GetPromptRequest(name: "analyze_data_request", arguments: HashMap<String, String>([("dataUri", "data://test-data")])))
+            check(callResult, "Please perform a 'summary' analysis on the data found at data://test-data.")
+        }
+    }
+
+    @TestCase
+    public func testToolCallFailure(): Unit {
+        try (client = createMcpSseClient("http://127.0.0.1:18881/sse")) {
+            let _ = client.initialize()
+
+            // test calling non-existent tool
+            let result = client.callTool(CallToolRequest(name: "non_existent_tool", arguments: HashMap<String, String>()))
+            @Assert(result.isError, true)
+            @Assert(result.content.size, 1)
+            let textContent = (result.content[0] as TextContent).getOrThrow()
+            @Assert(textContent.text.contains("not found tool handler"), true)
+        }
+    }
+
+    @TestCase
+    public func testResourceReadFailure(): Unit {
+        try (client = createMcpSseClient("http://127.0.0.1:18881/sse")) {
+            let _ = client.initialize()
+
+            // test reading non-existent resource
+            let ex = try {
+                let _ = client.readResource(ReadResourceRequest(uri: "data://non_existent_resource"))
+                None<Exception>
+            } catch (e: Exception) {
+                Some(e)
+            }
+            @Assert(ex.isSome(), true)
+        }
+    }
+
+    @TestCase
+    public func testPromptGetFailure(): Unit {
+        try (client = createMcpSseClient("http://127.0.0.1:18881/sse")) {
+            let _ = client.initialize()
+
+            // test getting non-existent prompt
+            let ex = try {
+                let _ = client.getPrompt(GetPromptRequest(name: "non_existent_prompt", arguments: HashMap<String, String>()))
+                None<Exception>
+            } catch (e: Exception) {
+                Some(e)
+            }
+            @Assert(ex.isSome(), true)
+        }
+    }
+
+    @TestCase
+    public func testPing(): Unit {
+        try (client = createMcpSseClient("http://127.0.0.1:18881/sse")) {
+            let _ = client.initialize()
+
+            // test ping request
+            client.ping()
+        }
+    }
+
+    @TestCase
+    public func testProtocolNegotiation(): Unit {
+        let features1 = McpClientFeatures()
+        features1.protocolVesions = ["2025-03-26", "2025-11-25"]
+        try (client = createMcpSseClient("http://127.0.0.1:18881/sse", features: features1)) {
+            let result = client.initialize()
+            @Assert(result.protocolVersion, "2025-11-25")
+        }
+
+        let features2 = McpClientFeatures()
+        features2.protocolVesions = ["2025-11-25"]
+        try (client = createMcpSseClient("http://127.0.0.1:18881/sse", features: features2)) {
+            let result = client.initialize()
+            @Assert(result.protocolVersion, McpConsts.LASTEST_PROTOCOL_VERSION)
         }
     }
 }

@@ -67,7 +67,7 @@ public class JoyLoggerFactory {
  */
 class ConsoleLogger <: Logger {
     let _attrs = ArrayList<Attr>()
-    var _level = LogLevel.DEBUG
+    var _level = LogLevel.INFO
     let _output: OutputStream
     let _closed = AtomicBool(false)
 

@@ -18,6 +18,7 @@ import cjoy.mcp.api.*
 import cjoy.framework.JoyContext
 import cjoy.log.macros.*
 import cjoy.json.JsonTool
+import cjoy.jsonrpc.{JSONRPCException, JSONRPCError, JSONRPCConsts}
 
 /**
  * Manager class for MCP prompts
@@ -130,11 +131,14 @@ public class McpPrompts {
                     case x: Collection<ToString> => x |> map {it => toPromptMessage(it.toString())} |> collectArray
                     case _ =>
                         @JoyLogError("[MCP] unknow prompt return type, name=${req.name}")
-                        throw Exception("unknow prompt return type")
+                        let error = JSONRPCError(code: JSONRPCConsts.ERR_INVALID_REQUEST, message: "unknow prompt")
+                        throw JSONRPCException(error)
                 }
             case _ =>
                 @JoyLogError("[MCP] not found prompt handler, name=${req.name}")
-                throw Exception("not found prompt handler")
+                let error = JSONRPCError(code: JSONRPCConsts.ERR_INVALID_REQUEST, message: "not found prompt")
+                throw JSONRPCException(error)
+                
         }
         GetPromptResult(messages: ArrayList(messages))
     }
