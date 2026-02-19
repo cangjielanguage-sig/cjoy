@@ -81,6 +81,9 @@ public class TreeNodeTestCaseSuit {
         }
     }
 
+    /**
+     * 测试树形路由基本功能 - 验证各种类型的路由可以正确添加和匹配
+     */
     @TestCase
     public func testTree() {
         let node = TreeNode<Int64>(NT_STATIC, b'\0', "")
@@ -171,6 +174,9 @@ public class TreeNodeTestCaseSuit {
         testPath(node, "/users/123/okay/yes", "/users/*", HashMap([("*", "123/okay/yes")]), handler: 1)
     }
 
+    /**
+     * 测试树形路由高级功能 - 验证更复杂的路由模式和HTTP方法匹配
+     */
     @TestCase
     public func testTreeMoar() {
         let node = TreeNode<Int64>(NT_STATIC, b'\0', "")
@@ -233,6 +239,9 @@ public class TreeNodeTestCaseSuit {
         testPath(node, "/users/2/settings/", "/users/{id}/settings/*", HashMap([("id", "2"), ("*", "")]), handler: 1)
     }
 
+    /**
+     * 测试树形路由正则表达式 - 验证带正则表达式约束的路由参数匹配
+     */
     @TestCase
     public func testTreeRegexp() {
         let node = TreeNode<Int64>(NT_STATIC, b'\0', "")
@@ -260,6 +269,9 @@ public class TreeNodeTestCaseSuit {
             handler: 6)
     }
 
+    /**
+     * 测试树形路由递归正则表达式 - 验证递归正则表达式路由参数匹配
+     */
     @TestCase
     public func testTreeRegexpRecursive() {
         let node = TreeNode<Int64>(NT_STATIC, b'\0', "")
@@ -278,6 +290,9 @@ public class TreeNodeTestCaseSuit {
             HashMap([("firstId", "hi"), ("secondId", "123")]), handler: 2)
     }
 
+    /**
+     * 测试树形路由正则表达式匹配完整参数 - 验证正则表达式对完整参数的匹配
+     */
     @TestCase
     public func testTreeRegexpMatchWholeParam() {
         let node = TreeNode<Int64>(NT_STATIC, b'\0', "")
@@ -296,6 +311,9 @@ public class TreeNodeTestCaseSuit {
         testPath(node, "//test", "/{param:[0-9]*}/test", HashMap([("param", "")]), handler: 1)
     }
 
+    /**
+     * 测试树形路由模式查找 - 验证是否可以正确查找已添加的路由模式
+     */
     @TestCase
     public func testTreeFindPattern() {
         let node = TreeNode<Int64>(NT_STATIC, b'\0', "")

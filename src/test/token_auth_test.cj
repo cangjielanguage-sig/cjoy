@@ -72,6 +72,9 @@ public class TokenAuthTestCaseSuit {
         _instance?.shutdown()
     }
 
+    /**
+     * 测试头部 Token 认证 - 验证通过 Authorization 头部传递 Token 的认证
+     */
     @TestCase
     public func testHeader() {
         let req = HttpRequestBuilder()
@@ -83,18 +86,27 @@ public class TokenAuthTestCaseSuit {
         assertResp(rsp, "ok-header")
     }
 
+    /**
+     * 测试查询参数 Token 认证 - 验证通过查询参数传递 Token 的认证
+     */
     @TestCase
     public func testQuery() {
         let rsp = _client.get("http://127.0.0.1:18881/token_auth/query?token=abc")
         assertResp(rsp, "ok-query")
     }
 
+    /**
+     * 测试路径参数 Token 认证 - 验证通过路径参数传递 Token 的认证
+     */
     @TestCase
     public func testParam() {
         let rsp = _client.get("http://127.0.0.1:18881/token_auth/param/abc")
         assertResp(rsp, "ok-param")
     }
 
+    /**
+     * 测试表单 Token 认证 - 验证通过表单数据传递 Token 的认证
+     */
     @TestCase
     public func testForm() {
         let req = HttpRequestBuilder()
@@ -107,6 +119,9 @@ public class TokenAuthTestCaseSuit {
         assertResp(rsp, "ok-form")
     }
 
+    /**
+     * 测试 Cookie Token 认证 - 验证通过 Cookie 传递 Token 的认证
+     */
     @TestCase
     public func testCookie() {
         let req = HttpRequestBuilder()

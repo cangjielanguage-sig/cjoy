@@ -168,6 +168,9 @@ public class OAuth2ServerTestCaseSuit {
         _clientJoy?.shutdown()
     }
 
+    /**
+     * 测试授权码流程 - 验证 OAuth 2.0 的授权码授权流程
+     */
     @TestCase
     public func testAuthorizeCode() {
         _server.setUserAuthorizationHandleFunc({
@@ -198,6 +201,9 @@ public class OAuth2ServerTestCaseSuit {
         @Assert(rsp.status, 200)
     }
 
+    /**
+     * 测试授权码流程与 plain 挑战 - 验证带有 plain 挑战的授权码流程
+     */
     @TestCase
     public func testAuthorizeCodeWithChallengePlain() {
         _server.setUserAuthorizationHandleFunc({
@@ -230,6 +236,9 @@ public class OAuth2ServerTestCaseSuit {
         @Assert(rsp.status, 200)
     }
 
+    /**
+     * 测试授权码流程与 S256 挑战 - 验证带有 S256 挑战的授权码流程
+     */
     @TestCase
     public func testAuthorizeCodeWithChallengeS256() {
         _server.setUserAuthorizationHandleFunc({
@@ -267,6 +276,9 @@ public class OAuth2ServerTestCaseSuit {
         _manager.loadAccessToken(accessToken)
     }
 
+    /**
+     * 测试隐式授权流程 - 验证 OAuth 2.0 的隐式授权流程
+     */
     @TestCase
     public func testImplicit() {
         _server.setUserAuthorizationHandleFunc({
@@ -298,6 +310,9 @@ public class OAuth2ServerTestCaseSuit {
         @Assert(rsp.status, 200)
     }
 
+    /**
+     * 测试密码凭证流程 - 验证 OAuth 2.0 的密码凭证授权流程
+     */
     @TestCase
     public func testPasswordCredentials() {
         _server.setClientInfoHandleFunc(clientBasicHandleFunc)
@@ -327,6 +342,9 @@ public class OAuth2ServerTestCaseSuit {
         validateAccessToken(ctx, token.accessToken)
     }
 
+    /**
+     * 测试客户端凭证流程 - 验证 OAuth 2.0 的客户端凭证授权流程
+     */
     @TestCase
     public func TestClientCredentials() {
         _server.setClientInfoHandleFunc(clientFormHandleFunc)
@@ -353,6 +371,9 @@ public class OAuth2ServerTestCaseSuit {
         validateAccessToken(ctx, token.accessToken)
     }
 
+    /**
+     * 测试刷新令牌流程 - 验证 OAuth 2.0 的刷新令牌流程
+     */
     @TestCase
     public func testRefreshing() {
         _server.setUserAuthorizationHandleFunc({

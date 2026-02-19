@@ -15,6 +15,9 @@ import std.unittest.testmacro.*
 
 @Test
 public class CrontabTestCaseSuit {
+    /**
+     * 测试 Crontab 的运行功能 - 验证任务能够正常执行
+     */
     @TestCase
     public func testRun() {
         let crontab = Crontab()
@@ -25,6 +28,9 @@ public class CrontabTestCaseSuit {
         count.waitUntilZero()
     }
 
+    /**
+     * 测试添加任务 - 验证任务能够成功添加到 Crontab 中
+     */
     @TestCase
     public func testAddJob() {
         let crontab = Crontab()
@@ -35,6 +41,9 @@ public class CrontabTestCaseSuit {
         @Assert(crontab.getJobNames().size, 1)
     }
 
+    /**
+     * 测试条件添加任务 - 验证只有在任务不存在时才会添加
+     */
     @TestCase
     public func testAddJobIfAbsent() {
         let crontab = Crontab()
@@ -48,6 +57,9 @@ public class CrontabTestCaseSuit {
         @Assert(crontab.getJobNames().size, 1)
     }
 
+    /**
+     * 测试移除任务 - 验证任务能够成功从 Crontab 中移除
+     */
     @TestCase
     public func testRemoveJob() {
         let crontab = Crontab()
@@ -59,12 +71,18 @@ public class CrontabTestCaseSuit {
         @Assert(crontab.getJobNames().size, 0)
     }
 
+    /**
+     * 测试移除不存在的任务 - 验证移除不存在的任务时不会报错
+     */
     @TestCase
     public func testRemoveNonExistentJob() {
         let crontab = Crontab()
         @Assert(crontab.removeJob("nonexistent"), false)
     }
 
+    /**
+     * 测试任务存在性检查 - 验证能够正确判断任务是否存在
+     */
     @TestCase
     public func testExists() {
         let crontab = Crontab()
@@ -75,6 +93,9 @@ public class CrontabTestCaseSuit {
         @Assert(crontab.exists("test1"), true)
     }
 
+    /**
+     * 测试获取任务名称列表 - 验证能够正确获取所有任务的名称
+     */
     @TestCase
     public func testGetJobNames() {
         let crontab = Crontab()
@@ -90,6 +111,9 @@ public class CrontabTestCaseSuit {
         @Assert(names.contains("test2"), true)
     }
 
+    /**
+     * 测试添加重复任务 - 验证添加重复名称的任务时会抛出异常
+     */
     @TestCase
     public func testAddJobDuplicate() {
         let crontab = Crontab()
@@ -107,6 +131,9 @@ public class CrontabTestCaseSuit {
         }
     }
 
+    /**
+     * 测试关闭 Crontab - 验证 Crontab 能够正确关闭
+     */
     @TestCase
     public func testClose() {
         let crontab = Crontab()
@@ -115,6 +142,9 @@ public class CrontabTestCaseSuit {
         @Assert(crontab.isClosed(), true)
     }
 
+    /**
+     * 测试销毁 Crontab - 验证 Crontab 能够正确销毁
+     */
     @TestCase
     public func testDestroy() {
         let crontab = Crontab()
@@ -123,6 +153,9 @@ public class CrontabTestCaseSuit {
         @Assert(crontab.isClosed(), true)
     }
 
+    /**
+     * 测试任务执行 - 验证任务能够按照预期的次数执行
+     */
     @TestCase
     public func testTaskExecution() {
         let crontab = Crontab()
@@ -134,6 +167,9 @@ public class CrontabTestCaseSuit {
         @Assert(crontab.exists("testTask"), true)
     }
 
+    /**
+     * 测试并发执行任务 - 验证多个任务能够同时正常执行
+     */
     @TestCase
     public func testConcurrentExecution() {
         let crontab = Crontab()

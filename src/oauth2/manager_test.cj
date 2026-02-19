@@ -22,6 +22,9 @@ public class DefaultOAuth2ManagerTestCaseSuit {
         manager
     }
 
+    /**
+     * 测试 OAuth2 管理器基础 API - 验证客户端查询、授权码生成、访问令牌生成、刷新令牌等核心功能
+     */
     @TestCase
     public func testBaseApi() {
         let manager = createManager()

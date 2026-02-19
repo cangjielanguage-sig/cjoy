@@ -18,6 +18,9 @@ import stdx.net.http.*
 
 @Test
 public class MultiPartFormTestCaseSuit {
+    /**
+     * 测试 POST 表单解析 - 验证从 HTTP 请求中正确解析包含文本字段和文件的 multipart 表单数据
+     */
     @TestCase
     public func testPostForm() {
         let str = #"
@@ -59,6 +62,9 @@ PNG ... content of abc.png
         }
     }
 
+    /**
+     * 测试非 multipart 表单 - 验证当 Content-Type 为 application/x-www-form-urlencoded 时 isFormData 为 false
+     */
     @TestCase
     public func testNonMultipartForm() {
         let byteBuffer = ByteBuffer()
@@ -77,6 +83,9 @@ PNG ... content of abc.png
         }
     }
 
+    /**
+     * 测试缺少边界字符串 - 验证当 Content-Type 头部缺少 boundary 参数时抛出 MultiPartParseException 异常
+     */
     @TestCase
     public func testMissingBoundary() {
         let byteBuffer = ByteBuffer()
@@ -96,6 +105,9 @@ PNG ... content of abc.png
         }
     }
 
+    /**
+     * 测试自定义分块处理器 - 验证可通过 handlePart 方法为特定字段注册自定义的数据处理回调函数
+     */
     @TestCase
     public func testCustomPartHandler() {
         let str = #"
@@ -133,6 +145,9 @@ custom value
         }
     }
 
+    /**
+     * 测试表单迭代 - 验证可以通过迭代器遍历表单中的所有分块
+     */
     @TestCase
     public func testFormIteration() {
         let str = #"

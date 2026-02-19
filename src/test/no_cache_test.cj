@@ -45,6 +45,9 @@ public class NoCacheTestCaseSuit {
         _instance?.shutdown()
     }
 
+    /**
+     * 测试无缓存中间件 - 验证 NoCache 中间件是否正确设置缓存控制头
+     */
     @TestCase
     public func testNoCacheOk() {
         let rsp = _client.get("http://127.0.0.1:18881/no_cache")

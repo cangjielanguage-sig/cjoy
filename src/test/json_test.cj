@@ -219,6 +219,9 @@ public struct CustomSchemaData {
 
 @Test
 public class JsonTestCaseSuit {
+    /**
+     * 测试基本 JSON 序列化和反序列化 - 验证基本数据类型和集合类型的 JSON 转换
+     */
     @TestCase
     public func testBase() {
         let s0 = S0()
@@ -230,6 +233,9 @@ public class JsonTestCaseSuit {
         @Assert(d.str, "str")
     }
 
+    /**
+     * 测试 JSON 字段忽略 - 验证 @JsonField[ignore = true] 注解的功能
+     */
     @TestCase
     public func testIgnore() {
         let s = SIngore()
@@ -241,6 +247,9 @@ public class JsonTestCaseSuit {
         @Assert(s1.ignore, s.ignore)
     }
 
+    /**
+     * 测试 JSON 字段重命名 - 验证 @JsonField[name = ...] 注解的功能
+     */
     @TestCase
     public func testRename() {
         let s = SRename()
@@ -252,6 +261,9 @@ public class JsonTestCaseSuit {
         @Assert(s1.str2, s.str2)
     }
 
+    /**
+     * 测试 JSON 字段忽略空值 - 验证 @JsonField[omitempty = true] 注解的功能
+     */
     @TestCase
     public func testOmitempty() {
         let s = SOmitempty()
@@ -263,6 +275,9 @@ public class JsonTestCaseSuit {
         @Assert(s1.strNull, s.strNull)
     }
 
+    /**
+     * 测试 JSON 空值处理 - 验证 null 值的序列化和反序列化
+     */
     @TestCase
     public func testNull(): Unit {
         let s = SDataNull()
@@ -272,6 +287,9 @@ public class JsonTestCaseSuit {
         @Assert(str, json)
     }
 
+    /**
+     * 测试日期时间格式化 - 验证 @JsonField[timeformat = ...] 注解的功能
+     */
     @TestCase
     public func testTimeFormat(): Unit {
         let s = SDataTimeFormat()
@@ -285,6 +303,9 @@ public class JsonTestCaseSuit {
         @Assert(data2.t2, DateTime.parse("2023-01-20T11:25:26+08:00"))
     }
 
+    /**
+     * 测试类 JSON 序列化 - 验证类类型的 JSON 序列化和反序列化
+     */
     @TestCase
     public func testClass(): Unit {
         var data = DataClass()
@@ -300,6 +321,9 @@ public class JsonTestCaseSuit {
         @Assert(data2.height, data.height)
     }
 
+    /**
+     * 测试嵌套对象 JSON 序列化 - 验证包含嵌套对象的复杂结构的 JSON 转换
+     */
     @TestCase
     public func testNested(): Unit {
         var top = DataNestedTop()
@@ -332,6 +356,9 @@ public class JsonTestCaseSuit {
         @Assert(ts.c?.a?.map.size, 2)
     }
 
+    /**
+     * 测试多余字段处理1 - 验证 JSON 中包含多余字段时的反序列化
+     */
     @TestCase
     public func testExcessField1(): Unit {
         let json = ###"{"width": 1, "height": 2, "others": "xxx"}"###
@@ -340,6 +367,9 @@ public class JsonTestCaseSuit {
         @Assert(dc.height, 2)
     }
 
+    /**
+     * 测试多余字段处理2 - 验证 JSON 中包含嵌套多余字段时的反序列化
+     */
     @TestCase
     public func testExcessField2(): Unit {
         let json = ###"{"width": 1, "height": 2, "others": {"k1": 1, "k2": "v2"}}"###
@@ -348,6 +378,9 @@ public class JsonTestCaseSuit {
         @Assert(dc.height, 2)
     }
 
+    /**
+     * 测试多余字段处理3 - 验证 JSON 中包含 null 值多余字段时的反序列化
+     */
     @TestCase
     public func testExcessField3(): Unit {
         let json = ###"{"width": 1, "height": 2, "others": null}"###
@@ -356,6 +389,9 @@ public class JsonTestCaseSuit {
         @Assert(dc.height, 2)
     }
 
+    /**
+     * 测试 JSON 到 Any 类型转换1 - 验证将 JSON 字符串反序列化为 Any 类型的功能
+     */
     @TestCase
     public func testToAny1(): Unit {
         let str = ###"{"a": 1, "b": 2, "c": {"c1": "c1v", "c2": 1.1}, "d":[{"d1": true, "d2": null},{"d1": false, "d2": "d2v"}]}"###
@@ -366,6 +402,9 @@ public class JsonTestCaseSuit {
         }
     }
 
+    /**
+     * 测试 JSON 到 Any 类型转换2 - 验证将 JSON 字符串反序列化为包含 Any 类型字段的结构体
+     */
     @TestCase
     public func testToAny2(): Unit {
         let str = ###"{"a": 1, "b": 2, "c": {"c1": "c1v", "c2": 1.1}, "d":[{"d1": true, "d2": null},{"d1": false, "d2": "d2v"}]}"###
@@ -374,6 +413,9 @@ public class JsonTestCaseSuit {
         @Assert((dc.b as Int64).getOrThrow(), 2)
     }
 
+    /**
+     * 测试 JSON 到 Any 类型转换3 - 验证将 JSON 字符串反序列化为包含原始 JSON 数据的字段
+     */
     @TestCase
     public func testToAny3(): Unit {
         let str = ###"{"a": 1, "b": 2, "c": {"c1": "c1v", "c2": 1.1}, "d":[{"d1": true, "d2": null},{"d1": false, "d2": "d2v"}]}"###
@@ -382,6 +424,9 @@ public class JsonTestCaseSuit {
         @Assert(c, ###"{"c1": "c1v", "c2": 1.1}"###)
     }
 
+    /**
+     * 测试 Any 类型到 JSON 转换 - 验证包含 Any 类型字段的对象的 JSON 序列化
+     */
     @TestCase
     public func testAnyToJson(): Unit {
         var dc = DataAny()
@@ -391,6 +436,9 @@ public class JsonTestCaseSuit {
         @Assert(str, expect)
     }
 
+    /**
+     * 测试简单对象到 JSON 转换 - 验证使用 @ToJson 宏创建简单对象的 JSON 序列化
+     */
     @TestCase
     public func testToJsonSimpleObj(): Unit {
         let d = @ToJson(
@@ -407,6 +455,9 @@ public class JsonTestCaseSuit {
         @Assert(str, expect)
     }
 
+    /**
+     * 测试带变量的简单对象到 JSON 转换1 - 验证使用字符串插值的 @ToJson 宏
+     */
     @TestCase
     public func testToJsonSimpleObjWithVar1(): Unit {
         let b = "xyz"
@@ -424,6 +475,9 @@ public class JsonTestCaseSuit {
         @Assert(str, expect)
     }
 
+    /**
+     * 测试带变量的简单对象到 JSON 转换2 - 验证使用直接变量引用的 @ToJson 宏
+     */
     @TestCase
     public func testToJsonSimpleObjWithVar2(): Unit {
         let b = "xyz"
@@ -441,6 +495,9 @@ public class JsonTestCaseSuit {
         @Assert(str, expect)
     }
 
+    /**
+     * 测试简单数组到 JSON 转换 - 验证使用 @ToJson 宏创建简单数组的 JSON 序列化
+     */
     @TestCase
     public func testToJsonSimpleArr(): Unit {
         let d = @ToJson(
@@ -457,6 +514,9 @@ public class JsonTestCaseSuit {
         @Assert(str, expect)
     }
 
+    /**
+     * 测试复杂结构到 JSON 转换 - 验证使用 @ToJson 宏创建包含嵌套对象和数组的复杂结构的 JSON 序列化
+     */
     @TestCase
     public func testToJsonComplex1(): Unit {
         let x = "xyz"
@@ -482,6 +542,9 @@ public class JsonTestCaseSuit {
         @Assert(str, expect)
     }
 
+    /**
+     * 测试 JSON 模式生成 - 验证类和结构体到 JSON 模式的转换功能
+     */
     @TestCase
     public func testToJsonSchema(): Unit {
         let schema = UserSchema.toJsonSchema()
@@ -491,6 +554,9 @@ public class JsonTestCaseSuit {
         @Assert(json, expect)
     }
 
+    /**
+     * 测试继承类 JSON 序列化 - 验证继承类的 JSON 序列化和反序列化功能
+     */
     @TestCase
     public func testSuperClass(): Unit {
         let t = TextResourceContents(text: "1", text2: "2")
@@ -505,6 +571,9 @@ public class JsonTestCaseSuit {
         @Assert(r.text2, t.text2)
     }
 
+    /**
+     * 测试子类型 JSON 序列化 - 验证基于子类型字段的 JSON 序列化和反序列化功能
+     */
     @TestCase
     public func testSubTypes(): Unit {
         let t = TextResourceContents(text: "1", text2: "2")
@@ -520,6 +589,9 @@ public class JsonTestCaseSuit {
         @Assert(r2.text2, t.text2)
     }
 
+    /**
+     * 测试子类型 JSON 序列化2 - 验证包含多个子类型对象的集合的 JSON 序列化和反序列化功能
+     */
     @TestCase
     public func testSubTypes2(): Unit {
         let t1 = TextResourceContents(text: "t1", text2: "t2")
@@ -545,6 +617,9 @@ public class JsonTestCaseSuit {
         @Assert(r2.blob2, t2.blob2)
     }
 
+    /**
+     * 测试格式化输出 - 验证带有缩进的 JSON 格式化输出功能
+     */
     @TestCase
     public func testIndentOutput(): Unit {
         let s0 = S0()
@@ -554,6 +629,9 @@ public class JsonTestCaseSuit {
         @Assert(str.contains("\n"), true)
     }
 
+    /**
+     * 测试空集合 JSON 序列化 - 验证空数组和空对象的 JSON 序列化功能
+     */
     @TestCase
     public func testEmptyCollections(): Unit {
         let data = EmptyData()
@@ -568,6 +646,9 @@ public class JsonTestCaseSuit {
         @Assert(d.map.size, 0)
     }
 
+    /**
+     * 测试 BigInt 和 Decimal 类型 JSON 序列化 - 验证大整数和高精度小数的 JSON 转换功能
+     */
     @TestCase
     public func testBigIntDecimal(): Unit {
         let data = NumericData()
@@ -579,6 +660,9 @@ public class JsonTestCaseSuit {
         @Assert(d.decimal.toString(), "12345.6789")
     }
 
+    /**
+     * 测试从字节数组反序列化 - 验证从字节数组中读取 JSON 数据的反序列化功能
+     */
     @TestCase
     public func testFromJsonBytes(): Unit {
         let s0 = S0()
@@ -588,6 +672,9 @@ public class JsonTestCaseSuit {
         @Assert(d.str, "str")
     }
 
+    /**
+     * 测试 JSON 到 Any 类型转换 - 验证将 JSON 直接反序列化为 Any 类型的功能
+     */
     @TestCase
     public func testFromJsonToAny(): Unit {
         let str = ###"{"a": 1, "b": "test", "c": true, "d": 1.5, "e": null, "f": [1, 2, "3"], "g": {"k1": "v1", "k2": 42}}"###
@@ -624,6 +711,9 @@ public class JsonTestCaseSuit {
         }
     }
 
+    /**
+     * 测试 Rune 类型读取 - 验证从 JSON 中读取 Rune 类型的功能
+     */
     @TestCase
     public func testReadRune(): Unit {
         let json = ###"{"rune":"x"}"###
@@ -638,6 +728,9 @@ public class JsonTestCaseSuit {
         reader.endObject()
     }
 
+    /**
+     * 测试必填字段验证 - 验证 JSON 模式生成中必填字段的处理
+     */
     @TestCase
     public func testRequiredField(): Unit {
         let schema = RequiredData.toJsonSchema()
@@ -647,6 +740,9 @@ public class JsonTestCaseSuit {
         @Assert(schemaStr.contains("\"required\":[\"name\"]"), true)
     }
 
+    /**
+     * 测试自定义模式 - 验证自定义 JSON 模式生成功能
+     */
     @TestCase
     public func testCustomSchema(): Unit {
         let schema = CustomSchemaData.toJsonSchema()

@@ -180,6 +180,9 @@ public class FrameworkTestCaseSuit {
         _instance?.shutdown()
     }
 
+    /**
+     * 测试基本请求响应 - 验证简单的 GET 请求和响应
+     */
     @TestCase
     public func testOk() {
         let rsp = _client.get(_ctx, "/test_ok")
@@ -195,18 +198,27 @@ public class FrameworkTestCaseSuit {
         @Assert(rsp.text, expected)
     }
 
+    /**
+     * 测试未找到资源 - 验证访问不存在的路由会返回 404 状态码
+     */
     @TestCase
     public func testNotFound() {
         let rsp = _client.get(_ctx, "/not_found")
         @Assert(rsp.status, 404)
     }
 
+    /**
+     * 测试自定义 NotFound 处理器 - 验证自定义的 404 处理器功能
+     */
     @TestCase
     public func testNotFoundHandler() {
         let rsp = _client.get(_ctx, "/test_not_found")
         @Assert(rsp.status, 404)
     }
 
+    /**
+     * 测试重定向功能 - 验证 HTTP 重定向功能
+     */
     @TestCase
     public func testRedirect() {
         let rsp = _client.get(_ctx, "/test_redirect")
@@ -215,6 +227,9 @@ public class FrameworkTestCaseSuit {
         //@Assert(location.getOrThrow(), "/test_ok")
     }
 
+    /**
+     * 测试 JSON 响应 - 验证返回 JSON 响应的功能
+     */
     @TestCase
     public func testJson() {
         let rsp = _client.get(_ctx, "/test_json")
@@ -223,6 +238,9 @@ public class FrameworkTestCaseSuit {
         @Assert(rsp.text, "{\"message\":\"hello\"}")
     }
 
+    /**
+     * 测试 JSON 响应自动转换 - 验证返回对象自动转换为 JSON 的功能
+     */
     @TestCase
     public func testJsonProduce() {
         let rsp = _client.get(_ctx, "/test_json_produce")
@@ -231,12 +249,18 @@ public class FrameworkTestCaseSuit {
         @Assert(rsp.text, "{\"message\":\"hello\"}")
     }
 
+    /**
+     * 测试自定义状态码 - 验证返回自定义 HTTP 状态码的功能
+     */
     @TestCase
     public func testStatus() {
         let rsp = _client.get(_ctx, "/test_status")
         @Assert(rsp.status, 201)
     }
 
+    /**
+     * 测试通过上下文设置状态码 - 验证通过 JoyContext 设置响应状态码的功能
+     */
     @TestCase
     public func testStatusCtx() {
         let rsp = _client.get(_ctx, "/test_status_ctx")
@@ -244,6 +268,9 @@ public class FrameworkTestCaseSuit {
         @Assert(rsp.status, 202)
     }
 
+    /**
+     * 测试自定义响应头 - 验证设置和获取自定义响应头的功能
+     */
     @TestCase
     public func testHeader() {
         let rsp = _client.get(_ctx, "/test_header")
@@ -252,6 +279,9 @@ public class FrameworkTestCaseSuit {
         @Assert(rsp.headers.getFirst("X-Another").getOrThrow(), "another-value")
     }
 
+    /**
+     * 测试内容类型设置 - 验证设置响应 Content-Type 头的功能
+     */
     @TestCase
     public func testContentType() {
         let rsp = _client.get(_ctx, "/test_content_type")
@@ -259,6 +289,9 @@ public class FrameworkTestCaseSuit {
         @Assert(rsp.headers.getFirst("Content-Type").getOrThrow(), "text/html")
     }
 
+    /**
+     * 测试 Cookie 读取 - 验证从请求中读取 Cookie 的功能
+     */
     @TestCase
     public func testCookie() {
          let req = JoyHttpRequest.of("/test_cookie")
@@ -269,6 +302,9 @@ public class FrameworkTestCaseSuit {
         assertResponse(rsp, "test123")
     }
 
+    /**
+     * 测试 Cookie 设置 - 验证在响应中设置 Cookie 的功能
+     */
     @TestCase
     public func testSetCookie() {
         let rsp = _client.get(_ctx, "/test_set_cookie")
@@ -278,18 +314,27 @@ public class FrameworkTestCaseSuit {
         @Assert(setCookie.getOrThrow().contains("session=abc123"), true)
     }
 
+    /**
+     * 测试路径参数 - 验证从 URL 路径中提取参数的功能
+     */
     @TestCase
     public func testPathParam() {
         let rsp = _client.get(_ctx, "/test_param/123")
         assertResponse(rsp, "123")
     }
 
+    /**
+     * 测试查询参数 - 验证从 URL 查询字符串中提取参数的功能
+     */
     @TestCase
     public func testQueryParam() {
         let rsp = _client.get(_ctx, "/test_query?name=test")
         assertResponse(rsp, "test")
     }
 
+    /**
+     * 测试 POST 表单数据 - 验证处理 POST 请求中的表单数据
+     */
     @TestCase
     public func testPostForm() {
         let form = Form()
@@ -298,36 +343,54 @@ public class FrameworkTestCaseSuit {
         assertResponse(rsp, "test-value")
     }
 
+    /**
+     * 测试 GET 请求表单数据 - 验证处理 GET 请求中的查询参数作为表单数据
+     */
     @TestCase
     public func testGetForm() {
         let rsp = _client.get(_ctx, "/test_get_form?value=test-value")
         assertResponse(rsp, "test-value")
     }
 
+    /**
+     * 测试获取远程 IP 地址 - 验证获取请求的远程 IP 地址功能
+     */
     @TestCase
     public func testRemoteIp() {
         let rsp = _client.get(_ctx, "/test_remote_ip")
         assertResponse(rsp, "127.0.0.1")
     }
 
+    /**
+     * 测试获取客户端 IP 地址 - 验证获取请求的客户端 IP 地址功能
+     */
     @TestCase
     public func testClientIp() {
         let rsp = _client.get(_ctx, "/test_client_ip")
         assertResponse(rsp, "127.0.0.1")
     }
 
+    /**
+     * 测试获取请求路径 - 验证获取当前请求路径的功能
+     */
     @TestCase
     public func testPath() {
         let rsp = _client.get(_ctx, "/test_path")
         assertResponse(rsp, "/test_path")
     }
 
+    /**
+     * 测试获取请求方法 - 验证获取当前请求方法的功能
+     */
     @TestCase
     public func testMethod() {
         let rsp = _client.get(_ctx, "/test_method")
         assertResponse(rsp, "GET")
     }
 
+    /**
+     * 测试获取完整 URL - 验证获取当前请求完整 URL 的功能
+     */
     @TestCase
     public func testUrl() {
         let rsp = _client.get(_ctx, "/test_url?test=1")
@@ -335,6 +398,9 @@ public class FrameworkTestCaseSuit {
         @Assert(rsp.text.contains("/test_url"), true)
     }
 
+    /**
+     * 测试获取请求头部 - 验证从请求中获取指定头部的功能
+     */
     @TestCase
     public func testGetHeader() {
         let req = JoyHttpRequest.of("/test_get_header").header("X-Test-Header", "test-value")
@@ -342,6 +408,9 @@ public class FrameworkTestCaseSuit {
         assertResponse(rsp, "test-value")
     }
 
+    /**
+     * 测试复合参数绑定 - 验证同时绑定路径参数、查询参数和头部参数的功能
+     */
     @TestCase
     public func testMulti() {
         let req = JoyHttpRequest.of("/test_multi/123?q=test").header("X-Token", "token123")
@@ -353,6 +422,9 @@ public class FrameworkTestCaseSuit {
         @Assert(body.contains("\"token\":\"token123\""), true)
     }
 
+    /**
+     * 测试路由分组 - 验证路由分组功能和分组中间件
+     */
     @TestCase
     public func testGroupRoutes() {
         let rsp1 = _client.get(_ctx, "/group1/test_group1")

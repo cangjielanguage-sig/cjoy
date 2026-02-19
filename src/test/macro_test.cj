@@ -543,6 +543,9 @@ func testMiddleware2(ctx: JoyContext, chain: JoyRequestHandlerChain): Unit {
 
 @Test
 public class MacroTestCaseSuit {
+    /**
+     * 测试所有宏功能 - 验证所有路由和中间件宏是否正常工作
+     */
     @TestCase
     public func testAll() {
         let joy = Joy.default()

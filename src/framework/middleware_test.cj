@@ -42,6 +42,9 @@ public class MiddlewareTestCaseSuit {
         reader.readToEnd()
     }
 
+    /**
+     * 测试中间件函数处理器 - 验证 JoyMiddlewareFuncHandler 可以正常创建
+     */
     @TestCase
     public func testMiddlewareFuncHandler() {
         let middlewareFunc: JoyMiddlewareFunc = {ctx, chain =>
@@ -52,6 +55,9 @@ public class MiddlewareTestCaseSuit {
         @Assert(true) // 只要没有抛出异常，测试就成功
     }
 
+    /**
+     * 测试中间件注册 - 验证中间件可以成功注册到指定路径
+     */
     @TestCase
     public func testMiddlewareRegistry() {
         let middlewareFunc: JoyMiddlewareFunc = {ctx, chain =>
@@ -64,6 +70,9 @@ public class MiddlewareTestCaseSuit {
         @Assert(true) // 只要没有抛出异常，测试就成功
     }
 
+    /**
+     * 测试多组中间件注册 - 验证中间件可以同时注册到多个路径组
+     */
     @TestCase
     public func testMiddlewareRegistryWithMultipleGroups() {
         let middlewareFunc: JoyMiddlewareFunc = {ctx, chain =>
@@ -76,6 +85,9 @@ public class MiddlewareTestCaseSuit {
         @Assert(true) // 只要没有抛出异常，测试就成功
     }
 
+    /**
+     * 测试中间件注册到引擎 - 验证通过 JoyMiddlewares 注册的中间件可以成功注册到引擎
+     */
     @TestCase
     public func testMiddlewareRegistrationToEngine() {
         let engine = Joy.create(name: "testMiddlewareEngine")
@@ -94,6 +106,9 @@ public class MiddlewareTestCaseSuit {
         engine.shutdown()
     }
 
+    /**
+     * 测试中间件执行顺序 - 验证多个中间件按注册顺序依次执行
+     */
     @TestCase
     public func testMiddlewareExecutionOrder() {
         let executionOrder = ArrayList<String>()
@@ -147,6 +162,9 @@ public class MiddlewareTestCaseSuit {
         engine.shutdown()
     }
 
+    /**
+     * 测试分组中间件 - 验证可以为不同路径组分别添加中间件
+     */
     @TestCase
     public func testMiddlewareWithGroups() {
         let engine = Joy.create(name: "testMiddlewareGroupsEngine")
@@ -172,6 +190,9 @@ public class MiddlewareTestCaseSuit {
         engine.shutdown()
     }
 
+    /**
+     * 测试中间件错误处理 - 验证中间件抛出异常时返回 500 状态码
+     */
     @TestCase
     public func testMiddlewareErrorHandling() {
         let errorMessage = "Middleware Error"
@@ -207,6 +228,9 @@ public class MiddlewareTestCaseSuit {
         engine.shutdown()
     }
 
+    /**
+     * 测试中间件组合 - 验证多个中间件可以通过上下文参数传递数据
+     */
     @TestCase
     public func testMiddlewareCombination() {
         let middleware1: JoyMiddlewareFunc = {ctx, chain =>

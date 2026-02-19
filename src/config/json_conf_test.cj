@@ -15,6 +15,9 @@ import cjoy.macros.*
 
 @Test
 public class JsonConfigTestCaseSuit {
+    /**
+     * 测试简单 JSON 配置 - 验证基本 JSON 配置文件的加载和解析
+     */
     @TestCase
     public func testSimple1(): Unit {
         let loader = JsonConfigLoader("./testdata/joy.json")
@@ -25,6 +28,9 @@ public class JsonConfigTestCaseSuit {
         @Assert(manager.getValue("joy.server.port", ""), "18882")
     }
 
+    /**
+     * 测试文件未找到 - 验证加载不存在的 JSON 配置文件时的错误处理
+     */
     @TestCase
     public func testFileNotFound(): Unit {
         try {
@@ -36,6 +42,9 @@ public class JsonConfigTestCaseSuit {
         }
     }
 
+    /**
+     * 测试无效 JSON - 验证加载包含无效 JSON 格式的配置文件时的错误处理
+     */
     @TestCase
     public func testInvalidJson(): Unit {
         try {
@@ -47,6 +56,9 @@ public class JsonConfigTestCaseSuit {
         }
     }
 
+    /**
+     * 测试空文件 - 验证加载空 JSON 文件时的错误处理
+     */
     @TestCase
     public func testEmptyFile(): Unit {
         try {
@@ -58,6 +70,9 @@ public class JsonConfigTestCaseSuit {
         }
     }
 
+    /**
+     * 测试复杂 JSON 配置 - 验证包含嵌套结构和多种数据类型的复杂 JSON 配置解析
+     */
     @TestCase
     public func testComplexJson(): Unit {
         let loader = JsonConfigLoader("./testdata/complex.json")
@@ -73,6 +88,9 @@ public class JsonConfigTestCaseSuit {
         @Assert(manager.getValue("app.database.name", ""), "testdb")
     }
 
+    /**
+     * 测试 JSON 加载器优先级 - 验证 JSON 配置加载器的优先级设置功能
+     */
     @TestCase
     public func testPriority(): Unit {
         let loader1 = JsonConfigLoader("./testdata/joy.json", priorityNum: 10)
@@ -81,6 +99,9 @@ public class JsonConfigTestCaseSuit {
         @Assert(loader2.priority, 20)
     }
 
+    /**
+     * 测试特殊字符处理 - 验证包含中文字符和特殊字符的 JSON 配置解析
+     */
     @TestCase
     public func testSpecialChars(): Unit {
         let loader = JsonConfigLoader("./testdata/special-chars.json")

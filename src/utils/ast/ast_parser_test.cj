@@ -16,6 +16,9 @@ import cjoy.utils.{ListToString, MapListGetFunc, MapToString}
 
 @Test
 public class TokenParserTestCaseSuit {
+    /**
+     * 测试属性解析 - 验证基本属性字符串的解析
+     */
     @TestCase
     public func testAttr() {
         let tokens = quote( a:1 , b: xyz , c: true )
@@ -28,6 +31,9 @@ public class TokenParserTestCaseSuit {
         @Assert(resust.getBool("c").getOrThrow(), true)
     }
 
+    /**
+     * 测试属性解析（紧凑格式）- 验证无空格的属性字符串解析
+     */
     @TestCase
     public func testAttr2() {
         let tokens = quote(a:1,b:xyz,c:true)
@@ -40,6 +46,9 @@ public class TokenParserTestCaseSuit {
         @Assert(resust.getBool("c").getOrThrow(), true)
     }
 
+    /**
+     * 测试属性解析（多行格式）- 验证换行分隔的属性字符串解析
+     */
     @TestCase
     public func testAttr3() {
         let tokens = quote(
@@ -56,6 +65,9 @@ public class TokenParserTestCaseSuit {
         @Assert(resust.getBool("c").getOrThrow(), true)
     }
 
+    /**
+     * 测试数组解析 - 验证基本数组的解析
+     */
     @TestCase
     public func testArray1() {
         let tokens = quote([a, b, c])
@@ -68,6 +80,9 @@ public class TokenParserTestCaseSuit {
         @Assert(resust.getString(2).getOrThrow(), "c")
     }
 
+    /**
+     * 测试数字数组解析 - 验证包含整数的数组解析
+     */
     @TestCase
     public func testArray2() {
         let tokens = quote([1, 2, 3])
@@ -80,6 +95,9 @@ public class TokenParserTestCaseSuit {
         @Assert(resust.getInt(2).getOrThrow(), 3)
     }
 
+    /**
+     * 测试字符串数组解析 - 验证包含字符串的数组解析
+     */
     @TestCase
     public func testArray3() {
         let tokens = quote(["a", "b", "c"])
@@ -92,6 +110,9 @@ public class TokenParserTestCaseSuit {
         @Assert(resust.getString(2).getOrThrow(), "c")
     }
 
+    /**
+     * 测试映射解析 - 验证基本映射结构的解析
+     */
     @TestCase
     public func testMap1() {
         let tokens = quote({a:1,b:xyz,c:true})
@@ -104,6 +125,9 @@ public class TokenParserTestCaseSuit {
         @Assert(resust.getBool("c").getOrThrow(), true)
     }
 
+    /**
+     * 测试引号字符串映射解析 - 验证包含引号字符串的映射解析
+     */
     @TestCase
     public func testMap2() {
         let tokens = quote({"a":1,"b":"xyz","c":true})
@@ -116,6 +140,9 @@ public class TokenParserTestCaseSuit {
         @Assert(resust.getBool("c").getOrThrow(), true)
     }
 
+    /**
+     * 测试复杂结构解析1 - 验证包含嵌套映射的复杂结构解析
+     */
     @TestCase
     public func testComplex1() {
         let tokens = quote(
@@ -135,6 +162,9 @@ public class TokenParserTestCaseSuit {
         @Assert(resust.getMap("a")?.getMap("a2")?.getInt("a3a").getOrThrow(), 1)
     }
 
+    /**
+     * 测试复杂结构解析2 - 验证包含嵌套数组的复杂结构解析
+     */
     @TestCase
     public func testComplex2() {
         let tokens = quote(
@@ -152,6 +182,9 @@ public class TokenParserTestCaseSuit {
         @Assert(resust.getList("a")?.getList(1)?.getInt(0).getOrThrow(), 3)
     }
 
+    /**
+     * 测试复杂结构解析3 - 验证顶层数组的复杂结构解析
+     */
     @TestCase
     public func testComplex3() {
         let tokens = quote(
@@ -168,6 +201,9 @@ public class TokenParserTestCaseSuit {
         @Assert(resust.getList(1)?.getInt(0).getOrThrow(), 3)
     }
 
+    /**
+     * 测试复杂结构解析4 - 验证包含多种嵌套结构的复杂结构解析
+     */
     @TestCase
     public func testComplex4() {
         let tokens = quote(
@@ -194,6 +230,9 @@ public class TokenParserTestCaseSuit {
         @Assert(resust.getList("b")?.getInt(0).getOrThrow(), 1)
     }
 
+    /**
+     * 测试复杂结构解析5 - 验证包含完整语法的复杂结构解析
+     */
     @TestCase
     public func testComplex5() {
         let tokens = quote(

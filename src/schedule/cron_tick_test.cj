@@ -14,6 +14,9 @@ import std.time.{DateTime, TimeZone}
 
 @Test
 public class CronTickTestCaseSuit {
+    /**
+     * 测试 CronTick 的创建和字符串表示 - 验证从 DateTime 创建 CronTick 并正确转换为字符串
+     */
     @TestCase
     public func testTick() {
         let dt = DateTime.of(year: 2025, month: 10, dayOfMonth: 1, hour: 12, minute: 30, second: 55, nanosecond: 0,

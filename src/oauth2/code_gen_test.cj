@@ -16,6 +16,9 @@ import cjoy.framework.*
 
 @Test
 public class SecureRandCodeGenerateTestCaseSuit {
+    /**
+     * 测试安全随机码生成 - 验证生成的授权码不为空
+     */
     @TestCase
     public func testGenerate() {
         let data = GenerateBasic(

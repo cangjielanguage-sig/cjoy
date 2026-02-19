@@ -16,6 +16,9 @@ import cjoy.framework.*
 
 @Test
 public class MemoryTokenStoreTestCaseSuit {
+    /**
+     * 测试内存令牌存储基础 API - 验证令牌存储的基本操作
+     */
     @TestCase
     public func testBaseApi() {
     }

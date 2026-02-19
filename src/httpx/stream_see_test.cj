@@ -14,6 +14,9 @@ import cjoy.framework.JoySseBuilder
 
 @Test
 public class JoySSEventStreamCaseSuit {
+    /**
+     * 测试 SSE 事件流 - 验证单个事件单个字段的解析
+     */
     @TestCase
     public func testOneEventOneField() {
         let httpStream = JoyHttpStream()
@@ -27,6 +30,9 @@ public class JoySSEventStreamCaseSuit {
         @Assert(sse.next().isNone())
     }
 
+    /**
+     * 测试 SSE 事件流 - 验证两个事件单个字段的解析
+     */
     @TestCase
     public func testTwoEventOneField() {
         let httpStream = JoyHttpStream()
@@ -44,6 +50,9 @@ public class JoySSEventStreamCaseSuit {
         @Assert(sse.next().isNone())
     }
 
+    /**
+     * 测试 SSE 事件流 - 验证单个事件所有字段的解析
+     */
     @TestCase
     public func testOneEventAllField() {
         let httpStream = JoyHttpStream()

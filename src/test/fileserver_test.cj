@@ -44,6 +44,9 @@ public class FileServerTestCaseSuit {
         _client = ClientBuilder().build()
     }
 
+    /**
+     * 测试静态文件服务 - 验证直接访问静态文件的功能
+     */
     @TestCase
     public func testStaticFile() {
         let rsp = _client.get("http://127.0.0.1:18882/static/logo.png")
@@ -51,6 +54,9 @@ public class FileServerTestCaseSuit {
         @Assert(rsp.headers.getFirst("content-type"), "image/png")
     }
 
+    /**
+     * 测试静态文件系统获取图片文件 - 验证从静态文件系统中获取图片文件的功能
+     */
     @TestCase
     public func testStaticFsGetImgFile() {
         let rsp = _client.get("http://127.0.0.1:18882/static/imgs/logo.png")
@@ -58,6 +64,9 @@ public class FileServerTestCaseSuit {
         @Assert(rsp.headers.getFirst("content-type"), "image/png")
     }
 
+    /**
+     * 测试静态文件系统获取文本文件 - 验证从静态文件系统中获取文本文件的功能
+     */
     @TestCase
     public func testStaticFsGetTextFile() {
         let rsp = _client.get("http://127.0.0.1:18882/static/dev_guide/README.md")
@@ -66,6 +75,9 @@ public class FileServerTestCaseSuit {
 
     // ====== Range Request Tests (断点续传测试) ======
 
+    /**
+     * 测试单范围请求 - 验证 bytes=0-1023 范围请求的处理
+     */
     @TestCase
     public func testRangeRequestSingleRange() {
         // 测试单个 Range 请求: bytes=0-1023
@@ -88,6 +100,9 @@ public class FileServerTestCaseSuit {
         @Assert(range.startsWith("bytes 0-1023/"), true)
     }
 
+    /**
+     * 测试从偏移量开始的范围请求 - 验证 bytes=100- 范围请求的处理
+     */
     @TestCase
     public func testRangeRequestFromOffset() {
         // 测试从偏移量开始的 Range 请求: bytes=100-
@@ -109,6 +124,9 @@ public class FileServerTestCaseSuit {
         @Assert(range.startsWith("bytes 100-"), true)
     }
 
+    /**
+     * 测试获取最后 N 字节的范围请求 - 验证 bytes=-512 范围请求的处理
+     */
     @TestCase
     public func testRangeRequestLastNBytes() {
         // 测试获取最后 N 字节的 Range 请求: bytes=-512
@@ -130,6 +148,9 @@ public class FileServerTestCaseSuit {
         @Assert(range.contains("/"), true)
     }
 
+    /**
+     * 测试多范围请求 - 验证 bytes=0-100,200-300 范围请求的处理
+     */
     @TestCase
     public func testRangeRequestMultiRange() {
         // 测试多个 Range 请求: bytes=0-100,200-300
@@ -152,6 +173,9 @@ public class FileServerTestCaseSuit {
         @Assert(ct.contains("multipart/byteranges"), true)
     }
 
+    /**
+     * 测试无效的范围请求（开始位置大于结束位置）- 验证 bytes=500-100 范围请求的处理
+     */
     @TestCase
     public func testRangeRequestInvalidStartEnd() {
         // 测试无效的 Range 请求: start > end (bytes=500-100)
@@ -166,6 +190,9 @@ public class FileServerTestCaseSuit {
         @Assert(rsp.status, 416)
     }
 
+    /**
+     * 测试接近文件末尾的范围请求 - 验证 bytes=18000- 范围请求的处理
+     */
     @TestCase
     public func testRangeRequestNearEndOfFile() {
         // 测试接近文件末尾的 Range 请求: bytes=18000-
@@ -189,6 +216,9 @@ public class FileServerTestCaseSuit {
         @Assert(range.startsWith("bytes 18000-"), true)
     }
 
+    /**
+     * 测试无效格式的范围请求 - 验证 bytes=abc-def 范围请求的处理
+     */
     @TestCase
     public func testRangeRequestInvalidFormat() {
         // 测试无效格式的 Range 请求: bytes=abc-def
@@ -202,6 +232,9 @@ public class FileServerTestCaseSuit {
         @Assert(rsp.status, 416)
     }
 
+    /**
+     * 测试带有 ETag 的范围请求 - 验证 Range 请求与 ETag 配合使用的功能
+     */
     @TestCase
     public func testRangeRequestWithETag() {
         // 测试 Range 请求与 ETag 配合使用
@@ -226,6 +259,9 @@ public class FileServerTestCaseSuit {
         @Assert(rsp2.headers.getFirst("Accept-Ranges"), "bytes")
     }
 
+    /**
+     * 测试断点续传功能 - 验证 Range 请求实现断点续传的功能
+     */
     @TestCase
     public func testRangeRequestResumeDownload() {
         // 模拟断点续传场景：
@@ -281,6 +317,9 @@ public class FileServerTestCaseSuit {
         @Assert(len, remainingBytes)
     }
 
+    /**
+     * 测试 HEAD 方法的范围请求 - 验证使用 HEAD 方法进行范围请求的功能（已跳过）
+     */
     @TestCase
     @Skip
     public func testRangeRequestHeadMethod() {
@@ -299,6 +338,9 @@ public class FileServerTestCaseSuit {
         @Assert(contentLength.isSome(), true)
     }
 
+    /**
+     * 测试条件请求 If-None-Match - 验证使用 If-None-Match 条件请求的功能
+     */
     @TestCase
     public func testConditionalRequestIfNoneMatch() {
         // 测试条件请求 If-None-Match
@@ -324,6 +366,9 @@ public class FileServerTestCaseSuit {
         @Assert(rsp2.status, 304)
     }
 
+    /**
+     * 测试文本文件的范围请求 - 验证对文本文件的 Range 请求功能
+     */
     @TestCase
     public func testTextFileRangeRequest() {
         // 测试文本文件的 Range 请求

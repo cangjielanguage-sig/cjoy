@@ -65,6 +65,9 @@ public class BasicAuthTestCaseSuit {
         "Basic " + toBase64String((user + ":" + pwd).toArray())
     }
 
+    /**
+     * 测试基本认证成功 - 验证使用正确的用户名和密码进行基本认证
+     */
     @TestCase
     public func testAuthOk() {
         let req = HttpRequestBuilder()
@@ -77,6 +80,9 @@ public class BasicAuthTestCaseSuit {
         @Assert(reader.readToEnd(), "/basic_auth")
     }
 
+    /**
+     * 测试使用自定义验证函数的基本认证成功 - 验证使用自定义验证函数进行基本认证
+     */
     @TestCase
     public func testAuthOkWithValidateFun() {
         let req = HttpRequestBuilder()
@@ -89,6 +95,9 @@ public class BasicAuthTestCaseSuit {
         @Assert(reader.readToEnd(), "/basic_auth")
     }
 
+    /**
+     * 测试基本认证失败 - 验证使用错误的密码进行基本认证会返回 401 状态码
+     */
     @TestCase
     public func testAuthFailed() {
         let req = HttpRequestBuilder()

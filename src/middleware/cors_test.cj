@@ -12,6 +12,9 @@ package cjoy.middleware
 
 @Test
 public class CorsTestCaseSuit {
+    /**
+     * 测试解析 CORS 头部 - 验证各种格式的头部字符串能正确解析
+     */
     @TestCase
     public func testParseHeaders() {
         let h = parseHeaders(
@@ -23,6 +26,9 @@ public class CorsTestCaseSuit {
         }
     }
 
+    /**
+     * 测试解析空的 CORS 头部 - 验证空字符串或空白字符串会解析为空数组
+     */
     @TestCase
     public func testParseHeadersEmpty() {
         if (parseHeaders("").size != 0) {
@@ -33,6 +39,9 @@ public class CorsTestCaseSuit {
         }
     }
 
+    /**
+     * 测试 CORS 通配符匹配 - 验证 CorsWildcard 类的 canMatch 方法能正确匹配模式
+     */
     @TestCase
     public func testWildcard() {
         var w = CorsWildcard("foo", "bar")

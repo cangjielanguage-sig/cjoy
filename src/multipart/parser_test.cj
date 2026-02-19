@@ -35,6 +35,9 @@ public class MultiPartParserTestCaseSuit {
         }
     }
 
+    /**
+     * 测试小数据块解析 - 验证解析包含文本字段和文件的小型 multipart 数据
+     */
     @TestCase
     func testSmallParts() {
         let str = #"
@@ -60,6 +63,9 @@ PNG ... content of abc.png
         checkPartProp(part, "abc.png", "image/png")
     }
 
+    /**
+     * 测试大数据块解析 - 验证解析包含多个大文件（每个约 4KB）的 multipart 数据
+     */
     @TestCase
     func testBigParts() {
         let str = #"
@@ -92,6 +98,9 @@ test_file
         checkPart("file3", testFile, parser, handler)
     }
 
+    /**
+     * 测试最大分块数量限制 - 验证当分块数量超过配置的最大限制时抛出 MultiPartLimitReachedException 异常
+     */
     @TestCase
     func testMaxPartsLimit() {
         let boundary = "WebKitFormBoundaryrGKCBY7qhFd3TrwA"
@@ -122,6 +131,9 @@ value{num}
         }
     }
 
+    /**
+     * 测试最大头部数量限制 - 验证当单个分块的头部数量超过配置的最大限制时抛出 MultiPartLimitReachedException 异常
+     */
     @TestCase
     func testMaxHeadersLimit() {
         let boundary = "WebKitFormBoundaryrGKCBY7qhFd3TrwA"
@@ -152,6 +164,9 @@ content
         }
     }
 
+    /**
+     * 测试无效边界字符串 - 验证当边界字符串不匹配时抛出 MultiPartParseException 异常
+     */
     @TestCase
     @Skip
     func testInvalidBoundary() {
@@ -175,6 +190,9 @@ content
         }
     }
 
+    /**
+     * 测试不完整的 multipart 数据 - 验证当 multipart 数据格式不完整时抛出 MultiPartParseException 异常
+     */
     @TestCase
     func testIncompleteMultipart() {
         let str = #"--WebKitFormBoundaryrGKCBY7qhFd3TrwA
@@ -197,6 +215,9 @@ content
         }
     }
 
+    /**
+     * 测试空 multipart 数据 - 验证解析只有结束边界符的空 multipart 数据时返回零个分块
+     */
     @TestCase
     func testEmptyMultipart() {
         let str = #"--WebKitFormBoundaryrGKCBY7qhFd3TrwA--
@@ -220,6 +241,9 @@ content
         }
     }
 
+    /**
+     * 测试单个分块解析 - 验证正确解析只包含一个字段的 multipart 数据
+     */
     @TestCase
     func testSinglePart() {
         let str = #"--WebKitFormBoundaryrGKCBY7qhFd3TrwA
@@ -249,6 +273,9 @@ single value
         }
     }
 
+    /**
+     * 测试包含特殊字符的分块 - 验证正确解析字段名和内容中包含空格及特殊字符的 multipart 数据
+     */
     @TestCase
     func testPartWithSpecialCharacters() {
         let str = #"--WebKitFormBoundaryrGKCBY7qhFd3TrwA

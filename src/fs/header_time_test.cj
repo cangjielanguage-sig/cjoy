@@ -15,6 +15,9 @@ import std.time.*
 
 @Test
 public class HeaderTimeTestCaseSuit {
+    /**
+     * 测试解析有效的 HTTP 时间格式 - 验证符合标准 HTTP 时间格式的字符串能正确解析
+     */
     @TestCase
     public func testParseTimeValidCases() {
         // Test cases that should parse successfully
@@ -67,6 +70,9 @@ public class HeaderTimeTestCaseSuit {
         }
     }
 
+    /**
+     * 测试解析无效的 HTTP 时间格式 - 验证无效的时间字符串会抛出 TimeParseException
+     */
     @TestCase
     public func testParseTimeInvalidCases() {
         // Test cases that should throw TimeParseException
@@ -96,6 +102,9 @@ public class HeaderTimeTestCaseSuit {
         }
     }
 
+    /**
+     * 测试尝试解析有效的 HTTP 时间格式 - 验证 tryParseHttpTime 能正确返回 Some(DateTime)
+     */
     @TestCase
     public func testTryParseTimeValidCases() {
         // Test cases that should return Some(DateTime)
@@ -113,6 +122,9 @@ public class HeaderTimeTestCaseSuit {
         }
     }
 
+    /**
+     * 测试尝试解析无效的 HTTP 时间格式 - 验证 tryParseHttpTime 对无效时间返回 None
+     */
     @TestCase
     public func testTryParseTimeInvalidCases() {
         // Test cases that should return None
@@ -131,6 +143,9 @@ public class HeaderTimeTestCaseSuit {
         }
     }
 
+    /**
+     * 测试解析闰年日期的 HTTP 时间格式 - 验证解析闰年日期的正确性
+     */
     @TestCase
     public func testParseTimeLeapYear() {
         // Test parsing leap year dates

@@ -15,6 +15,9 @@ import std.unittest.testmacro.*
 
 @Test
 public class MultiPartHandlerTestCaseSuit {
+    /**
+     * 测试内存处理器 - 验证 JoyMemoryMultiPartHandler 可以正确存储和读取分块数据
+     */
     @TestCase
     public func testMemoryHandler() {
         let config = JoyMultiPartConfig()
@@ -35,6 +38,9 @@ public class MultiPartHandlerTestCaseSuit {
         }
     }
 
+    /**
+     * 测试内存处理器大小限制 - 验证当数据大小超过配置的 maxMemSize 限制时抛出 MultiPartLimitReachedException 异常
+     */
     @TestCase
     public func testMemoryHandlerSizeLimit() {
         var config = JoyMultiPartConfig()
@@ -49,6 +55,9 @@ public class MultiPartHandlerTestCaseSuit {
         }
     }
 
+    /**
+     * 测试函数式处理器 - 验证 JoyMultiPartFuncHandler 可以通过回调函数处理分块数据
+     */
     @TestCase
     public func testFuncHandler() {
         let capturedData = [""]
@@ -65,6 +74,9 @@ public class MultiPartHandlerTestCaseSuit {
         }
     }
 
+    /**
+     * 测试内存处理器关闭 - 验证调用 close() 后处理器状态变为已关闭且内容被清空
+     */
     @TestCase
     public func testMemoryHandlerClose() {
         let config = JoyMultiPartConfig()
@@ -85,6 +97,9 @@ public class MultiPartHandlerTestCaseSuit {
         }
     }
 
+    /**
+     * 测试内存中多个分块 - 验证内存处理器可以同时存储和管理多个独立的分块数据
+     */
     @TestCase
     public func testMultiplePartsInMemory() {
         let config = JoyMultiPartConfig()

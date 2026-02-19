@@ -29,6 +29,9 @@ func handleEvent2(ctx: Context, evt: Event): Unit {
 
 @Test
 public class EventBusServiceTestCaseSuit {
+    /**
+     * 测试事件总线功能 - 验证事件发布和订阅功能
+     */
     @TestCase
     public func test(): Unit {
         let bus = ServiceContainer.GLOBAL.getService<EventBus>("eventbus").getOrThrow()

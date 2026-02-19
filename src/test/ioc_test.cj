@@ -107,6 +107,9 @@ class Bean8 {
 
 @Test
 public class IocTestCaseSuit {
+    /**
+     * 测试 IoC 容器功能 - 验证各种 IoC 容器功能，包括组件注册、依赖注入等
+     */
     @TestCase
     public func test(): Unit {
         let joy = Joy.default()

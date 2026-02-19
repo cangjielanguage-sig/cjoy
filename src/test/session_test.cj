@@ -79,6 +79,9 @@ public class SessionTestCaseSuit {
         cname
     }
 
+    /**
+     * 测试会话获取与存储 - 验证会话创建、数据存储和读取
+     */
     @TestCase
     public func testGetOk() {
         var rsp = _client.get("http://127.0.0.1:18881/sesson")
@@ -94,6 +97,9 @@ public class SessionTestCaseSuit {
         _client.get("http://127.0.0.1:18881/session-delete")
     }
 
+    /**
+     * 测试会话删除与重新创建 - 验证会话删除和重新创建
+     */
     @TestCase
     public func testDelOk() {
         var rsp = _client.get("http://127.0.0.1:18881/sesson")

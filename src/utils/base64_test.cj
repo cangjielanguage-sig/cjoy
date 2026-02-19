@@ -14,6 +14,9 @@ import std.unittest.testmacro.*
 
 @Test
 public class Base64TestCaseSuit {
+    /**
+     * 测试原始 Base64 URL 编码功能 - 验证字符串编码和解码的正确性
+     */
     @TestCase
     public func testRawBase64URLEncode() {
         // 测试普通字符串
@@ -28,6 +31,9 @@ public class Base64TestCaseSuit {
         @Assert(String.fromUtf8(decoded.getOrThrow()), testStr)
     }
 
+    /**
+     * 测试原始 Base64 URL 解码功能 - 验证标准和带填充的编码字符串解码
+     */
     @TestCase
     public func testRawBase64URLDecode() {
         // 测试标准 base64 URL 编码字符串
@@ -43,6 +49,9 @@ public class Base64TestCaseSuit {
         @Assert(String.fromUtf8(decodedWithPadding.getOrThrow()), "Hello, World!")
     }
 
+    /**
+     * 测试解码无效的 Base64 URL 编码字符串 - 验证无效编码会正确处理
+     */
     @TestCase
     @Skip
     public func testRawBase64URLDecodeInvalid() {
@@ -53,6 +62,9 @@ public class Base64TestCaseSuit {
         @Assert(decoded.getOrThrow().size, 0)
     }
 
+    /**
+     * 测试 Base64 URL 编码解码往返 - 验证多种类型数据的编码解码一致性
+     */
     @TestCase
     public func testEncodeDecodeRoundTrip() {
         // 测试编码解码往返

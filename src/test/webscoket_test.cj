@@ -82,6 +82,9 @@ public class WebSocketTestCaseSuit {
         _instance?.shutdown()
     }
 
+    /**
+     * 测试单帧文本消息 - 验证 WebSocket 单帧文本消息的发送和接收
+     */
     @TestCase
     func testTextOneFrame() {
         _textWsHandler.reset()
@@ -104,6 +107,9 @@ public class WebSocketTestCaseSuit {
         websocket.closeConn()
     }
 
+    /**
+     * 测试合并多帧文本消息 - 验证 WebSocket 多帧文本消息合并处理
+     */
     @TestCase
     func testTextMultiFramesMerge() {
         _textWsHandler.reset()
@@ -124,6 +130,9 @@ public class WebSocketTestCaseSuit {
         websocket.closeConn()
     }
 
+    /**
+     * 测试不合并多帧文本消息 - 验证 WebSocket 多帧文本消息不合并处理
+     */
     @TestCase
     func testTextMultiFramesNotMerge() {
         _textWsHandler.reset()

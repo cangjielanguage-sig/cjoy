@@ -15,6 +15,9 @@ import std.collection.{ArrayList, HashMap}
 
 @Test
 public class CollectionTestCaseSuit {
+    /**
+     * 测试列表转换器功能 - 验证将 ArrayList<Any> 转换为 ListToString
+     */
     @TestCase
     public func testConverterList() {
         let list = ArrayList<Any>()
@@ -29,6 +32,9 @@ public class CollectionTestCaseSuit {
         @Assert(converted.get(2).toString(), "Some(3.500000)")
     }
 
+    /**
+     * 测试映射转换器功能 - 验证将 HashMap<String, Any> 转换为 MapToString
+     */
     @TestCase
     public func testConverterMap() {
         let map = HashMap<String, Any>()
@@ -43,6 +49,9 @@ public class CollectionTestCaseSuit {
         @Assert(converted.getString("key3").getOrThrow(), "3.500000")
     }
 
+    /**
+     * 测试 MapListGetFunc 在映射上的功能 - 验证 MapToString 类型的各种 get 方法
+     */
     @TestCase
     public func testMapListGetFuncMap() {
         let map = HashMap<String, ToString>()
@@ -57,6 +66,9 @@ public class CollectionTestCaseSuit {
         @Assert(map.getBool("bool").getOrThrow(), true)
     }
 
+    /**
+     * 测试 MapListGetFunc 在列表上的功能 - 验证 ListToString 类型的各种 get 方法
+     */
     @TestCase
     public func testMapListGetFuncList() {
         let list = ArrayList<ToString>()
@@ -71,6 +83,9 @@ public class CollectionTestCaseSuit {
         @Assert(list.getBool(3).getOrThrow(), true)
     }
 
+    /**
+     * 测试超时缓存基本功能 - 验证添加、获取和删除操作
+     */
     @TestCase
     public func testTimeoutCacheBasic() {
         let cache = TimeoutCache<String, Int>(Duration.minute, {k, v => ()})
@@ -87,6 +102,9 @@ public class CollectionTestCaseSuit {
         cache.close()
     }
 
+    /**
+     * 测试超时缓存过期功能 - 验证缓存项在超时后会被自动删除
+     */
     @TestCase
     public func testTimeoutCacheExpiration() {
         let cache = TimeoutCache<String, Int>(Duration.millisecond *500, {k, v => ()})
@@ -102,6 +120,9 @@ public class CollectionTestCaseSuit {
         cache.close()
     }
 
+    /**
+     * 测试超时缓存并发访问 - 验证在高并发场景下的稳定性
+     */
     @TestCase
     public func testTimeoutCacheConcurrent() {
         let cache = TimeoutCache<String, Int>(Duration.minute, {k, v => ()})

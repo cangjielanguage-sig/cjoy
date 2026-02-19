@@ -13,9 +13,13 @@ package cjoy.eventbus
 import std.sync.{SyncCounter, AtomicInt64}
 import std.collection.ArrayList
 import cjoy.context.{Context, MapContext}
+import cjoy.macros.*
 
 @Test
 public class LocalEventBusTestCase {
+    /**
+     * 测试单个订阅者 - 验证事件发布后订阅者能够接收到事件
+     */
     @TestCase
     public func testOneSubscriber(): Unit {
         let bs = LocalEventBus()
@@ -27,6 +31,9 @@ public class LocalEventBusTestCase {
         @Assert(counter.load(), 0)
     }
 
+    /**
+     * 测试两个订阅者 - 验证事件发布后多个订阅者都能接收到事件
+     */
     @TestCase
     public func testTwoSubscriber(): Unit {
         let bs = LocalEventBus()
@@ -41,6 +48,9 @@ public class LocalEventBusTestCase {
         @Assert(counter.load(), 0)
     }
 
+    /**
+     * 测试事件优先级 - 验证高优先级的订阅者会先接收到事件
+     */
     @TestCase
     public func testPriority1(): Unit {
         let bs = LocalEventBus()
@@ -65,6 +75,9 @@ public class LocalEventBusTestCase {
         @Assert(data.toArray(), [2, 1])
     }
 
+    /**
+     * 测试事件终止 - 验证高优先级订阅者可以终止事件传递，低优先级订阅者不会接收到事件
+     */
     @TestCase
     public func testPriority2(): Unit {
         let bs = LocalEventBus()
@@ -91,6 +104,9 @@ public class LocalEventBusTestCase {
         @Assert(data.toArray(), [2])
     }
 
+    /**
+     * 测试事件匹配 - 验证只有匹配事件名称的订阅者会接收到事件
+     */
     @TestCase
     public func testTwoSubscriberOneMatch(): Unit {
         let bs = LocalEventBus()
@@ -105,6 +121,9 @@ public class LocalEventBusTestCase {
         @Assert(counter.load(), 0)
     }
 
+    /**
+     * 测试精确匹配和通配符匹配 - 验证精确匹配和通配符匹配的订阅者都能接收到事件
+     */
     @TestCase
     public func testExactAndWildcardMatch(): Unit {
         let bs = LocalEventBus()
@@ -119,6 +138,9 @@ public class LocalEventBusTestCase {
         @Assert(counter.load(), 0)
     }
 
+    /**
+     * 测试各种通配符模式匹配 - 验证多种通配符模式都能正确匹配事件名称
+     */
     @TestCase
     public func testOneWildcardMath(): Unit {
         let patterns = ["**.c.d", "a.b.**", "*.b.c.d", "*.*.c.d", "*.*.*.d", "*.*.*.*", "a.*.c.d", "a.*.*.d", "a.*.c.*"]
@@ -133,6 +155,9 @@ public class LocalEventBusTestCase {
             bs.closeAndWait()
         }
     }
+    /**
+     * 测试无效模式 - 验证无效的事件模式会抛出异常
+     */
     @TestCase
     public func testInvalidPattern(): Unit {
         let patterns = ["**.**.d", "a.**.d", "a.**.**", "a.123*", "a.1*2.b"]
@@ -149,6 +174,9 @@ public class LocalEventBusTestCase {
         }
     }
 
+    /**
+     * 测试异步事件发布 - 验证异步发布事件时订阅者能够接收到事件
+     */
     @TestCase
     public func testFireEventAsync(): Unit {
         let bs = LocalEventBus()
@@ -161,6 +189,9 @@ public class LocalEventBusTestCase {
         @Assert(counter.count, 0)
     }
 
+    /**
+     * 测试异步事件发布方法 - 验证 asyncFireEvent 方法能够正确发布事件
+     */
     @TestCase
     public func testAsyncFireEvent(): Unit {
         let bs = LocalEventBus()
@@ -173,6 +204,9 @@ public class LocalEventBusTestCase {
         @Assert(counter.count, 0)
     }
 
+    /**
+     * 测试事件不匹配 - 验证订阅者订阅的事件与发布的事件不匹配时不会接收到事件
+     */
     @TestCase
     public func testNoMatch1(): Unit {
         let bs = LocalEventBus()
@@ -184,6 +218,9 @@ public class LocalEventBusTestCase {
         @Assert(counter.load(), 1)
     }
 
+    /**
+     * 测试模式不匹配 - 验证通配符模式与事件名称不匹配时不会接收到事件
+     */
     @TestCase
     public func testNoMatch2(): Unit {
         let bs = LocalEventBus()
@@ -195,6 +232,9 @@ public class LocalEventBusTestCase {
         @Assert(counter.load(), 1)
     }
 
+    /**
+     * 测试模式前缀不匹配 - 验证事件名称比模式更长时不会匹配
+     */
     @TestCase
     public func testNoMatch3(): Unit {
         let bs = LocalEventBus()

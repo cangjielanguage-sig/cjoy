@@ -14,18 +14,27 @@ import std.unittest.testmacro.*
 
 @Test
 public class EngineTestCaseSuit {
+    /**
+     * 测试引擎创建 - 验证可以创建默认名称的引擎实例
+     */
     @TestCase
     public func testEngineCreation() {
         let engine = Joy.create()
         @Assert(engine.name == "default", true)
     }
 
+    /**
+     * 测试自定义名称引擎创建 - 验证可以创建指定名称的引擎实例
+     */
     @TestCase
     public func testEngineWithCustomName() {
         let engine = Joy.create(name: "testEngine")
         @Assert(engine.name == "testEngine", true)
     }
 
+    /**
+     * 测试自定义配置引擎创建 - 验证可以使用自定义配置创建引擎实例
+     */
     @TestCase
     public func testEngineWithCustomConfig() {
         let config = JoyConfig(
@@ -41,6 +50,9 @@ public class EngineTestCaseSuit {
         @Assert(engine.config.maxRequestBodySize == 64 * 1024 * 1024, true)
     }
 
+    /**
+     * 测试引擎单例模式 - 验证相同名称的引擎实例是否为单例
+     */
     @TestCase
     public func testEngineSingleton() {
         let engine1 = Joy.create(name: "testSingleton")
@@ -52,6 +64,9 @@ public class EngineTestCaseSuit {
         engine2.shutdown() // 清理实例
     }
 
+    /**
+     * 测试引擎重复创建 - 验证创建同名引擎实例会抛出异常
+     */
     @TestCase
     public func testEngineDuplicateCreation() {
         let name = "duplicateEngine"
@@ -66,6 +81,9 @@ public class EngineTestCaseSuit {
         @Assert(threwException, true)
     }
 
+    /**
+     * 测试引擎服务管理 - 验证可以添加和获取服务
+     */
     @TestCase
     public func testEngineAddAndGetService() {
         let engine = Joy.create(name: "serviceEngine")
@@ -77,6 +95,9 @@ public class EngineTestCaseSuit {
         @Assert(retrievedService == Some(testService), true)
     }
 
+    /**
+     * 测试获取不存在的服务 - 验证获取不存在的服务时返回 None
+     */
     @TestCase
     public func testEngineGetNonExistentService() {
         let engine = Joy.create(name: "nonExistentServiceEngine")
@@ -84,6 +105,9 @@ public class EngineTestCaseSuit {
         @Assert(retrievedService == None, true)
     }
 
+    /**
+     * 测试默认引擎配置 - 验证引擎默认配置的正确性
+     */
     @TestCase
     public func testEngineConfig() {
         let config = JoyConfig()
@@ -97,6 +121,9 @@ public class EngineTestCaseSuit {
         engine.shutdown()
     }
 
+    /**
+     * 测试自定义引擎配置值 - 验证自定义配置值是否正确应用到引擎
+     */
     @TestCase
     public func testEngineConfigWithCustomValues() {
         let config = JoyConfig(

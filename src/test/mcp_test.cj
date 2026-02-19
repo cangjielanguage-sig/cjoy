@@ -135,6 +135,9 @@ public class McpServerTestCaseSuit {
         _instance?.shutdown()
     }
 
+    /**
+     * 测试 MCP 工具调用功能 - 验证所有工具的列出和调用功能
+     */
     @TestCase
     public func testTools(): Unit {
         try (client = createMcpSseClient("http://127.0.0.1:18881/sse")) {
@@ -197,6 +200,9 @@ public class McpServerTestCaseSuit {
         }
     }
 
+    /**
+     * 测试 MCP 资源读取功能 - 验证所有资源的列出和读取功能
+     */
     @TestCase
     public func testResources(): Unit {
         try (client = createMcpSseClient("http://127.0.0.1:18881/sse")) {
@@ -233,6 +239,9 @@ public class McpServerTestCaseSuit {
         }
     }
 
+    /**
+     * 测试 MCP 提示获取功能 - 验证所有提示的列出和获取功能
+     */
     @TestCase
     public func testPrompts(): Unit {
         try (client = createMcpSseClient("http://127.0.0.1:18881/sse")) {
@@ -263,6 +272,9 @@ public class McpServerTestCaseSuit {
         }
     }
 
+    /**
+     * 测试工具调用失败场景 - 验证调用不存在的工具会抛出异常
+     */
     @TestCase
     public func testToolCallFailure(): Unit {
         try (client = createMcpSseClient("http://127.0.0.1:18881/sse")) {
@@ -277,6 +289,9 @@ public class McpServerTestCaseSuit {
         }
     }
 
+    /**
+     * 测试资源读取失败场景 - 验证读取不存在的资源会抛出异常
+     */
     @TestCase
     public func testResourceReadFailure(): Unit {
         try (client = createMcpSseClient("http://127.0.0.1:18881/sse")) {
@@ -293,6 +308,9 @@ public class McpServerTestCaseSuit {
         }
     }
 
+    /**
+     * 测试提示获取失败场景 - 验证获取不存在的提示会抛出异常
+     */
     @TestCase
     public func testPromptGetFailure(): Unit {
         try (client = createMcpSseClient("http://127.0.0.1:18881/sse")) {
@@ -309,6 +327,9 @@ public class McpServerTestCaseSuit {
         }
     }
 
+    /**
+     * 测试 MCP 心跳功能 - 验证客户端和服务器之间的心跳机制
+     */
     @TestCase
     public func testPing(): Unit {
         try (client = createMcpSseClient("http://127.0.0.1:18881/sse")) {
@@ -319,6 +340,9 @@ public class McpServerTestCaseSuit {
         }
     }
 
+    /**
+     * 测试 MCP 协议协商功能 - 验证客户端和服务器之间的协议版本协商
+     */
     @TestCase
     public func testProtocolNegotiation(): Unit {
         let features1 = McpClientFeatures()

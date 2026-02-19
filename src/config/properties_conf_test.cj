@@ -15,6 +15,9 @@ import cjoy.macros.*
 
 @Test
 public class PropertiesConfigTestCaseSuit {
+    /**
+     * 测试简单 Properties 配置 - 验证基本 Properties 配置文件的加载和解析
+     */
     @TestCase
     public func testSimple1(): Unit {
         let loader = PropertiesConfigLoader("./testdata/joy.properties")
@@ -25,6 +28,9 @@ public class PropertiesConfigTestCaseSuit {
         @Assert(manager.getValue("joy.server.port", ""), "18881")
     }
 
+    /**
+     * 测试文件未找到 - 验证加载不存在的 Properties 配置文件时的错误处理
+     */
     @TestCase
     public func testFileNotFound(): Unit {
         try {
@@ -36,6 +42,9 @@ public class PropertiesConfigTestCaseSuit {
         }
     }
 
+    /**
+     * 测试空文件 - 验证加载空 Properties 文件时的处理
+     */
     @TestCase
     public func testEmptyFile(): Unit {
         let loader = PropertiesConfigLoader("./testdata/empty.properties")
@@ -43,6 +52,9 @@ public class PropertiesConfigTestCaseSuit {
         @Assert(data.size, 0)
     }
 
+    /**
+     * 测试含等号的值 - 验证包含等号的属性值解析
+     */
     @TestCase
     public func testValueWithEqualSign(): Unit {
         let loader = PropertiesConfigLoader("./testdata/equal-sign.properties")
@@ -54,6 +66,9 @@ public class PropertiesConfigTestCaseSuit {
         @Assert(manager.getValue("app.config", ""), "key=value=pair")
     }
 
+    /**
+     * 测试注释行 - 验证包含注释的 Properties 文件解析
+     */
     @TestCase
     public func testCommentLines(): Unit {
         let loader = PropertiesConfigLoader("./testdata/comments.properties")
@@ -65,6 +80,9 @@ public class PropertiesConfigTestCaseSuit {
         @Assert(manager.bind<Bool>("app.debug") ?? false, true)
     }
 
+    /**
+     * 测试 Properties 加载器优先级 - 验证 Properties 配置加载器的优先级设置功能
+     */
     @TestCase
     public func testPriority(): Unit {
         let loader1 = PropertiesConfigLoader("./testdata/joy.properties", priorityNum: 10)
@@ -73,6 +91,9 @@ public class PropertiesConfigTestCaseSuit {
         @Assert(loader2.priority, 20)
     }
 
+    /**
+     * 测试特殊字符处理 - 验证包含中文字符和特殊字符的 Properties 配置解析
+     */
     @TestCase
     public func testSpecialChars(): Unit {
         let loader = PropertiesConfigLoader("./testdata/special-chars.properties")

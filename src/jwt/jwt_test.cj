@@ -15,6 +15,9 @@ import stdx.crypto.keys.{RSAPrivateKey, RSAPublicKey}
 
 @Test
 public class JwtTestCaseSuit {
+    /**
+     * 测试 HS256 签名算法 - 使用 HS256 算法签名并验证 JWT
+     */
     @TestCase
     public func testSignHS256() {
         let key = "abcd".toArray()
@@ -24,6 +27,9 @@ public class JwtTestCaseSuit {
         assertJwt(jwt2)
     }
 
+    /**
+     * 测试 HS384 签名算法 - 使用 HS384 算法签名并验证 JWT
+     */
     @TestCase
     public func testSignHS384() {
         let key = "abcd".toArray()
@@ -33,6 +39,9 @@ public class JwtTestCaseSuit {
         assertJwt(jwt2)
     }
 
+    /**
+     * 测试 HS512 签名算法 - 使用 HS512 算法签名并验证 JWT
+     */
     @TestCase
     public func testSignHS512() {
         let key = "abcd".toArray()
@@ -42,6 +51,9 @@ public class JwtTestCaseSuit {
         assertJwt(jwt2)
     }
 
+    /**
+     * 测试跳过声明验证 - 当设置 skipClaimsValidation 为 true 时，即使声明无效也会通过验证
+     */
     @TestCase
     public func testParseValidateSkipClaimsValidation() {
         // issue at is invalid but skip claims validate
@@ -64,6 +76,9 @@ public class JwtTestCaseSuit {
         }
     }
 
+    /**
+     * 测试 issuedAt 声明验证失败 - 当 issuedAt 是未来时间时验证失败
+     */
     @TestCase
     public func testParseValidateFailIssuedAt() {
         let key = "abcd".toArray()
@@ -86,6 +101,9 @@ public class JwtTestCaseSuit {
         }
     }
 
+    /**
+     * 测试缺少 issuedAt 声明验证失败 - 当设置 issueAtRequired 为 true 但缺少该声明时验证失败
+     */
     @TestCase
     public func testParseValidateFailIssuedAt2() {
         let key = "abcd".toArray()
@@ -107,6 +125,9 @@ public class JwtTestCaseSuit {
         }
     }
 
+    /**
+     * 测试过期时间验证失败 - 当 token 已过期时验证失败
+     */
     @TestCase
     public func testParseValidateFailExpire1() {
         let key = "abcd".toArray()
@@ -129,6 +150,9 @@ public class JwtTestCaseSuit {
         }
     }
 
+    /**
+     * 测试缺少过期时间验证失败 - 当设置 expirationRequired 为 true 但缺少该声明时验证失败
+     */
     @TestCase
     public func testParseValidateFailExpire2() {
         let key = "abcd".toArray()
@@ -150,6 +174,9 @@ public class JwtTestCaseSuit {
         }
     }
 
+    /**
+     * 测试 notBefore 声明验证失败 - 当 token 尚未到生效时间时验证失败
+     */
     @TestCase
     public func testParseValidateFailNotBefore1() {
         let key = "abcd".toArray()
@@ -172,6 +199,9 @@ public class JwtTestCaseSuit {
         }
     }
 
+    /**
+     * 测试缺少 notBefore 声明验证失败 - 当设置 notBeforeRequired 为 true 但缺少该声明时验证失败
+     */
     @TestCase
     public func testParseValidateFailNotBefore2() {
         let key = "abcd".toArray()
@@ -193,6 +223,9 @@ public class JwtTestCaseSuit {
         }
     }
 
+    /**
+     * 测试受众验证成功 - 当 token 受众包含在预期受众列表中时验证成功
+     */
     @TestCase
     public func testParseValidateSuccessAud1() {
         let key = "abcd".toArray()
@@ -204,6 +237,9 @@ public class JwtTestCaseSuit {
             @Fail(ex.message)
         }
     }
+    /**
+     * 测试受众验证成功 - 当 token 受众与预期受众完全匹配时验证成功
+     */
     @TestCase
     public func testParseValidateSuccessAud2() {
         let key = "abcd".toArray()
@@ -216,6 +252,9 @@ public class JwtTestCaseSuit {
         }
     }
 
+    /**
+     * 测试多受众验证成功 - 当 token 包含多个受众且与预期受众完全匹配时验证成功
+     */
     @TestCase
     public func testParseValidateSuccessAud3() {
         let key = "abcd".toArray()
@@ -237,6 +276,9 @@ public class JwtTestCaseSuit {
         }
     }
 
+    /**
+     * 测试受众验证失败 - 当 token 受众不在预期受众列表中时验证失败
+     */
     @TestCase
     public func testParseValidateFailAud1() {
         let key = "abcd".toArray()
@@ -250,6 +292,9 @@ public class JwtTestCaseSuit {
         }
     }
 
+    /**
+     * 测试多受众验证失败 - 当 token 受众与预期受众不完全匹配时验证失败
+     */
     @TestCase
     public func testParseValidateFailAud2() {
         let key = "abcd".toArray()
@@ -274,6 +319,9 @@ public class JwtTestCaseSuit {
         }
     }
 
+    /**
+     * 测试签名方法验证成功 - 当 token 签名方法在允许的方法列表中时验证成功
+     */
     @TestCase
     public func testParseValidateMethodSuccess() {
         let key = "abcd".toArray()
@@ -286,6 +334,9 @@ public class JwtTestCaseSuit {
         }
     }
 
+    /**
+     * 测试签名方法验证失败 - 当 token 签名方法不在允许的方法列表中时验证失败
+     */
     @TestCase
     public func testParseValidateMethodFail() {
         let key = "abcd".toArray()
@@ -328,6 +379,9 @@ public class JwtTestCaseSuit {
         @Assert(jwt.claims.getClaimStrings("c2").getOrThrow().claims == ["v2_1", "v2_2"])
     }
 
+    /**
+     * 测试 RS256 签名算法 - 使用 RS256 算法签名并验证 JWT
+     */
     @TestCase
     public func testSignRS256() {
         let priv = RSAPrivateKey(2048)
@@ -338,6 +392,9 @@ public class JwtTestCaseSuit {
         assertJwt(jwt2)
     }
 
+    /**
+     * 测试 RS256 签名算法 - 从文件加载 RSA 密钥并使用 RS256 算法签名验证 JWT
+     */
     @TestCase
     public func testSignRS256FromFile() {
         let priv = loadRSAPrivateKey("./testdata/rsa_private.pem")
@@ -348,6 +405,9 @@ public class JwtTestCaseSuit {
         assertJwt(jwt2)
     }
 
+    /**
+     * 测试 PS256 签名算法 - 使用 PS256 算法签名并验证 JWT
+     */
     @TestCase
     public func testSignPS256() {
         let priv = RSAPrivateKey(2048)
@@ -358,6 +418,9 @@ public class JwtTestCaseSuit {
         assertJwt(jwt2)
     }
 
+    /**
+     * 测试 RS384 签名算法 - 使用 RS384 算法签名并验证 JWT
+     */
     @TestCase
     public func testSignRS384() {
         let priv = RSAPrivateKey(2048)
@@ -368,6 +431,9 @@ public class JwtTestCaseSuit {
         assertJwt(jwt2)
     }
 
+    /**
+     * 测试 RS512 签名算法 - 使用 RS512 算法签名并验证 JWT
+     */
     @TestCase
     public func testSignRS512() {
         let priv = RSAPrivateKey(2048)
@@ -378,6 +444,9 @@ public class JwtTestCaseSuit {
         assertJwt(jwt2)
     }
 
+    /**
+     * 测试 PS384 签名算法 - 使用 PS384 算法签名并验证 JWT
+     */
     @TestCase
     public func testSignPS384() {
         let priv = RSAPrivateKey(2048)
@@ -388,6 +457,9 @@ public class JwtTestCaseSuit {
         assertJwt(jwt2)
     }
 
+    /**
+     * 测试 PS512 签名算法 - 使用 PS512 算法签名并验证 JWT
+     */
     @TestCase
     public func testSignPS512() {
         let priv = RSAPrivateKey(2048)
@@ -398,6 +470,9 @@ public class JwtTestCaseSuit {
         assertJwt(jwt2)
     }
 
+    /**
+     * 测试解析无效格式的 token - 当 token 格式不符合 JWT 标准时抛出异常
+     */
     @TestCase
     public func testParseInvalidTokenFormat() {
         try {
@@ -408,6 +483,9 @@ public class JwtTestCaseSuit {
         }
     }
 
+    /**
+     * 测试解析无效 Base64 编码的 token - 当 token 包含无效的 Base64 编码时抛出异常
+     */
     @TestCase
     public func testParseInvalidBase64() {
         try {
@@ -425,6 +503,9 @@ public class JwtTestCaseSuit {
         }
     }
 
+    /**
+     * 测试解析包含未知算法的 token - 当 token 包含不支持的签名算法时抛出异常
+     */
     @TestCase
     public func testParseUnknownAlgorithm() {
         // 直接创建一个包含未知算法的 token 字符串，而不使用 Jwt 类的方法
@@ -438,6 +519,9 @@ public class JwtTestCaseSuit {
         }
     }
 
+    /**
+     * 测试过期时间宽容期 - 当 token 过期时间在宽容期内时验证成功
+     */
     @TestCase
     public func testLeewayExpiration() {
         let key = "abcd".toArray()
@@ -459,6 +543,9 @@ public class JwtTestCaseSuit {
         }
     }
 
+    /**
+     * 测试生效时间宽容期 - 当 token 生效时间在宽容期内时验证成功
+     */
     @TestCase
     public func testLeewayNotBefore() {
         let key = "abcd".toArray()
@@ -480,6 +567,9 @@ public class JwtTestCaseSuit {
         }
     }
 
+    /**
+     * 测试签发时间宽容期 - 当 token 签发时间在宽容期内时验证成功
+     */
     @TestCase
     public func testLeewayIssuedAt() {
         let key = "abcd".toArray()
@@ -501,6 +591,9 @@ public class JwtTestCaseSuit {
         }
     }
 
+    /**
+     * 测试自定义时间函数 - 使用自定义时间函数验证 token 的过期状态
+     */
     @TestCase
     public func testCustomTimeFunc() {
         let key = "abcd".toArray()
@@ -525,6 +618,9 @@ public class JwtTestCaseSuit {
         }
     }
 
+    /**
+     * 测试签发者验证成功 - 当 token 签发者与预期值匹配时验证成功
+     */
     @TestCase
     public func testParseValidateSuccessIssuer() {
         let key = "abcd".toArray()
@@ -537,6 +633,9 @@ public class JwtTestCaseSuit {
         }
     }
 
+    /**
+     * 测试签发者验证失败 - 当 token 签发者与预期值不匹配时验证失败
+     */
     @TestCase
     public func testParseValidateFailIssuer() {
         let key = "abcd".toArray()
@@ -550,6 +649,9 @@ public class JwtTestCaseSuit {
         }
     }
 
+    /**
+     * 测试主题验证成功 - 当 token 主题与预期值匹配时验证成功
+     */
     @TestCase
     public func testParseValidateSuccessSubject() {
         let key = "abcd".toArray()
@@ -562,6 +664,9 @@ public class JwtTestCaseSuit {
         }
     }
 
+    /**
+     * 测试主题验证失败 - 当 token 主题与预期值不匹配时验证失败
+     */
     @TestCase
     public func testParseValidateFailSubject() {
         let key = "abcd".toArray()
@@ -575,6 +680,9 @@ public class JwtTestCaseSuit {
         }
     }
 
+    /**
+     * 测试复制声明 - 验证将一个 JWT 的声明复制到另一个 JWT 的功能
+     */
     @TestCase
     public func testCopyClaims() {
         let key = "abcd".toArray()
@@ -587,6 +695,9 @@ public class JwtTestCaseSuit {
         @Assert(jwt2.claims.getAudience().getOrThrow().getFirstValue() == jwt1.claims.getAudience().getOrThrow().getFirstValue())
     }
 
+    /**
+     * 测试自定义头部 - 验证 JWT 自定义头部的设置和解析功能
+     */
     @TestCase
     public func testCustomHeaders() {
         let key = "abcd".toArray()

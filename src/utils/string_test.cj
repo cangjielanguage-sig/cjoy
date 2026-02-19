@@ -14,6 +14,9 @@ import std.unittest.testmacro.*
 
 @Test
 public class StringTestCaseSuit {
+    /**
+     * 测试字符串切割功能 - 验证 cut 方法在各种边界条件下的行为
+     */
     @TestCase
     public func testCut() {
         // 测试正常切割
@@ -44,6 +47,9 @@ public class StringTestCaseSuit {
         @Assert(found4, true)
     }
 
+    /**
+     * 测试字符串索引查找功能 - 验证 indexFunc 方法根据条件查找字符位置
+     */
     @TestCase
     public func testIndexFunc() {
         let str = "Hello,World!"
@@ -65,6 +71,9 @@ public class StringTestCaseSuit {
         @Assert(commaIndex, 5)
     }
 
+    /**
+     * 测试字符是否为十六进制字符 - 验证 ishex 方法的正确性
+     */
     @TestCase
     public func testIsHex() {
         // 测试数字
@@ -89,6 +98,9 @@ public class StringTestCaseSuit {
         @Assert(ishex(b'\t'), false)
     }
 
+    /**
+     * 测试十六进制字符转换为整数 - 验证 unhex 方法的转换功能
+     */
     @TestCase
     public func testUnhex() {
         @Assert(unhex(b'0'), 0)
@@ -101,6 +113,9 @@ public class StringTestCaseSuit {
         @Assert(unhex(b'G'), 0)
     }
 
+    /**
+     * 测试驼峰式命名转换为蛇形命名 - 验证 snakeCase 方法的转换功能
+     */
     @TestCase
     public func testSnakeCase() {
         @Assert(snakeCase("HelloWorld"), "hello-world")
@@ -111,6 +126,9 @@ public class StringTestCaseSuit {
         @Assert(snakeCase(""), "")
     }
 
+    /**
+     * 测试字符是否为 ASCII 空格 - 验证 isASCIISpace 方法的判断
+     */
     @TestCase
     public func testIsASCIISpace() {
         @Assert(isASCIISpace(b' '), true)
@@ -122,6 +140,9 @@ public class StringTestCaseSuit {
         @Assert(isASCIISpace(b'\0'), false)
     }
 
+    /**
+     * 测试字符是否为 ASCII 字母 - 验证 isASCIILetter 方法的判断
+     */
     @TestCase
     public func testIsASCIILetter() {
         // 测试小写字母
@@ -141,6 +162,9 @@ public class StringTestCaseSuit {
         @Assert(isASCIILetter(b'!'), false)
     }
 
+    /**
+     * 测试字节数组修剪功能 - 验证 trimBytes 方法去除首尾空白字符
+     */
     @TestCase
     public func testTrimBytes() {
         let bs1 = "  Hello World!  ".toArray()
@@ -164,6 +188,9 @@ public class StringTestCaseSuit {
         @Assert(trimmed5.size, 0)
     }
 
+    /**
+     * 测试字符串修剪功能 - 验证 trimString 方法去除首尾空白字符
+     */
     @TestCase
     public func testTrimString() {
         @Assert(trimString("  Hello World!  "), "Hello World!")

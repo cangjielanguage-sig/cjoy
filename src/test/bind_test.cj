@@ -169,6 +169,9 @@ public class ComplexDetailsBind {
 
 @Test
 public class BindTestCaseSuit {
+    /**
+     * 测试查询参数绑定 - 验证从URL查询字符串中绑定参数到结构体
+     */
     @TestCase
     public func testQueryBind() {
         let u = "http://127.0.0.1:18881/test?str=1&str2=2&i64=1&int=2&i3_64=3&arr=1&arr=2&list=1&list=2"
@@ -183,6 +186,9 @@ public class BindTestCaseSuit {
         @Assert(obj.list, ArrayList(["1", "2"]))
     }
 
+    /**
+     * 测试查询参数绑定（含数组类型）- 验证从URL查询字符串中绑定数组参数到结构体
+     */
     @TestCase
     public func testQueryBind2() {
         let u = "http://127.0.0.1:18881/test?str=1&str2=2&i64=1&int=2&i3_64=3&arr=1&arr=2&list=1&list=2"
@@ -197,6 +203,9 @@ public class BindTestCaseSuit {
         @Assert(obj.list, ArrayList([1, 2]))
     }
 
+    /**
+     * 测试表单参数绑定 - 验证从表单数据中绑定参数到结构体
+     */
     @TestCase
     public func testPostFormBind() {
         let r = HttpRequestBuilder()
@@ -215,6 +224,9 @@ public class BindTestCaseSuit {
         @Assert(obj.list, ArrayList(["1", "2"]))
     }
 
+    /**
+     * 测试头部参数绑定 - 验证从HTTP头部中绑定参数到结构体
+     */
     @TestCase
     public func testHeaderBind() {
         let ts = DateTime.now().format("HH:mm:ss MM/dd/yyyy OO")
@@ -246,6 +258,9 @@ public class BindTestCaseSuit {
         @Assert(obj.t2, DateTime.parse(ts, "HH:mm:ss MM/dd/yyyy OO"))
     }
 
+    /**
+     * 测试嵌套对象绑定 - 验证嵌套对象的参数绑定功能
+     */
     @TestCase
     public func testNestedBind() {
         let map1 = HashMap<String, Any>()
@@ -263,6 +278,9 @@ public class BindTestCaseSuit {
         @Assert(obj.bind2.bind3?.str ?? "", "3")
     }
 
+    /**
+     * 测试整数类型绑定 - 验证单个整数值的绑定功能
+     */
     @TestCase
     public func testIntBind() {
         let map1 = HashMap<String, Any>()
@@ -272,6 +290,9 @@ public class BindTestCaseSuit {
         @Assert(arr, 1)
     }
 
+    /**
+     * 测试数组类型绑定 - 验证数组类型参数的绑定功能（四个参数版本）
+     */
     @TestCase
     public func testArrayBind() {
         let map1 = HashMap<String, Any>()
@@ -282,6 +303,9 @@ public class BindTestCaseSuit {
         @Assert(arr, [1, 2])
     }
 
+    /**
+     * 测试数组类型绑定（两个参数版本）- 验证数组类型参数的绑定功能（两个参数版本）
+     */
     @TestCase
     public func testArrayBind2Param() {
         let map1 = HashMap<String, Any>()
@@ -292,6 +316,9 @@ public class BindTestCaseSuit {
         @Assert(arr, [1, 2])
     }
 
+    /**
+     * 测试数组类型绑定（ArrayList）- 验证从ArrayList中绑定数组参数
+     */
     @TestCase
     public func testArrayBind2() {
         let map1 = HashMap<String, Any>()
@@ -301,6 +328,9 @@ public class BindTestCaseSuit {
         @Assert(arr, [1, 2])
     }
 
+    /**
+     * 测试数组类型绑定（空字段名）- 验证空字段名的数组参数绑定
+     */
     @TestCase
     public func testArrayBind3() {
         let map1 = HashMap<String, Any>()
@@ -310,6 +340,9 @@ public class BindTestCaseSuit {
         @Assert(arr, [1, 2])
     }
 
+    /**
+     * 测试ArrayList类型绑定 - 验证ArrayList类型参数的绑定功能
+     */
     @TestCase
     public func testArrayListBind() {
         let map1 = HashMap<String, Any>()
@@ -319,6 +352,9 @@ public class BindTestCaseSuit {
         @Assert(arr.toArray(), [1, 2])
     }
 
+    /**
+     * 测试ArrayList类型绑定（ArrayList输入）- 验证从ArrayList输入中绑定ArrayList参数
+     */
     @TestCase
     public func testArrayListBind2() {
         let map1 = HashMap<String, Any>()
@@ -328,6 +364,9 @@ public class BindTestCaseSuit {
         @Assert(arr.toArray(), [1, 2])
     }
 
+    /**
+     * 测试默认值绑定 - 验证参数绑定中的默认值设置功能
+     */
     @TestCase
     public func testDefaultValueBind() {
         let map1 = HashMap<String, Any>()
@@ -343,6 +382,9 @@ public class BindTestCaseSuit {
         @Assert(obj.optionalField, None)
     }
 
+    /**
+     * 测试数值类型绑定 - 验证所有数值类型（整数、浮点数）的绑定功能
+     */
     @TestCase
     public func testNumericTypesBind() {
         let map1 = HashMap<String, Any>()
@@ -373,6 +415,9 @@ public class BindTestCaseSuit {
         @Assert(obj.float64, 2.71828)
     }
 
+    /**
+     * 测试布尔类型绑定 - 验证布尔类型参数的绑定功能
+     */
     @TestCase
     public func testBooleanBind() {
         let map1 = HashMap<String, Any>()
@@ -385,6 +430,9 @@ public class BindTestCaseSuit {
         @Assert(obj.optionalBool, true)
     }
 
+    /**
+     * 测试日期时间类型绑定 - 验证DateTime类型参数的绑定功能
+     */
     @TestCase
     public func testDateTimeBind() {
         let now = DateTime.now()
@@ -400,6 +448,9 @@ public class BindTestCaseSuit {
         @Assert(obj.optionalDate, None)
     }
 
+    /**
+     * 测试复杂嵌套对象绑定 - 验证包含嵌套对象和数组的复杂结构的绑定功能
+     */
     @TestCase
     public func testComplexNestedBind() {
         let map1 = HashMap<String, Any>()
@@ -421,6 +472,9 @@ public class BindTestCaseSuit {
         @Assert(obj.details?.tags, ["tag1", "tag2"])
     }
 
+    /**
+     * 测试绑定失败场景 - 验证参数绑定失败时的错误处理
+     */
     @TestCase
     public func testBindFailure() {
         let map1 = HashMap<String, Any>()
@@ -445,6 +499,9 @@ public class BindTestCaseSuit {
         @Assert(result2, true)
     }
 
+    /**
+     * 测试绑定字段方法 - 验证使用 bindField 方法绑定嵌套字段的功能
+     */
     @TestCase
     public func testBindFieldMethod() {
         let map1 = HashMap<String, Any>()
@@ -461,6 +518,9 @@ public class BindTestCaseSuit {
         @Assert(result.arr, ["a", "b"])
     }
 
+    /**
+     * 测试布尔字符串绑定 - 验证将字符串值绑定到布尔类型的功能
+     */
     @TestCase
     public func testBoolStringBinding() {
         let map1 = HashMap<String, Any>()

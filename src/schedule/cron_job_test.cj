@@ -29,6 +29,9 @@ func jobrun(ctx: ScheduleContext): Unit {
 
 @Test
 public class CronJobTestCaseSuit {
+    /**
+     * 测试 Cron 表达式解析成功的场景 - 验证各种有效的 Cron 表达式能够正确解析
+     */
     @TestCase
     public func testParseSuccess() {
         let cases = [
@@ -198,6 +201,9 @@ public class CronJobTestCaseSuit {
         }
     }
 
+    /**
+     * 测试 Cron 任务的 tick 方法 - 验证任务在正确的时间点应该执行
+     */
     @TestCase
     public func testTick() {
         let now = DateTime.now()
@@ -382,6 +388,9 @@ public class CronJobTestCaseSuit {
         }
     }
 
+    /**
+     * 测试 Cron 表达式解析失败的场景 - 验证无效的 Cron 表达式会抛出适当的异常
+     */
     @TestCase
     public func testParseError() {
         let cases = [

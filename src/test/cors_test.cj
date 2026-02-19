@@ -72,6 +72,9 @@ public class CorsTestCaseSuit {
         _instance?.shutdown()
     }
 
+    /**
+     * 测试允许所有源的预检请求 - 验证 Cors.allowAll() 的预检请求处理
+     */
     @TestCase
     public func testAllowAllPreflight() {
         let req = HttpRequestBuilder()
@@ -86,6 +89,9 @@ public class CorsTestCaseSuit {
         @Assert(rsp.headers.getFirst("Access-Control-Allow-Credentials"), Some("true"))
     }
 
+    /**
+     * 测试允许所有方法的预检请求 - 验证所有HTTP方法的预检请求处理
+     */
     @TestCase
     public func testAllowAllAllMethodsAllowed() {
         let req = HttpRequestBuilder()
@@ -100,6 +106,9 @@ public class CorsTestCaseSuit {
         @Assert(rsp.headers.getFirst("Access-Control-Allow-Methods"), Some("DELETE"))
     }
 
+    /**
+     * 测试允许所有源的实际请求 - 验证CORS允许所有源的实际请求处理
+     */
     @TestCase
     public func testAllowAllActualRequest() {
         let req = HttpRequestBuilder()
@@ -115,6 +124,9 @@ public class CorsTestCaseSuit {
         @Assert(reader.readToEnd(), "allow_all")
     }
 
+    /**
+     * 测试特定源的预检请求允许 - 验证允许特定源的CORS预检请求处理
+     */
     @TestCase
     public func testSpecificOriginPreflightAllowed() {
         let req = HttpRequestBuilder()
@@ -129,6 +141,9 @@ public class CorsTestCaseSuit {
         @Assert(rsp.headers.getFirst("Access-Control-Allow-Credentials"), Some("true"))
     }
 
+    /**
+     * 测试特定源的预检请求拒绝 - 验证不允许的源的CORS预检请求处理
+     */
     @TestCase
     public func testSpecificOriginPreflightDenied() {
         let req = HttpRequestBuilder()
@@ -143,6 +158,9 @@ public class CorsTestCaseSuit {
         @Assert(rsp.headers.getFirst("Access-Control-Allow-Origin").isNone(), true)
     }
 
+    /**
+     * 测试特定源的实际请求 - 验证允许特定源的实际请求处理
+     */
     @TestCase
     public func testSpecificOriginActualRequest() {
         let req = HttpRequestBuilder()
@@ -157,6 +175,9 @@ public class CorsTestCaseSuit {
         @Assert(reader.readToEnd(), "specific")
     }
 
+    /**
+     * 测试通配符源允许的请求 - 验证包含通配符的源的CORS请求处理
+     */
     @TestCase
     public func testWildcardOriginAllowed() {
         let req = HttpRequestBuilder()
@@ -171,6 +192,9 @@ public class CorsTestCaseSuit {
         @Assert(reader.readToEnd(), "wildcard")
     }
 
+    /**
+     * 测试通配符源拒绝的请求 - 验证不匹配通配符的源的CORS请求处理
+     */
     @TestCase
     public func testWildcardOriginDenied() {
         let req = HttpRequestBuilder()
@@ -184,6 +208,9 @@ public class CorsTestCaseSuit {
         @Assert(rsp.headers.getFirst("Access-Control-Allow-Origin").isNone(), true)
     }
 
+    /**
+     * 测试自定义源验证函数 - 验证使用自定义allowOriginFunc的CORS请求处理
+     */
     @TestCase
     public func testCustomAllowOriginFunc() {
         let req = HttpRequestBuilder()
@@ -199,6 +226,9 @@ public class CorsTestCaseSuit {
         @Assert(reader.readToEnd(), "custom")
     }
 
+    /**
+     * 测试自定义源验证函数拒绝 - 验证自定义allowOriginFunc拒绝请求的处理
+     */
     @TestCase
     public func testCustomAllowOriginFuncDenied() {
         let req = HttpRequestBuilder()
@@ -211,6 +241,9 @@ public class CorsTestCaseSuit {
         @Assert(rsp.headers.getFirst("Access-Control-Allow-Origin").isNone(), true)
     }
 
+    /**
+     * 测试OPTIONS请求透传 - 验证optionsPassthrough配置的处理
+     */
     @TestCase
     public func testOptionsPassthrough() {
         let req = HttpRequestBuilder()
@@ -228,6 +261,9 @@ public class CorsTestCaseSuit {
         @Assert(reader.readToEnd(), "options_handled")
     }
 
+    /**
+     * 测试包含请求头的预检请求 - 验证带请求头的CORS预检请求处理
+     */
     @TestCase
     public func testPreflightWithRequestHeaders() {
         let req = HttpRequestBuilder()
@@ -244,6 +280,9 @@ public class CorsTestCaseSuit {
         @Assert(rsp.headers.getFirst("Access-Control-Allow-Headers"), Some("Content-Type, X-Custom-Header"))
     }
 
+    /**
+     * 测试无Origin头的请求 - 验证没有Origin头的请求处理
+     */
     @TestCase
     public func testNoOriginHeader() {
         let req = HttpRequestBuilder().url("http://127.0.0.1:18882/cors_all/test").method("GET").build()
@@ -255,6 +294,9 @@ public class CorsTestCaseSuit {
         @Assert(reader.readToEnd(), "allow_all")
     }
 
+    /**
+     * 测试POST请求的CORS处理 - 验证POST请求的CORS处理
+     */
     @TestCase
     public func testPostRequestWithCors() {
         let req = HttpRequestBuilder()
@@ -269,6 +311,9 @@ public class CorsTestCaseSuit {
         @Assert(reader.readToEnd(), "allow_all_post")
     }
 
+    /**
+     * 测试源的大小写不敏感处理 - 验证源比较的大小写不敏感性
+     */
     @TestCase
     public func testCaseInsensitiveOrigin() {
         // Origin comparison should be case-insensitive for the scheme and domain

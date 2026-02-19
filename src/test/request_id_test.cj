@@ -45,6 +45,9 @@ public class RequestIdTestCaseSuit {
         _instance?.shutdown()
     }
 
+    /**
+     * 测试请求 ID 中间件 - 验证 RequestId 中间件是否正确设置请求 ID 头
+     */
     @TestCase
     public func testGetOk() {
         let rsp = _client.get("http://127.0.0.1:18881/request_id")

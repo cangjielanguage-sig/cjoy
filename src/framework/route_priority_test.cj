@@ -69,6 +69,9 @@ public class RoutePriorityTestCaseSuit {
         reader.readToEnd()
     }
 
+    /**
+     * 测试静态路由优先级 - 验证静态路由可以正确匹配
+     */
     @TestCase
     public func testStaticRoutePriority() {
         let rsp = _client.get("http://127.0.0.1:18884/static")
@@ -78,6 +81,9 @@ public class RoutePriorityTestCaseSuit {
         @Assert(bodyStr == "static")
     }
 
+    /**
+     * 测试参数路由优先级 - 验证参数路由可以正确匹配并提取参数值
+     */
     @TestCase
     public func testParamRoutePriority() {
         let rsp = _client.get("http://127.0.0.1:18884/param/123")
@@ -87,6 +93,9 @@ public class RoutePriorityTestCaseSuit {
         @Assert(bodyStr == "param: 123")
     }
 
+    /**
+     * 测试正则路由优先级 - 验证正则表达式路由可以正确匹配
+     */
     @TestCase
     public func testRegexRoutePriority() {
         let rsp = _client.get("http://127.0.0.1:18884/regex/123")
@@ -96,6 +105,9 @@ public class RoutePriorityTestCaseSuit {
         @Assert(bodyStr == "regex: 123")
     }
 
+    /**
+     * 测试通配符路由优先级 - 验证通配符路由可以正确匹配并捕获剩余路径
+     */
     @TestCase
     public func testCatchAllRoutePriority() {
         let rsp = _client.get("http://127.0.0.1:18884/catchAll/test")
@@ -105,6 +117,9 @@ public class RoutePriorityTestCaseSuit {
         @Assert(bodyStr == "catchAll: test")
     }
 
+    /**
+     * 测试静态路由与参数路由优先级 - 验证静态路由优先于参数路由
+     */
     @TestCase
     public func testStaticVsParamRoutePriority() {
         let rsp = _client.get("http://127.0.0.1:18884/static")
@@ -114,6 +129,9 @@ public class RoutePriorityTestCaseSuit {
         @Assert(bodyStr == "static") // 应该匹配静态路由，而不是参数路由
     }
 
+    /**
+     * 测试参数路由与正则路由优先级 - 验证参数路由优先于正则路由
+     */
     @TestCase
     public func testParamVsRegexRoutePriority() {
         let rsp = _client.get("http://127.0.0.1:18884/param/123")
@@ -123,6 +141,9 @@ public class RoutePriorityTestCaseSuit {
         @Assert(bodyStr == "param: 123") // 应该匹配参数路由，而不是正则路由
     }
 
+    /**
+     * 测试正则路由与通配符路由优先级 - 验证正则路由优先于通配符路由
+     */
     @TestCase
     public func testRegexVsCatchAllRoutePriority() {
         let rsp = _client.get("http://127.0.0.1:18884/regex/123")
@@ -132,6 +153,9 @@ public class RoutePriorityTestCaseSuit {
         @Assert(bodyStr == "regex: 123") // 应该匹配正则路由，而不是通配符路由
     }
 
+    /**
+     * 测试更长静态路由优先级 - 验证更精确的静态路由优先匹配
+     */
     @TestCase
     public func testLongerStaticRoutePriority() {
         let rsp = _client.get("http://127.0.0.1:18884/user/profile")

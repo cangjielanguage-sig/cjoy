@@ -19,6 +19,9 @@ class RangeTest {
 
 @Test
 public class RangeTestCaseSuit {
+    /**
+     * 测试解析无效的 HTTP 范围请求 - 验证无效的范围字符串会抛出 IllegalArgumentException
+     */
     @TestCase
     public func testParseRangeInvalidCases() {
         // Test cases that should throw IllegalArgumentException or return empty
@@ -59,6 +62,9 @@ public class RangeTestCaseSuit {
         }
     }
 
+    /**
+     * 测试解析有效的 HTTP 范围请求 - 验证有效范围字符串能正确解析为预期的范围对象
+     */
     @TestCase
     public func testParseRangeValidCases() {
         // Test cases with expected results
@@ -106,6 +112,9 @@ public class RangeTestCaseSuit {
         }
     }
 
+    /**
+     * 测试 Content-Range 头部生成 - 验证范围对象能正确生成 Content-Range 字符串
+     */
     @TestCase
     public func testContentRange() {
         let r = JoyHttpRange(start: 0, length: 10)
@@ -116,6 +125,9 @@ public class RangeTestCaseSuit {
         }
     }
 
+    /**
+     * 测试范围总和计算 - 验证多个范围对象的总长度计算正确
+     */
     @TestCase
     public func testSumSize() {
         let ranges: JoyHttpRangs = JoyHttpRangs()

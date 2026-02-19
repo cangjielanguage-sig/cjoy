@@ -16,6 +16,9 @@ import cjoy.framework.*
 
 @Test
 public class SecureRandTokenGenerateTestCaseSuit {
+    /**
+     * 测试安全随机令牌生成 - 验证生成的访问令牌和刷新令牌不为空
+     */
     @TestCase
     public func testGenerate() {
         let data = GenerateBasic(

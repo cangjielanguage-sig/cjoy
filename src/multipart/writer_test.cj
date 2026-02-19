@@ -15,6 +15,9 @@ import std.unittest.testmacro.*
 
 @Test
 public class MultiPartWriterTestCaseSuit {
+    /**
+     * 测试写入表单字段 - 验证正确写入多个普通表单字段并可通过解析器读取
+     */
     @TestCase
     public func testWriteField() {
         var b = ByteBuffer()
@@ -34,6 +37,9 @@ public class MultiPartWriterTestCaseSuit {
         MultiPartParserTestCaseSuit.checkPart("k3", "v3", parser, handler)
     }
 
+    /**
+     * 测试写入文件 - 验证正确写入文件分块并保留文件名和默认内容类型
+     */
     @TestCase
     public func testWriteFile() {
         var b = ByteBuffer()
@@ -55,6 +61,9 @@ public class MultiPartWriterTestCaseSuit {
         MultiPartParserTestCaseSuit.checkPartProp(part, "file2.txt", "application/octet-stream")
     }
 
+    /**
+     * 测试自定义边界字符串 - 验证使用自定义边界字符串写入 multipart 数据
+     */
     @TestCase
     public func testCustomBoundary() {
         var b = ByteBuffer()
@@ -71,6 +80,9 @@ public class MultiPartWriterTestCaseSuit {
         MultiPartParserTestCaseSuit.checkPart("key", "value", parser, handler)
     }
 
+    /**
+     * 测试表单内容类型生成 - 验证 formDataContentType 属性返回正确的 Content-Type 头部值
+     */
     @TestCase
     public func testFormDataContentType() {
         var b = ByteBuffer()
@@ -87,6 +99,9 @@ public class MultiPartWriterTestCaseSuit {
         }
     }
 
+    /**
+     * 测试写入大数据 - 验证正确写入 1MB 大小的字段数据
+     */
     @TestCase
     public func testWriteLargeData() {
         var b = ByteBuffer()
@@ -103,6 +118,9 @@ public class MultiPartWriterTestCaseSuit {
         let part = MultiPartParserTestCaseSuit.checkPart("largeField", largeData, parser, handler)
     }
 
+    /**
+     * 测试写入带自定义内容类型的文件 - 验证写入文件时可指定自定义的 Content-Type
+     */
     @TestCase
     public func testWriteFileWithContentType() {
         var b = ByteBuffer()
@@ -119,6 +137,9 @@ public class MultiPartWriterTestCaseSuit {
         MultiPartParserTestCaseSuit.checkPartProp(part, "photo.jpg", "image/jpeg")
     }
 
+    /**
+     * 测试对同一分块多次写入 - 验证可对同一分块分多次写入数据片段
+     */
     @TestCase
     public func testMultipleWritesToSamePart() {
         var b = ByteBuffer()
@@ -137,6 +158,9 @@ public class MultiPartWriterTestCaseSuit {
         MultiPartParserTestCaseSuit.checkPart("multiWrite", "first part second part third part", parser, handler)
     }
 
+    /**
+     * 测试关闭后写入 - 验证在调用 close() 后尝试写入会抛出 IllegalArgumentException 异常
+     */
     @TestCase
     public func testWriteAfterClose() {
         var b = ByteBuffer()
@@ -151,6 +175,9 @@ public class MultiPartWriterTestCaseSuit {
         }
     }
 
+    /**
+     * 测试未创建分块时写入 - 验证在未先创建分块的情况下直接写入数据会抛出 IllegalArgumentException 异常
+     */
     @TestCase
     public func testWriteWithoutCreatingPart() {
         var b = ByteBuffer()

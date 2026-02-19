@@ -151,6 +151,9 @@ public class RouteTestCaseSuit {
         _instance?.shutdown()
     }
 
+    /**
+     * 测试路由路径参数 - 验证单个路径参数的路由匹配
+     */
     @TestCase
     public func testRoutePathParam() {
         let rsp = _client.get("http://127.0.0.1:18881/users/xiao")
@@ -158,6 +161,9 @@ public class RouteTestCaseSuit {
         @Assert(reader.readToEnd(), "/users/xiao")
     }
 
+    /**
+     * 测试路由路径参数（两个参数）- 验证多个路径参数的路由匹配
+     */
     @TestCase
     public func testRoutePathParamTwo() {
         let rsp = _client.get("http://127.0.0.1:18881/users/xiao/posts/1")
@@ -165,6 +171,9 @@ public class RouteTestCaseSuit {
         @Assert(reader.readToEnd(), "/users/xiao/posts/1")
     }
 
+    /**
+     * 测试路由查询参数 - 验证查询参数的处理
+     */
     @TestCase
     public func testRoutePathQuery() {
         let rsp = _client.get("http://127.0.0.1:18881/users?name=xiao")
@@ -172,6 +181,9 @@ public class RouteTestCaseSuit {
         @Assert(reader.readToEnd(), "/users?name=xiao")
     }
 
+    /**
+     * 测试路由查询参数列表 - 验证查询参数列表的处理
+     */
     @TestCase
     public func testRoutePathQueryList() {
         let rsp = _client.get("http://127.0.0.1:18881/posts?id=1&id=2&id=3")
@@ -179,6 +191,9 @@ public class RouteTestCaseSuit {
         @Assert(reader.readToEnd(), "/posts?id=1&id=2&id=3")
     }
 
+    /**
+     * 测试路由表单编码数据 - 验证表单编码数据的处理
+     */
     @TestCase
     public func testRouteFormUrlEncode() {
         let req = HttpRequestBuilder()
@@ -192,6 +207,9 @@ public class RouteTestCaseSuit {
         @Assert(reader.readToEnd(), "id=1")
     }
 
+    /**
+     * 测试路由 JSON 数据 - 验证 JSON 数据的处理
+     */
     @TestCase
     public func testRouteJson() {
         let userInfo = UserInfo()
@@ -209,6 +227,9 @@ public class RouteTestCaseSuit {
         @Assert(reader.readToEnd(), JsonTool.toJson(userInfo))
     }
 
+    /**
+     * 测试路由中间件 - 验证中间件的处理
+     */
     @TestCase
     public func testRouteMiddleware() {
         let rsp = _client.get("http://127.0.0.1:18881/mw-num")
@@ -216,6 +237,9 @@ public class RouteTestCaseSuit {
         @Assert(reader.readToEnd(), "2")
     }
 
+    /**
+     * 测试路由内联中间件 - 验证内联中间件的处理
+     */
     @TestCase
     public func testRouteMiddlewareInline() {
         let rsp = _client.get("http://127.0.0.1:18881/mw-num-inline")
@@ -223,12 +247,18 @@ public class RouteTestCaseSuit {
         @Assert(reader.readToEnd(), "3")
     }
 
+    /**
+     * 测试路由组 - 验证路由组的基本功能
+     */
     @TestCase
     public func testRouteGroup() {
         let rsp = _client.get("http://127.0.0.1:18881/group")
         @Assert(rsp.status, 200)
     }
 
+    /**
+     * 测试路由组根使用中间件 - 验证路由组根级中间件的处理
+     */
     @TestCase
     public func testRouteGroupRootUseMw() {
         let rsp = _client.get("http://127.0.0.1:18881/group/")
@@ -236,6 +266,9 @@ public class RouteTestCaseSuit {
         @Assert(reader.readToEnd(), "/group/,3")
     }
 
+    /**
+     * 测试路由组路径使用中间件 - 验证路由组路径级中间件的处理
+     */
     @TestCase
     public func testRouteGroupPathUseNw() {
         let rsp = _client.get("http://127.0.0.1:18881/group/path")

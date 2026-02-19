@@ -45,6 +45,10 @@ private func m(s: Array<String>): HashMap<String, String> {
 
 @Test
 public class ParseMediaTypeTestCaseSuit {
+    /**
+     * 测试媒体类型解析 - 验证 JoyMediaType.parse 方法可以正确解析各种格式的 Content-Disposition 和媒体类型字符串，
+     * 包括 RFC 2231 编码、参数续行、特殊字符处理等多种场景
+     */
     @TestCase
     public func test() {
         let nameFoo = HashMap([("name", "foo")])

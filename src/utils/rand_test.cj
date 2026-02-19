@@ -15,6 +15,9 @@ import std.collection.HashSet
 
 @Test
 public class RandTestCaseSuit {
+    /**
+     * 测试随机字符串生成长度 - 验证生成的随机字符串长度符合预期
+     */
     @TestCase
     public func testRandStrLength() {
         // 测试生成指定长度的随机字符串
@@ -25,6 +28,9 @@ public class RandTestCaseSuit {
         }
     }
 
+    /**
+     * 测试安全随机字符串生成长度 - 验证安全随机字符串长度符合预期
+     */
     @TestCase
     public func testSecureRandStrLength() {
         // 测试生成指定长度的安全随机字符串
@@ -35,6 +41,9 @@ public class RandTestCaseSuit {
         }
     }
 
+    /**
+     * 测试随机字符串唯一性 - 验证生成的随机字符串具有唯一性
+     */
     @TestCase
     public func testRandStrUniqueness() {
         // 测试生成的随机字符串是否唯一
@@ -49,6 +58,9 @@ public class RandTestCaseSuit {
         }
     }
 
+    /**
+     * 测试安全随机字符串唯一性 - 验证安全随机字符串具有唯一性
+     */
     @TestCase
     public func testSecureRandStrUniqueness() {
         // 测试生成的安全随机字符串是否唯一
@@ -63,6 +75,9 @@ public class RandTestCaseSuit {
         }
     }
 
+    /**
+     * 测试随机字符串格式 - 验证生成的字符串只包含十六进制字符
+     */
     @TestCase
     public func testRandStrFormat() {
         // 测试生成的字符串是否只包含十六进制字符
@@ -76,6 +91,9 @@ public class RandTestCaseSuit {
         }
     }
 
+    /**
+     * 测试安全随机字符串格式 - 验证安全随机字符串只包含十六进制字符
+     */
     @TestCase
     public func testSecureRandStrFormat() {
         // 测试生成的安全随机字符串是否只包含十六进制字符
