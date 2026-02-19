@@ -27,7 +27,11 @@ class FuncInfo {
             let name = fp.identifier.value
             let fieldInfo = FieldInfoCache.findByName(name)
             if (let Some(fi) <- fieldInfo) {
-                exprs.add(fi.genValidateTokens())
+                // println("===========${fi.name()} begin=============")
+                let code = fi.genValidateTokens()
+                // println(code)
+                // println("===========${fi.name()} end =============")
+                exprs.add(code)
             }
         }
         let exprsTokens = joinTokens(exprs, Token(TokenKind.NL))

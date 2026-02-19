@@ -56,65 +56,65 @@ public struct NestedData2 {
 }
 
 @Validated
-func test1(@Size[max = 6] arrparam: Array<Int32>): Unit {
+func testSizeConstraint(@Size[max = 6] arrparam: Array<Int32>): Unit {
 }
 
 @Validated
-func test2(@NestedValid data: Data): Unit {
+func testNestedDataValidation(@NestedValid data: Data): Unit {
 }
 
 @Validated
-func test3(@Length[max = 6] str: String): Unit {
+func testLengthConstraint(@Length[max = 6] str: String): Unit {
 }
 
 @Validated
-func test4(@NotEmpty str: String): Unit {
+func testNotEmptyConstraint(@NotEmpty str: String): Unit {
 }
 
 @Validated
-func test5(@NotBlank str: String): Unit {
+func testNotBlankConstraint(@NotBlank str: String): Unit {
 }
 
 @Validated
-func test6(@NumberRange[min = 1, max = 100] num: Int): Unit {
+func testNumberRangeConstraint(@NumberRange[min = 1, max = 100] num: Int): Unit {
 }
 
 @Validated
-func test7(@Pattern[regex = "^[0-9]+$"] num: String): Unit {
+func testPatternConstraint(@Pattern[regex = "^[0-9]+$"] num: String): Unit {
 }
 
 @Validated
-func test8(@DateTimeRange[after = "DateTime.now().addMinutes(-1)", before = "DateTime.now().addDays(1)"] dt: DateTime): Unit {
+func testDateTimeRangeConstraint(@DateTimeRange[after = "DateTime.now().addMinutes(-1)", before = "DateTime.now().addDays(1)"] dt: DateTime): Unit {
 }
 
 @Validated
-func test9(
+func testDateTimeRangeWithComplexExpressions(
     @DateTimeRange[after = "{=>DateTime.now().addMinutes(-1)}()", before = "{=>let x=DateTime.now().addDays(1);x}()"]
     dt: DateTime): Unit {
 }
 
 @Validated
-func test10(@ChMobileNumber num: String): Unit {
+func testChMobileNumberConstraint(@ChMobileNumber num: String): Unit {
 }
 
 @Validated
-func test11(@Email email: String): Unit {
+func testEmailConstraint(@Email email: String): Unit {
 }
 
 @Validated
-func test12(@IPV4 ip: String): Unit {
+func testIPV4Constraint(@IPV4 ip: String): Unit {
 }
 
 @Validated
-func test13(@EnumStr[values = ["a", "b", "c"]] str: String): Unit {
+func testEnumStrConstraint(@EnumStr[values = ["a", "b", "c"]] str: String): Unit {
 }
 
 @Validated
-func test14(@EnumInt[values = [2, 4, 6]] number: Int): Unit {
+func testEnumIntConstraint(@EnumInt[values = [2, 4, 6]] number: Int): Unit {
 }
 
 @Validated
-func test15(@EqualField[field = "password"] confirmPassword: String, password: String): Unit {
+func testEqualFieldConstraint(@EqualField[field = "password"] confirmPassword: String, password: String): Unit {
 }
 
 @Valid
@@ -141,214 +141,342 @@ public struct TestWhenPropertyData {
     var adminEmail: String = ""
 }
 
-@Validated
-func test16(@NestedValid data1: TestEqualFieldData): Unit {
+@Valid
+@Json
+public struct TestAllWhenPropertiesData {
+    var condition1: Bool = false
+    var condition2: Bool = false
+    var condition3: Bool = false
+    var status: String = "draft"
+
+    @Size[max = 5, when = "condition1"]
+    var sizeField: Array<Int32> = [1, 2, 3, 4, 5, 6]
+
+    @Length[min = 3, max = 10, when = "condition2"]
+    var lengthField: String = "ab"
+
+    @NotEmpty[when = #"status == "published""#]
+    var notEmptyField: String = ""
+
+    @NotBlank[when = #"status == "published""#]
+    var notBlankField: String = "   "
+
+    @NumberRange[min = 10, max = 100, when = "condition3"]
+    var numberRangeField: Int32 = 5
+
+    @Pattern[regex = "^[0-9]+$", when = "condition1"]
+    var patternField: String = "abc123"
+
+    @DateTimeRange[after = "DateTime.now().addDays(-1)", before = "DateTime.now().addDays(1)", when = "condition2"]
+    var dateTimeField: DateTime = DateTime.now().addDays(2)
+
+    @ChMobileNumber[when = "condition3"]
+    var mobileField: String = "12345"
+
+    @IPV4[when = "condition1"]
+    var ipv4Field: String = "256.0.0.1"
+
+    @EnumStr[values = ["a", "b", "c"], when = "condition2"]
+    var enumStrField: String = "d"
+
+    @EnumInt[values = [1, 3, 5], when = "condition3"]
+    var enumIntField: Int32 = 2
+
+    var password: String = "123456"
+    @EqualField[field = "password", when = "condition1"]
+    var confirmPasswordField: String = "abc123"
 }
 
 @Validated
-func test17(@NestedValid data2: TestWhenPropertyData): Unit {
+func testEqualFieldDataValidation(@NestedValid data1: TestEqualFieldData): Unit {
+}
+
+@Validated
+func testWhenPropertyDataValidation(@NestedValid data2: TestWhenPropertyData): Unit {
+}
+
+@Validated
+func testAllWhenPropertiesDataValidation(@NestedValid data3: TestAllWhenPropertiesData): Unit {
 }
 
 @Test
 public class ValidateTestCaseSuit {
+    /**
+     * 测试 Size 约束 - 验证数组大小在允许范围内
+     */
     @TestCase
     public func testSizeOk() {
-        test1([1, 2, 3, 4])
+        testSizeConstraint([1, 2, 3, 4])
     }
 
+    /**
+     * 测试 Size 约束 - 验证数组大小超过最大限制时会抛出异常
+     */
     @TestCase
     public func testSizeFaild() {
         try {
-            test1([1, 2, 3, 4, 5, 6, 7, 8])
+            testSizeConstraint([1, 2, 3, 4, 5, 6, 7, 8])
             @Fail("shoud throw a validate exception")
         } catch (ex: JoyValidationException) {
             @Assert(ex.message, "this constraint of value is Size[0, 6]")
         }
     }
 
+    /**
+     * 测试 Length 约束 - 验证字符串长度在允许范围内
+     */
     @TestCase
     public func testLengthOk() {
-        test3("1234")
+        testLengthConstraint("1234")
     }
 
+    /**
+     * 测试 Length 约束 - 验证字符串长度超过最大限制时会抛出异常
+     */
     @TestCase
     public func testLengthFaild() {
         try {
-            test3("12345678")
+            testLengthConstraint("12345678")
             @Fail("shoud throw a validate exception")
         } catch (ex: JoyValidationException) {
             @Assert(ex.message, "this constraint of value is Length[0, 6]")
         }
     }
 
+    /**
+     * 测试 NotEmpty 约束 - 验证非空字符串通过验证
+     */
     @TestCase
     public func testNotEmptyOk() {
-        test4("1234")
+        testNotEmptyConstraint("1234")
     }
 
+    /**
+     * 测试 NotEmpty 约束 - 验证空字符串会抛出异常
+     */
     @TestCase
     public func testNotEmptyFaild() {
         try {
-            test4("")
+            testNotEmptyConstraint("")
             @Fail("shoud throw a validate exception")
         } catch (ex: JoyValidationException) {
             @Assert(ex.message, "this constraint of value is NOT EMPTY")
         }
     }
 
+    /**
+     * 测试 NotBlank 约束 - 验证非空白字符串通过验证
+     */
     @TestCase
     public func testNotBlankOk() {
-        test5("1234")
+        testNotBlankConstraint("1234")
     }
 
+    /**
+     * 测试 NotBlank 约束 - 验证空白字符串会抛出异常
+     */
     @TestCase
     public func testNotBlankFaild() {
         try {
-            test5("   ")
+            testNotBlankConstraint("   ")
             @Fail("shoud throw a validate exception")
         } catch (ex: JoyValidationException) {
             @Assert(ex.message, "this constraint of value is NOT BLANK")
         }
     }
 
+    /**
+     * 测试 NumberRange 约束 - 验证数值在允许范围内
+     */
     @TestCase
     public func testNumberRangeOk() {
-        test6(10)
+        testNumberRangeConstraint(10)
     }
 
+    /**
+     * 测试 NumberRange 约束 - 验证数值小于最小值时会抛出异常
+     */
     @TestCase
     public func testNumberRangeFaild() {
         try {
-            test6(-1)
+            testNumberRangeConstraint(-1)
             @Fail("shoud throw a validate exception")
         } catch (ex: JoyValidationException) {
             @Assert(ex.message, "this constraint of value is NumberRange[1, 100]")
         }
     }
 
+    /**
+     * 测试 Pattern 约束 - 验证符合正则表达式的字符串通过验证
+     */
     @TestCase
     public func testPatternOk() {
-        test7("10")
+        testPatternConstraint("10")
     }
 
+    /**
+     * 测试 Pattern 约束 - 验证不符合正则表达式的字符串会抛出异常
+     */
     @TestCase
     public func testPatternFaild() {
         try {
-            test7("-1")
+            testPatternConstraint("-1")
             @Fail("shoud throw a validate exception")
         } catch (ex: JoyValidationException) {
             @Assert(ex.message, "this constraint of value is Pattern[^[0-9]+$]")
         }
     }
 
+    /**
+     * 测试 DateTimeRange 约束 - 验证当前时间在允许范围内
+     */
     @TestCase
     public func testDateTimeRangeOk() {
-        test8(DateTime.now())
+        testDateTimeRangeConstraint(DateTime.now())
     }
 
+    /**
+     * 测试 DateTimeRange 约束 - 验证超出时间范围的日期会抛出异常
+     */
     @TestCase
     public func testDateTimeRangeFaild() {
         try {
-            test8(DateTime.now().addMinutes(-10))
+            testDateTimeRangeConstraint(DateTime.now().addMinutes(-10))
             @Fail("shoud throw a validate exception")
         } catch (ex: JoyValidationException) {
             @Assert(ex.message.startsWith("this constraint of value is DateTimeRange["), true)
         }
     }
 
+    /**
+     * 测试 ChMobileNumber 约束 - 验证有效的中国手机号码通过验证
+     */
     @TestCase
     public func testChMobileNumberOk() {
-        test10("18812341234")
-        test10("+86 18812341234")
-        test10("+86-18812341234")
-        test10("+8618812341234")
+        testChMobileNumberConstraint("18812341234")
+        testChMobileNumberConstraint("+86 18812341234")
+        testChMobileNumberConstraint("+86-18812341234")
+        testChMobileNumberConstraint("+8618812341234")
     }
 
+    /**
+     * 测试 ChMobileNumber 约束 - 验证无效的手机号码会抛出异常
+     */
     @TestCase
     public func testChMobileNumberFaild() {
         try {
-            test10("12345")
+            testChMobileNumberConstraint("12345")
             @Fail("shoud throw a validate exception")
         } catch (ex: JoyValidationException) {
             @Assert(ex.message.startsWith("this constraint of value is chinese mobile phone number"), true)
         }
     }
 
+    /**
+     * 测试 Email 约束 - 验证有效的邮箱地址通过验证
+     */
     @TestCase
     public func testEmailOk() {
-        test11("12@163.com")
-        test11("xiao@163.com")
+        testEmailConstraint("12@163.com")
+        testEmailConstraint("xiao@163.com")
     }
 
+    /**
+     * 测试 Email 约束 - 验证无效的邮箱地址会抛出异常
+     */
     @TestCase
     public func testEmailFaild() {
         try {
-            test11("@163.com")
+            testEmailConstraint("@163.com")
             @Fail("shoud throw a validate exception")
         } catch (ex: JoyValidationException) {
             @Assert(ex.message.startsWith("this constraint of value is email"), true)
         }
     }
 
+    /**
+     * 测试 IPV4 约束 - 验证有效的 IPv4 地址通过验证
+     */
     @TestCase
     public func testIPV4Ok() {
-        test12("127.0.0.1")
-        test12("255.255.255.255")
+        testIPV4Constraint("127.0.0.1")
+        testIPV4Constraint("255.255.255.255")
     }
 
+    /**
+     * 测试 IPV4 约束 - 验证无效的 IPv4 地址会抛出异常
+     */
     @TestCase
     public func testIPV4Faild() {
         try {
-            test12("1.2.3.4.5")
+            testIPV4Constraint("1.2.3.4.5")
             @Fail("shoud throw a validate exception")
         } catch (ex: JoyValidationException) {
             @Assert(ex.message.startsWith("this constraint of value is IP V4"), true)
         }
     }
 
+    /**
+     * 测试 EnumStr 约束 - 验证符合枚举值的字符串通过验证
+     */
     @TestCase
     public func testEnumStrOk() {
-        test13("a")
-        test13("b")
-        test13("c")
+        testEnumStrConstraint("a")
+        testEnumStrConstraint("b")
+        testEnumStrConstraint("c")
     }
 
+    /**
+     * 测试 EnumStr 约束 - 验证不符合枚举值的字符串会抛出异常
+     */
     @TestCase
     public func testEnumStrFaild() {
         try {
-            test13("d")
+            testEnumStrConstraint("d")
             @Fail("shoud throw a validate exception")
         } catch (ex: JoyValidationException) {
             @Assert(ex.message.startsWith("this constraint of value is ["), true)
         }
     }
 
+    /**
+     * 测试 EnumInt 约束 - 验证符合枚举值的整数通过验证
+     */
     @TestCase
     public func testEnumIntOk() {
-        test14(2)
-        test14(4)
-        test14(6)
+        testEnumIntConstraint(2)
+        testEnumIntConstraint(4)
+        testEnumIntConstraint(6)
     }
 
+    /**
+     * 测试 EnumInt 约束 - 验证不符合枚举值的整数会抛出异常
+     */
     @TestCase
     public func testEnumIntFaild() {
         try {
-            test14(10)
+            testEnumIntConstraint(10)
             @Fail("shoud throw a validate exception")
         } catch (ex: JoyValidationException) {
             @Assert(ex.message.startsWith("this constraint of value is ["), true)
         }
     }
 
+    /**
+     * 测试 EqualField 约束 - 验证字段相等时通过验证
+     */
     @TestCase
     public func testEqualFieldOk() {
         let data = TestEqualFieldData(
             password: "123456",
             confirmPassword: "123456"
         )
-        test16(data)
+        testEqualFieldDataValidation(data)
     }
 
+    /**
+     * 测试 EqualField 约束 - 验证字段不相等时会抛出异常
+     */
     @TestCase
     public func testEqualFieldFaild() {
         let data = TestEqualFieldData(
@@ -356,13 +484,16 @@ public class ValidateTestCaseSuit {
             confirmPassword: "abc123"
         )
         try {
-            test16(data)
+            testEqualFieldDataValidation(data)
             @Fail("shoud throw a validate exception")
         } catch (ex: JoyValidationException) {
             @Assert(ex.message.startsWith("两次输入的密码不一致"), true)
         }
     }
 
+    /**
+     * 测试 When 属性 - 验证条件不满足时不执行验证
+     */
     @TestCase
     public func testWhenPropertyOk1() {
         let data = TestWhenPropertyData(
@@ -371,9 +502,12 @@ public class ValidateTestCaseSuit {
             isAdmin: false,
             adminEmail: ""
         )
-        test17(data)
+        testWhenPropertyDataValidation(data)
     }
 
+    /**
+     * 测试 When 属性 - 验证条件满足时执行验证且通过
+     */
     @TestCase
     public func testWhenPropertyOk2() {
         let data = TestWhenPropertyData(
@@ -382,9 +516,12 @@ public class ValidateTestCaseSuit {
             isAdmin: true,
             adminEmail: "admin@example.com"
         )
-        test17(data)
+        testWhenPropertyDataValidation(data)
     }
 
+    /**
+     * 测试 When 属性 - 验证条件满足但值不满足约束时会抛出异常
+     */
     @TestCase
     public func testWhenPropertyFaild1() {
         let data = TestWhenPropertyData(
@@ -394,13 +531,16 @@ public class ValidateTestCaseSuit {
             adminEmail: ""
         )
         try {
-            test17(data)
+            testWhenPropertyDataValidation(data)
             @Fail("shoud throw a validate exception")
         } catch (ex: JoyValidationException) {
             @Assert(ex.message.startsWith("this constraint of value is NOT EMPTY"), true)
         }
     }
 
+    /**
+     * 测试 When 属性 - 验证条件满足但值不满足约束时会抛出异常
+     */
     @TestCase
     public func testWhenPropertyFaild2() {
         let data = TestWhenPropertyData(
@@ -410,10 +550,69 @@ public class ValidateTestCaseSuit {
             adminEmail: "invalid-email"
         )
         try {
-            test17(data)
+            testWhenPropertyDataValidation(data)
             @Fail("shoud throw a validate exception")
         } catch (ex: JoyValidationException) {
             @Assert(ex.message.startsWith("this constraint of value is email"), true)
+        }
+    }
+
+    /**
+     * 测试所有 When 属性的宏 - 验证当所有条件都不满足时，所有约束都不会被触发
+     */
+    @TestCase
+    public func testAllWhenPropertiesOkWhenConditionsFalse() {
+        let data = TestAllWhenPropertiesData(
+            condition1: false,
+            condition2: false,
+            condition3: false,
+            status: "draft",
+            sizeField: [1, 2, 3, 4, 5, 6],
+            lengthField: "ab",
+            notEmptyField: "",
+            notBlankField: "   ",
+            numberRangeField: 5,
+            patternField: "abc123",
+            dateTimeField: DateTime.now().addDays(2),
+            mobileField: "12345",
+            ipv4Field: "256.0.0.1",
+            enumStrField: "d",
+            enumIntField: 2,
+            password: "123456",
+            confirmPasswordField: "abc123"
+        )
+        testAllWhenPropertiesDataValidation(data)
+    }
+
+    /**
+     * 测试所有 When 属性的宏 - 验证当所有条件都满足时，所有约束都会被触发并抛出异常
+     */
+    @TestCase
+    public func testAllWhenPropertiesFailWhenConditionsTrue() {
+        let data = TestAllWhenPropertiesData(
+            condition1: true,
+            condition2: true,
+            condition3: true,
+            status: "published",
+            sizeField: [1, 2, 3, 4, 5, 6],
+            lengthField: "ab",
+            notEmptyField: "",
+            notBlankField: "   ",
+            numberRangeField: 5,
+            patternField: "abc123",
+            dateTimeField: DateTime.now().addDays(2),
+            mobileField: "12345",
+            ipv4Field: "256.0.0.1",
+            enumStrField: "d",
+            enumIntField: 2,
+            password: "123456",
+            confirmPasswordField: "abc123"
+        )
+        try {
+            testAllWhenPropertiesDataValidation(data)
+            @Fail("should throw a validate exception")
+        } catch (ex: JoyValidationException) {
+            @Assert(ex.message != "", true)
         }
     }
 }

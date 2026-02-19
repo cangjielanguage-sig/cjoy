@@ -46,7 +46,7 @@ public class BeanFactoryManager {
      * @param factory Bean 工厂
      */
     public static func register(beanType: String, depends: Array<String>, factory: BeanFactory): Unit {
-        @JoyLogInfo("[IOC] 注册 Bean 信息, beanType=${beanType}, depends=${depends}")
+        @JoyLogInfo("[IOC] register Bean info, beanType=${beanType}, depends=${depends}")
         CONTEXT._factories.add(beanType, factory)
         CONTEXT._beanDependManager.addDepends(beanType, depends)
     }
@@ -58,7 +58,7 @@ public class BeanFactoryManager {
      * @param interfaces 此 Bean 实现的接口类型名称数组
      */
     public static func registerTypes(beanType: String, interfaces: Array<String>): Unit {
-        @JoyLogInfo("[IOC] 注册 Bean 类型, beanType=${beanType}, interfaces=${interfaces}")
+        @JoyLogInfo("[IOC] register Bean type, beanType=${beanType}, interfaces=${interfaces}")
         CONTEXT._beanDependManager.addTypes(beanType, interfaces)
     }
 
@@ -69,7 +69,7 @@ public class BeanFactoryManager {
      * @param fn Bean 初始化后要执行的函数
      */
     public static func registerPostFunc(name: String, fn: () -> Unit): Unit {
-        @JoyLogInfo("[IOC] 注册后初始化函数, name=${name}")
+        @JoyLogInfo("[IOC] register post func, name=${name}")
         POST_FUNCS.add(fn)
     }
 
@@ -80,7 +80,7 @@ public class BeanFactoryManager {
      */
     private static func executePostFuncs(): Unit {
         if (EXECUTED.compareAndSwap(false, true)) {
-            @JoyLogInfo("[IOC] 执行注册的后初始化函数")
+            @JoyLogInfo("[IOC] execute post funcs")
             for (fn in POST_FUNCS) {
                 fn()
             }

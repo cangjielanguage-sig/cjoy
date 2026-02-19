@@ -86,12 +86,24 @@ open class FieldInfo {
         }
     }
 
+    private func genValidateTokensForNestedValid(): Tokens {
+        if (inFunc) {
+            validateInFunc(Tokens())
+        } else {
+            validateInClass(Tokens())
+        }
+    }
+
     func genValidateTokens(): Tokens {
-        if (constraints.isEmpty() && !nestedValid) {
-            return Tokens()
+        if (constraints.isEmpty()) {
+            // 未指定constraints，但指定@NestedValid，需要对字段调用其validate()
+            if (nestedValid) {
+                return genValidateTokensForNestedValid()
+            }
         }
 
         var allTokens = Tokens()
+        
         let otherCons = HashMap<String, ArrayList<Tokens>>()
         let equalCons = HashMap<String, ArrayList<Tokens>>()
 
@@ -109,6 +121,16 @@ open class FieldInfo {
             }
         }
 
+        // 处理普通Constraint
+        allTokens += genOtherConstraint(otherCons)
+        // 处理 EqualFieldConstraint
+        allTokens += genEqualFieldConstraint(equalCons)
+
+        allTokens
+    }
+
+    private func genOtherConstraint(otherCons: HashMap<String, ArrayList<Tokens>>): Tokens {
+        var allTokens = Tokens()
         for ((whenCond, cons) in otherCons) {
             if (whenCond.isEmpty()) { // 无条件的constraint
                 let tokens = joinTokens(cons, Token(TokenKind.COMMA))
@@ -125,7 +147,11 @@ open class FieldInfo {
                     validateInClass(tokens)
                 }
                 // 包裹条件判断
-                let conditionToken = Token(TokenKind.EXP, whenCond)
+                let conditionToken = try {
+                    Token(TokenKind.IDENTIFIER, whenCond)
+                } catch (e: Exception) {
+                    Token(TokenKind.EXP, whenCond)
+                }
                 allTokens += quote(
                         if ($conditionToken) {
                             $code
@@ -133,15 +159,22 @@ open class FieldInfo {
                     )
             }
         }
+        allTokens
+    }
 
-        // 处理 EqualFieldConstraint
+    private func genEqualFieldConstraint(equalCons: HashMap<String, ArrayList<Tokens>>): Tokens {
+        var allTokens = Tokens()
         for ((whenCond, cons) in equalCons) {
             // 无条件的constraint
             if (whenCond.isEmpty()) {
                 allTokens += joinTokens(cons, Token(TokenKind.NL))
             } else {
                 // 包裹条件判断
-                let conditionToken = Token(TokenKind.EXP, whenCond)
+                let conditionToken = try {
+                    Token(TokenKind.IDENTIFIER, whenCond)
+                } catch (e: Exception) {
+                    Token(TokenKind.EXP, whenCond)
+                }
                 let code = joinTokens(cons, Token(TokenKind.NL))
                 allTokens += quote(
                         if ($conditionToken) {
@@ -150,7 +183,6 @@ open class FieldInfo {
                     )
             }
         }
-
         allTokens
     }
 }
@@ -444,9 +476,9 @@ class EqualFieldConstraintGenerator <: ConstraintGenerator {
         let tf = Token(TokenKind.IDENTIFIER, targetField)
 
         quote(
-            let $varName = EqualFieldConstraint($targetField, $msg)
             if($field != $tf) {
-                throw throw JoyValidationException($varName.message, $varName.field, $varName)
+                let constraint = EqualFieldConstraint($targetField, $msg)
+                throw JoyValidationException(constraint.message, constraint.field, constraint)
             }
         )
     }

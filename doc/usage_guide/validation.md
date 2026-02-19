@@ -278,7 +278,6 @@ var hireDate: DateTime = DateTime.now()
 - `after`：边界时间（字符串，支持写表达式，要求值为 DateTime）
 - `msg`：自定义错误消息（可选）
 - `when`：条件表达式，满足时才执行校验（可选）
-- `msg`：自定义错误消息（可选）
 
 ### 3.7 @ChMobileNumber
 
@@ -315,6 +314,10 @@ var email: String = ""
 var contactEmail: String = ""
 ```
 
+**参数**：
+- `msg`：自定义错误消息（可选）
+- `when`：条件表达式，满足时才执行校验（可选）
+
 ### 3.9 @IPV4
 
 校验字符串为 IP V4 格式：
@@ -327,6 +330,10 @@ var ipAddress: String = ""
 @IPV4[when = "isOnline"]
 var serverAddress: String = ""
 ```
+
+**参数**：
+- `msg`：自定义错误消息（可选）
+- `when`：条件表达式，满足时才执行校验（可选）
 
 ### 3.10 @EnumInt
 
@@ -341,6 +348,11 @@ var status: Int32 = 1
 var userStatus: Int32 = 1
 ```
 
+**参数**：
+- `values`：枚举值列表（必填）
+- `msg`：自定义错误消息（可选）
+- `when`：条件表达式，满足时才执行校验（可选）
+
 ### 3.11 @EnumStr
 
 校验字符串是为枚举值：
@@ -353,6 +365,11 @@ var role: String = "user"
 @EnumStr[values = ["admin", "superadmin"], when = "isAdmin"]
 var accessLevel: String = "user"
 ```
+
+**参数**：
+- `values`：枚举值列表（必填）
+- `msg`：自定义错误消息（可选）
+- `when`：条件表达式，满足时才执行校验（可选）
 
 ### 3.12 @NestedValid
 
