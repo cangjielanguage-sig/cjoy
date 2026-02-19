@@ -140,6 +140,7 @@ try {
 | `@IPV4` | 校验字符串为 IP V4 格式 |
 | `@EnumInt` | 校验数字是枚举值 |
 | `@EnumStr` | 校验字符串是为枚举值 |
+| `@EqualField` | 校验字段值与另一个字段值相等 |
 | `@NestedValid` | 表示成员变量需要嵌套校验，验证容器内元素，作用于类或结构体的成员变量 |
 | `@Validated` | 作用于函数上，生成代码会修改函数体增加调用参数的 `validate` 方法 |
 
@@ -160,8 +161,34 @@ var tags: Array<String> = []
 - `min`：最小 size（可选）
 - `max`：最大 size（可选）
 - `msg`：自定义错误消息（可选）
+- `when`：条件表达式，满足时才执行校验（可选）
 
-### 3.2 @Length
+### 3.2 @EqualField
+
+校验字段值与另一个字段值相等：
+
+```cangjie
+@Valid
+struct User {
+    @NotBlank
+    var password: String = ""
+
+    @EqualField[field = "password", msg = "密码确认失败"]
+    var confirmPassword: String = ""
+
+    @EqualField[field = "password", when = "needChangePassword"]
+    var newPassword: String = ""
+
+    var needChangePassword: Bool = false
+}
+```
+
+**参数**：
+- `field`：要比较的字段名（必填）
+- `msg`：自定义错误消息（可选）
+- `when`：条件表达式，满足时才执行校验（可选）
+
+### 3.3 @Length
 
 校验字符串的长度：
 
@@ -174,6 +201,7 @@ var username: String = ""
 - `min`：最小长度（可选）
 - `max`：最大长度（可选）
 - `msg`：自定义错误消息（可选）
+- `when`：条件表达式，满足时才执行校验（可选）
 
 ### 3.3 @NumberRange
 
@@ -188,6 +216,7 @@ var amount: UInt64 = 0
 - `min`：最小值（字符串，支持写表达式）
 - `max`：最大值（字符串，支持写表达式）
 - `msg`：自定义错误消息（可选）
+- `when`：条件表达式，满足时才执行校验（可选）
 
 ### 3.4 @NotEmpty 和 @NotBlank
 
@@ -199,6 +228,10 @@ var content: String = ""
 
 @NotBlank[msg = "名称不能为空白"]
 var name: String = ""
+
+// 使用条件校验
+@NotEmpty[when = #"status == "active""#]
+var activeReason: String = ""
 ```
 
 ### 3.5 @Pattern
@@ -213,6 +246,10 @@ var code: String = ""
 const USERNAME_REGEX = "^[a-z0-9_]{3,16}$"
 @Pattern[regex = USERNAME_REGEX, msg = "用户名格式不正确"]
 var username: String = ""
+
+// 使用条件校验
+@Pattern[regex = "^[0-9]{11}$", when = #"contactMethod == "phone""#]
+var contactNumber: String = ""
 ```
 
 ### 3.6 @DateTimeRange
@@ -231,6 +268,8 @@ var hireDate: DateTime = DateTime.now()
 - `before`：边界时间（字符串，支持写表达式，要求值为 DateTime）
 - `after`：边界时间（字符串，支持写表达式，要求值为 DateTime）
 - `msg`：自定义错误消息（可选）
+- `when`：条件表达式，满足时才执行校验（可选）
+- `msg`：自定义错误消息（可选）
 
 ### 3.7 @ChMobileNumber
 
@@ -239,6 +278,10 @@ var hireDate: DateTime = DateTime.now()
 ```cangjie
 @ChMobileNumber[msg = "请输入有效的手机号码"]
 var mobile: String = ""
+
+// 使用条件校验
+@ChMobileNumber[when = #"contactMethod == "phone""#]
+var contactNumber: String = ""
 ```
 
 格式支持：
@@ -253,6 +296,10 @@ var mobile: String = ""
 ```cangjie
 @Email[msg = "邮箱格式不正确"]
 var email: String = ""
+
+// 使用条件校验
+@Email[when = #"contactMethod == "email""#]
+var contactEmail: String = ""
 ```
 
 ### 3.9 @IPV4
@@ -262,6 +309,10 @@ var email: String = ""
 ```cangjie
 @IPV4[msg = "请输入有效的IP地址"]
 var ipAddress: String = ""
+
+// 使用条件校验
+@IPV4[when = "isOnline"]
+var serverAddress: String = ""
 ```
 
 ### 3.10 @EnumInt
@@ -271,6 +322,10 @@ var ipAddress: String = ""
 ```cangjie
 @EnumInt[values = [1, 2, 3], msg = "状态值无效"]
 var status: Int32 = 1
+
+// 使用条件校验
+@EnumInt[values = [1, 2], when = "isActive"]
+var userStatus: Int32 = 1
 ```
 
 ### 3.11 @EnumStr
@@ -280,6 +335,10 @@ var status: Int32 = 1
 ```cangjie
 @EnumStr[values = ["admin", "user", "guest"], msg = "角色无效"]
 var role: String = "user"
+
+// 使用条件校验
+@EnumStr[values = ["admin", "superadmin"], when = "isAdmin"]
+var accessLevel: String = "user"
 ```
 
 ### 3.12 @NestedValid

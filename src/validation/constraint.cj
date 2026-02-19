@@ -355,6 +355,38 @@ public class EnumIntConstraint <: JoyConstraint {
 }
 
 /**
+ * 字段值相等性约束。
+ *
+ * 验证当前字段的值是否与指定字段的值相等。
+ */
+public class EqualFieldConstraint <: JoyConstraint {
+    /**
+     * 描述约束违反的错误消息。
+     */
+    public let message: String
+
+    /**
+     * 要比较的目标字段名。
+     */
+    public let field: String
+
+    /**
+     * 创建 EqualFieldConstraint。
+     *
+     * @param field 要比较的目标字段名
+     * @param msg 自定义错误消息（支持 {field} 占位符）
+     */
+    public EqualFieldConstraint(field: String, let msg: String) {
+        this.field = field
+        if (msg.isEmpty()) {
+            this.message = "this constraint of value must equal to field ${field}"
+        } else {
+            this.message = msg.replace("{field}", field)
+        }
+    }
+}
+
+/**
  * 约束验证失败的验证异常。
  *
  * 当约束验证失败时抛出。

@@ -11,7 +11,7 @@
 macro package cjoy.validation.macros
 
 import std.convert.Parsable
-import std.collection.{ArrayList, filter, first, map, collectArrayList}
+import std.collection.{ArrayList, filter, first, map, collectArrayList, HashMap}
 import cjoy.utils.{MapToString, MapListGetFunc, converterList}
 import cjoy.utils.ast.{parserAttrs, joinTokens}
 import std.ast.*
@@ -29,26 +29,36 @@ enum ConstraintCatgory {
     | CCIPV4
     | CCEnumStr
     | CCEnumInt
+    | CCEqualField
 }
 
 open class FieldInfo {
-    let constraints: ArrayList<Tokens> = ArrayList()
+    /**
+     * 约束和对应的 when 条件表达式
+     */
+    let constraints: ArrayList<(Tokens, String)> = ArrayList()
+    /**
+     * 是否嵌套验证
+     */
     var nestedValid: Bool = false
+
     FieldInfo(let identifier: Token, let inFunc: Bool) {}
 
     func name(): String {
         identifier.value
     }
 
-    func id(): Token {
-        identifier
+    prop id: Token {
+        get() {
+            identifier
+        }
     }
 
     private func validateInFunc(constraints: Tokens): Tokens {
         if (constraints.size == 0) {
-            quote($(id()).validate("", $nestedValid) )
+            quote($id.validate("", $nestedValid) )
         } else {
-            quote($(id()).validate("", $nestedValid, $constraints))
+            quote($id.validate("", $nestedValid, $constraints))
         }
     }
 
@@ -57,21 +67,21 @@ open class FieldInfo {
         if (constraints.size == 0) {
             // 如果字段类型为Any，需要判断是JoyValidatable类型才做检查
             if (name() == "Any") {
-                quote(match($(id())) {
+                quote(match($id) {
                     case x: JoyValidatable => x.validate({=> if(field.isEmpty()) {$(name())} else { $fieldName } }(), $nestedValid) 
                     case _ => ()
                 })
             } else {
-                quote($(id()).validate({=> if(field.isEmpty()) {$(name())} else { $fieldName } }(), $nestedValid) )
+                quote($id.validate({=> if(field.isEmpty()) {$(name())} else { $fieldName } }(), $nestedValid) )
             }
         } else {
             if (name() == "Any") {
-                quote(match($(id())) {
-                    case x: JoyValidatable => x.$(id()).validate({=> if(field.isEmpty()) {$(name())} else { $fieldName } }(), $nestedValid, $constraints) 
+                quote(match($id) {
+                    case x: JoyValidatable => x.$id.validate({=> if(field.isEmpty()) {$(name())} else { $fieldName } }(), $nestedValid, $constraints) 
                     case _ => ()
                 })
             } else {
-                quote($(id()).validate({=> if(field.isEmpty()) {$(name())} else { $fieldName } }(), $nestedValid, $constraints) )
+                quote($id.validate({=> if(field.isEmpty()) {$(name())} else { $fieldName } }(), $nestedValid, $constraints) )
             }
         }
     }
@@ -81,15 +91,67 @@ open class FieldInfo {
             return Tokens()
         }
 
-        var tokens = Tokens()
-        if (!constraints.isEmpty()) {
-            tokens += joinTokens(constraints, Token(TokenKind.COMMA))
+        var allTokens = Tokens()
+        let otherCons = HashMap<String, ArrayList<Tokens>>()
+        let equalCons = HashMap<String, ArrayList<Tokens>>()
+
+        for ((constraint, whenCond) in constraints) {
+            let constraintStr = constraint.toString()
+            // 检查是否是 EqualFieldConstraint - 它需要在类级别特殊处理
+            if (constraintStr.contains("EqualFieldConstraint")) {
+                let value = equalCons.get(whenCond) ?? ArrayList<Tokens>()
+                value.add(constraint)
+                equalCons.addIfAbsent(whenCond, value)
+            } else {
+                let value = otherCons.get(whenCond) ?? ArrayList<Tokens>()
+                value.add(constraint)
+                otherCons.addIfAbsent(whenCond, value)
+            }
         }
-        if (inFunc) {
-            validateInFunc(tokens)
-        } else {
-            validateInClass(tokens)
+
+        for ((whenCond, cons) in otherCons) {
+            if (whenCond.isEmpty()) { // 无条件的constraint
+                let tokens = joinTokens(cons, Token(TokenKind.COMMA))
+                if (inFunc) {
+                    allTokens += validateInFunc(tokens) + Token(TokenKind.NL)
+                } else {
+                    allTokens += validateInClass(tokens) + Token(TokenKind.NL)
+                }
+            } else { // 带条件的constraint
+                let tokens = joinTokens(cons, Token(TokenKind.COMMA))
+                let code = if (inFunc) {
+                    validateInFunc(tokens)
+                } else {
+                    validateInClass(tokens)
+                }
+                // 包裹条件判断
+                let conditionToken = Token(TokenKind.EXP, whenCond)
+                allTokens += quote(
+                        if ($conditionToken) {
+                            $code
+                        }
+                    )
+            }
         }
+
+        // 处理 EqualFieldConstraint
+        for ((whenCond, cons) in equalCons) {
+            // 无条件的constraint
+            if (whenCond.isEmpty()) {
+                allTokens += joinTokens(cons, Token(TokenKind.NL))
+            } else {
+                // 包裹条件判断
+                let conditionToken = Token(TokenKind.EXP, whenCond)
+                let code = joinTokens(cons, Token(TokenKind.NL))
+                allTokens += quote(
+                        if ($conditionToken) {
+                            $code
+                        }
+                    )
+            }
+        }
+
+        allTokens
     }
 }
 
@@ -104,16 +166,16 @@ class FieldInfoCache {
         PARAMS.add(info)
     }
 
-    static func addCache(identifier: Token, inFunc: Bool, constraint: Tokens): Unit {
+    static func addCache(identifier: Token, inFunc: Bool, constraint: Tokens, `when`: String): Unit {
         for (fd in PARAMS) {
             if (fd.name() == identifier.value) {
-                fd.constraints.add(constraint)
+                fd.constraints.add((constraint, `when`))
                 return
             }
         }
 
         let info: FieldInfo = FieldInfo(identifier, inFunc)
-        info.constraints.add(constraint)
+        info.constraints.add((constraint, `when`))
         addCache(info)
     }
 
@@ -138,6 +200,16 @@ class FieldInfoCache {
 abstract class ConstraintGenerator {
     ConstraintGenerator(let marcroName: String) {}
 
+    /**
+     * 条件表达式，满足时才执行校验
+     */
+    var when: String = ""
+
+    /**
+     * 作用的字段
+     */
+    var field: Token = Token(TokenKind.IDENTIFIER, "")
+
     protected func toConstraint(): Tokens
 
     protected func parseAttr(attr: Tokens): Unit
@@ -153,10 +225,11 @@ abstract class MinMaxBaseConstraintGenerator <: ConstraintGenerator {
     }
 
     protected func parseAttr(attr: Tokens): Unit {
-        let map: MapToString = parserAttrs(attr, validKeys: ["min", "max", "msg"], macroName: marcroName)
+        let map: MapToString = parserAttrs(attr, validKeys: ["min", "max", "msg", "when"], macroName: marcroName)
         this.min = map.getString("min") ?? "0"
         this.max = map.getString("max") ?? "100"
         this.msg = map.getString("msg") ?? ""
+        this.when = map.getString("when") ?? ""
     }
 }
 
@@ -168,8 +241,9 @@ abstract class MsgBaseConstraintGenerator <: ConstraintGenerator {
     }
 
     protected func parseAttr(attr: Tokens): Unit {
-        let map: MapToString = parserAttrs(attr, validKeys: ["msg"], macroName: marcroName)
+        let map: MapToString = parserAttrs(attr, validKeys: ["msg", "when"], macroName: marcroName)
         this.msg = map.getString("msg") ?? ""
+        this.when = map.getString("when") ?? ""
     }
 }
 
@@ -234,9 +308,10 @@ class PatternConstraintGenerator <: ConstraintGenerator {
     }
 
     protected func parseAttr(attr: Tokens): Unit {
-        let map: MapToString = parserAttrs(attr, validKeys: ["regex", "msg"], macroName: marcroName)
+        let map: MapToString = parserAttrs(attr, validKeys: ["regex", "msg", "when"], macroName: marcroName)
         this.regex = map.getString("regex") ?? ""
         this.msg = map.getString("msg") ?? ""
+        this.when = map.getString("when") ?? ""
     }
 
     protected func toConstraint(): Tokens {
@@ -254,10 +329,11 @@ class DateTimeRangeConstraintGenerator <: ConstraintGenerator {
     }
 
     protected func parseAttr(attr: Tokens): Unit {
-        let map: MapToString = parserAttrs(attr, validKeys: ["before", "after", "msg"], macroName: marcroName)
+        let map: MapToString = parserAttrs(attr, validKeys: ["before", "after", "msg", "when"], macroName: marcroName)
         this.before = map.getString("before") ?? "DateTime.now().addYears(1)"
         this.after = map.getString("after") ?? "DateTime.now()"
         this.msg = map.getString("msg") ?? ""
+        this.when = map.getString("when") ?? ""
     }
 
     protected func toConstraint(): Tokens {
@@ -311,9 +387,10 @@ class EnumStrConstraintGenerator <: ConstraintGenerator {
     }
 
     protected func parseAttr(attr: Tokens): Unit {
-        let map: MapToString = parserAttrs(attr, validKeys: ["values", "msg"], macroName: marcroName)
+        let map: MapToString = parserAttrs(attr, validKeys: ["values", "msg", "when"], macroName: marcroName)
         this.values = map.getList("values") ?? ArrayList<ToString>()
         this.msg = map.getString("msg") ?? ""
+        this.when = map.getString("when") ?? ""
     }
 
     protected func toConstraint(): Tokens {
@@ -333,9 +410,10 @@ class EnumIntConstraintGenerator <: ConstraintGenerator {
     }
 
     protected func parseAttr(attr: Tokens): Unit {
-        let map: MapToString = parserAttrs(attr, validKeys: ["values", "msg"], macroName: marcroName)
+        let map: MapToString = parserAttrs(attr, validKeys: ["values", "msg", "when"], macroName: marcroName)
         this.values = map.getList("values") ?? ArrayList<ToString>()
         this.msg = map.getString("msg") ?? ""
+        this.when = map.getString("when") ?? ""
     }
 
     protected func toConstraint(): Tokens {
@@ -343,6 +421,34 @@ class EnumIntConstraintGenerator <: ConstraintGenerator {
         let tokens = v |> map {it => quote($it)} |> collectArrayList
         let vs = Token(TokenKind.LSQUARE) + joinTokens(tokens, Token(TokenKind.COMMA)) + Token(TokenKind.RSQUARE)
         quote(EnumIntConstraint($vs, $msg))
+    }
+}
+
+class EqualFieldConstraintGenerator <: ConstraintGenerator {
+    var msg: String = ""
+    var targetField: String = ""
+
+    init() {
+        super("EqualField")
+    }
+
+    protected func parseAttr(attr: Tokens): Unit {
+        let map: MapToString = parserAttrs(attr, validKeys: ["field", "msg", "when"], macroName: marcroName)
+        this.targetField = map.getString("field") ?? ""
+        this.msg = map.getString("msg") ?? ""
+        this.when = map.getString("when") ?? ""
+    }
+
+    protected func toConstraint(): Tokens {
+        let varName = Token(TokenKind.IDENTIFIER, field.value + "_" + targetField)
+        let tf = Token(TokenKind.IDENTIFIER, targetField)
+
+        quote(
+            let $varName = EqualFieldConstraint($targetField, $msg)
+            if($field != $tf) {
+                throw throw JoyValidationException($varName.message, $varName.field, $varName)
+            }
+        )
     }
 }
 
@@ -360,6 +466,7 @@ func createConstraintGenerator(catgory: ConstraintCatgory): ConstraintGenerator 
         case CCIPV4 => IPV4ConstraintGenerator()
         case CCEnumStr => EnumStrConstraintGenerator()
         case CCEnumInt => EnumIntConstraintGenerator()
+        case CCEqualField => EqualFieldConstraintGenerator()
     }
 }
 
@@ -377,13 +484,16 @@ func parseConstraint(catgory: ConstraintCatgory, attr: ?Tokens, input: Tokens): 
     try {
         let varDecl: Decl = parseDecl(input)
         match (varDecl) {
-            case vd: VarDecl => FieldInfoCache.addCache(vd.identifier, false, constraint.toConstraint())
+            case vd: VarDecl =>
+                constraint.field = vd.identifier
+                FieldInfoCache.addCache(vd.identifier, false, constraint.toConstraint(), constraint.when)
             case _ => diagReport(DiagReportLevel.ERROR, input, errMsg, "")
         }
     } catch (_: Exception) {
         try {
             let funcParam = FuncParam(input)
-            FieldInfoCache.addCache(funcParam.identifier, true, constraint.toConstraint())
+            constraint.field = funcParam.identifier
+            FieldInfoCache.addCache(funcParam.identifier, true, constraint.toConstraint(), constraint.when)
         } catch (ex: Exception) {
             ex.printStackTrace()
             diagReport(DiagReportLevel.ERROR, input, errMsg, "")

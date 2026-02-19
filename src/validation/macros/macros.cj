@@ -40,6 +40,7 @@ public macro Validated(input: Tokens): Tokens {
  * @attribute min 最小大小
  * @attribute max 最大大小
  * @attribute msg 验证错误提示
+ * @attribute when 条件表达式，满足时才执行校验
  */
 public macro Size(attr: Tokens, input: Tokens): Tokens {
     parseConstraint(CCSize, attr, input)
@@ -52,6 +53,7 @@ public macro Size(attr: Tokens, input: Tokens): Tokens {
  * @attribute min 最小长度
  * @attribute max 最大长度
  * @attribute msg 验证错误提示
+ * @attribute when 条件表达式，满足时才执行校验
  */
 public macro Length(attr: Tokens, input: Tokens): Tokens {
     parseConstraint(CCLength, attr, input)
@@ -62,6 +64,7 @@ public macro Length(attr: Tokens, input: Tokens): Tokens {
  * 验证字符串不为空
  *
  * @attribute msg 验证错误提示
+ * @attribute when 条件表达式，满足时才执行校验
  */
 public macro NotEmpty(attr: Tokens, input: Tokens): Tokens {
     parseConstraint(CCNotEmpty, attr, input)
@@ -72,6 +75,7 @@ public macro NotEmpty(attr: Tokens, input: Tokens): Tokens {
  * 验证字符串不为空白
  *
  * @attribute msg 验证错误提示
+ * @attribute when 条件表达式，满足时才执行校验
  */
 public macro NotBlank(attr: Tokens, input: Tokens): Tokens {
     parseConstraint(CCNotBlank, attr, input)
@@ -80,6 +84,8 @@ public macro NotBlank(attr: Tokens, input: Tokens): Tokens {
 
 /**
  * 验证字符串不为空
+ * @attribute msg 验证错误提示
+ * @attribute when 条件表达式，满足时才执行校验
  */
 public macro NotEmpty(input: Tokens): Tokens {
     parseConstraint(CCNotEmpty, input)
@@ -88,6 +94,8 @@ public macro NotEmpty(input: Tokens): Tokens {
 
 /**
  * 验证字符串不为空白
+ * @attribute msg 验证错误提示
+ * @attribute when 条件表达式，满足时才执行校验
  */
 public macro NotBlank(input: Tokens): Tokens {
     parseConstraint(CCNotBlank, input)
@@ -100,6 +108,7 @@ public macro NotBlank(input: Tokens): Tokens {
  * @attribute min 最小值
  * @attribute max 最大值
  * @attribute msg 验证错误提示
+ * @attribute when 条件表达式，满足时才执行校验
  */
 public macro NumberRange(attr: Tokens, input: Tokens): Tokens {
     parseConstraint(CCNumberRange, attr, input)
@@ -111,6 +120,7 @@ public macro NumberRange(attr: Tokens, input: Tokens): Tokens {
  *
  * @attribute regex 正则表达式模式
  * @attribute msg 验证错误提示
+ * @attribute when 条件表达式，满足时才执行校验
  */
 public macro Pattern(attr: Tokens, input: Tokens): Tokens {
     parseConstraint(CCPattern, attr, input)
@@ -123,6 +133,7 @@ public macro Pattern(attr: Tokens, input: Tokens): Tokens {
  * @attribute before 在此时间之前，支持表达式
  * @attribute after 在此时间之后，支持表达式
  * @attribute msg 验证错误提示
+ * @attribute when 条件表达式，满足时才执行校验
  */
 public macro DateTimeRange(attr: Tokens, input: Tokens): Tokens {
     parseConstraint(CCDatetimeRange, attr, input)
@@ -133,6 +144,7 @@ public macro DateTimeRange(attr: Tokens, input: Tokens): Tokens {
  * 验证字符串是否是中国手机号码
  *
  * @attribute msg 验证错误提示
+ * @attribute when 条件表达式，满足时才执行校验
  */
 public macro ChMobileNumber(attr: Tokens, input: Tokens): Tokens {
     parseConstraint(CCChMobilePhone, attr, input)
@@ -141,6 +153,8 @@ public macro ChMobileNumber(attr: Tokens, input: Tokens): Tokens {
 
 /**
  * 验证字符串是否是中国手机号码
+ * @attribute msg 验证错误提示
+ * @attribute when 条件表达式，满足时才执行校验
  */
 public macro ChMobileNumber(input: Tokens): Tokens {
     parseConstraint(CCChMobilePhone, input)
@@ -151,6 +165,7 @@ public macro ChMobileNumber(input: Tokens): Tokens {
  * 验证字符串是否是电子邮件地址
  *
  * @attribute msg 验证错误提示
+ * @attribute when 条件表达式，满足时才执行校验
  */
 public macro Email(attr: Tokens, input: Tokens): Tokens {
     parseConstraint(CCEmail, attr, input)
@@ -159,6 +174,8 @@ public macro Email(attr: Tokens, input: Tokens): Tokens {
 
 /**
  * 验证字符串是否是电子邮件地址
+ * @attribute msg 验证错误提示
+ * @attribute when 条件表达式，满足时才执行校验
  */
 public macro Email(input: Tokens): Tokens {
     parseConstraint(CCEmail, input)
@@ -169,6 +186,7 @@ public macro Email(input: Tokens): Tokens {
  * 验证字符串是否是 IPv4 地址
  *
  * @attribute msg 验证错误提示
+ * @attribute when 条件表达式，满足时才执行校验
  */
 public macro IPV4(attr: Tokens, input: Tokens): Tokens {
     parseConstraint(CCIPV4, attr, input)
@@ -177,6 +195,8 @@ public macro IPV4(attr: Tokens, input: Tokens): Tokens {
 
 /**
  * 验证字符串是否是 IPv4 地址
+ * @attribute msg 验证错误提示
+ * @attribute when 条件表达式，满足时才执行校验
  */
 public macro IPV4(input: Tokens): Tokens {
     parseConstraint(CCIPV4, input)
@@ -188,6 +208,7 @@ public macro IPV4(input: Tokens): Tokens {
  *
  * @attribute values 枚举值列表
  * @attribute msg 验证错误提示
+ * @attribute when 条件表达式，满足时才执行校验
  */
 public macro EnumStr(attr: Tokens, input: Tokens): Tokens {
     parseConstraint(CCEnumStr, attr, input)
@@ -199,8 +220,21 @@ public macro EnumStr(attr: Tokens, input: Tokens): Tokens {
  *
  * @attribute values 枚举值列表
  * @attribute msg 验证错误提示
+ * @attribute when 条件表达式，满足时才执行校验
  */
 public macro EnumInt(attr: Tokens, input: Tokens): Tokens {
     parseConstraint(CCEnumInt, attr, input)
+    input
+}
+
+/**
+ * 验证字段值是否与另一个字段的值相等
+ *
+ * @attribute field 要比较的目标字段名
+ * @attribute msg 验证错误提示
+ * @attribute when 条件表达式，满足时才执行校验
+ */
+public macro EqualField(attr: Tokens, input: Tokens): Tokens {
+    parseConstraint(CCEqualField, attr, input)
     input
 }

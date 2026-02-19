@@ -98,6 +98,10 @@ extend String <: JoyValidatable {
                     if (!c.values.contains(this)) {
                         throw JoyValidationException(c.message, field, c)
                     }
+                case c: EqualFieldConstraint =>
+                    // 对于 EqualFieldConstraint，我们需要在类级别进行验证，因为它需要访问其他字段
+                    // 这里不做处理，因为无法访问其他字段
+                    ()
                 case _ => ()
             }
         }
