@@ -1,5 +1,14 @@
 Changelog
 ------
+
+# v1.0.0
+
+- 增强：增加各模块的测试桥覆盖率
+- 增强：所有API文档转成中文
+- 增强：所有测试用例增加功能描述
+- 增强：完善MCP的流式传输
+- 特性：validation模块支持when条件表达式与@EqualField
+
 # v0.90.0
 
  - 变更：废弃LogTool，启用JoyLoggerFactory适配其它的日志框架

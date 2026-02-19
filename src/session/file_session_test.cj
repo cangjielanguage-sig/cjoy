@@ -14,6 +14,9 @@ import std.fs.*
 
 @Test
 public class FileSessionStorageTestCaseSuit {
+    /**
+     * 测试文件会话存储保存功能 - 验证会话数据保存到文件系统
+     */
     @TestCase
     public func testFileStorageSave() {
         let storage = FileSessionStorage("./session")
@@ -23,13 +26,16 @@ public class FileSessionStorageTestCaseSuit {
         session.flush()
         @Assert(exists("./session/123/1"))
         @Assert(exists("./session/123/2"))
-        
+
         session.invalidate()
         @Assert(!exists("./session/123/1"))
         @Assert(!exists("./session/123/2"))
         removeIfExists("./session", recursive: true)
     }
 
+    /**
+     * 测试文件会话存储删除功能 - 验证会话数据删除操作
+     */
     @TestCase
     public func testFileStorageSave2() {
         let storage = FileSessionStorage("./session")
@@ -49,6 +55,9 @@ public class FileSessionStorageTestCaseSuit {
         removeIfExists("./session", recursive: true)
     }
 
+    /**
+     * 测试文件会话存储获取功能 - 验证会话创建、获取和删除的完整流程
+     */
     @TestCase
     public func testFileStorageGet() {
         let storage = FileSessionStorage("./session")
@@ -69,6 +78,9 @@ public class FileSessionStorageTestCaseSuit {
         removeIfExists("./session", recursive: true)
     }
 
+    /**
+     * 测试文件会话存储加载功能 - 验证从磁盘加载会话数据
+     */
     @TestCase
     public func testFileStorageLoad() {
         let storage = FileSessionStorage("./session")
@@ -83,7 +95,10 @@ public class FileSessionStorageTestCaseSuit {
         removeIfExists("./session", recursive: true)
     }
 
-     @TestCase
+    /**
+     * 测试文件会话存储清理功能 - 验证过期会话自动清理
+     */
+    @TestCase
     public func testFileStorageClean() {
         let storage = FileSessionStorage("./session", maxLifetime: Duration.second)
         let session = storage.createSession("123")

@@ -179,6 +179,7 @@ public class DefaultOAuth2Manager <: OAuth2Manager {
         if (let Some(c) <- client) {
             c
         } else {
+            @JoyLogWarn("[OAuth2] not found clientId, ${clientId}")
             throw OAuthException(OAuthErrors.INVALID_CLIENT)
         }
     }
@@ -251,6 +252,7 @@ public class DefaultOAuth2Manager <: OAuth2Manager {
     public func generateAccessToken(gt: GrantType, request: TokenGenerateRequest): TokenInfo {
         let client = getClient(request.clientId)
         if (!(_clientPasswordVerifier?.verifyPassword(client, request.clientSecret) ?? true)) {
+            @JoyLogError("[OAuth2] verify password failed")
             throw OAuthException(OAuthErrors.INVALID_CLIENT)
         } else if (client.secret != "" && request.clientSecret != client.secret) {
             @JoyLogError("[OAuth2] invalid client, client secret is invalid")
@@ -362,7 +364,8 @@ public class DefaultOAuth2Manager <: OAuth2Manager {
      * @throws OAuthException 如果令牌为空
      */
     public func removeAccessToken(access: String): Unit {
-        if (access == "") {
+        if (access.isEmpty()) {
+            @JoyLogError("[OAuth2] remove access token but it is empty")
             throw OAuthException(OAuthErrors.INVALID_ACCESS_TOKEN)
         }
 
@@ -376,7 +379,8 @@ public class DefaultOAuth2Manager <: OAuth2Manager {
      * @throws OAuthException 如果令牌为空
      */
     public func removeRefreshToken(refresh: String): Unit {
-        if (refresh == "") {
+        if (refresh.isEmpty()) {
+            @JoyLogError("[OAuth2] remove refresh token but it is empty")
             throw OAuthException(OAuthErrors.INVALID_REFRESH_TOKEN)
         }
 
@@ -391,16 +395,22 @@ public class DefaultOAuth2Manager <: OAuth2Manager {
      * @throws OAuthException 如果令牌无效或已过期
      */
     public func loadAccessToken(access: String): TokenInfo {
-        if (access == "") {
+        if (access.isEmpty()) {
+            @JoyLogError("[OAuth2] load access token but it is empty")
             throw OAuthException(OAuthErrors.INVALID_ACCESS_TOKEN)
         }
 
         let ct = DateTime.now()
-        let token = _tokenStore.getByAccess(access).getOrThrow({
-            => OAuthException(OAuthErrors.INVALID_ACCESS_TOKEN)
-        })
+        let token = _tokenStore.getByAccess(access).getOrThrow(
+            {
+                =>
+                    @JoyLogError("[OAuth2] not found access token in token store")
+                    OAuthException(OAuthErrors.INVALID_ACCESS_TOKEN)
+            }
+        )
 
         if (token.access != access) {
+            @JoyLogError("[OAuth2] access is not equal")
             throw OAuthException(OAuthErrors.INVALID_ACCESS_TOKEN)
         }
 
@@ -424,21 +434,19 @@ public class DefaultOAuth2Manager <: OAuth2Manager {
      * @throws OAuthException 如果令牌无效或已过期
      */
     public func loadRefreshToken(refresh: String): TokenInfo {
-        if (refresh == "") {
-            @JoyLogError("[OAuth2] refresh token is empty")
+        if (refresh.isEmpty()) {
+            @JoyLogError("[OAuth2] load refresh token but it is empty")
             throw OAuthException(OAuthErrors.INVALID_REFRESH_TOKEN)
         }
 
         let ct = DateTime.now()
-        let token = _tokenStore
-            .getByRefresh(refresh)
-            .getOrThrow(
-                {
-                    =>
-                    @JoyLogError("[OAuth2] not found refresh token")
+        let token = _tokenStore.getByRefresh(refresh).getOrThrow(
+            {
+                =>
+                    @JoyLogError("[OAuth2] not found refresh token in token store")
                     OAuthException(OAuthErrors.INVALID_REFRESH_TOKEN)
-                }
-            )
+            }
+        )
 
         if (token.refresh != refresh) {
             @JoyLogError("[OAuth2] refresh token is not equal")
@@ -457,8 +465,10 @@ public class DefaultOAuth2Manager <: OAuth2Manager {
         let code = request.code
         let token = getAuthorizationCode(code)
         if (token.clientId != request.clientId) {
+            @JoyLogError("[OAuth2] the clientId is not same, token's ${token.clientId} != ${request.clientId} in request")
             throw OAuthException(OAuthErrors.INVALID_AUTHORIZE_CODE)
         } else if (token.redirectURI != "" && token.redirectURI != request.redirectURI) {
+            @JoyLogError("[OAuth2] the redirectURI is not same, token's ${token.redirectURI} != ${request.redirectURI} in request")
             throw OAuthException(OAuthErrors.INVALID_AUTHORIZE_CODE)
         }
 
@@ -485,6 +495,7 @@ public class DefaultOAuth2Manager <: OAuth2Manager {
             return
         }
         if (cc == "") {
+            @JoyLogError("[OAuth2] miss code codeChallenge")
             throw OAuthException(OAuthErrors.MISSING_CODE_CHALLENGE)
         }
         var ccm = token.codeChallengeMethod
@@ -493,6 +504,7 @@ public class DefaultOAuth2Manager <: OAuth2Manager {
         }
         @JoyLogDebug("[OAuth2], code_challenge=${cc}, verfiy_code=${ver}, method=${ccm}")
         if (!ccm.validate(cc, ver)) {
+            @JoyLogError("[OAuth2] validate code codeChallenge failed")
             throw OAuthException(OAuthErrors.INVALID_CODE_CHALLENGE)
         }
     }

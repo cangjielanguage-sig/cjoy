@@ -34,4 +34,48 @@ public class SecureRandTokenGenerateTestCaseSuit {
         println(access)
         println(refresh)
     }
+
+    /**
+     * 测试不生成刷新令牌的情况 - 验证当 isGenRefresh 为 false 时不生成刷新令牌
+     */
+    @TestCase
+    public func testGenerateWithoutRefresh() {
+        let data = GenerateBasic(
+            client: ClientInfo(id: "123456", secret: "abbcdef"),
+            userId: "00009527",
+            createAt: DateTime.now(),
+            tokenInfo: TokenInfo(),
+            request: mock<JoyContext>()
+        )
+        let (access, refresh) = SecureRandTokenGenerate().generate(data, false)
+        @Assert(access != "")
+        @Assert(refresh, "")
+    }
+
+    /**
+     * 测试多次生成不同的令牌 - 验证每次生成的令牌都是不同的
+     */
+    @TestCase
+    public func testGenerateDifferentTokens() {
+        let data1 = GenerateBasic(
+            client: ClientInfo(id: "123456", secret: "abbcdef"),
+            userId: "00009527",
+            createAt: DateTime.now(),
+            tokenInfo: TokenInfo(),
+            request: mock<JoyContext>()
+        )
+        let data2 = GenerateBasic(
+            client: ClientInfo(id: "123456", secret: "abbcdef"),
+            userId: "00009527",
+            createAt: DateTime.now().addSeconds(1),  // 使用不同的时间戳
+            tokenInfo: TokenInfo(),
+            request: mock<JoyContext>()
+        )
+
+        let (access1, refresh1) = SecureRandTokenGenerate().generate(data1, true)
+        let (access2, refresh2) = SecureRandTokenGenerate().generate(data2, true)
+
+        @Assert(access1 != access2)
+        @Assert(refresh1 != refresh2)
+    }
 }

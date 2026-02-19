@@ -270,19 +270,19 @@ public class OAuth2Server {
 
     private func authorizeReturnError(ctx: JoyContext, req: ?AuthorizeRequest, err: ErrorInfo) {
         if (let Some(h) <- _preRedirectErrorHandleFunc) {
-            h(ctx, req.getOrThrow(), err)
+            if (let Some(r) <- req) {
+                h(ctx, r, err)
+            }
         } else {
             redirectError(ctx, req, err)
         }
     }
 
     private func redirectError(ctx: JoyContext, req: ?AuthorizeRequest, err: ErrorInfo) {
-        if (req.isNone()) {
-            return
-        }
-
         let data = getErrorData(ctx, err)
-        redirect(ctx, req.getOrThrow(), data)
+        if (let Some(r) <- req) {
+            redirect(ctx, r, data)
+        }
     }
 
     private func redirect(ctx: JoyContext, req: AuthorizeRequest, data: HashMap<String, JsonSerializable>) {
@@ -694,6 +694,7 @@ public class OAuth2Server {
     public func validateBearerToken(ctx: JoyContext): TokenInfo {
         let access = _accessTokenResolveHandleFunc(ctx)
         if (access.isEmpty()) {
+            @JoyLogError("[OAuth2] validate bearer token failed, the access token is empty")
             throw OAuthException(OAuthErrors.INVALID_ACCESS_TOKEN)
         }
         _manager.loadAccessToken(access)

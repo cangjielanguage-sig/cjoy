@@ -47,7 +47,9 @@ public type ValidateURIFunc = (baseURI: String, redirectURI: String) -> Unit
 func defaultValidateURIFunc(baseURI: String, redirectURI: String): Unit {
     let base = URL.parse(baseURI)
     let redirect = URL.parse(redirectURI)
+    // @JoyLogInfo("${base.host} --- ${redirect.host}")
     if (!redirect.host.endsWith(base.host)) {
+        @JoyLogWarn("[OAuth2] invalid redirect uri, baseURI=${baseURI}, redirectURI=${redirectURI}")
         throw OAuthException(OAuthErrors.INVALID_REDIRECT_URI)
     }
 }
@@ -202,7 +204,11 @@ public type AccessTokenResolveHandleFunc = (ctx: JoyContext) -> String
  * @throws OAuthException 如果客户端 ID 缺失或无效
  */
 public func clientFormHandleFunc(ctx: JoyContext): (String, String) {
-    let clientId = ctx.getForm("client_id") ?? throw OAuthException(OAuthErrors.INVALID_CLIENT)
+    let clientId = ctx.getForm("client_id").getOrThrow {
+        =>
+            @JoyLogError("[OAuth2] get client_id from form failed")
+            throw OAuthException(OAuthErrors.INVALID_CLIENT)
+    }
     let clientSecret = ctx.getForm("client_secret") ?? ""
     return (clientId, clientSecret)
 }

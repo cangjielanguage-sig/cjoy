@@ -140,4 +140,68 @@ public class DefaultOAuth2ManagerTestCaseSuit {
         @Assert(at.refresh == token.refresh)
         @Assert(at.refreshExpiredIn == 0)
     }
+
+    /**
+     * 测试无效客户端ID - 验证当客户端ID不存在时会抛出异常
+     */
+    @TestCase
+    public func testInvalidClientId() {
+        let manager = createManager()
+        try {
+            manager.getClient("invalid-client")
+            @Fail("should throw exception")
+        } catch (ex: OAuthException) {
+            @Assert(ex.errorInfo.code, OAuthErrors.INVALID_CLIENT.code)
+        }
+    }
+
+    /**
+     * 测试无效的客户端密码 - 验证当客户端密码不匹配时会抛出异常
+     */
+    @TestCase
+    public func testInvalidClientSecret() {
+        let manager = createManager()
+        let tgr = TokenGenerateRequest(request: mock<JoyContext>(), clientId: "1", clientSecret: "invalid-secret",
+            redirectURI: "http://localhost/oauth2", scope: "all")
+
+        try {
+            manager.generateAccessToken(OAuthConsts.GRANT_TYPE_AUTHORIZATION_CODE, tgr)
+            @Fail("should throw exception")
+        } catch (ex: OAuthException) {
+            @Assert(ex.errorInfo.code, OAuthErrors.INVALID_CLIENT.code)
+        }
+    }
+
+    /**
+     * 测试无效的授权码 - 验证当授权码无效时会抛出异常
+     */
+    @TestCase
+    public func testInvalidAuthorizationCode() {
+        let manager = createManager()
+        let tgr = TokenGenerateRequest(request: mock<JoyContext>(), clientId: "1", clientSecret: "11",
+            redirectURI: "http://localhost/oauth2", code: "invalid-code")
+
+        try {
+            manager.generateAccessToken(OAuthConsts.GRANT_TYPE_AUTHORIZATION_CODE, tgr)
+            @Fail("should throw exception")
+        } catch (ex: OAuthException) {
+            @Assert(ex.errorInfo.code, OAuthErrors.INVALID_AUTHORIZE_CODE.code)
+        }
+    }
+
+    /**
+     * 测试无效的刷新令牌 - 验证当刷新令牌无效时会抛出异常
+     */
+    @TestCase
+    public func testInvalidRefreshToken() {
+        let manager = createManager()
+        let tgr = TokenGenerateRequest(request: mock<JoyContext>(), refresh: "invalid-refresh-token")
+
+        try {
+            manager.refreshAccessToken(tgr)
+            @Fail("should throw exception")
+        } catch (ex: OAuthException) {
+            @Assert(ex.errorInfo.code, OAuthErrors.INVALID_REFRESH_TOKEN.code)
+        }
+    }
 }

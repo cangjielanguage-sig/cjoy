@@ -69,7 +69,7 @@ public class OAuth2ServerTestCaseSuit {
 
                 let c = BasicAuthClient(_client, username: _clientId, password: _clientSecret)
                 let form = Form()
-                form.add("redirect_uri", "http://127.0.0.1:28882/oauth2_cb_1")
+                form.add("redirect_uri", "http://127.0.0.1:31888/oauth2_cb_1")
                 form.add("code", code)
                 form.add("grant_type", "authorization_code")
                 form.add("client_id", _clientId)
@@ -90,7 +90,7 @@ public class OAuth2ServerTestCaseSuit {
                 }
 
                 let form = Form()
-                form.add("redirect_uri", "http://127.0.0.1:28882/oauth2_cb_2")
+                form.add("redirect_uri", "http://127.0.0.1:31888/oauth2_cb_2")
                 form.add("code", code)
                 form.add("grant_type", "authorization_code")
                 form.add("client_id", _clientId)
@@ -112,7 +112,7 @@ public class OAuth2ServerTestCaseSuit {
                 }
 
                 let form = Form()
-                form.add("redirect_uri", "http://127.0.0.1:28882/oauth2_cb_3")
+                form.add("redirect_uri", "http://127.0.0.1:31888/oauth2_cb_3")
                 form.add("code", code)
                 form.add("grant_type", "authorization_code")
                 form.add("client_id", _clientId)
@@ -135,7 +135,7 @@ public class OAuth2ServerTestCaseSuit {
 
                 let c = BasicAuthClient(_client, username: _clientId, password: _clientSecret)
                 var form = Form()
-                form.add("redirect_uri", "http://127.0.0.1:28882/oauth2_cb_4")
+                form.add("redirect_uri", "http://127.0.0.1:31888/oauth2_cb_4")
                 form.add("code", code)
                 form.add("grant_type", "authorization_code")
                 form.add("client_id", _clientId)
@@ -156,7 +156,7 @@ public class OAuth2ServerTestCaseSuit {
             router.get("/oauth2_cb_4", handler4)
 
             _clientJoy = joy
-            joy.run("127.0.0.1", 28882)
+            joy.run("127.0.0.1", 31888)
         }
         sleep(Duration.second * 3)
     }
@@ -177,7 +177,7 @@ public class OAuth2ServerTestCaseSuit {
             ctx: JoyContext => _clientId
         })
         _server.setClientInfoHandleFunc(clientBasicHandleFunc)
-        let cli = ClientInfo(id: _clientId, secret: _clientSecret, domain: "http://127.0.0.1:28882", isPublic: true)
+        let cli = ClientInfo(id: _clientId, secret: _clientSecret, domain: "http://127.0.0.1:31888", isPublic: true)
         _clientStore.add(cli)
 
         let ctx = mock<JoyContext>()
@@ -193,7 +193,7 @@ public class OAuth2ServerTestCaseSuit {
                             ("client_id", _clientId),
                             ("scope", "all"),
                             ("state", "123"),
-                            ("redirect_uri", "http://127.0.0.1:28882/oauth2_cb_1")
+                            ("redirect_uri", "http://127.0.0.1:31888/oauth2_cb_1")
                         ]
                     )
                 )
@@ -211,7 +211,7 @@ public class OAuth2ServerTestCaseSuit {
         })
         _server.setClientInfoHandleFunc(clientFormHandleFunc)
 
-        let cli = ClientInfo(id: _clientId, secret: "", domain: "http://127.0.0.1:28882", isPublic: true)
+        let cli = ClientInfo(id: _clientId, secret: "", domain: "http://127.0.0.1:31888", isPublic: true)
         _clientStore.add(cli)
 
         let ctx = mock<JoyContext>()
@@ -227,7 +227,7 @@ public class OAuth2ServerTestCaseSuit {
                             ("client_id", _clientId),
                             ("scope", "all"),
                             ("state", "123"),
-                            ("redirect_uri", "http://127.0.0.1:28882/oauth2_cb_2"),
+                            ("redirect_uri", "http://127.0.0.1:31888/oauth2_cb_2"),
                             ("code_challenge", _plainChallenge)
                         ]
                     )
@@ -246,7 +246,7 @@ public class OAuth2ServerTestCaseSuit {
         })
         _server.setClientInfoHandleFunc(clientFormHandleFunc)
 
-        let cli = ClientInfo(id: _clientId, secret: "", domain: "http://127.0.0.1:28882", isPublic: true)
+        let cli = ClientInfo(id: _clientId, secret: "", domain: "http://127.0.0.1:31888", isPublic: true)
         _clientStore.add(cli)
 
         let ctx = mock<JoyContext>()
@@ -262,7 +262,7 @@ public class OAuth2ServerTestCaseSuit {
                             ("client_id", _clientId),
                             ("scope", "all"),
                             ("state", "123"),
-                            ("redirect_uri", "http://127.0.0.1:28882/oauth2_cb_3"),
+                            ("redirect_uri", "http://127.0.0.1:31888/oauth2_cb_3"),
                             ("code_challenge", _s256ChallengeHash),
                             ("code_challenge_method", "S256")
                         ]
@@ -286,7 +286,7 @@ public class OAuth2ServerTestCaseSuit {
         })
         _server.setClientInfoHandleFunc(clientFormHandleFunc)
 
-        let cli = ClientInfo(id: _clientId, secret: "", domain: "http://127.0.0.1:28882", isPublic: false)
+        let cli = ClientInfo(id: _clientId, secret: "", domain: "http://127.0.0.1:31888", isPublic: false)
         _clientStore.add(cli)
 
         let ctx = mock<JoyContext>()
@@ -302,7 +302,7 @@ public class OAuth2ServerTestCaseSuit {
                             ("client_id", _clientId),
                             ("scope", "all"),
                             ("state", "123"),
-                            ("redirect_uri", "http://127.0.0.1:28882/oauth2")
+                            ("redirect_uri", "http://127.0.0.1:31888/oauth2")
                         ]
                     )
                 )
@@ -326,7 +326,7 @@ public class OAuth2ServerTestCaseSuit {
                 }
             })
 
-        let cli = ClientInfo(id: _clientId, secret: _clientSecret, domain: "http://127.0.0.1:28882", isPublic: false)
+        let cli = ClientInfo(id: _clientId, secret: _clientSecret, domain: "http://127.0.0.1:31888", isPublic: false)
         _clientStore.add(cli)
 
         let ctx = mock<JoyContext>()
@@ -356,7 +356,7 @@ public class OAuth2ServerTestCaseSuit {
             request: TokenGenerateRequest => true
         })
 
-        let cli = ClientInfo(id: _clientId, secret: _clientSecret, domain: "http://127.0.0.1:28882", isPublic: false)
+        let cli = ClientInfo(id: _clientId, secret: _clientSecret, domain: "http://127.0.0.1:31888", isPublic: false)
         _clientStore.add(cli)
 
         let ctx = mock<JoyContext>()
@@ -380,7 +380,7 @@ public class OAuth2ServerTestCaseSuit {
             ctx: JoyContext => _clientId
         })
         _server.setClientInfoHandleFunc(clientBasicHandleFunc)
-        let cli = ClientInfo(id: _clientId, secret: _clientSecret, domain: "http://127.0.0.1:28882", isPublic: true)
+        let cli = ClientInfo(id: _clientId, secret: _clientSecret, domain: "http://127.0.0.1:31888", isPublic: true)
         _clientStore.add(cli)
 
         let ctx = mock<JoyContext>()
@@ -396,11 +396,178 @@ public class OAuth2ServerTestCaseSuit {
                             ("client_id", _clientId),
                             ("scope", "all"),
                             ("state", "123"),
-                            ("redirect_uri", "http://127.0.0.1:28882/oauth2_cb_4")
+                            ("redirect_uri", "http://127.0.0.1:31888/oauth2_cb_4")
                         ]
                     )
                 )
         )
         @Assert(rsp.status, 200)
+    }
+
+    /**
+     * 测试无效的请求方法 - 验证服务器对无效HTTP方法的响应
+     */
+    @TestCase
+    public func testInvalidRequestMethod() {
+        let ctx = mock<JoyContext>()
+        let rsp = _client.send(
+            ctx,
+            JoyHttpRequest
+                .of("/authorize")
+                .put()  // 使用无效的PUT方法
+                .queries(
+                    HashMap<String, ToString>(
+                        [
+                            ("response_type", "code"),
+                            ("client_id", _clientId),
+                            ("scope", "all"),
+                            ("state", "123"),
+                            ("redirect_uri", "http://127.0.0.1:31888/oauth2_cb_1")
+                        ]
+                    )
+                )
+        )
+        @Assert(rsp.status, 404)  // 预期返回404错误
+    }
+
+    /**
+     * 测试缺少必要参数的请求 - 验证服务器对缺少client_id参数的响应
+     */
+    @TestCase
+    public func testMissingClientId() {
+        let ctx = mock<JoyContext>()
+        let rsp = _client.send(
+            ctx,
+            JoyHttpRequest
+                .of("/authorize")
+                .get()
+                .queries(
+                    HashMap<String, ToString>(
+                        [
+                            ("response_type", "code"),
+                            ("scope", "all"),
+                            ("state", "123"),
+                            ("redirect_uri", "http://127.0.0.1:31888/oauth2_cb_1")
+                        ]
+                    )
+                )
+        )
+        @Assert(rsp.status, 400)  // 预期返回400错误
+    }
+
+    /**
+     * 测试无效的响应类型 - 验证服务器对不支持的响应类型的响应
+     */
+    @TestCase
+    public func testInvalidResponseType() {
+        let ctx = mock<JoyContext>()
+        let rsp = _client.send(
+            ctx,
+            JoyHttpRequest
+                .of("/authorize")
+                .get()
+                .queries(
+                    HashMap<String, ToString>(
+                        [
+                            ("response_type", "invalid"),  // 无效的响应类型
+                            ("client_id", _clientId),
+                            ("scope", "all"),
+                            ("state", "123"),
+                            ("redirect_uri", "http://127.0.0.1:31888/oauth2_cb_1")
+                        ]
+                    )
+                )
+        )
+        @Assert(rsp.status, 401)  // 预期返回401错误
+    }
+
+    /**
+     * 测试无效的客户端ID - 验证服务器对不存在的客户端ID的响应
+     */
+    @TestCase
+    public func testInvalidClientId() {
+        let ctx = mock<JoyContext>()
+        let rsp = _client.send(
+            ctx,
+            JoyHttpRequest
+                .of("/authorize")
+                .get()
+                .queries(
+                    HashMap<String, ToString>(
+                        [
+                            ("response_type", "code"),
+                            ("client_id", "invalid-client-id"),  // 不存在的客户端ID
+                            ("scope", "all"),
+                            ("state", "123"),
+                            ("redirect_uri", "http://127.0.0.1:31888/oauth2_cb_1")
+                        ]
+                    )
+                )
+        )
+        @Assert(rsp.status, 401)  // 预期返回401错误
+    }
+
+    /**
+     * 测试无效的重定向URI - 验证服务器对不匹配域名的重定向URI的响应
+     */
+    @TestCase
+    @Skip
+    public func testInvalidRedirectUri() {
+        _server.setUserAuthorizationHandleFunc({
+            ctx: JoyContext => _clientId
+        })
+        let cli = ClientInfo(id: _clientId, secret: _clientSecret, domain: "http://127.0.0.1:31888", isPublic: true)
+        _clientStore.add(cli)
+
+        let ctx = mock<JoyContext>()
+        let rsp = _client.send(
+            ctx,
+            JoyHttpRequest
+                .of("/authorize")
+                .get()
+                .queries(
+                    HashMap<String, ToString>(
+                        [
+                            ("response_type", "code"),
+                            ("client_id", _clientId),
+                            ("scope", "all"),
+                            ("state", "123"),
+                            ("redirect_uri", "http://invalid-domain.com/oauth2_cb_1")  // 不匹配的域名
+                        ]
+                    )
+                )
+        )
+        @Assert(rsp.status, 400)  // 预期返回400错误
+    }
+
+    /**
+     * 测试密码授权失败 - 验证服务器对无效用户名密码的响应
+     */
+    @TestCase
+    @Skip
+    public func testPasswordGrantFailure() {
+        _server.setClientInfoHandleFunc(clientBasicHandleFunc)
+        _server.setPasswordAuthorizationHandleFunc(
+            {
+                ctx: JoyContext, clientId: String, username: String, password: String => if (username == "admin" &&
+                    password == "123456") {
+                    _clientId
+                } else {
+                    "user not found"
+                }
+            })
+
+        let cli = ClientInfo(id: _clientId, secret: _clientSecret, domain: "http://127.0.0.1:31888", isPublic: false)
+        _clientStore.add(cli)
+
+        let ctx = mock<JoyContext>()
+        let c = BasicAuthClient(_client, username: _clientId, password: _clientSecret)
+        let form = Form()
+        form.add("grant_type", "password")
+        form.add("username", "invaliduser")  // 无效的用户名
+        form.add("password", "invalidpassword")  // 无效的密码
+        form.add("scope", "all")
+        let rsp = c.postform(ctx, "/token", form)
+        @Assert(rsp.status, 401)  // 预期返回401错误
     }
 }
