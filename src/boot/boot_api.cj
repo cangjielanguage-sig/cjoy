@@ -16,6 +16,7 @@ import std.io.{readToEnd}
 import stdx.net.tls.{TlsServerConfig, CertificateVerifyMode, TlsClientIdentificationMode, TlsVersion}
 import stdx.net.http.{ServerBuilder, ServicePoolConfig}
 import stdx.crypto.x509.{X509Certificate, PrivateKey}
+import stdx.log.LogLevel
 import cjoy.*
 import cjoy.config.*
 import cjoy.log.macros.*
@@ -178,6 +179,9 @@ public class JoyBoot {
         } else {
             properties.name
         }
+
+        // 配置日志级别
+        configureLoggers(properties.loggers)
 
         let joyCfg = createJoyConfig(properties)
         let joy = Joy.create(name: name)
@@ -345,6 +349,44 @@ private func loadServicePoolConfig(sb: ServerBuilder, poolCfg: JoyServerPoolProp
     let cfg = ServicePoolConfig(capacity: poolCfg.capacity, queueCapacity: poolCfg.queueCapacity,
         preheat: poolCfg.preheat)
     sb.servicePoolConfig(cfg)
+}
+
+private func configureLoggers(loggers: Array<JoyLoggerProperties>): Unit {
+    for (loggerCfg in loggers) {
+        if (loggerCfg.name.isEmpty()) {
+            continue
+        }
+
+        // 尝试获取 Logger 实例
+        if (let Some(logger) <- JoyLoggerFactory.getLogger(loggerCfg.name)) {
+            // 将字符串级别转换为 LogLevel
+            let level = parseLogLevel(loggerCfg.level)
+            logger.level = level
+            @JoyLogInfo("Set logger '${loggerCfg.name}' level to '${level}'")
+        } else {
+            // 如果 Logger 实例尚未创建，先创建它
+            let logger = JoyLoggerFactory.createLogger(loggerCfg.name)
+            let level = parseLogLevel(loggerCfg.level)
+            logger.level = level
+            @JoyLogInfo("Create and set logger '${loggerCfg.name}' level to '${level}'")
+        }
+    }
+}
+
+private func parseLogLevel(levelStr: String): LogLevel {
+    match (levelStr.toAsciiLower()) {
+        case "off" => LogLevel.OFF
+        case "fatal" => LogLevel.FATAL
+        case "error" => LogLevel.ERROR
+        case "warn" => LogLevel.WARN
+        case "info" => LogLevel.INFO
+        case "debug" => LogLevel.DEBUG
+        case "trace" => LogLevel.TRACE
+        case "all" => LogLevel.ALL
+        case _ =>
+            @JoyLogWarn("Unknown log level '${levelStr}', defaulting to INFO")
+            LogLevel.INFO
+    }
 }
 
 private func readPermFile(path: String): String {

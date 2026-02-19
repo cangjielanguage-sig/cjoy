@@ -15,7 +15,7 @@ import std.ast.Tokens
 /**
  * PathParam 宏用于在函数参数上注解，其值来自 URL 路径中的命名参数。
  *
- * @attribute name: URL 路径中的参数名称
+ * @attribute name URL 路径中的参数名称
  */
 public macro PathParam(attr: Tokens, input: Tokens) {
     parseParam("PathParam", attr, input)
@@ -35,8 +35,8 @@ public macro PathParam(input: Tokens) {
 /**
  * QueryParam 宏用于在函数参数上注解，其值来自 URL 查询中的命名参数。
  *
- * @attribute name: URL 查询中的参数名称
- * @attribute default: 参数的默认值
+ * @attribute name URL 查询中的参数名称
+ * @attribute default 参数的默认值
  */
 public macro QueryParam(attr: Tokens, input: Tokens) {
     parseParam("QueryParam", attr, input)
@@ -65,8 +65,8 @@ public macro QueryBindParam(input: Tokens) {
 /**
  * PostFormParam 宏用于在函数参数上注解，其值来自编码 URL 或 POST 表单中的命名参数。
  *
- * @attribute name: 编码 URL 或 POST 表单中的参数名称
- * @attribute default: 参数的默认值
+ * @attribute name 编码 URL 或 POST 表单中的参数名称
+ * @attribute default 参数的默认值
  */
 public macro PostFormParam(attr: Tokens, input: Tokens) {
     parseParam("PostFormParam", attr, input)
@@ -94,8 +94,8 @@ public macro PostFormBindParam(input: Tokens) {
 /**
  * HeaderParam 宏用于在函数参数上注解，其值来自请求头中的命名参数。
  *
- * @attribute name: 请求头中的参数名称
- * @attribute default: 参数的默认值
+ * @attribute name 请求头中的参数名称
+ * @attribute default 参数的默认值
  */
 public macro HeaderParam(attr: Tokens, input: Tokens) {
     parseParam("HeaderParam", attr, input)
@@ -124,7 +124,7 @@ public macro HeaderBindParam(input: Tokens) {
 /**
  * ContextParam 宏用于在函数参数上注解，其值来自上下文中的命名参数。
  *
- * @attribute name: 上下文中的参数名称
+ * @attribute name 上下文中的参数名称
  */
 public macro ContextParam(attr: Tokens, input: Tokens) {
     parseParam("ContextParam", attr, input)
@@ -144,8 +144,8 @@ public macro ContextParam(input: Tokens) {
 /**
  * CookieParam 宏用于在函数参数上注解，其值来自 Cookie 中的命名参数。
  *
- * @attribute name: Cookie 中的参数名称
- * @attribute default: 参数的默认值
+ * @attribute name Cookie 中的参数名称
+ * @attribute default 参数的默认值
  */
 public macro CookieParam(attr: Tokens, input: Tokens) {
     parseParam("CookieParam", attr, input)
@@ -183,8 +183,8 @@ public macro BodyParam(input: Tokens) {
 /**
  * Get 宏用于在函数上注解，为 GET `path` 注册函数
  *
- * @attribute path: 路径模式
- * @attribute produce: 响应体格式，值为 json/text，默认为 text
+ * @attribute path 路径模式
+ * @attribute produce 响应体格式，值为 json/text，默认为 text
  */
 public macro Get(attr: Tokens, input: Tokens) {
     input + parseFunc("Get", attr, input)
@@ -193,8 +193,8 @@ public macro Get(attr: Tokens, input: Tokens) {
 /**
  * Post 宏用于在函数上注解，为 POST `path` 注册函数
  *
- * @attribute path: 路径模式
- * @attribute produce: 响应体格式，值为 json/text，默认为 text
+ * @attribute path 路径模式
+ * @attribute produce 响应体格式，值为 json/text，默认为 text
  */
 public macro Post(attr: Tokens, input: Tokens) {
     input + parseFunc("Post", attr, input)
@@ -203,8 +203,8 @@ public macro Post(attr: Tokens, input: Tokens) {
 /**
  * Delete 宏用于在函数上注解，为 DELETE `path` 注册函数
  *
- * @attribute path: 路径模式
- * @attribute produce: 响应体格式，值为 json/text，默认为 text
+ * @attribute path 路径模式
+ * @attribute produce 响应体格式，值为 json/text，默认为 text
  */
 public macro Delete(attr: Tokens, input: Tokens) {
     input + parseFunc("Delete", attr, input)
@@ -213,8 +213,8 @@ public macro Delete(attr: Tokens, input: Tokens) {
 /**
  * Patch 宏用于在函数上注解，为 PATCH `path` 注册函数
  *
- * @attribute path: 路径模式
- * @attribute produce: 响应体格式，值为 json/text，默认为 text
+ * @attribute path 路径模式
+ * @attribute produce 响应体格式，值为 json/text，默认为 text
  */
 public macro Patch(attr: Tokens, input: Tokens) {
     input + parseFunc("Patch", attr, input)
@@ -223,8 +223,8 @@ public macro Patch(attr: Tokens, input: Tokens) {
 /**
  * Put 宏用于在函数上注解，为 PUT `path` 注册函数
  *
- * @attribute path: 路径模式
- * @attribute produce: 响应体格式，值为 json/text，默认为 text
+ * @attribute path 路径模式
+ * @attribute produce 响应体格式，值为 json/text，默认为 text
  */
 public macro Put(attr: Tokens, input: Tokens) {
     input + parseFunc("Put", attr, input)
@@ -233,8 +233,8 @@ public macro Put(attr: Tokens, input: Tokens) {
 /**
  * Head 宏用于在函数上注解，为 HEAD `path` 注册函数
  *
- * @attribute path: 路径模式
- * @attribute produce: 响应体格式，值为 json/text，默认为 text
+ * @attribute path 路径模式
+ * @attribute produce 响应体格式，值为 json/text，默认为 text
  */
 public macro Head(attr: Tokens, input: Tokens) {
     input + parseFunc("Head", attr, input)
@@ -243,9 +243,9 @@ public macro Head(attr: Tokens, input: Tokens) {
 /**
  * Handler 宏用于在函数上注解，为 `method path` 注册函数
  *
- * @attribute path: 路径模式
- * @attribute methods: 方法列表，如 `GET,PUT` 或 `GET`
- * @attribute produce: 响应体格式，值为 json/text，默认为 text
+ * @attribute path 路径模式
+ * @attribute methods 方法列表，如 `GET,PUT` 或 `GET`
+ * @attribute produce 响应体格式，值为 json/text，默认为 text
  */
 public macro Handler(attr: Tokens, input: Tokens) {
     input + parseFunc("Handler", attr, input)
@@ -255,7 +255,7 @@ public macro Handler(attr: Tokens, input: Tokens) {
  * Middleware 宏用于在函数上注解，
  * 注册函数以拦截组处理器
  *
- * @attribute groups: 组列表，如 `/a/b/c,/d/f` 或 `/a`
+ * @attribute groups 组列表，如 `/a/b/c,/d/f` 或 `/a`
  */
 public macro Middleware(attr: Tokens, input: Tokens) {
     input + parseMiddlewareFunc(attr, input)

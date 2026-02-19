@@ -22,9 +22,9 @@ public macro Bind(input: Tokens): Tokens {
 /**
  * 设置类或结构体成员的绑定信息
  *
- * @attribute name: 字段映射名称
- * @attribute default: 参数不存在时的默认值
- * @attribute timeformat: 日期时间字段的格式
+ * @attribute name 字段映射名称
+ * @attribute default 参数不存在时的默认值
+ * @attribute timeformat 日期时间字段的格式
  */
 public macro BindField(attr: Tokens, input: Tokens): Tokens {
     BindFieldInfo.parse(attr, input)

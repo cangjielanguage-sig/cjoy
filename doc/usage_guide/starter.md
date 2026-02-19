@@ -190,6 +190,12 @@ joy.server.tls.trustAll=false
 joy.server.pool.capacity=10000
 joy.server.pool.queueCapacity=10000
 joy.server.pool.preheat=0
+
+# 日志记录器配置
+joy.loggers[0].name=cjoy.bind
+joy.loggers[0].level=debug
+joy.loggers[1].name=cjoy.framework
+joy.loggers[1].level=error
 ```
 
 ### 2.3 Json 配置示例
@@ -303,6 +309,33 @@ joy.server.pool.preheat=0
 | `joy.server.pool.capacity` | Int64 | 10000 | 线程池容量 |
 | `joy.server.pool.queueCapacity` | Int64 | 10000 | 任务队列容量 |
 | `joy.server.pool.preheat` | Int64 | 0 | 预热线程数 |
+
+#### 日志记录器配置 (loggers)
+
+配置指定名称的日志记录器的日志级别。
+
+| 配置项 | 类型 | 默认值 | 说明 |
+|--------|------|--------|------|
+| `joy.loggers[*].name` | String | "" | 日志记录器名称 |
+| `joy.loggers[*].level` | String | "info" | 日志级别 (支持: off, fatal, error, warn, info, debug, trace, all) |
+
+**配置示例：**
+
+```properties
+# 配置 cjoy.bind 日志记录器为 DEBUG 级别
+joy.loggers[0].name=cjoy.bind
+joy.loggers[0].level=debug
+
+# 配置 cjoy.framework 日志记录器为 ERROR 级别
+joy.loggers[1].name=cjoy.framework
+joy.loggers[1].level=error
+```
+
+**功能说明：**
+- 配置会在 Joy 实例创建之前被处理
+- 如果指定名称的日志记录器尚未创建，会自动创建
+- 支持大小写不敏感的日志级别配置（如 "DEBUG" 或 "debug" 都被识别为 DEBUG 级别）
+- 无效的日志级别会被默认设置为 INFO 级别
 
 ---
 

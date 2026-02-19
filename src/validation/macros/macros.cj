@@ -13,14 +13,14 @@ macro package cjoy.validation.macros
 import std.ast.Tokens
 
 /**
- * apply to a class & struct to generate code to implement the 'JoyValidatable' interface
+ * 应用于类或结构体，生成代码以实现 'JoyValidatable' 接口
  */
 public macro Valid(input: Tokens): Tokens {
     input + ValidClassInfo.parse(input)
 }
 
 /**
- * indicating nested validation of this member class or struct
+ * 表示对此成员类或结构体进行嵌套验证
  */
 public macro NestedValid(input: Tokens): Tokens {
     parseNestedValid(input)
@@ -28,18 +28,18 @@ public macro NestedValid(input: Tokens): Tokens {
 }
 
 /**
- * apply to a function to generated code it modify the function body to add a 'validate' method for calling parameters
+ * 应用于函数，生成代码修改函数体，为调用参数添加 'validate' 方法
  */
 public macro Validated(input: Tokens): Tokens {
     parseValidated(input)
 }
 
 /**
- * Validate the Size of collection
+ * 验证集合的大小
  *
- * @attribute min: the min size
- * @attribute max: the max size
- * @attribute msg: the verification error tip
+ * @attribute min 最小大小
+ * @attribute max 最大大小
+ * @attribute msg 验证错误提示
  */
 public macro Size(attr: Tokens, input: Tokens): Tokens {
     parseConstraint(CCSize, attr, input)
@@ -47,11 +47,11 @@ public macro Size(attr: Tokens, input: Tokens): Tokens {
 }
 
 /**
- * Validate the Length of string
+ * 验证字符串的长度
  *
- * @attribute min: the min size
- * @attribute max: the max size
- * @attribute msg: the verification error tip
+ * @attribute min 最小长度
+ * @attribute max 最大长度
+ * @attribute msg 验证错误提示
  */
 public macro Length(attr: Tokens, input: Tokens): Tokens {
     parseConstraint(CCLength, attr, input)
@@ -59,9 +59,9 @@ public macro Length(attr: Tokens, input: Tokens): Tokens {
 }
 
 /**
- * Validate string is Not empty
+ * 验证字符串不为空
  *
- * @attribute msg: the verification error tip
+ * @attribute msg 验证错误提示
  */
 public macro NotEmpty(attr: Tokens, input: Tokens): Tokens {
     parseConstraint(CCNotEmpty, attr, input)
@@ -69,9 +69,9 @@ public macro NotEmpty(attr: Tokens, input: Tokens): Tokens {
 }
 
 /**
- * Validate string is Not blank
+ * 验证字符串不为空白
  *
- * @attribute msg: the verification error tip
+ * @attribute msg 验证错误提示
  */
 public macro NotBlank(attr: Tokens, input: Tokens): Tokens {
     parseConstraint(CCNotBlank, attr, input)
@@ -79,8 +79,7 @@ public macro NotBlank(attr: Tokens, input: Tokens): Tokens {
 }
 
 /**
- * Validate string is Not empty
- *
+ * 验证字符串不为空
  */
 public macro NotEmpty(input: Tokens): Tokens {
     parseConstraint(CCNotEmpty, input)
@@ -88,8 +87,7 @@ public macro NotEmpty(input: Tokens): Tokens {
 }
 
 /**
- * Validate string is Not blank
- *
+ * 验证字符串不为空白
  */
 public macro NotBlank(input: Tokens): Tokens {
     parseConstraint(CCNotBlank, input)
@@ -97,11 +95,11 @@ public macro NotBlank(input: Tokens): Tokens {
 }
 
 /**
- * Validate the range of number like int, float etc.
+ * 验证数字（如 int、float 等）的范围
  *
- * @attribute min: the min value
- * @attribute max: the max value
- * @attribute msg: the verification error tip
+ * @attribute min 最小值
+ * @attribute max 最大值
+ * @attribute msg 验证错误提示
  */
 public macro NumberRange(attr: Tokens, input: Tokens): Tokens {
     parseConstraint(CCNumberRange, attr, input)
@@ -109,10 +107,10 @@ public macro NumberRange(attr: Tokens, input: Tokens): Tokens {
 }
 
 /**
- * Validate number or string match whether the regex pettern
+ * 验证数字或字符串是否匹配正则表达式模式
  *
- * @attribute regex: the regex pettern
- * @attribute msg: the verification error tip
+ * @attribute regex 正则表达式模式
+ * @attribute msg 验证错误提示
  */
 public macro Pattern(attr: Tokens, input: Tokens): Tokens {
     parseConstraint(CCPattern, attr, input)
@@ -120,11 +118,11 @@ public macro Pattern(attr: Tokens, input: Tokens): Tokens {
 }
 
 /**
- * Validate the range of datetime
+ * 验证日期时间的范围
  *
- * @attribute before: before this time
- * @attribute after: after this time
- * @attribute msg: the verification error tip
+ * @attribute before 在此时间之前，支持表达式
+ * @attribute after 在此时间之后，支持表达式
+ * @attribute msg 验证错误提示
  */
 public macro DateTimeRange(attr: Tokens, input: Tokens): Tokens {
     parseConstraint(CCDatetimeRange, attr, input)
@@ -132,9 +130,9 @@ public macro DateTimeRange(attr: Tokens, input: Tokens): Tokens {
 }
 
 /**
- * Validate string match whether is a chinese mobile phone number
+ * 验证字符串是否是中国手机号码
  *
- * @attribute msg: the verification error tip
+ * @attribute msg 验证错误提示
  */
 public macro ChMobileNumber(attr: Tokens, input: Tokens): Tokens {
     parseConstraint(CCChMobilePhone, attr, input)
@@ -142,8 +140,7 @@ public macro ChMobileNumber(attr: Tokens, input: Tokens): Tokens {
 }
 
 /**
- * Validate string match whether is a chinese mobile phone number
- *
+ * 验证字符串是否是中国手机号码
  */
 public macro ChMobileNumber(input: Tokens): Tokens {
     parseConstraint(CCChMobilePhone, input)
@@ -151,9 +148,9 @@ public macro ChMobileNumber(input: Tokens): Tokens {
 }
 
 /**
- * Validate string match whether is a email
+ * 验证字符串是否是电子邮件地址
  *
- * @attribute msg: the verification error tip
+ * @attribute msg 验证错误提示
  */
 public macro Email(attr: Tokens, input: Tokens): Tokens {
     parseConstraint(CCEmail, attr, input)
@@ -161,8 +158,7 @@ public macro Email(attr: Tokens, input: Tokens): Tokens {
 }
 
 /**
- * Validate string match whether is a email
- *
+ * 验证字符串是否是电子邮件地址
  */
 public macro Email(input: Tokens): Tokens {
     parseConstraint(CCEmail, input)
@@ -170,9 +166,9 @@ public macro Email(input: Tokens): Tokens {
 }
 
 /**
- * Validate string match whether is a IP V4
+ * 验证字符串是否是 IPv4 地址
  *
- * @attribute msg: the verification error tip
+ * @attribute msg 验证错误提示
  */
 public macro IPV4(attr: Tokens, input: Tokens): Tokens {
     parseConstraint(CCIPV4, attr, input)
@@ -180,8 +176,7 @@ public macro IPV4(attr: Tokens, input: Tokens): Tokens {
 }
 
 /**
- * Validate string match whether is a IP V4
- *
+ * 验证字符串是否是 IPv4 地址
  */
 public macro IPV4(input: Tokens): Tokens {
     parseConstraint(CCIPV4, input)
@@ -189,10 +184,10 @@ public macro IPV4(input: Tokens): Tokens {
 }
 
 /**
- * Validate string match whether is enum
+ * 验证字符串是否匹配枚举值
  *
- * @atrribute values: the enum values
- * @attribute msg: the verification error tip
+ * @attribute values 枚举值列表
+ * @attribute msg 验证错误提示
  */
 public macro EnumStr(attr: Tokens, input: Tokens): Tokens {
     parseConstraint(CCEnumStr, attr, input)
@@ -200,10 +195,10 @@ public macro EnumStr(attr: Tokens, input: Tokens): Tokens {
 }
 
 /**
- * Validate number match whether is enum
+ * 验证数字是否匹配枚举值
  *
- * @atrribute values: the enum values
- * @attribute msg: the verification error tip
+ * @attribute values 枚举值列表
+ * @attribute msg 验证错误提示
  */
 public macro EnumInt(attr: Tokens, input: Tokens): Tokens {
     parseConstraint(CCEnumInt, attr, input)

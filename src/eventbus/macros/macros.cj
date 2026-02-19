@@ -13,11 +13,11 @@ macro package cjoy.eventbus.macros
 import std.ast.Tokens
 
 /**
- * subscribe event
+ * 订阅事件
  *
- * @attribute name: the subscriber name
- * @attribute pattern: subscribe event name pattern
- * @attribute priority: the priority, default is 0
+ * @attribute name 订阅者名称
+ * @attribute pattern 订阅事件名称模式
+ * @attribute priority 优先级，默认为 0
  */
 public macro SubscribeEvent(attr: Tokens, input: Tokens): Tokens {
     input + parseFunc("SubscribeEvent", attr, input)

@@ -14,6 +14,7 @@ import std.env.getStdOut
 import std.io.OutputStream
 import std.collection.ArrayList
 import std.sync.AtomicBool
+import std.collection.concurrent.ConcurrentHashMap
 import stdx.log.{Logger, LogLevel, Attr, LogRecord}
 
 /**
@@ -31,6 +32,7 @@ public type LoggerCreatorFunc = (name: String) -> Logger
  */
 public class JoyLoggerFactory {
     private static var _creator: ?LoggerCreatorFunc = None
+    private static let _loggers: ConcurrentHashMap<String, Logger> = ConcurrentHashMap()
 
     /**
      * 使用已注册的创建器或默认 ConsoleLogger 创建日志记录器。
@@ -39,11 +41,31 @@ public class JoyLoggerFactory {
      * @return 日志记录器实例
      */
     public static func createLogger(name: String): Logger {
-        if (let Some(c) <- _creator) {
+        // 尝试从缓存中获取
+        if (let Some(logger) <- _loggers.get(name)) {
+            return logger
+        }
+
+        // 缓存中不存在，创建新的 Logger
+        let logger = if (let Some(c) <- _creator) {
             c(name)
         } else {
             ConsoleLogger()
         }
+
+        // 存入缓存
+        _loggers.add(name, logger)
+        return logger
+    }
+
+    /**
+     * 根据名称获取已创建的日志记录器实例。
+     *
+     * @param name 日志记录器名称
+     * @return 日志记录器实例，如果未找到则返回 None
+     */
+    public static func getLogger(name: String): ?Logger {
+        _loggers.get(name)
     }
 
     /**

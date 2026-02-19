@@ -28,6 +28,22 @@ public class JoyProperties {
 
     /** 服务器配置 */
     public var server: JoyServerProperties = JoyServerProperties()
+
+    /** 日志记录器配置 */
+    public var loggers: Array<JoyLoggerProperties> = []
+}
+
+/**
+ * 日志记录器配置类，用于配置指定名称的日志记录器的日志级别
+ */
+@Bind
+@Derive[ToString]
+public class JoyLoggerProperties {
+    /** 日志记录器名称 */
+    public var name: String = ""
+
+    /** 日志级别 (e.g., debug, info, warn, error) */
+    public var level: String = "info"
 }
 
 /**
