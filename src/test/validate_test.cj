@@ -113,6 +113,42 @@ func test13(@EnumStr[values = ["a", "b", "c"]] str: String): Unit {
 func test14(@EnumInt[values = [2, 4, 6]] number: Int): Unit {
 }
 
+@Validated
+func test15(@EqualField[field = "password"] confirmPassword: String, password: String): Unit {
+}
+
+@Valid
+@Json
+public struct TestEqualFieldData {
+    @NotEmpty
+    var password: String = "123456"
+
+    @EqualField[field = "password", msg = "两次输入的密码不一致"]
+    var confirmPassword: String = "123456"
+}
+
+@Valid
+@Json
+public struct TestWhenPropertyData {
+    var status: String = "inactive"
+
+    @NotEmpty[when = #"status == "active""#]
+    var activeReason: String = ""
+
+    var isAdmin: Bool = false
+
+    @Email[when = "isAdmin"]
+    var adminEmail: String = ""
+}
+
+@Validated
+func test16(@NestedValid data1: TestEqualFieldData): Unit {
+}
+
+@Validated
+func test17(@NestedValid data2: TestWhenPropertyData): Unit {
+}
+
 @Test
 public class ValidateTestCaseSuit {
     @TestCase
@@ -301,6 +337,83 @@ public class ValidateTestCaseSuit {
             @Fail("shoud throw a validate exception")
         } catch (ex: JoyValidationException) {
             @Assert(ex.message.startsWith("this constraint of value is ["), true)
+        }
+    }
+
+    @TestCase
+    public func testEqualFieldOk() {
+        let data = TestEqualFieldData(
+            password: "123456",
+            confirmPassword: "123456"
+        )
+        test16(data)
+    }
+
+    @TestCase
+    public func testEqualFieldFaild() {
+        let data = TestEqualFieldData(
+            password: "123456",
+            confirmPassword: "abc123"
+        )
+        try {
+            test16(data)
+            @Fail("shoud throw a validate exception")
+        } catch (ex: JoyValidationException) {
+            @Assert(ex.message.startsWith("两次输入的密码不一致"), true)
+        }
+    }
+
+    @TestCase
+    public func testWhenPropertyOk1() {
+        let data = TestWhenPropertyData(
+            status: "inactive",
+            activeReason: "",
+            isAdmin: false,
+            adminEmail: ""
+        )
+        test17(data)
+    }
+
+    @TestCase
+    public func testWhenPropertyOk2() {
+        let data = TestWhenPropertyData(
+            status: "active",
+            activeReason: "正在处理中",
+            isAdmin: true,
+            adminEmail: "admin@example.com"
+        )
+        test17(data)
+    }
+
+    @TestCase
+    public func testWhenPropertyFaild1() {
+        let data = TestWhenPropertyData(
+            status: "active",
+            activeReason: "",
+            isAdmin: false,
+            adminEmail: ""
+        )
+        try {
+            test17(data)
+            @Fail("shoud throw a validate exception")
+        } catch (ex: JoyValidationException) {
+            @Assert(ex.message.startsWith("this constraint of value is NOT EMPTY"), true)
+        }
+    }
+
+    @TestCase
+    public func testWhenPropertyFaild2() {
+        let data = TestWhenPropertyData(
+            status: "inactive",
+            activeReason: "",
+            isAdmin: true,
+            adminEmail: "invalid-email"
+        )
+        try {
+            test17(data)
+            @Fail("shoud throw a validate exception")
+        } catch (ex: JoyValidationException) {
+            @Assert(ex.message.startsWith("this constraint of value is email"), true)
         }
     }
 }
