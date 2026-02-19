@@ -234,6 +234,10 @@ var name: String = ""
 var activeReason: String = ""
 ```
 
+**参数**：
+- `msg`：自定义错误消息（可选）
+- `when`：条件表达式，满足时才执行校验（可选）
+
 ### 3.5 @Pattern
 
 使用正则表达式校验字符串或数字：
@@ -251,6 +255,11 @@ var username: String = ""
 @Pattern[regex = "^[0-9]{11}$", when = #"contactMethod == "phone""#]
 var contactNumber: String = ""
 ```
+
+**参数**：
+- `regex`：正则表达式模式（必填）
+- `msg`：自定义错误消息（可选）
+- `when`：条件表达式，满足时才执行校验（可选）
 
 ### 3.6 @DateTimeRange
 
@@ -288,6 +297,10 @@ var contactNumber: String = ""
 - 带 `+` 或 `86` 前缀
 - 3 位或 4 位区号
 - `s` 号结尾
+
+**参数**：
+- `msg`：自定义错误消息（可选）
+- `when`：条件表达式，满足时才执行校验（可选）
 
 ### 3.8 @Email
 
