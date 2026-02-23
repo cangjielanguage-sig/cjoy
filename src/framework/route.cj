@@ -273,7 +273,7 @@ class TreeRouteDistributor <: HttpRequestDistributor & HttpRequestHandler {
      */
     public func handle(ctx: HttpContext): Unit {
         let target: RouteInfo<JoyRequestHandler> = lookup(ctx.request)
-        let ctxParamMap = if (target.methodNotAllowed) {
+        let ctxParamMap = if (target.methodNotAllowed || ctx.request.method == JoyHttpConsts.METHOD_OPTIONS) {
             HashMap<String, Any>([("methods", target.methodsAllowed)])
         } else {
             HashMap<String, Any>()

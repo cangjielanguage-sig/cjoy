@@ -71,8 +71,10 @@ public class JoyNotFoundHandler <: JoyRequestHandler {
  */
 public class JoyMethodNotAllowedHandler <: JoyRequestHandler {
     public func handle(ctx: JoyContext): Unit {
-        let methods: Collection<String> = ctx.getCtxParam<Collection<String>>("methods").getOrThrow()
-        methods |> forEach {val => ctx.header(JoyHttpConsts.HEADER_ALLOW, val)}
+        if (let Some(methods) <- ctx.getCtxParam<Collection<String>>("methods")) {
+            let allow = String.join(methods.toArray(), delimiter: ",")
+            ctx.header(JoyHttpConsts.HEADER_ALLOW, allow)
+        }
         ctx.status(HttpStatusCode.STATUS_METHOD_NOT_ALLOWED)
     }
 }
@@ -84,7 +86,11 @@ class JoyOptionsHandler <: JoyRequestHandler {
     static let INSTANCE = JoyOptionsHandler()
 
     public func handle(ctx: JoyContext): Unit {
-        OptionsHandler().handle(ctx.httpContext)
+        if (let Some(methods) <- ctx.getCtxParam<Collection<String>>("methods")) {
+            let allow = String.join(methods.toArray(), delimiter: ",")
+            ctx.header(JoyHttpConsts.HEADER_ALLOW, allow)
+        }
+        ctx.ok()
     }
 }
 
