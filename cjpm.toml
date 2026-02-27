@@ -1,4 +1,5 @@
 [dependencies]
+  cjlog = { git = "https://gitcode.com/lanlingx/cjlog.git", branch = "main" }
 
 [package]
   cjc-version = "1.0.0"

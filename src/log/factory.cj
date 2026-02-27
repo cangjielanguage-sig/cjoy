@@ -10,12 +10,9 @@
 
 package cjoy.log
 
-import std.env.getStdOut
-import std.io.OutputStream
-import std.collection.ArrayList
-import std.sync.AtomicBool
 import std.collection.concurrent.ConcurrentHashMap
-import stdx.log.{Logger, LogLevel, Attr, LogRecord}
+import stdx.log.{Logger, LogValue}
+import cjlog.{getLogger as cjGetLogger, MDC}
 
 /**
  * 用于创建日志记录器实例的函数类型。
@@ -23,6 +20,11 @@ import stdx.log.{Logger, LogLevel, Attr, LogRecord}
  * 接受日志记录器名称并返回 Logger 实例。
  */
 public type LoggerCreatorFunc = (name: String) -> Logger
+
+/**
+ * 外部日志框架MDC Hook
+ */
+public type LoggerMDCHookFunc = (name: String, value: LogValue) -> Unit
 
 /**
  * 外部日志框架的日志记录器工厂适配器。
@@ -50,7 +52,8 @@ public class JoyLoggerFactory {
         let logger = if (let Some(c) <- _creator) {
             c(name)
         } else {
-            ConsoleLogger()
+            // 默认使用cjlog框架
+            cjGetLogger(name)
         }
 
         // 存入缓存
@@ -81,140 +84,38 @@ public class JoyLoggerFactory {
 }
 
 /**
- * 默认控制台日志记录器实现。
+ * MDC（Mapped Diagnostic Context，映射调试上下文）工具类。
  *
- * 以格式化方式将日志消息输出到 stdout，
- * 包含时间戳、日志级别、线程名称和文件/行信息。
+ * <p>{@code MDC} 提供了一种在多线程环境中追踪上下文信息的机制。
+ * 它为每个线程维护一个独立的键值对映射，可以在日志输出中包含这些上下文信息。</p>
+ *
  */
-class ConsoleLogger <: Logger {
-    let _attrs = ArrayList<Attr>()
-    var _level = LogLevel.INFO
-    let _output: OutputStream
-    let _closed = AtomicBool(false)
+public class JoyLogMDC {
+    // 默认使用cjlog框架的MDC
+    private static var _HOOK: ?LoggerMDCHookFunc = {name, value => MDC.put(name, value)}
 
     /**
-     * 创建以 stdout 为输出的控制台日志记录器。
-     */
-    public init() {
-        _output = getStdOut()
-    }
-
-    /**
-     * 获取或设置日志级别。
+     * 在当前线程的 MDC 中设置一个键值对。
      *
-     * 低于此级别的消息将不会被记录。
+     * <p>如果当前线程尚未初始化 MDC 存储，会自动创建。</p>
+     *
+     * @param name 键名
+     * @param value 键值
      */
-    public mut prop level: LogLevel {
-        get() {
-            _level
-        }
-        set(v) {
-            _level = v
+    public static func put(mdcs: Array<(String, LogValue)>): Unit {
+        for ((name, value) in mdcs) {
+            _HOOK?(name, value)
         }
     }
 
     /**
-     * 使用附加属性创建新的日志记录器。
+     * 注册外部日志框架MDC Hook。
      *
-     * @param attrs 要添加的属性数组
-     * @return 带有属性的新日志记录器实例，如果 attrs 为空则返回此实例
-     */
-    public func withAttrs(attrs: Array<Attr>): Logger {
-        if (attrs.size > 0) {
-            let nl = this.clone()
-            nl._attrs.add(all: attrs)
-            return nl
-        }
-        return this
-    }
-
-    /**
-     * 检查日志记录器是否已关闭。
+     * 调用此方法与您首选的日志框架集成。
      *
-     * @return 如果日志记录器已关闭返回 true
+     * @param fn 外部日志框架MDC Hook 函数
      */
-    public func isClosed(): Bool {
-        _closed.load()
-    }
-
-    /**
-     * 关闭日志记录器并刷新输出。
-     */
-    public func close(): Unit {
-        if (isClosed()) {
-            return
-        }
-        if (_closed.compareAndSwap(false, true)) {
-            _output.flush()
-        }
-    }
-
-    /**
-     * 记录日志记录。
-     *
-     * 将日志记录格式化并写入输出流。
-     * 格式：timestamp level [thread][package/file:line] message
-     *
-     * @param record 要写入的日志记录
-     */
-    public func log(record: LogRecord): Unit {
-        if (record.level < _level) {
-            return
-        }
-
-        let attrs = record.attrs.toArray()
-
-        _output.write(record.time.toString().toArray())
-        _output.write([b' '])
-        _output.write(record.level.toString().toArray())
-        _output.write([b' '])
-        _output.write(thread().toArray())
-        _output.write([b' '])
-        _output.write([b'['])
-        _output.write((getAttr(attrs, "%P") ?? "").toString().toArray())
-        _output.write([b'/'])
-        _output.write((getAttr(attrs, "%F") ?? "").toString().toArray())
-        _output.write([b':'])
-        _output.write((getAttr(attrs, "%L") ?? "").toString().toArray())
-        _output.write([b']'])
-        _output.write([b' '])
-        _output.write(record.message.toString().toArray())
-        if (attrs.size > 5) {
-            for (a in attrs) {
-                if (!a[0].startsWith("%")) {
-                    _output.write([b' '])
-                    _output.write(a[0].toString().toArray())
-                    _output.write([b'='].toArray())
-                    _output.write((a[1] as ToString).toString().toArray())
-                }
-            }
-        }
-        _output.write([b'\n'])
-        _output.flush()
-    }
-
-    func getAttr(attrs: Array<Attr>, name: String): ?ToString {
-        for (a in attrs) {
-            if (a[0] == name) {
-                return a[1] as ToString
-            }
-        }
-        None
-    }
-
-    func clone(): ConsoleLogger {
-        let cl = ConsoleLogger()
-        cl._level = this._level
-        cl._attrs.add(all: this._attrs)
-        return cl
-    }
-
-    private static func thread(): String {
-        let thread = Thread.currentThread
-        if (thread.name != "") {
-            thread.name
-        } else {
-            "${thread.id}"
-        }
+    public static func registerCreator(fn: LoggerMDCHookFunc): Unit {
+        _HOOK = fn
     }
 }

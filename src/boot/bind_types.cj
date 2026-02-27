@@ -14,7 +14,6 @@ import std.deriving.Derive
 import cjoy.bind.*
 import cjoy.bind.macros.*
 
-
 /**
  * CJoy 应用的主配置类，用于加载和存储应用配置
  *
@@ -29,8 +28,21 @@ public class JoyProperties {
     /** 服务器配置 */
     public var server: JoyServerProperties = JoyServerProperties()
 
+    /** CJLog 配置文件路径 */
+    public var cjlog: JoyCjlogProperties = JoyCjlogProperties()
+
     /** 日志记录器配置 */
     public var loggers: Array<JoyLoggerProperties> = []
+}
+
+/**
+ * CJLog 配置类，用于配置 CJLog 日志框架
+ */
+@Bind
+@Derive[ToString]
+public class JoyCjlogProperties {
+    /** CJLog 配置文件路径，若不为空则启动时加载该配置 */
+    public var path: String = ""
 }
 
 /**

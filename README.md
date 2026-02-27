@@ -101,6 +101,9 @@ export CANGJIE_STDX_PATH=$HOME/cangjiestdx
 git clone https://gitcode.com/Cangjie-SIG/cjoy.git
 cd cjoy
 
+# 更新依赖
+cjpm udpate
+
 # 运行测试
 cjpm test
 
@@ -109,6 +112,7 @@ cjpm build
 
 # 运行示例
 cd examples
+cjpm udpate
 cjpm run --name examples.tls
 ```
 

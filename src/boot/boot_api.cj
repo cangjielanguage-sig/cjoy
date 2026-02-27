@@ -20,6 +20,7 @@ import stdx.log.LogLevel
 import cjoy.*
 import cjoy.config.*
 import cjoy.log.macros.*
+import cjlog
 
 /**
  * 应用程序启动前的回调类型，在 Joy 实例创建后、服务器启动前调用
@@ -178,6 +179,12 @@ public class JoyBoot {
             "default"
         } else {
             properties.name
+        }
+
+        // 加载 CJLog 配置
+        if (!properties.cjlog.path.isEmpty()) {
+            @JoyLogInfo("Loading CJLog config from ${properties.cjlog.path}")
+            cjlog.loadConfig(properties.cjlog.path)
         }
 
         // 配置日志级别

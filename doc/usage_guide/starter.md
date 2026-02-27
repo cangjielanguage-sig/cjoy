@@ -191,6 +191,9 @@ joy.server.pool.capacity=10000
 joy.server.pool.queueCapacity=10000
 joy.server.pool.preheat=0
 
+# CJLog 配置
+joy.cjlog.path=./config/cjlog.json
+
 # 日志记录器配置
 joy.loggers[0].name=cjoy.bind
 joy.loggers[0].level=debug
@@ -204,6 +207,9 @@ joy.loggers[1].level=error
 {
   "joy": {
     "name": "myapp",
+    "cjlog": {
+        "path": "./config/cjlog.json"
+    },
     "server": {
       "address": "0.0.0.0",
       "port": 8080,
@@ -278,7 +284,6 @@ joy.loggers[1].level=error
 #### HTTP/2 配置 (server.http.h2)
 
 | 配置项 | 类型 | 默认值 | 说明 |
-| | | |
 |--------|------|--------|------|
 | `joy.server.http.h2.enabled` | Bool | false | 是否启用 HTTP/2（需同时启用 TLS） |
 | `joy.server.http.h2.enableConnectProtocol` | Bool | false | 是否启用 CONNECT 协议 |
@@ -309,6 +314,12 @@ joy.loggers[1].level=error
 | `joy.server.pool.capacity` | Int64 | 10000 | 线程池容量 |
 | `joy.server.pool.queueCapacity` | Int64 | 10000 | 任务队列容量 |
 | `joy.server.pool.preheat` | Int64 | 0 | 预热线程数 |
+
+#### CJLog 配置 (cjlog)
+
+| 配置项 | 类型 | 默认值 | 说明 |
+|--------|------|--------|------|
+| `joy.cjlog.path` | String | "" | CJLog 配置文件路径，若不为空则启动时加载该配置 |
 
 #### 日志记录器配置 (loggers)
 

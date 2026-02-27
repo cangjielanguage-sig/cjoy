@@ -18,6 +18,7 @@ cjcov_logs/
 .VSCodeCounter
 log.txt
 cjpm.lock
+examples/cjpm.lock
 .claude/commands
 .claude/skills/openspec-*
 .opencode/command

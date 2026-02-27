@@ -6,7 +6,7 @@ CJoy 内置日志工具 `JoyLoggerFactory`，用于创建 Logger 对象。默认
 
 ## 概述
 
-CJoy 日志系统基于以下核心概念设计：
+CJoy 日志系统基于 [cjlog](https://gitcode.com/lanlingx/cjlog) 实现，默认调用 cjlog 提供的能力：
 
 - **日志级别**：支持 DEBUG、INFO、WARN、ERROR 四种级别
 - **日志宏**：通过 `@JoyCreateLogger`、`@JoyLogDebug` 等宏自动生成日志代码
@@ -86,20 +86,24 @@ func handleData(ctx: JoyContext): Unit {
 格式示例：
 
 ```
-2026-01-31T22:18:19.233594401+08:00 INFO 1 [cjoy.framework/engine.cj:72] create joy app default
-2026-01-31T22:18:20.456789123+08:00 DEBUG 2 [myapp/handler.cj:45] 处理请求数据: /api/data
+2026-02-27T22:21:33.154195185+08:00|1||INFO|engine.cj:69 >> create joy app default 
+2026-02-27T22:21:33.154311283+08:00|1||INFO|route.cj:586 >> add route handler, path=/{name}, methods=[GET] 
+2026-02-27T22:21:33.154358802+08:00|1||INFO|route.cj:586 >> add route handler, path=/abc, methods=[GET]
 ```
 
 ---
 
 ## 三、日志级别控制
 
+CJoy 日志默认使用 [CJLog](https://gitcode.com/lanlingx/cjlog.git)，可以通过 cjlog 提供的 API 控制日志级别，更多的配置与使用介绍请参见 CJLog。
+
 ```cangjie
 import cjoy.log.JoyLoggerFactory
 
 main(): Int64 {
-    // 创建 Logger 并设置级别
+    // 创建 Logger（默认使用 cjlog）
     let logger = JoyLoggerFactory.createLogger("myapp")
+    // 通过 cjlog 的 API 设置级别
     logger.level = LogLevel.DEBUG  // 设置为调试级别
 
     let joy = Joy.default()
@@ -112,7 +116,7 @@ main(): Int64 {
 
 ## 四、扩展日志框架
 
-可以将 CJoy 的日志输出适配到其他日志框架（如 Log4j、slf4j 等）：
+可以将 CJoy 的日志输出适配到其他日志框架：
 
 ```cangjie
 package myapp.log
@@ -234,13 +238,13 @@ AccessLog 记录的日志包含：
 
 ### 6.1 createLogger
 
-创建指定名称的 Logger 对象：
+创建指定名称的 Logger 对象（默认使用 cjlog）：
 
 ```cangjie
 let logger = JoyLoggerFactory.createLogger("myapp")
 ```
 
-如果已注册自定义的 Logger 创建器，则使用自定义创建器；否则使用 ConsoleLogger。
+如果已注册自定义的 Logger 创建器，则使用自定义创建器；否则默认使用 cjlog。
 
 ### 6.2 registerCreator
 
