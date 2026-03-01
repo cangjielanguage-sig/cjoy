@@ -14,10 +14,8 @@ import std.unittest.testmacro.*
 import std.collection.ArrayList
 import cjoy.context.*
 import stdx.net.http.*
-import std.io.readToEnd
-import std.io.BufferedInputStream
-import std.io.StringReader
-import std.io.InputStream
+import std.io.{readToEnd, BufferedInputStream, StringReader, InputStream}
+import std.sync.AtomicBool
 
 @Test
 public class MiddlewareTestCaseSuit {
@@ -270,6 +268,145 @@ public class MiddlewareTestCaseSuit {
         eprint(bodyStr)
         @Assert(bodyStr.contains("middleware1: value1"))
         @Assert(bodyStr.contains("middleware2: value2"))
+        engine.shutdown()
+    }
+
+    /**
+     * 测试中间件单路径注册 - 验证中间件可以注册到单个路径
+     */
+    @TestCase
+    public func testMiddlewareSinglePathRegistration() {
+        let engine = Joy.create(name: "testSinglePathReg")
+        _instance = engine
+
+        let middlewareFunc: JoyMiddlewareFunc = {ctx, chain =>
+            chain.next(ctx)
+        }
+
+        engine.router.use(JoyMiddlewareFuncHandler(middlewareFunc))
+        engine.router.get("/test", {ctx: JoyContext => ctx.string("ok")})
+
+        let dumpResult = engine.router.dump()
+        @Assert(dumpResult.size > 0)
+
+        engine.shutdown()
+    }
+
+    /**
+     * 测试中间件多路径注册 - 验证中间件可以注册到多个路径组
+     */
+    @TestCase
+    public func testMiddlewareMultiplePathRegistration() {
+        let engine = Joy.create(name: "testMultiPathReg")
+        _instance = engine
+
+        let middlewareFunc: JoyMiddlewareFunc = {ctx, chain =>
+            chain.next(ctx)
+        }
+
+        let handler = JoyMiddlewareFuncHandler(middlewareFunc)
+        JoyMiddlewares.addHandler(["/api", "/web", "/admin"], handler)
+        JoyMiddlewares.registerTo(engine)
+
+        engine.shutdown()
+    }
+
+    /**
+     * 测试中间件链中断 - 验证中间件可以中断处理链
+     */
+    @TestCase
+    public func testMiddlewareChainInterruption() {
+        let engine = Joy.create(name: "testChainInterrupt")
+        _instance = engine
+
+        let handlerCalled = AtomicBool(false)
+
+        engine.router.use(JoyMiddlewareFuncHandler({ctx, chain =>
+            // 不调用 chain.next()，中断处理链
+            ctx.string("interrupted")
+        }))
+
+        engine.router.get("/test", {ctx: JoyContext =>
+            handlerCalled.store(true)
+            ctx.string("handler")
+        })
+
+        spawn {
+            engine.run("127.0.0.1", 18888)
+        }
+        sleep(Duration.millisecond * 500)
+
+        let rsp = _client.get("http://127.0.0.1:18888/test")
+        @Assert(rsp.status == 200)
+        let bodyStr = streamToString(rsp.body)
+        @Assert(bodyStr, "interrupted")
+        @Assert(handlerCalled.load(), false)
+
+        engine.shutdown()
+    }
+
+    /**
+     * 测试分组中间件注册 - 验证中间件可以注册到路由分组
+     */
+    @TestCase
+    public func testMiddlewareGroupRegistration() {
+        let engine = Joy.create(name: "testGroupReg")
+        _instance = engine
+
+        let apiGroup = engine.router.group("/api")
+        apiGroup.use(JoyMiddlewareFuncHandler({ctx, chain =>
+            ctx.header("X-API-Middleware", "true")
+            chain.next(ctx)
+        }))
+
+        apiGroup.get("/test", {ctx: JoyContext => ctx.string("api")})
+
+        spawn {
+            engine.run("127.0.0.1", 18889)
+        }
+        sleep(Duration.millisecond * 500)
+
+        let rsp = _client.get("http://127.0.0.1:18889/api/test")
+        @Assert(rsp.status == 200)
+        @Assert(rsp.headers.getFirst("X-API-Middleware").getOrThrow(), "true")
+
+        engine.shutdown()
+    }
+
+    /**
+     * 测试中间件上下文传递 - 验证中间件之间可以传递上下文数据
+     */
+    @TestCase
+    public func testMiddlewareContextPassing() {
+        let engine = Joy.create(name: "testContextPassing")
+        _instance = engine
+
+        engine.router.use(JoyMiddlewareFuncHandler({ctx, chain =>
+            ctx.setCtxParam("step1", "done")
+            chain.next(ctx)
+        }))
+
+        engine.router.use(JoyMiddlewareFuncHandler({ctx, chain =>
+            let step1 = ctx.getCtxParam<String>("step1")
+            ctx.setCtxParam("step2", step1.getOrThrow() + "-done")
+            chain.next(ctx)
+        }))
+
+        engine.router.get("/test", {ctx: JoyContext =>
+            let result = ctx.getCtxParam<String>("step2")
+            ctx.string(result.getOrThrow())
+        })
+
+        spawn {
+            engine.run("127.0.0.1", 18890)
+        }
+        sleep(Duration.millisecond * 500)
+
+        let rsp = _client.get("http://127.0.0.1:18890/test")
+        @Assert(rsp.status == 200)
+        let bodyStr = streamToString(rsp.body)
+        @Assert(bodyStr, "done-done")
+
         engine.shutdown()
     }
 }

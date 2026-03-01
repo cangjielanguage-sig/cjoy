@@ -18,12 +18,17 @@ import cjoy.framework.{JoyHttpConsts}
 /**
  * HTTP 响应包装器
  */
-public class JoyHttpResponse {
+public class JoyHttpResponse <: Resource {
     private let _response: HttpResponse
     private var _sseStream: ?JoySSEventStream = None
+    private var _isClosed = false
 
     public JoyHttpResponse(response: HttpResponse) {
         _response = response
+    }
+
+    ~init() {
+        _response.close()
     }
 
     /**
@@ -115,6 +120,26 @@ public class JoyHttpResponse {
                 stream
             }
         }
+    }
+
+    /**
+     * 释放资源
+     */
+    public func close() {
+        if (_isClosed) {
+            return
+        }
+        _response.close()
+        _isClosed = true
+    }
+
+    /**
+     * 是否已关闭
+     *
+     * @return 如果关闭返回为true
+     */
+    public func isClosed(): Bool {
+        _isClosed
     }
 }
 

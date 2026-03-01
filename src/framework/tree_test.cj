@@ -341,4 +341,181 @@ public class TreeNodeTestCaseSuit {
             @Fail("find /articles/{slug}/{uid}/* failed")
         }
     }
+
+    /**
+     * 测试空树 - 验证空树不匹配任何路径
+     */
+    @TestCase
+    public func testEmptyTree() {
+        let node = TreeNode<Int64>(NT_STATIC, b'\0', "")
+
+        let ri: RouteInfo<Int64> = RouteInfo()
+        let result = node.findRouteHandler(ri, "GET", "/")
+
+        @Assert(result.isNone(), true)
+    }
+
+    /**
+     * 测试根节点路由 - 验证根路径路由正确
+     */
+    @TestCase
+    public func testRootNodeRoute() {
+        let node = TreeNode<Int64>(NT_STATIC, b'\0', "")
+        addPath(node, "/", 1)
+
+        let ri: RouteInfo<Int64> = RouteInfo()
+        let result = node.findRouteHandler(ri, "GET", "/")
+
+        @Assert(result.isSome(), true)
+        @Assert(ri.handler.getOrThrow(), 1)
+    }
+
+    /**
+     * 测试静态节点类型 - 验证静态节点正确处理
+     */
+    @TestCase
+    public func testStaticNodeType() {
+        let node = TreeNode<Int64>(NT_STATIC, b'\0', "")
+        addPath(node, "/static/path", 1)
+
+        let ri: RouteInfo<Int64> = RouteInfo()
+        let result = node.findRouteHandler(ri, "GET", "/static/path")
+
+        @Assert(result.isSome(), true)
+        @Assert(ri.pattern, "/static/path")
+    }
+
+    /**
+     * 测试参数节点类型 - 验证参数节点正确处理
+     */
+    @TestCase
+    public func testParamNodeType() {
+        let node = TreeNode<Int64>(NT_STATIC, b'\0', "")
+        addPath(node, "/users/{id}", 1)
+
+        let ri: RouteInfo<Int64> = RouteInfo()
+        let result = node.findRouteHandler(ri, "GET", "/users/123")
+
+        @Assert(result.isSome(), true)
+        @Assert(ri.pattern, "/users/{id}")
+        @Assert(ri.routeParamKeys.size, 1)
+        @Assert(ri.routeParamKeys[0], "id")
+        @Assert(ri.routeParamValues[0], "123")
+    }
+
+    /**
+     * 测试通配符节点类型 - 验证通配符节点正确处理
+     */
+    @TestCase
+    public func testCatchAllNodeType() {
+        let node = TreeNode<Int64>(NT_STATIC, b'\0', "")
+        addPath(node, "/files/*", 1)
+
+        let ri: RouteInfo<Int64> = RouteInfo()
+        let result = node.findRouteHandler(ri, "GET", "/files/docs/readme.txt")
+
+        @Assert(result.isSome(), true)
+        @Assert(ri.pattern, "/files/*")
+        @Assert(ri.routeParamKeys[0], "*")
+        @Assert(ri.routeParamValues[0], "docs/readme.txt")
+    }
+
+    /**
+     * 测试多 HTTP 方法 - 验证不同 HTTP 方法存储不同处理器
+     */
+    @TestCase
+    public func testMultipleHttpMethods() {
+        let node = TreeNode<Int64>(NT_STATIC, b'\0', "")
+        addPath(node, "GET", "/api", 1)
+        addPath(node, "POST", "/api", 2)
+        addPath(node, "PUT", "/api", 3)
+
+        let ri1: RouteInfo<Int64> = RouteInfo()
+        let result1 = node.findRouteHandler(ri1, "GET", "/api")
+        @Assert(result1.isSome(), true)
+        @Assert(ri1.handler.getOrThrow(), 1)
+
+        let ri2: RouteInfo<Int64> = RouteInfo()
+        let result2 = node.findRouteHandler(ri2, "POST", "/api")
+        @Assert(result2.isSome(), true)
+        @Assert(ri2.handler.getOrThrow(), 2)
+
+        let ri3: RouteInfo<Int64> = RouteInfo()
+        let result3 = node.findRouteHandler(ri3, "PUT", "/api")
+        @Assert(result3.isSome(), true)
+        @Assert(ri3.handler.getOrThrow(), 3)
+    }
+
+    /**
+     * 测试路径不匹配 - 验证不匹配的路径返回 None
+     */
+    @TestCase
+    public func testPathNotMatch() {
+        let node = TreeNode<Int64>(NT_STATIC, b'\0', "")
+        addPath(node, "/users", 1)
+
+        let ri: RouteInfo<Int64> = RouteInfo()
+        let result = node.findRouteHandler(ri, "GET", "/products")
+
+        @Assert(result.isNone(), true)
+    }
+
+    /**
+     * 测试部分路径匹配 - 验证部分匹配不返回处理器
+     */
+    @TestCase
+    public func testPartialPathMatch() {
+        let node = TreeNode<Int64>(NT_STATIC, b'\0', "")
+        addPath(node, "/users/profile", 1)
+
+        let ri: RouteInfo<Int64> = RouteInfo()
+        let result = node.findRouteHandler(ri, "GET", "/users")
+
+        @Assert(result.isNone(), true)
+    }
+
+    /**
+     * 测试参数值包含斜杠 - 验证参数值不包含斜杠
+     */
+    @TestCase
+    public func testParamValueWithSlash() {
+        let node = TreeNode<Int64>(NT_STATIC, b'\0', "")
+        addPath(node, "/files/{filename}", 1)
+
+        let ri: RouteInfo<Int64> = RouteInfo()
+        let result = node.findRouteHandler(ri, "GET", "/files/path/to/file.txt")
+
+        // 普通参数不应匹配包含斜杠的值
+        @Assert(result.isNone(), true)
+    }
+
+    /**
+     * 测试参数值特殊字符 - 验证参数值可以包含特殊字符
+     */
+    @TestCase
+    public func testParamValueWithSpecialChars() {
+        let node = TreeNode<Int64>(NT_STATIC, b'\0', "")
+        addPath(node, "/search/{query}", 1)
+
+        let ri: RouteInfo<Int64> = RouteInfo()
+        let result = node.findRouteHandler(ri, "GET", "/search/hello%20world")
+
+        @Assert(result.isSome(), true)
+        @Assert(ri.routeParamValues[0], "hello%20world")
+    }
+
+    /**
+     * 测试树节点转储 - 验证 dumpTree 方法正常工作
+     */
+    @TestCase
+    public func testTreeDump() {
+        let node = TreeNode<Int64>(NT_STATIC, b'\0', "")
+        addPath(node, "/", 1)
+        addPath(node, "/users", 2)
+        addPath(node, "/users/{id}", 3)
+        addPath(node, "/products", 4)
+
+        let dump = node.dumpTree()
+        @Assert(dump.size > 0, true)
+    }
 }

@@ -104,8 +104,9 @@ public class JoyHttpClientServiceTestCaseSuit {
      */
     @TestCase
     public func testGetOk() {
-        let rsp = _client.get(_ctx, "/httpx_handler")
-        assertReponse(rsp)
+        try (rsp = _client.get(_ctx, "/httpx_handler")) {
+            assertReponse(rsp)
+        }
     }
 
     private func assertReponse(rsp: JoyHttpResponse): Unit {
@@ -123,8 +124,9 @@ public class JoyHttpClientServiceTestCaseSuit {
      */
     @TestCase
     public func testPostOk() {
-        let rsp = _client.post(_ctx, "/httpx_handler", Option<Any>.None)
-        assertReponse(rsp)
+        try (rsp = _client.post(_ctx, "/httpx_handler", Option<Any>.None)) {
+            assertReponse(rsp)
+        }
     }
 
     /**
@@ -132,8 +134,9 @@ public class JoyHttpClientServiceTestCaseSuit {
      */
     @TestCase
     public func testPutOk() {
-        let rsp = _client.put(_ctx, "/httpx_handler", Option<Any>.None)
-        assertReponse(rsp)
+        try (rsp = _client.put(_ctx, "/httpx_handler", Option<Any>.None)) {
+            assertReponse(rsp)
+        }
     }
 
     /**
@@ -141,8 +144,9 @@ public class JoyHttpClientServiceTestCaseSuit {
      */
     @TestCase
     public func testPatchOk() {
-        let rsp = _client.patch(_ctx, "/httpx_handler", Option<Any>.None)
-        assertReponse(rsp)
+        try (rsp = _client.patch(_ctx, "/httpx_handler", Option<Any>.None)) {
+            assertReponse(rsp)
+        }
     }
 
     /**
@@ -150,8 +154,9 @@ public class JoyHttpClientServiceTestCaseSuit {
      */
     @TestCase
     public func testDeleteOk() {
-        let rsp = _client.delete(_ctx, "/httpx_handler")
-        assertReponse(rsp)
+        try (rsp = _client.delete(_ctx, "/httpx_handler")) {
+            assertReponse(rsp)
+        }
     }
 
     /**
@@ -159,8 +164,9 @@ public class JoyHttpClientServiceTestCaseSuit {
      */
     @TestCase
     public func testPostWithJson() {
-        let rsp = _client.send(_ctx, JoyHttpRequest.of("/httpx_handler").post().json(TestJsonData(a: "a", b: "b")))
-        assertReponse(rsp, "httpx_handlerab")
+        try (rsp = _client.send(_ctx, JoyHttpRequest.of("/httpx_handler").post().json(TestJsonData(a: "a", b: "b")))) {
+            assertReponse(rsp, "httpx_handlerab")
+        }
     }
 
     /**
@@ -168,8 +174,9 @@ public class JoyHttpClientServiceTestCaseSuit {
      */
     @TestCase
     public func testPostWithJson2() {
-        let rsp = _client.send(_ctx, JoyHttpRequest.of("/httpx_handler").post().body(TestJsonData(a: "a", b: "b")))
-        assertReponse(rsp, "httpx_handlerab")
+        try (rsp = _client.send(_ctx, JoyHttpRequest.of("/httpx_handler").post().body(TestJsonData(a: "a", b: "b")))) {
+            assertReponse(rsp, "httpx_handlerab")
+        }
     }
 
     /**
@@ -177,9 +184,10 @@ public class JoyHttpClientServiceTestCaseSuit {
      */
     @TestCase
     public func testPostWithJson3() {
-        let rsp = _client.send(_ctx,
-            JoyHttpRequest.of("/httpx_handler").post().body(JsonRequest(TestJsonData(a: "a", b: "b"))))
-        assertReponse(rsp, "httpx_handlerab")
+        try (rsp = _client.send(_ctx,
+            JoyHttpRequest.of("/httpx_handler").post().body(JsonRequest(TestJsonData(a: "a", b: "b"))))) {
+            assertReponse(rsp, "httpx_handlerab")
+        }
     }
 
     /**
@@ -187,9 +195,10 @@ public class JoyHttpClientServiceTestCaseSuit {
      */
     @TestCase
     public func testPostWithJson4() {
-        let rsp = _client.send(_ctx,
-            JoyHttpRequest.of("/httpx_handler").post().body(JsonRequest(JsonTool.toJson(TestJsonData(a: "a", b: "b")))))
-        assertReponse(rsp, "httpx_handlerab")
+        try (rsp = _client.send(_ctx,
+            JoyHttpRequest.of("/httpx_handler").post().body(JsonRequest(JsonTool.toJson(TestJsonData(a: "a", b: "b")))))) {
+            assertReponse(rsp, "httpx_handlerab")
+        }
     }
 
     /**
@@ -197,7 +206,7 @@ public class JoyHttpClientServiceTestCaseSuit {
      */
     @TestCase
     public func testPostMultiPart() {
-        let rsp = _client.send(
+        try (rsp = _client.send(
             _ctx,
             JoyHttpRequest.of("/multpart").multiPart(
                 {
@@ -205,9 +214,9 @@ public class JoyHttpClientServiceTestCaseSuit {
                         writer.writeField("f1", "text")
                         writer.writeFile("f2", 'file.txt', "file contents".toArray())
                 }
-            )
-        )
-        assertReponse(rsp, "textfile.txt")
+            ))) {
+            assertReponse(rsp, "textfile.txt")
+        }
     }
 
     /**
@@ -215,8 +224,9 @@ public class JoyHttpClientServiceTestCaseSuit {
      */
     @TestCase
     public func testGetWithQuery() {
-        let rsp = _client.get(_ctx, "/httpx_handler", HashMap<String, ToString>([("q1", "v1")]))
-        assertReponse(rsp, "httpx_handlerv1")
+        try (rsp = _client.get(_ctx, "/httpx_handler", HashMap<String, ToString>([("q1", "v1")]))) {
+            assertReponse(rsp, "httpx_handlerv1")
+        }
     }
 
     /**
@@ -226,8 +236,9 @@ public class JoyHttpClientServiceTestCaseSuit {
     public func testGetWithHeader() {
         let h = HttpHeaders()
         h.add("h1", "v1")
-        let rsp = _client.get(_ctx, "/httpx_handler", h)
-        assertReponse(rsp, "httpx_handlerv1")
+        try (rsp = _client.get(_ctx, "/httpx_handler", h)) {
+            assertReponse(rsp, "httpx_handlerv1")
+        }
     }
 
     /**
@@ -237,8 +248,9 @@ public class JoyHttpClientServiceTestCaseSuit {
     public func testPostForm() {
         let f = Form()
         f.add("p1", "v1")
-        let rsp = _client.postform(_ctx, "/httpx_handler", f)
-        assertReponse(rsp, "httpx_handlerv1")
+        try (rsp = _client.postform(_ctx, "/httpx_handler", f)) {
+            assertReponse(rsp, "httpx_handlerv1")
+        }
     }
 
     /**
@@ -246,8 +258,9 @@ public class JoyHttpClientServiceTestCaseSuit {
      */
     @TestCase
     public func testPostForm2() {
-        let rsp = _client.send(_ctx, JoyHttpRequest.of("/httpx_handler").postform("p1", "v1"))
-        assertReponse(rsp, "httpx_handlerv1")
+        try (rsp = _client.send(_ctx, JoyHttpRequest.of("/httpx_handler").postform("p1", "v1"))) {
+            assertReponse(rsp, "httpx_handlerv1")
+        }
     }
 
     /**
@@ -255,13 +268,14 @@ public class JoyHttpClientServiceTestCaseSuit {
      */
     @TestCase
     public func testGetStream() {
-        let rsp = _client.get(_ctx, "/sse")
-        var num = 0
-        for (evt in rsp.eventStream) {
-            println(evt.data)
-            num++
+        try (rsp = _client.get(_ctx, "/sse")) {
+            var num = 0
+            for (evt in rsp.eventStream) {
+                println(evt.data)
+                num++
+            }
+            @Assert(num, 10)
         }
-        @Assert(num, 10)
     }
 
     /**
@@ -271,8 +285,9 @@ public class JoyHttpClientServiceTestCaseSuit {
     public func testBasicAuth() {
         let c = BasicAuthClient(_client, username: "xiao", password: "xiao")
         let tc = RetryClient(c)
-        let rsp = tc.get(_ctx, "/basic_auth")
-        assertReponse(rsp, "basic_auth")
+        try (rsp = tc.get(_ctx, "/basic_auth")) {
+            assertReponse(rsp, "basic_auth")
+        }
     }
 
     /**
@@ -281,7 +296,8 @@ public class JoyHttpClientServiceTestCaseSuit {
     @TestCase
     public func testTokenAuth() {
         let c = TokenAuthClient(_client, token: "abcd")
-        let rsp = c.get(_ctx, "/token_auth")
-        assertReponse(rsp, "token_auth")
+        try (rsp = c.get(_ctx, "/token_auth")) {
+            assertReponse(rsp, "token_auth")
+        }
     }
 }

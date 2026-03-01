@@ -84,6 +84,7 @@ public class TokenAuthTestCaseSuit {
             .build()
         let rsp = _client.send(req)
         assertResp(rsp, "ok-header")
+        rsp.close()
     }
 
     /**
@@ -93,6 +94,7 @@ public class TokenAuthTestCaseSuit {
     public func testQuery() {
         let rsp = _client.get("http://127.0.0.1:18881/token_auth/query?token=abc")
         assertResp(rsp, "ok-query")
+        rsp.close()
     }
 
     /**
@@ -102,6 +104,7 @@ public class TokenAuthTestCaseSuit {
     public func testParam() {
         let rsp = _client.get("http://127.0.0.1:18881/token_auth/param/abc")
         assertResp(rsp, "ok-param")
+        rsp.close()
     }
 
     /**
@@ -117,6 +120,7 @@ public class TokenAuthTestCaseSuit {
             .build()
         let rsp = _client.send(req)
         assertResp(rsp, "ok-form")
+        rsp.close()
     }
 
     /**
@@ -131,6 +135,7 @@ public class TokenAuthTestCaseSuit {
             .build()
         let rsp = _client.send(req)
         assertResp(rsp, "ok-cookie")
+        rsp.close()
     }
 
     private func assertResp(rsp: HttpResponse, exp: String): Unit {

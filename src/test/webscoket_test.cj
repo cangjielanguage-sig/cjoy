@@ -153,4 +153,131 @@ public class WebSocketTestCaseSuit {
         websocket.writeCloseFrame(status: JoyWebSocketCloseStatus.NORMAL)
         websocket.closeConn()
     }
+
+    /**
+     * 测试二进制消息 - 验证 WebSocket 二进制消息发送和接收
+     */
+    @TestCase
+    func testBinaryMessage() {
+        _textWsHandler.reset()
+
+        let url = URL.parse("ws://127.0.0.1:18881/ws/text/binary")
+        let (websocket, _) = WebSocket.upgradeFromClient(_client, url)
+        sleep(Duration.millisecond * 200)
+
+        let binaryData: Array<Byte> = [0x01, 0x02, 0x03, 0x04, 0x05]
+        websocket.write(BinaryWebFrame, binaryData)
+        sleep(Duration.millisecond * 500)
+
+        @Assert(_textWsHandler.msgNum >= 1, true)
+
+        websocket.writeCloseFrame(status: JoyWebSocketCloseStatus.NORMAL)
+        websocket.closeConn()
+    }
+
+    /**
+     * 测试连接关闭 - 验证 WebSocket 连接正确关闭
+     */
+    @TestCase
+    func testConnectionClose() {
+        _textWsHandler.reset()
+
+        let url = URL.parse("ws://127.0.0.1:18881/ws/text/close")
+        let (websocket, _) = WebSocket.upgradeFromClient(_client, url)
+        sleep(Duration.millisecond * 200)
+
+        @Assert(_textWsHandler.isOpen, true)
+
+        websocket.writeCloseFrame(status: JoyWebSocketCloseStatus.GOING_AWAY)
+        sleep(Duration.millisecond * 500)
+
+        @Assert(_textWsHandler.isOpen, false)
+        @Assert(_textWsHandler.closeStatus, JoyWebSocketCloseStatus.GOING_AWAY)
+
+        websocket.closeConn()
+    }
+
+    /**
+     * 测试 Ping 消息 - 验证 WebSocket Ping/Pong 机制
+     */
+    @TestCase
+    func testPingMessage() {
+        _textWsHandler.reset()
+
+        let url = URL.parse("ws://127.0.0.1:18881/ws/text/ping")
+        let (websocket, _) = WebSocket.upgradeFromClient(_client, url)
+        sleep(Duration.millisecond * 200)
+
+        websocket.writePingFrame("ping".toArray())
+        sleep(Duration.millisecond * 500)
+
+        // 发送文本消息验证连接仍然正常
+        websocket.write(TextWebFrame, "test".toArray())
+        sleep(Duration.millisecond * 500)
+
+        @Assert(_textWsHandler.msgNum >= 1, true)
+
+        websocket.writeCloseFrame(status: JoyWebSocketCloseStatus.NORMAL)
+        websocket.closeConn()
+    }
+
+    /**
+     * 测试查询参数传递 - 验证 WebSocket 可以获取查询参数
+     */
+    @TestCase
+    func testQueryParamPassing() {
+        _textWsHandler.reset()
+
+        let url = URL.parse("ws://127.0.0.1:18881/ws/text/params?token=abc123")
+        let (websocket, _) = WebSocket.upgradeFromClient(_client, url)
+        sleep(Duration.millisecond * 200)
+
+        @Assert(_textWsHandler.isOpen, true)
+        @Assert(_textWsHandler.name, "params")
+
+        websocket.writeCloseFrame(status: JoyWebSocketCloseStatus.NORMAL)
+        websocket.closeConn()
+    }
+
+    /**
+     * 测试大量消息 - 验证 WebSocket 处理大量消息的能力
+     */
+    @TestCase
+    func testLargeVolumeMessages() {
+        _textWsHandler.reset()
+
+        let url = URL.parse("ws://127.0.0.1:18881/ws/text/volume")
+        let (websocket, _) = WebSocket.upgradeFromClient(_client, url)
+        sleep(Duration.millisecond * 200)
+
+        for (i in 0..100) {
+            websocket.write(TextWebFrame, "message-${i}".toArray())
+        }
+        sleep(Duration.second * 2)
+
+        @Assert(_textWsHandler.msgNum >= 100, true)
+
+        websocket.writeCloseFrame(status: JoyWebSocketCloseStatus.NORMAL)
+        websocket.closeConn()
+    }
+
+    /**
+     * 测试服务器主动关闭 - 验证服务器主动关闭连接
+     */
+    @TestCase
+    func testServerInitiatedClose() {
+        _textWsHandler.reset()
+
+        let url = URL.parse("ws://127.0.0.1:18881/ws/text/serverclose")
+        let (websocket, _) = WebSocket.upgradeFromClient(_client, url)
+        sleep(Duration.millisecond * 200)
+
+        @Assert(_textWsHandler.isOpen, true)
+
+        // 发送特殊消息让服务器关闭连接
+        websocket.write(TextWebFrame, "close".toArray())
+        sleep(Duration.millisecond * 500)
+
+        websocket.closeConn()
+    }
 }

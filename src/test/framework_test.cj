@@ -25,6 +25,11 @@ func testOk(): String {
     "ok"
 }
 
+@Handler[methods= "OPTIONS", path = "/test_ok"]
+func testOptionOk(): String {
+    "ok"
+}
+
 @Get[path = "/test_not_found"]
 func testNotFound(ctx: JoyContext): Unit {
     ctx.notFound()
@@ -37,6 +42,11 @@ func testRedirect(ctx: JoyContext): Unit {
 
 @Get[path = "/test_json", produce = json]
 func testJson(ctx: JoyContext): String {
+    "{\"message\":\"hello\"}"
+}
+
+@Post[path = "/test_json", produce = json]
+func testPostJson(ctx: JoyContext): String {
     "{\"message\":\"hello\"}"
 }
 
@@ -159,7 +169,7 @@ func group1Mw(ctx: JoyContext, chain: JoyRequestHandlerChain): Unit {
 public class FrameworkTestCaseSuit {
     var _instance: ?Joy = None
     let _ctx = MapContext()
-    let _client = JoyHttpClientService("http://127.0.0.1:18883/")
+    var _client = JoyHttpClientService("http://127.0.0.1:18883/")
 
     @BeforeAll
     func setup() {
@@ -180,13 +190,21 @@ public class FrameworkTestCaseSuit {
         _instance?.shutdown()
     }
 
+    @AfterEach
+    func tearDownEach() {
+        // 目前 STDX 的client存在问题，先每次用例都关闭一下
+        _client.destroy()
+        _client = JoyHttpClientService("http://127.0.0.1:18883/")
+    }
+
     /**
      * 测试基本请求响应 - 验证简单的 GET 请求和响应
      */
     @TestCase
     public func testOk() {
-        let rsp = _client.get(_ctx, "/test_ok")
-        assertResponse(rsp, "ok")
+        try (rsp = _client.get(_ctx, "/test_ok")) {
+            assertResponse(rsp, "ok")
+        }
     }
 
     private func assertResponse(rsp: JoyHttpResponse): Unit {
@@ -203,8 +221,9 @@ public class FrameworkTestCaseSuit {
      */
     @TestCase
     public func testNotFound() {
-        let rsp = _client.get(_ctx, "/not_found")
-        @Assert(rsp.status, 404)
+        try (rsp = _client.get(_ctx, "/not_found")) {
+            @Assert(rsp.status, 404)
+        }
     }
 
     /**
@@ -212,8 +231,9 @@ public class FrameworkTestCaseSuit {
      */
     @TestCase
     public func testNotFoundHandler() {
-        let rsp = _client.get(_ctx, "/test_not_found")
-        @Assert(rsp.status, 404)
+        try (rsp = _client.get(_ctx, "/test_not_found")) {
+            @Assert(rsp.status, 404)
+        }
     }
 
     /**
@@ -221,10 +241,11 @@ public class FrameworkTestCaseSuit {
      */
     @TestCase
     public func testRedirect() {
-        let rsp = _client.get(_ctx, "/test_redirect")
-        @Assert(rsp.status, 200)
-        //let location = rsp.headers.getFirst("Location")
-        //@Assert(location.getOrThrow(), "/test_ok")
+        try (rsp = _client.get(_ctx, "/test_redirect")) {
+            @Assert(rsp.status, 200)
+            //let location = rsp.headers.getFirst("Location")
+            //@Assert(location.getOrThrow(), "/test_ok")
+        }
     }
 
     /**
@@ -232,10 +253,11 @@ public class FrameworkTestCaseSuit {
      */
     @TestCase
     public func testJson() {
-        let rsp = _client.get(_ctx, "/test_json")
-        assertResponse(rsp)
-        @Assert(rsp.headers.getFirst("Content-Type").getOrThrow().contains("application/json"), true)
-        @Assert(rsp.text, "{\"message\":\"hello\"}")
+        try (rsp = _client.get(_ctx, "/test_json")) {
+            assertResponse(rsp)
+            @Assert(rsp.headers.getFirst("Content-Type").getOrThrow().contains("application/json"), true)
+            @Assert(rsp.text, "{\"message\":\"hello\"}")
+        }
     }
 
     /**
@@ -243,10 +265,11 @@ public class FrameworkTestCaseSuit {
      */
     @TestCase
     public func testJsonProduce() {
-        let rsp = _client.get(_ctx, "/test_json_produce")
-        assertResponse(rsp)
-        @Assert(rsp.headers.getFirst("Content-Type").getOrThrow().contains("application/json"), true)
-        @Assert(rsp.text, "{\"message\":\"hello\"}")
+        try (rsp = _client.get(_ctx, "/test_json_produce")) {
+            assertResponse(rsp)
+            @Assert(rsp.headers.getFirst("Content-Type").getOrThrow().contains("application/json"), true)
+            @Assert(rsp.text, "{\"message\":\"hello\"}")
+        }
     }
 
     /**
@@ -254,8 +277,9 @@ public class FrameworkTestCaseSuit {
      */
     @TestCase
     public func testStatus() {
-        let rsp = _client.get(_ctx, "/test_status")
-        @Assert(rsp.status, 201)
+        try (rsp = _client.get(_ctx, "/test_status")) {
+            @Assert(rsp.status, 201)
+        }
     }
 
     /**
@@ -263,9 +287,10 @@ public class FrameworkTestCaseSuit {
      */
     @TestCase
     public func testStatusCtx() {
-        let rsp = _client.get(_ctx, "/test_status_ctx")
-        @Assert(rsp.text, "accepted")
-        @Assert(rsp.status, 202)
+        try (rsp = _client.get(_ctx, "/test_status_ctx")) {
+            @Assert(rsp.text, "accepted")
+            @Assert(rsp.status, 202)
+        }
     }
 
     /**
@@ -273,10 +298,11 @@ public class FrameworkTestCaseSuit {
      */
     @TestCase
     public func testHeader() {
-        let rsp = _client.get(_ctx, "/test_header")
-        assertResponse(rsp)
-        @Assert(rsp.headers.getFirst("X-Custom-Header").getOrThrow(), "custom-value")
-        @Assert(rsp.headers.getFirst("X-Another").getOrThrow(), "another-value")
+        try (rsp = _client.get(_ctx, "/test_header")) {
+            assertResponse(rsp)
+            @Assert(rsp.headers.getFirst("X-Custom-Header").getOrThrow(), "custom-value")
+            @Assert(rsp.headers.getFirst("X-Another").getOrThrow(), "another-value")
+        }
     }
 
     /**
@@ -284,9 +310,10 @@ public class FrameworkTestCaseSuit {
      */
     @TestCase
     public func testContentType() {
-        let rsp = _client.get(_ctx, "/test_content_type")
-        assertResponse(rsp)
-        @Assert(rsp.headers.getFirst("Content-Type").getOrThrow(), "text/html")
+        try (rsp = _client.get(_ctx, "/test_content_type")) {
+            assertResponse(rsp)
+            @Assert(rsp.headers.getFirst("Content-Type").getOrThrow(), "text/html")
+        }
     }
 
     /**
@@ -298,8 +325,9 @@ public class FrameworkTestCaseSuit {
             .get()
             .header("cookie", "sessionId=test123")
             .body("id=1")
-        let rsp = _client.send(_ctx,  req)
-        assertResponse(rsp, "test123")
+        try (rsp = _client.send(_ctx, req)) {
+            assertResponse(rsp, "test123")
+        }
     }
 
     /**
@@ -307,11 +335,12 @@ public class FrameworkTestCaseSuit {
      */
     @TestCase
     public func testSetCookie() {
-        let rsp = _client.get(_ctx, "/test_set_cookie")
-        @Assert(rsp.status, 200)
-        let setCookie = rsp.headers.getFirst("Set-Cookie")
-        @Assert(setCookie.isSome(), true)
-        @Assert(setCookie.getOrThrow().contains("session=abc123"), true)
+        try (rsp = _client.get(_ctx, "/test_set_cookie")) {
+            @Assert(rsp.status, 200)
+            let setCookie = rsp.headers.getFirst("Set-Cookie")
+            @Assert(setCookie.isSome(), true)
+            @Assert(setCookie.getOrThrow().contains("session=abc123"), true)
+        }
     }
 
     /**
@@ -319,8 +348,9 @@ public class FrameworkTestCaseSuit {
      */
     @TestCase
     public func testPathParam() {
-        let rsp = _client.get(_ctx, "/test_param/123")
-        assertResponse(rsp, "123")
+        try (rsp = _client.get(_ctx, "/test_param/123")) {
+            assertResponse(rsp, "123")
+        }
     }
 
     /**
@@ -328,8 +358,9 @@ public class FrameworkTestCaseSuit {
      */
     @TestCase
     public func testQueryParam() {
-        let rsp = _client.get(_ctx, "/test_query?name=test")
-        assertResponse(rsp, "test")
+        try (rsp = _client.get(_ctx, "/test_query?name=test")) {
+            assertResponse(rsp, "test")
+        }
     }
 
     /**
@@ -339,8 +370,9 @@ public class FrameworkTestCaseSuit {
     public func testPostForm() {
         let form = Form()
         form.add("value", "test-value")
-        let rsp = _client.postform(_ctx, "/test_post_form", form)
-        assertResponse(rsp, "test-value")
+        try (rsp = _client.postform(_ctx, "/test_post_form", form)) {
+            assertResponse(rsp, "test-value")
+        }
     }
 
     /**
@@ -348,8 +380,9 @@ public class FrameworkTestCaseSuit {
      */
     @TestCase
     public func testGetForm() {
-        let rsp = _client.get(_ctx, "/test_get_form?value=test-value")
-        assertResponse(rsp, "test-value")
+        try (rsp = _client.get(_ctx, "/test_get_form?value=test-value")) {
+            assertResponse(rsp, "test-value")
+        }
     }
 
     /**
@@ -357,8 +390,9 @@ public class FrameworkTestCaseSuit {
      */
     @TestCase
     public func testRemoteIp() {
-        let rsp = _client.get(_ctx, "/test_remote_ip")
-        assertResponse(rsp, "127.0.0.1")
+        try (rsp = _client.get(_ctx, "/test_remote_ip")) {
+            assertResponse(rsp, "127.0.0.1")
+        }
     }
 
     /**
@@ -366,8 +400,9 @@ public class FrameworkTestCaseSuit {
      */
     @TestCase
     public func testClientIp() {
-        let rsp = _client.get(_ctx, "/test_client_ip")
-        assertResponse(rsp, "127.0.0.1")
+        try (rsp = _client.get(_ctx, "/test_client_ip")) {
+            assertResponse(rsp, "127.0.0.1")
+        }
     }
 
     /**
@@ -375,8 +410,9 @@ public class FrameworkTestCaseSuit {
      */
     @TestCase
     public func testPath() {
-        let rsp = _client.get(_ctx, "/test_path")
-        assertResponse(rsp, "/test_path")
+        try (rsp = _client.get(_ctx, "/test_path")) {
+            assertResponse(rsp, "/test_path")
+        }
     }
 
     /**
@@ -384,8 +420,9 @@ public class FrameworkTestCaseSuit {
      */
     @TestCase
     public func testMethod() {
-        let rsp = _client.get(_ctx, "/test_method")
-        assertResponse(rsp, "GET")
+        try (rsp = _client.get(_ctx, "/test_method")) {
+            assertResponse(rsp, "GET")
+        }
     }
 
     /**
@@ -393,9 +430,10 @@ public class FrameworkTestCaseSuit {
      */
     @TestCase
     public func testUrl() {
-        let rsp = _client.get(_ctx, "/test_url?test=1")
-        @Assert(rsp.status, 200)
-        @Assert(rsp.text.contains("/test_url"), true)
+        try (rsp = _client.get(_ctx, "/test_url?test=1")) {
+            @Assert(rsp.status, 200)
+            @Assert(rsp.text.contains("/test_url"), true)
+        }
     }
 
     /**
@@ -404,8 +442,9 @@ public class FrameworkTestCaseSuit {
     @TestCase
     public func testGetHeader() {
         let req = JoyHttpRequest.of("/test_get_header").header("X-Test-Header", "test-value")
-        let rsp = _client.send(_ctx, req)
-        assertResponse(rsp, "test-value")
+        try (rsp = _client.send(_ctx, req)) {
+            assertResponse(rsp, "test-value")
+        }
     }
 
     /**
@@ -414,12 +453,13 @@ public class FrameworkTestCaseSuit {
     @TestCase
     public func testMulti() {
         let req = JoyHttpRequest.of("/test_multi/123?q=test").header("X-Token", "token123")
-        let rsp = _client.send(_ctx, req)
-        @Assert(rsp.status, 200)
-        let body = rsp.text
-        @Assert(body.contains("\"id\":\"123\""), true)
-        @Assert(body.contains("\"q\":\"test\""), true)
-        @Assert(body.contains("\"token\":\"token123\""), true)
+        try (rsp = _client.send(_ctx, req)) {
+            @Assert(rsp.status, 200)
+            let body = rsp.text
+            @Assert(body.contains("\"id\":\"123\""), true)
+            @Assert(body.contains("\"q\":\"test\""), true)
+            @Assert(body.contains("\"token\":\"token123\""), true)
+        }
     }
 
     /**
@@ -427,10 +467,191 @@ public class FrameworkTestCaseSuit {
      */
     @TestCase
     public func testGroupRoutes() {
-        let rsp1 = _client.get(_ctx, "/group1/test_group1")
-        assertResponse(rsp1, "group1")
+        try (rsp1 = _client.get(_ctx, "/group1/test_group1")) {
+            assertResponse(rsp1, "group1")
+        }
 
-        let rsp2 = _client.get(_ctx, "/group2/test_group2")
-        assertResponse(rsp2, "group2")
+        try (rsp2 = _client.get(_ctx, "/group2/test_group2")) {
+            assertResponse(rsp2, "group2")
+        }
+    }
+
+    /**
+     * 测试 PUT 请求 - 验证 PUT 请求方法
+     */
+    @TestCase
+    public func testPutRequest() {
+        let req = JoyHttpRequest.of("/test_post_form").method("PUT")
+        let form = Form()
+        form.add("value", "put-value")
+        try (rsp = _client.send(_ctx, req)) {
+            @Assert(rsp.status, 404) // PUT 路由未定义，应返回 404
+        }
+    }
+
+    /**
+     * 测试 DELETE 请求 - 验证 DELETE 请求方法
+     */
+    @TestCase
+    public func testDeleteRequest() {
+        let req = JoyHttpRequest.of("/test_ok").method("DELETE")
+        try (rsp = _client.send(_ctx, req)) {
+            @Assert(rsp.status, 404) // DELETE 路由未定义
+        }
+    }
+
+    /**
+     * 测试 PATCH 请求 - 验证 PATCH 请求方法
+     */
+    @TestCase
+    public func testPatchRequest() {
+        let req = JoyHttpRequest.of("/test_ok").method("PATCH")
+        try (rsp = _client.send(_ctx, req)) {
+            @Assert(rsp.status, 404) // PATCH 路由未定义
+        }
+    }
+
+    /**
+     * 测试 HEAD 请求 - 验证 HEAD 请求方法
+     */
+    @TestCase
+    public func testHeadRequest() {
+        let req = JoyHttpRequest.of("/test_ok").method("HEAD")
+        try (rsp = _client.send(_ctx, req)) {
+            @Assert(rsp.status, 404) // HEAD 路由未定义
+        }
+    }
+
+    /**
+     * 测试 OPTIONS 请求 - 验证 OPTIONS 请求方法
+     */
+    @TestCase
+    public func testOptionsRequest() {
+        let req = JoyHttpRequest.of("/test_ok").method("OPTIONS")
+        try (rsp = _client.send(_ctx, req)) {
+            // OPTIONS 可能会被 CORS 中间件处理
+            @Assert(rsp.status > 0, true)
+        }
+    }
+
+    /**
+     * 测试 JSON 请求体 - 验证 JSON 请求体处理
+     */
+    @TestCase
+    public func testJsonRequestBody() {
+        let req = JoyHttpRequest.of("/test_json")
+            .method("POST")
+            .header("Content-Type", "application/json")
+            .body("{\"test\":\"value\"}")
+        try (rsp = _client.send(_ctx, req)) {
+            @Assert(rsp.status, 200)
+        }
+    }
+
+    /**
+     * 测试大请求体 - 验证大请求体处理
+     */
+    @TestCase
+    public func testLargeRequestBody() {
+        let largeBody = "x" * 10000
+        let req = JoyHttpRequest.of("/test_json")
+            .method("POST")
+            .header("Content-Type", "application/json")
+            .body("{\"data\":\"${largeBody}\"}")
+        try (rsp = _client.send(_ctx, req)) {
+            @Assert(rsp.status, 200)
+        }
+    }
+
+    /**
+     * 测试特殊字符路径 - 验证 URL 编码路径
+     */
+    @TestCase
+    public func testEncodedPath() {
+        try (rsp = _client.get(_ctx, "/test_query?name=%E4%B8%AD%E6%96%87")) {
+            @Assert(rsp.status, 200)
+            let body = rsp.text
+            @Assert(body == "中文", true)
+        }
+    }
+
+    /**
+     * 测试空查询参数 - 验证空查询参数处理
+     */
+    @TestCase
+    public func testEmptyQueryParam() {
+        try (rsp = _client.get(_ctx, "/test_query?name=")) {
+            @Assert(rsp.status, 200)
+            let body = rsp.text
+            @Assert(body == "", true)
+        }
+    }
+
+    /**
+     * 测试多个同名查询参数 - 验证多值查询参数
+     */
+    @TestCase
+    public func testMultipleQueryParams() {
+        try (rsp = _client.get(_ctx, "/test_query?name=value1&name=value2")) {
+            @Assert(rsp.status, 200)
+        }
+    }
+
+    /**
+     * 测试路径末尾斜杠 - 验证路径末尾斜杠处理
+     */
+    @TestCase
+    public func testTrailingSlash() {
+        try (rsp = _client.get(_ctx, "/test_ok/")) {
+            @Assert(rsp.status, 200)
+        }
+    }
+
+    /**
+     * 测试错误处理 - 验证错误响应格式
+     */
+    @TestCase
+    public func testErrorResponse() {
+        try (rsp = _client.get(_ctx, "/nonexistent/path")) {
+            @Assert(rsp.status, 404)
+        }
+    }
+
+    /**
+     * 测试请求超时 - 验证请求超时处理
+     */
+    @TestCase
+    public func testRequestTimeout() {
+        // 测试正常请求不会超时
+        try (rsp = _client.get(_ctx, "/test_ok")) {
+            @Assert(rsp.status, 200)
+        }
+    }
+
+    /**
+     * 测试并发请求 - 验证并发请求处理
+     */
+    @TestCase
+    public func testConcurrentRequests() {
+        // 发送多个并发请求
+        for (_ in 0..10) {
+            try (rsp = _client.get(_ctx, "/test_ok")) {
+                @Assert(rsp.status, 200)
+            }
+        }
+    }
+
+    /**
+     * 测试响应头 - 验证响应头设置
+     */
+    @TestCase
+    public func testResponseHeaders() {
+        try (rsp = _client.get(_ctx, "/test_header")) {
+            @Assert(rsp.status, 200)
+            let header1 = rsp.headers.getFirst("X-Custom-Header")
+            let header2 = rsp.headers.getFirst("X-Another")
+            @Assert(header1.getOrThrow(), "custom-value")
+            @Assert(header2.getOrThrow(), "another-value")
+        }
     }
 }

@@ -111,12 +111,15 @@ public class SessionTestCaseSuit {
         @Assert(cookie != "")
         var cname = getSessionId(cookie)
         @Assert(cname != "")
+        rsp.close()
 
         rsp = _client.get("http://127.0.0.1:18881/session-data")
         let reader = StringReader(rsp.body)
         @Assert(reader.readToEnd(), "session-data-value1")
+        rsp.close()
 
-        _client.get("http://127.0.0.1:18881/session-delete")
+        let rsp2 = _client.get("http://127.0.0.1:18881/session-delete")
+        rsp2.close()
     }
 
     /**
@@ -129,9 +132,11 @@ public class SessionTestCaseSuit {
         @Assert(cookie != "")
         var cname1 = getSessionId(cookie)
         @Assert(cname1 != "")
+        rsp.close()
 
         // delete session
-        _client.get("http://127.0.0.1:18881/session-delete")
+        let rspDel = _client.get("http://127.0.0.1:18881/session-delete")
+        rspDel.close()
 
         // create new session
         rsp = _client.get("http://127.0.0.1:18881/session")
@@ -139,8 +144,10 @@ public class SessionTestCaseSuit {
         @Assert(cookie != "")
         var cname2 = getSessionId(cookie)
         @Assert(cname1 != cname2)
+        rsp.close()
 
-        _client.get("http://127.0.0.1:18881/session-delete")
+        let rspDel2 = _client.get("http://127.0.0.1:18881/session-delete")
+        rspDel2.close()
     }
 
     /**
@@ -151,12 +158,15 @@ public class SessionTestCaseSuit {
         var rsp = _client.get("http://127.0.0.1:18881/session")
         let cookie: String = rsp.headers.getFirst(JoyHttpConsts.HEADER_SET_COOKIE).getOrThrow()
         @Assert(cookie != "")
+        rsp.close()
 
         rsp = _client.get("http://127.0.0.1:18881/session-remove")
         let reader = StringReader(rsp.body)
         @Assert(reader.readToEnd(), "not-exist")
+        rsp.close()
 
-        _client.get("http://127.0.0.1:18881/session-delete")
+        let rspDel = _client.get("http://127.0.0.1:18881/session-delete")
+        rspDel.close()
     }
 
     /**
@@ -170,8 +180,10 @@ public class SessionTestCaseSuit {
 
         let reader = StringReader(rsp.body)
         @Assert(reader.readToEnd(), "value1,value2,value3")
+        rsp.close()
 
-        _client.get("http://127.0.0.1:18881/session-delete")
+        let rspDel = _client.get("http://127.0.0.1:18881/session-delete")
+        rspDel.close()
     }
 
     /**

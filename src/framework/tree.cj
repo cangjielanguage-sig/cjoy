@@ -838,6 +838,10 @@ private class Segment {
             key = key[0..idx_]
         }
 
+        if (key == "") {
+            throw IllegalArgumentException("param can't is {}")
+        }
+
         rex = normRexpat(rex)
     }
 

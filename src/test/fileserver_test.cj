@@ -52,6 +52,7 @@ public class FileServerTestCaseSuit {
         let rsp = _client.get("http://127.0.0.1:18882/static/logo.png")
         @Assert(rsp.status, 200)
         @Assert(rsp.headers.getFirst("content-type"), "image/png")
+        rsp.close()
     }
 
     /**
@@ -62,6 +63,7 @@ public class FileServerTestCaseSuit {
         let rsp = _client.get("http://127.0.0.1:18882/static/imgs/logo.png")
         @Assert(rsp.status, 200)
         @Assert(rsp.headers.getFirst("content-type"), "image/png")
+        rsp.close()
     }
 
     /**
@@ -71,6 +73,7 @@ public class FileServerTestCaseSuit {
     public func testStaticFsGetTextFile() {
         let rsp = _client.get("http://127.0.0.1:18882/static/dev_guide/README.md")
         @Assert(rsp.status, 200)
+        rsp.close()
     }
 
     // ====== Range Request Tests (断点续传测试) ======
@@ -98,6 +101,7 @@ public class FileServerTestCaseSuit {
         }
         let range = contentRange.getOrThrow()
         @Assert(range.startsWith("bytes 0-1023/"), true)
+        rsp.close()
     }
 
     /**
@@ -122,6 +126,7 @@ public class FileServerTestCaseSuit {
         }
         let range = contentRange.getOrThrow()
         @Assert(range.startsWith("bytes 100-"), true)
+        rsp.close()
     }
 
     /**
@@ -146,6 +151,7 @@ public class FileServerTestCaseSuit {
         }
         let range = contentRange.getOrThrow()
         @Assert(range.contains("/"), true)
+        rsp.close()
     }
 
     /**
@@ -171,6 +177,7 @@ public class FileServerTestCaseSuit {
         }
         let ct = contentType.getOrThrow()
         @Assert(ct.contains("multipart/byteranges"), true)
+        rsp.close()
     }
 
     /**
@@ -188,6 +195,7 @@ public class FileServerTestCaseSuit {
 
         // 应返回 416 Requested Range Not Satisfiable
         @Assert(rsp.status, 416)
+        rsp.close()
     }
 
     /**
@@ -214,6 +222,7 @@ public class FileServerTestCaseSuit {
         let range = contentRange.getOrThrow()
         // 应该从 18000 开始
         @Assert(range.startsWith("bytes 18000-"), true)
+        rsp.close()
     }
 
     /**
@@ -230,6 +239,7 @@ public class FileServerTestCaseSuit {
 
         // 应返回 416 Requested Range Not Satisfiable
         @Assert(rsp.status, 416)
+        rsp.close()
     }
 
     /**
@@ -243,6 +253,7 @@ public class FileServerTestCaseSuit {
         let eTag = rsp1.headers.getFirst("ETag")
 
         if (eTag.isNone()) {
+            rsp1.close()
             @Fail("ETag header missing")
         }
         let tag = eTag.getOrThrow()
@@ -257,6 +268,8 @@ public class FileServerTestCaseSuit {
 
         @Assert(rsp2.status, 206)
         @Assert(rsp2.headers.getFirst("Accept-Ranges"), "bytes")
+        rsp1.close()
+        rsp2.close()
     }
 
     /**
@@ -274,12 +287,14 @@ public class FileServerTestCaseSuit {
         let fileSizeStr = fullRsp.headers.getFirst("Content-Length")
 
         if (fileSizeStr.isNone()) {
+            fullRsp.close()
             @Fail("Content-Length header missing")
         }
         let sizeStr = fileSizeStr.getOrThrow()
         let fileSize = Int.parse(sizeStr)
 
         if (fileSize <= 512) {
+            fullRsp.close()
             @Fail("File too small for resume test")
         }
 
@@ -299,6 +314,8 @@ public class FileServerTestCaseSuit {
 
         let contentRange = rsp.headers.getFirst("Content-Range")
         if (contentRange.isNone()) {
+            fullRsp.close()
+            rsp.close()
             @Fail("Content-Range header missing")
         }
         let range = contentRange.getOrThrow()
@@ -310,11 +327,15 @@ public class FileServerTestCaseSuit {
         // 验证返回的内容长度
         let contentLength = rsp.headers.getFirst("Content-Length")
         if (contentLength.isNone()) {
+            fullRsp.close()
+            rsp.close()
             @Fail("Content-Length header missing")
         }
         let lenStr = contentLength.getOrThrow()
         let len = Int.parse(lenStr)
         @Assert(len, remainingBytes)
+        fullRsp.close()
+        rsp.close()
     }
 
     /**
@@ -336,6 +357,7 @@ public class FileServerTestCaseSuit {
         // 验证 Content-Length 仍然存在
         let contentLength = rsp.headers.getFirst("Content-Length")
         @Assert(contentLength.isSome(), true)
+        rsp.close()
     }
 
     /**
@@ -351,6 +373,7 @@ public class FileServerTestCaseSuit {
         let eTag = rsp1.headers.getFirst("ETag")
 
         if (eTag.isNone()) {
+            rsp1.close()
             @Fail("ETag header missing")
         }
         let tag = eTag.getOrThrow()
@@ -364,6 +387,8 @@ public class FileServerTestCaseSuit {
 
         // 如果资源未修改，应返回 304 Not Modified
         @Assert(rsp2.status, 304)
+        rsp1.close()
+        rsp2.close()
     }
 
     /**
@@ -387,5 +412,6 @@ public class FileServerTestCaseSuit {
         }
         let range = contentRange.getOrThrow()
         @Assert(range.startsWith("bytes 0-99/"), true)
+        rsp.close()
     }
 }

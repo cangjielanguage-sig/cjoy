@@ -39,6 +39,7 @@ func defaultNoVerifyHttpCert(url: String, verify: Bool): ClientBuilder {
     }
     cb.readTimeout(Duration.minute)
     cb.connector(socketConnector)
+    cb.poolSize(100)
 }
 
 /**

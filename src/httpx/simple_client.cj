@@ -98,6 +98,7 @@ public struct JoySimpleHttpClient {
             return None
         }
         let respBody = resp.text
+        resp.close()
         client.close()
         return respBody
     }
@@ -161,6 +162,7 @@ public struct JoySimpleHttpClient {
         if (resp.status >= 300) {
             let err = resp.text
             @JoyLogError("http request failed, ${method} ${url}, error:${err}")
+            resp.close()
             client.close()
             httpStream.markError(err)
         } else {
@@ -175,6 +177,7 @@ public struct JoySimpleHttpClient {
                         httpStream.put(buffer[..length])
                     }
                 }
+                resp.close()
                 client.close()
             }
         }

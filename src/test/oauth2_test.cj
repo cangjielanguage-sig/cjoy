@@ -181,7 +181,7 @@ public class OAuth2ServerTestCaseSuit {
         _clientStore.add(cli)
 
         let ctx = mock<JoyContext>()
-        let rsp = _client.send(
+        try (rsp = _client.send(
             ctx,
             JoyHttpRequest
                 .of("/authorize")
@@ -197,8 +197,9 @@ public class OAuth2ServerTestCaseSuit {
                         ]
                     )
                 )
-        )
-        @Assert(rsp.status, 200)
+        )) {
+            @Assert(rsp.status, 200)
+        }
     }
 
     /**
@@ -215,7 +216,7 @@ public class OAuth2ServerTestCaseSuit {
         _clientStore.add(cli)
 
         let ctx = mock<JoyContext>()
-        let rsp = _client.send(
+        try (rsp = _client.send(
             ctx,
             JoyHttpRequest
                 .of("/authorize")
@@ -232,8 +233,9 @@ public class OAuth2ServerTestCaseSuit {
                         ]
                     )
                 )
-        )
-        @Assert(rsp.status, 200)
+        )) {
+            @Assert(rsp.status, 200)
+        }
     }
 
     /**
@@ -250,7 +252,7 @@ public class OAuth2ServerTestCaseSuit {
         _clientStore.add(cli)
 
         let ctx = mock<JoyContext>()
-        let rsp = _client.send(
+        try (rsp = _client.send(
             ctx,
             JoyHttpRequest
                 .of("/authorize")
@@ -268,8 +270,9 @@ public class OAuth2ServerTestCaseSuit {
                         ]
                     )
                 )
-        )
-        @Assert(rsp.status, 200)
+        )) {
+            @Assert(rsp.status, 200)
+        }
     }
 
     private func validateAccessToken(ctx: JoyContext, accessToken: String): Unit {
@@ -290,7 +293,7 @@ public class OAuth2ServerTestCaseSuit {
         _clientStore.add(cli)
 
         let ctx = mock<JoyContext>()
-        let rsp = _client.send(
+        try (rsp = _client.send(
             ctx,
             JoyHttpRequest
                 .of("/authorize")
@@ -306,8 +309,9 @@ public class OAuth2ServerTestCaseSuit {
                         ]
                     )
                 )
-        )
-        @Assert(rsp.status, 200)
+        )) {
+            @Assert(rsp.status, 200)
+        }
     }
 
     /**
@@ -336,10 +340,11 @@ public class OAuth2ServerTestCaseSuit {
         form.add("username", "admin")
         form.add("password", "123456")
         form.add("scope", "all")
-        let rsp = c.postform(ctx, "/token", form)
-        @Assert(rsp.status, 200)
-        let token = rsp.json<TokenBody>().getOrThrow()
-        validateAccessToken(ctx, token.accessToken)
+        try (rsp = c.postform(ctx, "/token", form)) {
+            @Assert(rsp.status, 200)
+            let token = rsp.json<TokenBody>().getOrThrow()
+            validateAccessToken(ctx, token.accessToken)
+        }
     }
 
     /**
@@ -365,10 +370,11 @@ public class OAuth2ServerTestCaseSuit {
         form.add("client_id", _clientId)
         form.add("client_secret", _clientSecret)
         form.add("scope", "all")
-        let rsp = _client.postform(ctx, "/token", form)
-        @Assert(rsp.status, 200)
-        let token = rsp.json<TokenBody>().getOrThrow()
-        validateAccessToken(ctx, token.accessToken)
+        try (rsp = _client.postform(ctx, "/token", form)) {
+            @Assert(rsp.status, 200)
+            let token = rsp.json<TokenBody>().getOrThrow()
+            validateAccessToken(ctx, token.accessToken)
+        }
     }
 
     /**
@@ -384,7 +390,7 @@ public class OAuth2ServerTestCaseSuit {
         _clientStore.add(cli)
 
         let ctx = mock<JoyContext>()
-        let rsp = _client.send(
+        try (rsp = _client.send(
             ctx,
             JoyHttpRequest
                 .of("/authorize")
@@ -400,8 +406,9 @@ public class OAuth2ServerTestCaseSuit {
                         ]
                     )
                 )
-        )
-        @Assert(rsp.status, 200)
+        )) {
+            @Assert(rsp.status, 200)
+        }
     }
 
     /**
@@ -410,7 +417,7 @@ public class OAuth2ServerTestCaseSuit {
     @TestCase
     public func testInvalidRequestMethod() {
         let ctx = mock<JoyContext>()
-        let rsp = _client.send(
+        try (rsp = _client.send(
             ctx,
             JoyHttpRequest
                 .of("/authorize")
@@ -426,8 +433,9 @@ public class OAuth2ServerTestCaseSuit {
                         ]
                     )
                 )
-        )
-        @Assert(rsp.status, 404)  // 预期返回404错误
+        )) {
+            @Assert(rsp.status, 404)  // 预期返回404错误
+        }
     }
 
     /**
@@ -436,7 +444,7 @@ public class OAuth2ServerTestCaseSuit {
     @TestCase
     public func testMissingClientId() {
         let ctx = mock<JoyContext>()
-        let rsp = _client.send(
+        try (rsp = _client.send(
             ctx,
             JoyHttpRequest
                 .of("/authorize")
@@ -451,8 +459,9 @@ public class OAuth2ServerTestCaseSuit {
                         ]
                     )
                 )
-        )
-        @Assert(rsp.status, 400)  // 预期返回400错误
+        )) {
+            @Assert(rsp.status, 400)  // 预期返回400错误
+        }
     }
 
     /**
@@ -461,7 +470,7 @@ public class OAuth2ServerTestCaseSuit {
     @TestCase
     public func testInvalidResponseType() {
         let ctx = mock<JoyContext>()
-        let rsp = _client.send(
+        try (rsp = _client.send(
             ctx,
             JoyHttpRequest
                 .of("/authorize")
@@ -477,8 +486,9 @@ public class OAuth2ServerTestCaseSuit {
                         ]
                     )
                 )
-        )
-        @Assert(rsp.status, 401)  // 预期返回401错误
+        )) {
+            @Assert(rsp.status, 401)  // 预期返回401错误
+        }
     }
 
     /**
@@ -487,7 +497,7 @@ public class OAuth2ServerTestCaseSuit {
     @TestCase
     public func testInvalidClientId() {
         let ctx = mock<JoyContext>()
-        let rsp = _client.send(
+        try (rsp = _client.send(
             ctx,
             JoyHttpRequest
                 .of("/authorize")
@@ -503,8 +513,9 @@ public class OAuth2ServerTestCaseSuit {
                         ]
                     )
                 )
-        )
-        @Assert(rsp.status, 401)  // 预期返回401错误
+        )) {
+            @Assert(rsp.status, 401)  // 预期返回401错误
+        }
     }
 
     /**
@@ -520,7 +531,7 @@ public class OAuth2ServerTestCaseSuit {
         _clientStore.add(cli)
 
         let ctx = mock<JoyContext>()
-        let rsp = _client.send(
+        try (rsp = _client.send(
             ctx,
             JoyHttpRequest
                 .of("/authorize")
@@ -536,8 +547,9 @@ public class OAuth2ServerTestCaseSuit {
                         ]
                     )
                 )
-        )
-        @Assert(rsp.status, 400)  // 预期返回400错误
+        )) {
+            @Assert(rsp.status, 400)  // 预期返回400错误
+        }
     }
 
     /**
@@ -567,7 +579,8 @@ public class OAuth2ServerTestCaseSuit {
         form.add("username", "invaliduser")  // 无效的用户名
         form.add("password", "invalidpassword")  // 无效的密码
         form.add("scope", "all")
-        let rsp = c.postform(ctx, "/token", form)
-        @Assert(rsp.status, 401)  // 预期返回401错误
+        try (rsp = c.postform(ctx, "/token", form)) {
+            @Assert(rsp.status, 401)  // 预期返回401错误
+        }
     }
 }

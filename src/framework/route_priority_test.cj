@@ -164,4 +164,68 @@ public class RoutePriorityTestCaseSuit {
         let bodyStr = streamToString(rsp.body)
         @Assert(bodyStr == "user/profile") // 应该匹配更长的静态路由
     }
+
+    /**
+     * 测试静态路由优先于参数路由 - 验证静态路由优先级
+     */
+    @TestCase
+    public func testStaticOverParamPriority() {
+        // /static 是静态路由，应该优先于参数路由
+        let rsp = _client.get("http://127.0.0.1:18884/static")
+        @Assert(rsp.status == 200)
+        let bodyStr = streamToString(rsp.body)
+        @Assert(bodyStr == "static")
+    }
+
+    /**
+     * 测试参数路由匹配 - 验证参数路由在没有静态路由时匹配
+     */
+    @TestCase
+    public func testParamRouteMatching() {
+        // /param/xyz 不是静态路由，应该匹配参数路由
+        let rsp = _client.get("http://127.0.0.1:18884/param/xyz")
+        @Assert(rsp.status == 200)
+        let bodyStr = streamToString(rsp.body)
+        @Assert(bodyStr == "param: xyz")
+    }
+
+    /**
+     * 测试正则路由匹配数字 - 验证正则路由正确匹配数字
+     */
+    @TestCase
+    public func testRegexRouteMatchingNumeric() {
+        let rsp = _client.get("http://127.0.0.1:18884/regex/999")
+        @Assert(rsp.status == 200)
+        let bodyStr = streamToString(rsp.body)
+        @Assert(bodyStr == "regex: 999")
+    }
+
+    /**
+     * 测试通配符路由匹配任意路径 - 验证通配符路由匹配剩余路径
+     */
+    @TestCase
+    public func testCatchAllRouteMatching() {
+        let rsp = _client.get("http://127.0.0.1:18884/catchAll/deep/nested/path")
+        @Assert(rsp.status == 200)
+        let bodyStr = streamToString(rsp.body)
+        @Assert(bodyStr == "catchAll: deep/nested/path")
+    }
+
+    /**
+     * 测试路由不匹配 404 - 验证不存在的路由返回 404
+     */
+    @TestCase
+    public func testRouteNotFound() {
+        let rsp = _client.get("http://127.0.0.1:18884/nonexistent")
+        @Assert(rsp.status == 404)
+    }
+
+    /**
+     * 测试根路由匹配 - 验证根路由正确匹配
+     */
+    @TestCase
+    public func testRootRouteMatching() {
+        let rsp = _client.get("http://127.0.0.1:18884/")
+        @Assert(rsp.status == 404) // 根路由未定义，应返回 404
+    }
 }
