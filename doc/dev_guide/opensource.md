@@ -12,7 +12,3 @@
 - MCP宏定义：FastMCP
 
 开源地址请参见 [README.OpenSource](../../README.OpenSource)
-
-# 直接引用
-
-cj_syntax.md 直接取自[Cangjie-SIG/cangjie-docs-mcp](https://gitcode.com/Cangjie-SIG/cangjie-docs-mcp/blob/master/cj_syntax.md)，感谢作者的贡献。 日期:2026-02-14

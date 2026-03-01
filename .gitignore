@@ -20,6 +20,6 @@ log.txt
 cjpm.lock
 examples/cjpm.lock
 .claude/commands
-.claude/skills/openspec-*
+.claude/skills
 .opencode/command
-.opencode/skills/openspec-*
+.opencode/skills

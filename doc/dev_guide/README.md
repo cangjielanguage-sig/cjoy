@@ -351,5 +351,13 @@ public class FrameworkTestCaseSuit {
 - 提交代码时应该确保所有测试通过
 - 避免在测试中使用硬编码的环境依赖
 
+## AI Skill
+
+```
+npx skills add https://github.com/ystyle/cangjie-lang-skill --skill cangjie-lang
+npx skills add https://github.com/ystyle/cangjie-docs-mcp --skill cangjie-docs-navigator
+```
+
+
 ----
 << [返回](../../README.md)
