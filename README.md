@@ -124,6 +124,12 @@ cjpm run --name examples.tls
 cjoy = { git = "https://gitcode.com/Cangjie-SIG/cjoy.git", branch = "main" }
 ```
 
+或者
+```toml
+[dependencies]
+cjoy = { version = "1.0.1" } 
+```
+
 ---
 
 ## 快速了解
