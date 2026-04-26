@@ -43,6 +43,11 @@ public interface Jwtkey {
  * HMAC (HS256, HS384, HS512) 算法密钥
  */
 public class HmacSigningkey <: Jwtkey {
+    /**
+     * 创建 HMAC 签名密钥
+     *
+     * @param key HMAC 密钥字节数组
+     */
     public HmacSigningkey(let key: Array<Byte>) {
     }
 
@@ -55,6 +60,12 @@ public class HmacSigningkey <: Jwtkey {
  * RSA (RS256, RS384, RS512) 算法密钥
  */
 public class RsaSigningkey <: Jwtkey {
+    /**
+     * 创建 RSA 签名密钥
+     *
+     * @param privateKey RSA 私钥，用于签名
+     * @param publicKey RSA 公钥，用于验证
+     */
     public RsaSigningkey(let privateKey: RSAPrivateKey, let publicKey: RSAPublicKey) {
     }
 

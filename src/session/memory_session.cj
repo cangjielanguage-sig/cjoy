@@ -12,9 +12,18 @@ package cjoy.session
 
 /**
  * 内存会话
+ *
+ * 将会话数据存储在内存中的会话实现
  */
 class MemorySession <: AbstractSession {
     private let _storage: JoySessionStorage
+
+    /**
+     * 创建内存会话
+     *
+     * @param sid 会话 ID
+     * @param storage 会话存储实例
+     */
     public init(sid: String, storage: JoySessionStorage) {
         super(sid)
         _storage = storage
@@ -28,10 +37,14 @@ class MemorySession <: AbstractSession {
 
 /**
  * 内存会话存储
+ *
+ * 将会话数据存储在内存中的存储实现
  */
 public class MemorySessionStorage <: AbstractSessionStorage {
     /**
-     * @param maxLifetime 最大存活时间，默认为 1 小时
+     * 创建内存会话存储
+     *
+     * @param maxLifetime 会话最大存活时间，默认为 1 小时
      */
     public init(maxLifetime!: Duration = Duration.hour) {
         super(maxLifetime)

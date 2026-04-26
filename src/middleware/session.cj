@@ -22,6 +22,17 @@ private const SESSION_CTX_KEY: String = "__session__"
  * 会话配置
  */
 public struct JoySessionConfig {
+    /**
+     * 创建会话配置
+     *
+     * @param cookieName 用于保存会话 ID 的 Cookie 名称，默认为 "sid"
+     * @param cookiePath Cookie 路径，默认为 "/"
+     * @param cookieSecure 是否仅使用 HTTPS，默认为 false
+     * @param cookieHttpOnly 是否仅 HTTP 访问，默认为 false
+     * @param cookieMaxAge Cookie 生命周期（秒），默认为 3600
+     * @param cookieDomain Cookie 域名，默认为空
+     * @param idLength 会话 ID 长度，默认为 32
+     */
     public JoySessionConfig(
         // 用于保存会话 ID 的 Cookie 名称。默认为 "sid"。
         public let cookieName!: String = "sid",
@@ -49,6 +60,9 @@ public func getSession(ctx: JoyContext): ?JoySession {
 
 /**
  * 创建会话中间件
+ *
+ * @param storage 会话存储实现
+ * @param config 会话配置
  */
 public class SessionManager <: JoyMiddlewareHandler {
     private let _config: JoySessionConfig
@@ -56,6 +70,12 @@ public class SessionManager <: JoyMiddlewareHandler {
     private let _lock: Mutex = Mutex()
     private let _future: Future<Unit>
 
+    /**
+     * 创建会话管理器
+     *
+     * @param storage 会话存储实现
+     * @param config 会话配置选项
+     */
     public init(storage: JoySessionStorage, config!: JoySessionConfig = JoySessionConfig()) {
         _storage = storage
         _config = config
@@ -68,6 +88,9 @@ public class SessionManager <: JoyMiddlewareHandler {
         }
     }
 
+    /**
+     * 销毁会话管理器，停止后台清理任务
+     */
     public func destroy(): Unit {
         _future.cancel()
     }

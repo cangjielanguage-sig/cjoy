@@ -23,6 +23,12 @@ public type AllowOriginFunc = (ctx: JoyContext, origin: String) -> Bool
  * 用于来源匹配的 CORS 通配符模式
  */
 public class CorsWildcard {
+    /**
+     * 创建 CORS 通配符模式
+     *
+     * @param prefix 前缀字符串
+     * @param suffix 后缀字符串
+     */
     public CorsWildcard(let prefix: String, let suffix: String) {
     }
 

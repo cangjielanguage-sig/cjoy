@@ -23,6 +23,11 @@ public class JoyHttpResponse <: Resource {
     private var _sseStream: ?JoySSEventStream = None
     private var _isClosed = false
 
+    /**
+     * 创建 HTTP 响应包装器
+     *
+     * @param response 底层的 HTTP 响应对象
+     */
     public JoyHttpResponse(response: HttpResponse) {
         _response = response
     }

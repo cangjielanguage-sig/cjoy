@@ -18,6 +18,8 @@ import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonRead
 
 /**
  * 文件会话
+ *
+ * 将会话数据持久化到文件系统的会话实现
  */
 class FileSession <: AbstractSession {
     let _path: Path // root path
@@ -26,6 +28,13 @@ class FileSession <: AbstractSession {
     private let _lock: Mutex = Mutex()
     private let _storage: JoySessionStorage
 
+    /**
+     * 创建文件会话
+     *
+     * @param sid 会话 ID
+     * @param path 会话存储根路径
+     * @param storage 会话存储实例
+     */
     public init(sid: String, path: Path, storage: JoySessionStorage) {
         super(sid)
         _path = path.join(sid)
@@ -101,6 +110,8 @@ class FileSession <: AbstractSession {
 
 /**
  * 文件会话存储
+ *
+ * 将会话数据持久化到文件系统的存储实现
  */
 public class FileSessionStorage <: AbstractSessionStorage {
     let _path: Path // 根路径

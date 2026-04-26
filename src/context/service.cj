@@ -19,6 +19,11 @@ import std.collection.concurrent.ConcurrentHashMap
  * 服务，支持依赖注入和服务查找模式。
  */
 public class ServiceContainer {
+    /**
+     * 全局服务容器实例。
+     *
+     * 所有 Joy 实例默认继承此容器中的服务。
+     */
     public static let GLOBAL: ServiceContainer = ServiceContainer()
     private let _services: ConcurrentHashMap<String, Any> = ConcurrentHashMap()
 

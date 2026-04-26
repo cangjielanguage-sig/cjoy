@@ -230,6 +230,11 @@ public class JoyHttpRequest {
  * JSON HTTP 请求体
  */
 public class JsonRequest {
+    /**
+     * 创建 JSON 请求体
+     *
+     * @param body 请求体内容，可以是字符串或可序列化为 JSON 的对象
+     */
     public JsonRequest(let body: Any) {
     }
 

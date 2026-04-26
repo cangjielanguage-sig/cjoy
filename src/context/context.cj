@@ -101,10 +101,10 @@ public open class MapContext <: Context {
     }
 
     /**
-     * Get service from context.
+     * 从上下文中获取服务。
      *
-     * @param name name of service
-     * @return service instance, or None if not found
+     * @param name 服务名称
+     * @return 服务实例，如果未找到则返回 None
      */
     public open func getService<T>(name: String): ?T {
         ServiceContainer.GLOBAL.getService<T>(name)
