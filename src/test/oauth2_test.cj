@@ -158,7 +158,7 @@ public class OAuth2ServerTestCaseSuit {
             _clientJoy = joy
             joy.run("127.0.0.1", 31888)
         }
-        sleep(Duration.second * 3)
+        sleep(Duration.second * 5)
     }
 
     @AfterAll

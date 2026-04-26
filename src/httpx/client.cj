@@ -13,7 +13,8 @@ package cjoy.httpx
 import std.io.{InputStream, ByteBuffer}
 import std.net.{SocketAddress, TcpSocket}
 import stdx.net.http.{ClientBuilder, Client, HttpRequestBuilder, HttpHeaders}
-import stdx.net.tls.{TlsClientConfig, CertificateVerifyMode}
+import stdx.net.tls.{TlsClientIdentificationMode, TlsClientConfig}
+import stdx.net.tls.common.{CertificateVerifyMode, TlsVersion}
 import stdx.encoding.json.stream.{JsonSerializable, JsonWriter}
 import stdx.encoding.url.{URL, Form}
 import cjoy.context.Context
@@ -26,7 +27,6 @@ func defaultNoVerifyHttpCert(url: String, verify: Bool): ClientBuilder {
         if (!verify) {
             config.verifyMode = TrustAll
         }
-        config.domain = URL.parse(url).hostName
         cb.tlsConfig(config)
     }
     let socketConnector = {

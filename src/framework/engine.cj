@@ -15,7 +15,9 @@ import std.fs.{File, OpenMode}
 import std.io.{readToEnd}
 import stdx.net.tls.TlsServerConfig
 import stdx.net.http.{Server, ServerBuilder}
-import stdx.crypto.x509.{X509Certificate, PrivateKey}
+import stdx.crypto.x509.{X509Certificate}
+import stdx.crypto.keys.{GeneralPrivateKey}
+import stdx.crypto.kit.*
 import cjoy.log.macros.*
 import cjoy.ioc.BeanFactoryManager
 import cjoy.context.{ServiceContainer}
@@ -220,7 +222,7 @@ public class Joy {
         let keyText = readPermFile(keyFilePath)
 
         let certificate = X509Certificate.decodeFromPem(certText)
-        let privateKey = PrivateKey.decodeFromPem(keyText, password: password)
+        let privateKey = GeneralPrivateKey.decodeFromPem(keyText, password: password)
 
         TlsServerConfig(certificate, privateKey)
     }

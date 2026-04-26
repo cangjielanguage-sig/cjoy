@@ -14,7 +14,7 @@ import std.crypto.digest.Digest
 import std.fs.{File, OpenMode}
 import std.io.{readToEnd}
 import std.crypto.digest.digest
-import stdx.crypto.digest.{SHA256, SHA384, SHA512, CryptoException}
+import stdx.crypto.digest.{SHA256, SHA384, SHA512}
 import stdx.crypto.keys.{RSAPrivateKey, RSAPublicKey, PadOption, PSSOption}
 
 /**
@@ -68,7 +68,7 @@ class SigningMethodRsa <: SigningMethod {
             case pk: RSAPrivateKey => try {
                 let md = digest(_hash, signing.toArray())
                 pk.sign(_hash, md, padType: _pad)
-            } catch (ex: CryptoException) {
+            } catch (ex: Exception) {
                 throw JwtException("crypto failed, ${ex.message}")
             }
             case _ => throw JwtException("key is of invalid type, RSA verify expects RSAPrivateKey")
@@ -90,7 +90,7 @@ class SigningMethodRsa <: SigningMethod {
                 if (!pk.verify(_hash, md, sig, padType: _pad)) {
                     throw JwtException("signature is invalid")
                 }
-            } catch (ex: CryptoException) {
+            } catch (ex: Exception) {
                 throw JwtException("verify failed, ${ex.message}")
             }
             case _ => throw JwtException("key is of invalid type, RSA verify expects RSAPublicKey")

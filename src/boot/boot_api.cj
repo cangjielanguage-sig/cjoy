@@ -13,9 +13,13 @@ package cjoy.boot
 import std.fs.{Path, exists}
 import std.fs.{File, OpenMode}
 import std.io.{readToEnd}
-import stdx.net.tls.{TlsServerConfig, CertificateVerifyMode, TlsClientIdentificationMode, TlsVersion}
+import std.collection.HashMap
+import stdx.net.tls.{TlsClientIdentificationMode, TlsServerConfig}
+import stdx.net.tls.common.{CertificateVerifyMode, TlsVersion}
 import stdx.net.http.{ServerBuilder, ServicePoolConfig}
-import stdx.crypto.x509.{X509Certificate, PrivateKey}
+import stdx.crypto.x509.{X509Certificate}
+import stdx.crypto.keys.{GeneralPrivateKey}
+import stdx.crypto.kit.*
 import stdx.log.LogLevel
 import cjoy.*
 import cjoy.config.*
@@ -415,7 +419,7 @@ private func loadTlsConfig(tlsCfg: JoyServerTlsProperties): TlsServerConfig {
     }
 
     let certificate = X509Certificate.decodeFromPem(certText)
-    let privateKey = PrivateKey.decodeFromPem(keyText, password: password)
+    let privateKey = GeneralPrivateKey.decodeFromPem(keyText, password: password)
 
     var tlsServerCfg = TlsServerConfig(certificate, privateKey)
     @JoyLogInfo("server.tls.trustAll=${tlsCfg.trustAll}")
@@ -434,15 +438,15 @@ private func loadTlsConfig(tlsCfg: JoyServerTlsProperties): TlsServerConfig {
     @JoyLogInfo("server.tls.version=${tlsCfg.version}")
     match (tlsCfg.version) {
         case "1.2" =>
-            tlsServerCfg.minVersion = TlsVersion.V1_2
+            tlsServerCfg.supportedVersions = [TlsVersion.V1_2]
             if (ciphers.size > 0) {
-                tlsServerCfg.cipherSuitesV1_2 = ciphers
+                tlsServerCfg.supportedCipherSuites = HashMap([(TlsVersion.V1_2, ciphers)])
             }
 
         case "1.3" =>
-            tlsServerCfg.minVersion = TlsVersion.V1_3
+            tlsServerCfg.supportedVersions = [TlsVersion.V1_3]
             if (ciphers.size > 0) {
-                tlsServerCfg.cipherSuitesV1_3 = ciphers
+                tlsServerCfg.supportedCipherSuites = HashMap([(TlsVersion.V1_3, ciphers)])
             }
         case _ => ()
     }

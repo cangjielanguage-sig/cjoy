@@ -7,7 +7,7 @@
 </div>
 
 <p align="center">
-  <img alt="Release" src="https://img.shields.io/badge/release-v1.0.0-brightgreen" />
+  <img alt="Release" src="https://img.shields.io/badge/release-v1.0.1-brightgreen" />
   <img alt="Cangjie Version" src="https://img.shields.io/badge/cjc-v1.0.4-brightgreen" />
   <img alt="Code Coverage" src="https://img.shields.io/badge/cjcov-70%25+-brightgreen" />
   <img alt="State" src="https://img.shields.io/badge/state-孵化-brightgreen" />
@@ -73,7 +73,7 @@ CJoy 借鉴了多种语言 Web 开源框架的设计优点，基于仓颉语言�
 
 ### 环境要求
 
-仓颉版本：`v1.0.4`
+仓颉版本：`v1.1.0`
 
 本项目依赖仓颉 stdx 包，请先下载对应版本的 stdx 包，使用说明参见 [仓颉编程语言 stdx](https://gitcode.com/Cangjie/Cangjie-STDX)。
 
@@ -83,14 +83,13 @@ CJoy 借鉴了多种语言 Web 开源框架的设计优点，基于仓颉语言�
 $HOME
 ├── cangjie          # 仓颉 SDK 目录
 └── cangjiestdx      # 新建此目录
-    └── linux_x86_64_llvm  # 解压对应的 stdx 包，不同 OS 目录名称不同
 ```
 
 **配置环境变量**（Linux 与 MacOS）：
 
 ```bash
 # 修改用户家目录的 .bashrc 或 .zshrc（取决于采用 bash 还是 zsh）
-export CANGJIE_STDX_PATH=$HOME/cangjiestdx
+export CANGJIE_STDX_PATH=$HOME/cangjiestdx/linux_x86_64_cjnative/static/stdx
 ```
 
 ### 运行示例
