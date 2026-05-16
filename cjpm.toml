@@ -11,7 +11,7 @@
   override-compile-option = ""
   src-dir = ""
   target-dir = ""
-  version = "1.0.1"
+  version = "1.0.2"
   authors = ["lanlingx"]
   repository = "https://gitcode.com/Cangjie-SIG/"
   tag = ["cangjie", "web"]

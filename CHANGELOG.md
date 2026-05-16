@@ -1,9 +1,14 @@
 Changelog
 ------
 
+# v1.0.2
+
+ - 变更：清理一些unused import与variable
+ - 变更：IOC生成的factory代码清理unused variable
+
 # v1.0.1
 
- - 变更： 适配仓颉1.1.0版本
+ - 变更：适配仓颉1.1.0版本
 
 # v1.0.0
 
