@@ -305,11 +305,11 @@ public class JwtAuth <: JoyMiddlewareHandler {
     }
 }
 
-func defaultAuthorizator(ctx: JoyContext, identity: String): Bool {
+func defaultAuthorizator(_: JoyContext, _: String): Bool {
     return true
 }
 
-func defaultPayloadFunc(ctx: JoyContext, jwt: Jwt): Unit {
+func defaultPayloadFunc(_: JoyContext, _: Jwt): Unit {
 }
 
 func defaultUnauthorized(ctx: JoyContext, code: UInt16, message: String): Unit {

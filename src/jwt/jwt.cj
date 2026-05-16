@@ -12,7 +12,7 @@ package cjoy.jwt
 
 import std.time.DateTime
 import cjoy.json.JsonTool
-import cjoy.utils.{StrExt, rawBase64URLEncode, rawBase64URLDecode}
+import cjoy.utils.{rawBase64URLEncode, rawBase64URLDecode}
 
 /**
  * 用于认证和信息交换的 JWT (JSON Web Token)

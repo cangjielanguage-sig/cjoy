@@ -184,10 +184,6 @@ class ParamInfoCache {
     }
 }
 
-func parseParam(marcroName: String, input: Tokens): Unit {
-    parseParam(marcroName, None, input)
-}
-
 func parseParam(marcroName: String, attr: ?Tokens, input: Tokens): Unit {
     let paramInfo: ParamInfo = match (marcroName) {
         case "ToolParam" =>

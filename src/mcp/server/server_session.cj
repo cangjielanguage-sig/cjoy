@@ -178,7 +178,7 @@ class DefaultMcpServerSession <: McpServerSession & McpRequestHandler & McpRespo
     /**
      * 添加流完成处理程序
      */
-    public func addStreamCompletionHandler(handler: () -> Unit): Unit {
+    public func addStreamCompletionHandler(_: () -> Unit): Unit {
         // 这里可以添加流完成处理程序的逻辑
         // 如果使用 McpServerSessionState，可以在这里调用其方法
         // 例如：_state.addStreamCompletionHandler(handler)
@@ -206,17 +206,6 @@ class DefaultMcpServerSession <: McpServerSession & McpRequestHandler & McpRespo
             store.open(_sessionId, streamId)
             @JoyLogDebug("[MCP] opened event stream, streamId: ${streamId}, sessionId: ${_sessionId}")
         }
-    }
-
-    /**
-     * 创建一个虚拟的 JoyContext 实例，用于没有真实上下文时
-     *
-     * @return 虚拟的 JoyContext 实例
-     */
-    private func _dummyContext(): JoyContext {
-        // 在实际代码中，我们应该使用一个更简单的方法来获取或创建上下文
-        // 这里我们抛出异常，因为我们不应该在没有上下文的情况下调用event store方法
-        throw Exception("No JoyContext available")
     }
 
     /**

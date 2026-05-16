@@ -10,8 +10,8 @@
 
 package cjoy.framework
 
-import std.collection.{forEach, ArrayList}
-import stdx.net.http.{notFound, HttpStatusCode, OptionsHandler}
+import std.collection.{ArrayList}
+import stdx.net.http.{notFound, HttpStatusCode}
 import cjoy.ioc.{BeanFactoryManager}
 
 /**

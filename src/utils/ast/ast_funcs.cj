@@ -12,7 +12,7 @@ package cjoy.utils.ast
 
 import std.ast.*
 import std.collection.{ArrayList, HashSet}
-import cjoy.utils.{MapToString, MapListGetFunc}
+import cjoy.utils.{MapToString}
 
 /**
  * 根据有效属性名称列表检查属性名称

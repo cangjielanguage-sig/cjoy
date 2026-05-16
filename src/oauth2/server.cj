@@ -52,11 +52,10 @@ public class OAuth2Server {
         _internalErrorHandleFunc = defaultInternalErrorHandleFunc
         _responseErrorHandleFunc = defaultResponseErrorHandleFunc
         _userAuthorizationHandleFunc = {
-            ctx: JoyContext => throw OAuthException(OAuthErrors.ACCESS_DENIED)
+            _: JoyContext => throw OAuthException(OAuthErrors.ACCESS_DENIED)
         }
         _passwordAuthorizationHanleFunc = {
-            ctx: JoyContext, clientId: String, username: String, password: String => throw OAuthException(
-                OAuthErrors.ACCESS_DENIED)
+            _: JoyContext, _: String, _: String, _: String => throw OAuthException(OAuthErrors.ACCESS_DENIED)
         }
     }
 

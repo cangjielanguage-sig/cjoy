@@ -67,7 +67,7 @@ private func addSubToDataFirst(data: Map<String, Any>, key: String, cfgKey: Conf
     }
 
     // 数组配置
-    let arr = ArrayList<Any>(cfgKey.arrIdx + 1, {x => Option<Any>.None})
+    let arr = ArrayList<Any>(cfgKey.arrIdx + 1, {_ => Option<Any>.None})
     let map = HashMap<String, Any>()
     arr[cfgKey.arrIdx] = map
     data.add(cfgKey.key, arr)
@@ -104,7 +104,7 @@ private func addLastToData(data: Map<String, Any>, key: String, cfgKey: ConfigKe
         }
         case _ =>
             // 不存在
-            let arr = ArrayList<Any>(cfgKey.arrIdx + 1, {x => Option<Any>.None})
+            let arr = ArrayList<Any>(cfgKey.arrIdx + 1, {_ => Option<Any>.None})
             arr[cfgKey.arrIdx] = value
             data.add(cfgKey.key, arr)
     }

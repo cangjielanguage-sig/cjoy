@@ -11,8 +11,7 @@
 macro package cjoy.schedule.macros
 
 import std.ast.*
-import std.collection.*
-import cjoy.utils.{MapToString, MapListGetFunc, randStr}
+import cjoy.utils.{MapToString, MapListGetFunc}
 import cjoy.utils.ast.parserAttrs
 
 class FuncInfo {

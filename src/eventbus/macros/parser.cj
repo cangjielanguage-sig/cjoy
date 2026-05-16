@@ -11,9 +11,8 @@
 macro package cjoy.eventbus.macros
 
 import std.ast.*
-import std.collection.*
 import cjoy.utils.ast.parserAttrs
-import cjoy.utils.{MapToString, MapListGetFunc, randStr}
+import cjoy.utils.{MapToString, MapListGetFunc}
 
 private class FuncInfo {
     let macroName: String

@@ -18,8 +18,7 @@ import stdx.net.http.HttpStatusCode
 import cjoy.framework.{JoyContext, JoyHttpConsts, JoySseBuilder}
 import cjoy.utils.secureRandStr
 import cjoy.mcp.api.*
-import cjoy.jsonrpc.api.{JSONRPCRequest, JSONRPCResponse, JSONRPCMessage, JSONRPCTool, JSONRPCError, JSONRPCConsts, 
-    JSONRPCException}
+import cjoy.jsonrpc.api.{JSONRPCRequest, JSONRPCResponse, JSONRPCMessage, JSONRPCTool, JSONRPCException}
 import cjoy.log.macros.*
 
 /**
@@ -281,9 +280,9 @@ class McpStreamableServerTransport <: McpServerTransport {
     /**
      * 通过此传输发送消息（流式传输未实现）
      *
-     * @param message 要发送的消息
+     * @param _ 要发送的消息
      */
-    public func send(message: ByteBuffer): Unit {
+    public func send(_: ByteBuffer): Unit {
         // nothing
     }
 
@@ -406,8 +405,7 @@ class McpStreamableServerTransport <: McpServerTransport {
     private func createTransport(ctx: JoyContext, sessionId: String): McpSseServerSessionTransport {
         let emitter = ctx.eventEmitter()
         let state = McpServerSessionState(sessionId, emitter)
-        McpSseServerSessionTransport(emitter, state, _sessions,
-            removeOnErr: false)
+        McpSseServerSessionTransport(emitter, state, _sessions, removeOnErr: false)
     }
 
     /**
@@ -583,15 +581,12 @@ class McpStreamableServerTransport <: McpServerTransport {
             }
 
             // Send events
-            var i = 0
-            while (i < events.size) {
-                let (eventId, data) = events[i]
+            for ((eventId, data) in events) {
                 try {
                     sendEvent(ctx, eventId, data)
                 } catch (ex: Exception) {
                     @JoyLogError("[MCP] Failed to send relayed event, eventId: ${eventId}, sessionId: ${sess._sessionId}, error: ${ex.message}")
                 }
-                i += 1
             }
         }
     }

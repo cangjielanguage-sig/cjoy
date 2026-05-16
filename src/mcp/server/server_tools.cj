@@ -10,8 +10,7 @@
 
 package cjoy.mcp.server
 
-import std.convert.Parsable
-import std.collection.{ArrayList, HashMap, map, collectArray}
+import std.collection.{ArrayList, map, collectArray}
 import std.collection.concurrent.ConcurrentHashMap
 import stdx.encoding.json.stream.JsonSerializable
 import cjoy.mcp.api.*

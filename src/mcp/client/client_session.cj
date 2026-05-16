@@ -36,7 +36,7 @@ class DefaultMcpClientSession <: McpClientSession & McpResponseHandler & McpNoti
         _transport = transport
         _requestTimeout = requestTimeout
         _respWaiters = TimeoutCache(requestTimeout) {
-            k, v => @JoyLogWarn("MCP request is timout, id: ${k}")
+            k, _ => @JoyLogWarn("MCP request is timout, id: ${k}")
         }
     }
 

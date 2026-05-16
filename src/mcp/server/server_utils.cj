@@ -15,10 +15,9 @@ import std.collection.HashMap
 import std.convert.Parsable
 import stdx.net.http.{HttpStatusCode}
 import cjoy.framework.{JoyContext}
-import cjoy.mcp.api.{PaginatedRequest, PaginatedResult}
+import cjoy.mcp.api.{PaginatedRequest}
 import cjoy.log.macros.*
-import cjoy.jsonrpc.api.{JSONRPCRequest, JSONRPCResponse, JSONRPCMessage, JSONRPCTool, JSONRPCError, JSONRPCConsts,
-    JSONRPCException}
+import cjoy.jsonrpc.api.{JSONRPCResponse, JSONRPCError, JSONRPCConsts}
 
 /**
  * 检查给定地址是否为回环地址
@@ -149,7 +148,6 @@ public struct McpPaginationUtils {
      */
     public func paginate<K, V>(collection: HashMap<K, V>, request: PaginatedRequest): (ArrayList<V>, ?String) where K<: Hashable & Comparable<K> {
         let startIndex = parseCursor(request)
-        let endIndex = startIndex + pageSize
 
         var result = ArrayList<V>()
         var nextCursor: ?String = None

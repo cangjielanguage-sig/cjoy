@@ -11,7 +11,6 @@
 macro package cjoy.ioc.macros
 
 import std.ast.*
-import cjoy.utils.{MapToString, MapListGetFunc}
 import cjoy.utils.ast.TypeNodeInfo
 
 func parseValue(attr: Tokens, input: Tokens): Tokens {

@@ -11,7 +11,7 @@
 package cjoy.middleware
 
 import stdx.net.http.HttpStatusCode
-import cjoy.{JoyMiddlewareHandler, JoyRequestHandlerChain, JoyContext, JoyHttpConsts, JoyRequestHandler,
+import cjoy.{JoyMiddlewareHandler, JoyRequestHandlerChain, JoyContext, JoyRequestHandler,
     JoyRequestHandlerFunc, JoyFuncHandler, JoyRequestFilterFunc}
 import cjoy.log.macros.*
 

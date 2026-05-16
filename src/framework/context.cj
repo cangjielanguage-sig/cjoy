@@ -21,7 +21,6 @@ import stdx.encoding.base64.fromBase64String
 import cjoy.bind.JoyBindable
 import cjoy.context.{Context, ServiceContainer}
 import cjoy.ioc.BeanFactoryManager
-import cjoy.log.macros.*
 
 /**
  * 上下文，包含引擎配置、参数、上下文参数以及任何你需要的其他内容。

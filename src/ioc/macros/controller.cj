@@ -11,9 +11,9 @@
 macro package cjoy.ioc.macros
 
 import std.ast.*
-import std.collection.{ArrayList, map, collectArray}
-import cjoy.utils.ast.{ClassGenentor, parserAttrs, joinTokens, TypeNodeInfo}
-import cjoy.utils.{converterList, MapToString, MapListGetFunc}
+import std.collection.{map, collectArray}
+import cjoy.utils.ast.{ClassGenentor, parserAttrs, }
+import cjoy.utils.{MapToString, MapListGetFunc}
 
 class ControllerClassInfo <: ComponentClassInfo {
     private let _path: String

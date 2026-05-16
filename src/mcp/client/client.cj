@@ -13,7 +13,6 @@ public package cjoy.mcp.client
 import std.sync.AtomicBool
 import cjoy.mcp.api.*
 import cjoy.jsonrpc.*
-import cjoy.utils.TimeoutCache
 import cjoy.log.macros.*
 
 @JoyCreateLogger("cjoy.mcp.client")
@@ -62,7 +61,7 @@ class DefaultMcpClient <: McpClient {
 
     private func addNotificationConsumers(session: McpSession) {
         session.addNotificationConsumer(McpConsts.METHOD_NOTIFICATION_TOOLS_LIST_CHANGED, {
-            consumer =>
+            _ => 
         })
     }
 

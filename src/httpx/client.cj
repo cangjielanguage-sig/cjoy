@@ -13,10 +13,10 @@ package cjoy.httpx
 import std.io.{InputStream, ByteBuffer}
 import std.net.{SocketAddress, TcpSocket}
 import stdx.net.http.{ClientBuilder, Client, HttpRequestBuilder, HttpHeaders}
-import stdx.net.tls.{TlsClientIdentificationMode, TlsClientConfig}
-import stdx.net.tls.common.{CertificateVerifyMode, TlsVersion}
+import stdx.net.tls.{TlsClientConfig}
+import stdx.net.tls.common.{CertificateVerifyMode}
 import stdx.encoding.json.stream.{JsonSerializable, JsonWriter}
-import stdx.encoding.url.{URL, Form}
+import stdx.encoding.url.{Form}
 import cjoy.context.Context
 import cjoy.framework.{JoyHttpConsts}
 
@@ -97,11 +97,11 @@ public class JoyHttpClientService <: JoyHttpClient & Resource {
     /**
      * 发送 HTTP 请求
      *
-     * @param ctx 请求上下文
+     * @param _ 请求上下文
      * @param request HTTP 请求
      * @return HTTP 响应
      */
-    public func send(ctx: Context, request: JoyHttpRequest): JoyHttpResponse {
+    public func send(_: Context, request: JoyHttpRequest): JoyHttpResponse {
         let url = mergeUrl(request)
         let rb = HttpRequestBuilder().url(url)
         rb.setHeaders(request._headers)

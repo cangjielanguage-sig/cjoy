@@ -472,7 +472,6 @@ class EqualFieldConstraintGenerator <: ConstraintGenerator {
     }
 
     protected func toConstraint(): Tokens {
-        let varName = Token(TokenKind.IDENTIFIER, field.value + "_" + targetField)
         let tf = Token(TokenKind.IDENTIFIER, targetField)
 
         quote(

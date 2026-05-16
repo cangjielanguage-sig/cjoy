@@ -254,7 +254,6 @@ public class JoyFileServer {
                 ctx.header(JoyHttpConsts.HEADER_CONTENT_TYPE, "multipart/byteranges; boundary=" + mw.boundary)
                 try (file = File(filePath, OpenMode.Read)) {
                     for (ra in ranges) {
-                        let buf = Array<UInt8>(BUFFER_SIZE, repeat: 0)
                         mw.createPart(ra.mimeHeaders(contentType, size))
                         readFileToWriter(file, ra.start, ra.length, write)
                     }
@@ -360,7 +359,7 @@ public class JoyFileServer {
         // 检查If-Range
         let rangeHeader = ctx.getHeader(JoyHttpConsts.HEADER_RANGE) ?? ""
         if (!rangeHeader.isEmpty()) {
-            let ifRangeResult = checkIfRange(ctx, modTime, eTag)
+            let _ = checkIfRange(ctx, modTime, eTag)
             match (ifNoneMatchResult) {
                 case MatchFalse => return (false, "") // 忽略Range头
                 case _ => ()

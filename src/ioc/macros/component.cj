@@ -13,7 +13,7 @@ macro package cjoy.ioc.macros
 import std.ast.*
 import std.collection.ArrayList
 import cjoy.utils.ast.{ClassGenentor, parserAttrs, joinTokens, TypeNodeInfo}
-import cjoy.utils.{converterList, MapToString, MapListGetFunc, randStr}
+import cjoy.utils.{converterList, MapToString, MapListGetFunc}
 
 open class ComponentClassInfo {
     let _classId: Token
@@ -105,6 +105,11 @@ open class ComponentClassInfo {
         let factoryName = Token(TokenKind.IDENTIFIER, _classId.value.toAsciiTitle() + "BeanFactory")
         let (bean, deps) = getBeanToken()
         let inferfaces = _extends.toArray()
+        let funcParams = if (let Some(ctor) <- _ctorFuncDecl) {
+            quote(ctx: ApplicationContext)
+        } else {
+            quote(_: ApplicationContext)
+        }
         quote(
             public class $factoryName <: BeanFactory {
                 public static let INSTANE: BeanFactory = $(factoryName)()
@@ -118,7 +123,7 @@ open class ComponentClassInfo {
                 public prop beanScope: BeanScope {
                     get() { $_beanScope }
                 }
-                public func create(ctx: ApplicationContext): (String, BeanLifecycle) {
+                public func create($funcParams): (String, BeanLifecycle) {
                     let beanName = $_beanName
                     $bean
                     (beanName, bean)
