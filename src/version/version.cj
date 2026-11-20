@@ -17,7 +17,7 @@ import cjoy.log.macros.*
 /**
  * 版本号，每次发布时修改
  */
-public const VERSION: String = "v1.0.2"
+public const VERSION: String = "v1.0.3"
 private const LOGO: String = ##"
  ________        ___  ________      ___    ___ 
 |\   ____\      |\  \|\   __  \    |\  \  /  /|

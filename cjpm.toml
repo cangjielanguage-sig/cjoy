@@ -1,5 +1,5 @@
 [dependencies]
-  cjlog = { version = "0.1.1" } 
+  cjlog = { version = "0.1.2" } 
 
 [package]
   cjc-version = "1.1.0"
@@ -11,7 +11,7 @@
   override-compile-option = ""
   src-dir = ""
   target-dir = ""
-  version = "1.0.2"
+  version = "1.0.3"
   authors = ["lanlingx"]
   repository = "https://gitcode.com/Cangjie-SIG/"
   tag = ["cangjie", "web"]
