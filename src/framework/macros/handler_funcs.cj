@@ -128,7 +128,10 @@ class FuncInfo {
                 "return must is tuple with 2 element, first is Uint16, second is String or JsonSerializable")
         }
         let tfirstType = tt.types[0]
-        if (tfirstType is PrimitiveType) {
+        // 判断第一个元素是否为 UInt16 状态码，不能使用 PrimitiveType，
+        // 因为 Int64/Bool/Rune 等原生类型也会被判定为 PrimitiveType。
+        let statusFirst = tfirstType.toTokens()[0].value == "UInt16"
+        if (statusFirst) {
             ret += quote(
                 let (statusCode, bodyRsp) = $(funcName)($(params))
             )

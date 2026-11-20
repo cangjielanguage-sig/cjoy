@@ -12,7 +12,7 @@ package cjoy.framework
 
 import std.collection.{HashMap, ArrayList}
 import std.io.{InputStream, ByteBuffer, copy, StringReader, BufferedInputStream, SeekPosition}
-import std.fs.{canonicalize, exists, Path}
+import std.fs.{canonicalize, exists}
 import std.net.IPAddress
 import stdx.net.http.{HttpContext, RedirectHandler, HttpStatusCode, HttpResponseBuilder, Cookie}
 import stdx.encoding.url.URL
@@ -542,6 +542,8 @@ class JoyHttpContext <: JoyContext {
         _handleIndex = 0
         _respBody = Option<Any>.None
         _respContentType = None
+        _status = None
+        _parsedCookie = false
     }
 
     /**
@@ -709,7 +711,9 @@ class JoyHttpContext <: JoyContext {
     }
 
     private func copyRequestBody(): Unit {
-        if (let Some(len) <- _httpContext.request.bodySize && len > 0 && _requestBuffer.length == 0) {
+        // 不能依赖 bodySize 判断请求体是否存在：chunked 请求的 bodySize 为 None，
+        // Expect: 100-continue 请求的 bodySize 为 0，但两者都可能带有请求体。
+        if (_requestBuffer.length == 0) {
             copy(_httpContext.request.body, to: _requestBuffer)
         }
     }
@@ -847,23 +851,24 @@ class JoyHttpContext <: JoyContext {
     }
 
     public func file(filePath: String): JoyContext {
-        let fp = canonicalize(filePath)
-        if (!exists(fp)) {
+        // canonicalize 对不存在的路径会抛异常，所以必须先判断存在性
+        if (!exists(filePath)) {
             notFound()
         } else {
+            let fp = canonicalize(filePath)
             let factory = getJoyFileHandlerFactory()
-            factory.serveFile(this, Path(filePath))
+            factory.serveFile(this, fp)
         }
         this
     }
 
     public func attachment(filePath: String): JoyContext {
-        let fp = canonicalize(filePath)
-        if (!exists(fp)) {
+        if (!exists(filePath)) {
             notFound()
         } else {
+            let fp = canonicalize(filePath)
             let factory = getJoyFileHandlerFactory()
-            factory.downloadFile(this, Path(filePath))
+            factory.downloadFile(this, fp)
         }
         this
     }
@@ -878,9 +883,12 @@ class JoyHttpContext <: JoyContext {
 
     public func getClientIP(): String {
         for (x in _config.remoteIPHeaders) {
-            let ip = getHeader(x).map({it => IPAddress.tryParse(it)}).map({it => it.toString()})
-            if (ip.isSome()) {
-                return ip ?? throw Exception("parse ip address failed")
+            if (let Some(value) <- getHeader(x)) {
+                // X-Forwarded-For 可能是 "client, proxy1, proxy2" 形式，取第一个
+                let first = value.split(",")[0].trimAscii()
+                if (let Some(ip) <- IPAddress.tryParse(first)) {
+                    return ip.toString()
+                }
             }
         }
         getRemoteIP()
@@ -888,11 +896,21 @@ class JoyHttpContext <: JoyContext {
 
     public func getRemoteIP(): String {
         let remoteAddr = _httpContext.request.remoteAddr
-        let ipPort = remoteAddr.split(":")
-        if (ipPort.size >= 1) {
-            return ipPort[0]
+        // IPv6 地址格式为 "[::1]:port"
+        if (remoteAddr.startsWith("[")) {
+            if (let Some(end) <- remoteAddr.indexOf(b']')) {
+                if (end > 0) {
+                    return remoteAddr[1..end]
+                }
+            }
         }
-        ""
+        // IPv4 地址格式为 "127.0.0.1:port" 或 "127.0.0.1"
+        if (let Some(idx) <- remoteAddr.lastIndexOf(b':')) {
+            if (idx > 0) {
+                return remoteAddr[0..idx]
+            }
+        }
+        remoteAddr
     }
 
     public func getContentType(): String {
@@ -932,6 +950,7 @@ class JoyHttpContext <: JoyContext {
     }
 
     public func redirect(status: UInt16, location: String): Unit {
+        _status = status
         RedirectHandler(location, status).handle(_httpContext)
     }
 

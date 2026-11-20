@@ -518,4 +518,43 @@ public class TreeNodeTestCaseSuit {
         let dump = node.dumpTree()
         @Assert(dump.size > 0, true)
     }
+
+    /**
+     * 测试大小写不敏感路由匹配 - 验证静态路径和参数名/参数值不会被改写
+     */
+    @TestCase
+    public func testCaseInsensitiveRouteMatching() {
+        let node = TreeNode<Int64>(NT_STATIC, b'\0', "", caseInsensitive: true)
+        addPath(node, "/Users/{UserID}", 1)
+        addPath(node, "/Users/Profile", 2)
+
+        let ri = RouteInfo<Int64>()
+        let result = node.findRouteHandler(ri, "GET", "/users/AbCdEf")
+        @Assert(result.isSome(), true)
+        @Assert(ri.pattern, "/Users/{UserID}")
+        @Assert(ri.getParams().get("UserID").getOrThrow(), "AbCdEf")
+
+        let ri2 = RouteInfo<Int64>()
+        let result2 = node.findRouteHandler(ri2, "GET", "/USERS/PROFILE")
+        @Assert(result2.isSome(), true)
+        @Assert(ri2.handler.getOrThrow(), 2)
+    }
+
+    /**
+     * 测试大小写不敏感正则匹配 - 验证正则语义（如 \D）不会被小写化破坏
+     */
+    @TestCase
+    public func testCaseInsensitiveRegexMatching() {
+        let node = TreeNode<Int64>(NT_STATIC, b'\0', "", caseInsensitive: true)
+        addPath(node, "/value/{v:\\D+}", 1)
+
+        let ri = RouteInfo<Int64>()
+        let result = node.findRouteHandler(ri, "GET", "/VALUE/AbC")
+        @Assert(result.isSome(), true)
+        @Assert(ri.getParams().get("v").getOrThrow(), "AbC")
+
+        let ri2 = RouteInfo<Int64>()
+        let result2 = node.findRouteHandler(ri2, "GET", "/value/123")
+        @Assert(result2.isNone(), true)
+    }
 }

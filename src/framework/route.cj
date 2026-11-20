@@ -234,7 +234,7 @@ public interface JoyRouters {
 }
 
 class TreeRouteDistributor <: HttpRequestDistributor & HttpRequestHandler {
-    var _root: TreeNode<JoyRequestHandler> = TreeNode(NT_STATIC, b'\0', "")
+    var _root: TreeNode<JoyRequestHandler>
     let _config: JoyConfig
     let _services: ServiceContainer
     let _groups: HashMap<String, JoyRouters> = HashMap()
@@ -242,6 +242,7 @@ class TreeRouteDistributor <: HttpRequestDistributor & HttpRequestHandler {
     init(config: JoyConfig, services: ServiceContainer) {
         _config = config
         _services = services
+        _root = TreeNode<JoyRequestHandler>(NT_STATIC, b'\0', "", caseInsensitive: config.caseInsensitive)
     }
 
     /**
@@ -283,38 +284,29 @@ class TreeRouteDistributor <: HttpRequestDistributor & HttpRequestHandler {
     }
 
     private func lookup(req: HttpRequest): RouteInfo<JoyRequestHandler> {
-        var path = if (_config.caseInsensitive) {
-            req.url.path.toAsciiLower()
-        } else {
-            req.url.path
-        }
+        var path = req.url.path
         if (path != "/") {
             path = path.removeSuffix("/")
         }
-        
-        let ri: RouteInfo<JoyRequestHandler> = RouteInfo()
-        var node = _root.findRouteHandler(ri, req.method, path)
-        if (node.isNone()) {
-            @JoyLogDebug("not found handler, method=${req.method}, path=${path}")
-            ri.handler = _config.notFoundHandler
-            return ri
-        }
 
+        let ri: RouteInfo<JoyRequestHandler> = RouteInfo()
+        _root.findRouteHandler(ri, req.method, path)
+
+        // 没有找到具体 handler 时，优先处理方法不允许和 OPTIONS 请求
         if (ri.handler.isNone()) {
-            if (req.method == JoyHttpConsts.METHOD_OPTIONS) {
+            if (req.method == JoyHttpConsts.METHOD_OPTIONS && ri.methodNotAllowed) {
                 ri.handler = JoyOptionsHandler.INSTANCE
                 return ri
             }
-
             if (ri.methodNotAllowed) {
                 ri.handler = _config.methodNotAllowedHandler
                 return ri
             }
-
             @JoyLogDebug("not found handler, method=${req.method}, path=${path}")
             ri.handler = _config.notFoundHandler
             return ri
         }
+
         ri
     }
 
@@ -397,6 +389,11 @@ class JoyRouteGroup <: JoyRouters {
         var path = _path + relativePath
         // don't want trailing slash as all sub-paths start with slash
         path = path.removeSuffix("/")
+
+        // 分组路径与当前路径相同（例如根分组调用 group("/")），直接返回当前分组
+        if (path == _path) {
+            return this
+        }
 
         if (let Some(group) <- _distributor._groups.get(path)) {
             return group
@@ -504,8 +501,6 @@ class JoyRouteGroup <: JoyRouters {
     private func addOne(method: String, path: String, handler: JoyRequestHandler): Unit {
         let thePath = if (path == "/") {
             path
-        } else if (_distributor._config.caseInsensitive) {
-            path.toAsciiLower().removeSuffix("/")
         } else {
             path.removeSuffix("/")
         }
@@ -595,6 +590,9 @@ class JoyRouteGroup <: JoyRouters {
     }
 
     public func staticFs(relativePath: String, root: String): JoyRouters {
+        if (relativePath.isEmpty()) {
+            throw IllegalArgumentException("staticFs relativePath must not be empty")
+        }
         let fp = canonicalize(root)
         if (!exists(fp)) {
             throw FSException("not existed file system root, root=${root}")

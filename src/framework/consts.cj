@@ -140,7 +140,7 @@ public struct JoyHttpConsts {
 
     public static const HEADER_SEC_WEBSOCKET_ACCEPT: String = "Sec-WebSocket-Accept"
     public static const HEADER_SEC_WEBSOCKET_EXTENSIONS: String = "Sec-WebSocket-Extensions"
-    public static const HEADER_SEC_WEBSOCKET_KEY: String = "Sec-WebSocket-KeY"
+    public static const HEADER_SEC_WEBSOCKET_KEY: String = "Sec-WebSocket-Key"
     public static const HEADER_SEC_WEBSOCKET_PROTOCOL: String = "Sec-WebSocket-Protocol"
     public static const HEADER_SEC_WEBSOCKET_VERSION: String = "Sec-WebSocket-Version"
     public static const HEADER_STRICT_TRANSPORT_SECURITY: String = "Strict-Transport-Security"
@@ -148,7 +148,7 @@ public struct JoyHttpConsts {
     public static const HEADER_SAVE_DATA: String = "Save-Data"
     public static const HEADER_SERVER_TIMING: String = "Server-Timing"
     public static const HEADER_SIGNATURE: String = "Signature"
-    public static const HEADER_SIGNED_HEADERS: String = "Signed-HEADER_s"
+    public static const HEADER_SIGNED_HEADERS: String = "Signed-Headers"
     public static const HEADER_SOURCE_MAP: String = "SourceMap"
     public static const HEADER_SET_COOKIE: String = "Set-Cookie"
 

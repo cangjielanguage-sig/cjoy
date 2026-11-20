@@ -298,7 +298,6 @@ class HeaderBindParamVarGenerator <: ParamInfo {
             } else {
                 quote(let $(pname): ?$(typeNode.genericType) = ctx.bindHeader<$(typeNode.genericType)>())
             }
-            quote(let $(pname): ?$(typeNode.genericType) = ctx.bindHeader<$(typeNode.genericType)>())
         } else {
             let msg = "@HeaderBindParam ${pname.value} bind value failed"
             if (let Some(expr) <- this.initExpr) {

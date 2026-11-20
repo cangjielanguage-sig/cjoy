@@ -434,7 +434,7 @@ public class OAuth2ServerTestCaseSuit {
                     )
                 )
         )) {
-            @Assert(rsp.status, 404)  // 预期返回404错误
+            @Assert(rsp.status, 405)  // 路径存在但 PUT 方法不允许
         }
     }
 

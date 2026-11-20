@@ -17,6 +17,17 @@ class JoyGroupRouteHandler <: JoyRequestHandler {
     static let INSTANCE = JoyGroupRouteHandler()
 
     public func handle(ctx: JoyContext): Unit {
+        // 分组默认 handler 也负责响应分组内没有显式 OPTIONS 路由的 OPTIONS 请求。
+        // 如果路径不存在，则 methods 为空，仍然按未找到处理。
+        if (ctx.method == JoyHttpConsts.METHOD_OPTIONS) {
+            if (let Some(methods) <- ctx.getCtxParam<Collection<String>>("methods")) {
+                if (!methods.isEmpty()) {
+                    ctx.header(JoyHttpConsts.HEADER_ALLOW, String.join(methods.toArray(), delimiter: ","))
+                    ctx.ok()
+                    return
+                }
+            }
+        }
         // 默认处理是返回未找到
         ctx.notFound()
     }

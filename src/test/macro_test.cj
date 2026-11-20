@@ -14,6 +14,8 @@ import cjoy.*
 import cjoy.json.*
 import cjoy.macros.*
 import cjoy.bind.*
+import cjoy.httpx.*
+import cjoy.context.*
 import std.deriving.*
 import std.collection.*
 import std.time.*
@@ -526,6 +528,28 @@ func bind3Named(@HeaderBindParam param!: HeaderParams = HeaderParams()): String 
     param.toString()
 }
 
+@Bind
+@Derive[ToString]
+class HeaderParamsOpt {
+    @BindField[name = "x-test"]
+    var a: String = ""
+}
+
+// test header bind param (optional named parameter)
+@Get[path = "/bind_header_opt_named"]
+func bindHeaderOptNamed(@HeaderBindParam param!: ?HeaderParamsOpt = None): String {
+    match (param) {
+        case Some(p) => p.toString()
+        case None => "none"
+    }
+}
+
+// test tuple with primitive body type and UInt16 status: (body, status)
+@Get[path = "/tuple_body_status"]
+func tupleBodyStatus(): (Int64, UInt16) {
+    (201, 202)
+}
+
 @Handler[path = "/cookie1", methods = "GET,POST"]
 func testMethods(): String {
     "helloword"
@@ -555,6 +579,19 @@ public class MacroTestCaseSuit {
             joy.run("127.0.0.1", 18882)
         }
         sleep(Duration.second)
+
+        let client = JoyHttpClientService("http://127.0.0.1:18882/")
+        let ctx = MapContext()
+        try (rsp = client.get(ctx, "/tuple_body_status")) {
+            // (Int64, UInt16) 应被识别为 (body, status)，而不是 (status, body)
+            @Assert(rsp.status, 202)
+            @Assert(rsp.text, "201")
+        }
+        try (rsp = client.get(ctx, "/bind_header_opt_named")) {
+            @Assert(rsp.status, 200)
+        }
+        client.destroy()
+
         fut.cancel()
     }
 }

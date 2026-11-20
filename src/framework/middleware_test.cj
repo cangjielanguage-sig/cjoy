@@ -409,4 +409,27 @@ public class MiddlewareTestCaseSuit {
 
         engine.shutdown()
     }
+
+    /**
+     * 测试同一分组注册多个中间件 - 验证不会相互覆盖
+     */
+    @TestCase
+    public func testMultipleMiddlewaresOnSameGroup() {
+        JoyMiddlewares.clear()
+        let engine = Joy.create(name: "testMultiMwSameGroup")
+        _instance = engine
+
+        let mw1: JoyMiddlewareFunc = {ctx, chain => chain.next(ctx)}
+        let mw2: JoyMiddlewareFunc = {ctx, chain => chain.next(ctx)}
+        JoyMiddlewares.addHandler(["/multi-mw"], JoyMiddlewareFuncHandler(mw1))
+        JoyMiddlewares.addHandler(["/multi-mw"], JoyMiddlewareFuncHandler(mw2))
+
+        JoyMiddlewares.registerTo(engine)
+
+        let group = (engine.router.findGroup("/multi-mw/dummy") as JoyRouteGroup).getOrThrow()
+        @Assert(group._middlewares.size, 2)
+
+        JoyMiddlewares.clear()
+        engine.shutdown()
+    }
 }

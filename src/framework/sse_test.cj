@@ -123,6 +123,9 @@ public class SseTestCaseSuit {
         let result = builder.build()
         let str = String.fromUtf8(result)
         @Assert(str.contains("data: line1"), true)
+        // 多行数据的每一行都必须带 data: 前缀
+        @Assert(str.contains("data: line2"), true)
+        @Assert(str.contains("data: line3"), true)
     }
 
     /**

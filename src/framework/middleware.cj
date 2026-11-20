@@ -10,7 +10,8 @@
 
 package cjoy.framework
 
-import std.collection.{forEach, HashMap}
+import std.collection.{ArrayList, HashMap}
+import std.sort.sort
 
 /**
  * 请求处理器链接口，用于管理中间件执行
@@ -68,7 +69,8 @@ public class JoyMiddlewareFuncHandler <: JoyMiddlewareHandler {
  * 中间件处理器注册表，用于注册路由处理器
  */
 public class JoyMiddlewares {
-    private static let MIDDLEWARES: HashMap<String, JoyMiddlewareHandler> = HashMap()
+    // 同一个分组可以注册多个中间件，因此值使用列表保存
+    private static let MIDDLEWARES: HashMap<String, ArrayList<JoyMiddlewareHandler>> = HashMap()
 
     /**
      * 为由宏生成的代码添加中间件处理器
@@ -77,7 +79,15 @@ public class JoyMiddlewares {
      * @param mw 要添加的中间件处理器
      */
     public static func addHandler(groups: Array<String>, mw: JoyMiddlewareHandler): Unit {
-        groups |> forEach {group => MIDDLEWARES.add(group, mw)}
+        for (group in groups) {
+            if (let Some(handlers) <- MIDDLEWARES.get(group)) {
+                handlers.add(mw)
+            } else {
+                let handlers = ArrayList<JoyMiddlewareHandler>()
+                handlers.add(mw)
+                MIDDLEWARES.add(group, handlers)
+            }
+        }
     }
 
     /**
@@ -86,9 +96,33 @@ public class JoyMiddlewares {
      * @param joy 要注册中间件的 Joy 引擎实例
      */
     public static func registerTo(joy: Joy): Unit {
-        for ((path, handler) in MIDDLEWARES) {
-            let r = joy.router.createGroups(path)
-            r.use(handler)
+        // 父分组必须先于子分组处理，这样子分组才能继承父分组的中间件
+        let paths = ArrayList<String>()
+        for ((path, _) in MIDDLEWARES) {
+            paths.add(path)
         }
+        sort(paths, by: {a, b =>
+            if (a.size != b.size) {
+                a.size.compare(b.size)
+            } else {
+                a.compare(b)
+            }
+        })
+
+        for (path in paths) {
+            if (let Some(handlers) <- MIDDLEWARES.get(path)) {
+                let r = joy.router.createGroups(path)
+                for (handler in handlers) {
+                    r.use(handler)
+                }
+            }
+        }
+    }
+
+    /**
+     * 清空已注册的中间件，仅用于测试
+     */
+    static func clear(): Unit {
+        MIDDLEWARES.clear()
     }
 }

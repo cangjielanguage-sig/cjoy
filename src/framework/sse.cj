@@ -98,9 +98,12 @@ public class JoySseBuilder {
         }
 
         if (let Some(data) <- _data) {
-            buffer.write("data: ".toArray())
-            buffer.write(data.toArray())
-            buffer.writeByte(b'\n')
+            // SSE 规范要求多行数据的每一行都带 "data: " 前缀
+            for (line in data.split("\n")) {
+                buffer.write("data: ".toArray())
+                buffer.write(line.trimEnd("\r").toArray())
+                buffer.writeByte(b'\n')
+            }
         }
 
         if (let Some(retry) <- _retry) {

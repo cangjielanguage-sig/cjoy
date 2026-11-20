@@ -137,6 +137,27 @@ public class RouteTestCaseSuit {
     }
 
     /**
+     * 测试 group("/") - 验证根分组调用 group("/") 不会抛异常
+     */
+    @TestCase
+    public func testGroupWithRootPath() {
+        let router: JoyRouteGroup = JoyRouteGroup(JoyConfig(), ServiceContainer())
+        let group = router.group("/")
+        @Assert(group.basePath(), "")
+    }
+
+    /**
+     * 测试子分组调用 group("/") - 验证返回当前分组
+     */
+    @TestCase
+    public func testSubGroupWithRootPath() {
+        let router: JoyRouteGroup = JoyRouteGroup(JoyConfig(), ServiceContainer())
+        let sub = router.group("/a")
+        let group = sub.group("/")
+        @Assert(group.basePath(), "/a")
+    }
+
+    /**
      * 测试查找不存在路径的分组 - 验证查找不存在的路径时返回根分组
      */
     @TestCase

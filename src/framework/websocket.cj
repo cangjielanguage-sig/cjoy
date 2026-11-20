@@ -456,6 +456,7 @@ class JoyWebSocketUpgradeHandler <: JoyRequestHandler {
 
     private func handleReceive(session: JoyWebSocketSession, websocket: WebSocket) {
         var isOpen = true
+        var closedByPeer = false
         let buffer = ByteBuffer()
 
         handler.onOpen(session)
@@ -469,6 +470,7 @@ class JoyWebSocketUpgradeHandler <: JoyRequestHandler {
                     case TextWebFrame | BinaryWebFrame => msgType = handleTextAndBinaryWebFrame(session, buffer, frame)
                     case CloseWebFrame =>
                         handleCloseWebFrame(session, frame)
+                        closedByPeer = true
                         isOpen = false
                     case PingWebFrame => websocket.writePongFrame(frame.payload)
                     case _ => ()
@@ -480,7 +482,8 @@ class JoyWebSocketUpgradeHandler <: JoyRequestHandler {
             }
         }
 
-        if (isOpen) {
+        if (closedByPeer) {
+            // 对端发起关闭，回复关闭帧后关闭连接
             session.close()
         } else {
             websocket.closeConn()

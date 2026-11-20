@@ -485,7 +485,7 @@ public class FrameworkTestCaseSuit {
         let form = Form()
         form.add("value", "put-value")
         try (rsp = _client.send(_ctx, req)) {
-            @Assert(rsp.status, 404) // PUT 路由未定义，应返回 404
+            @Assert(rsp.status, 405) // PUT 路由未定义，应返回 405
         }
     }
 
@@ -496,7 +496,7 @@ public class FrameworkTestCaseSuit {
     public func testDeleteRequest() {
         let req = JoyHttpRequest.of("/test_ok").method("DELETE")
         try (rsp = _client.send(_ctx, req)) {
-            @Assert(rsp.status, 404) // DELETE 路由未定义
+            @Assert(rsp.status, 405) // DELETE 路由未定义
         }
     }
 
@@ -507,7 +507,7 @@ public class FrameworkTestCaseSuit {
     public func testPatchRequest() {
         let req = JoyHttpRequest.of("/test_ok").method("PATCH")
         try (rsp = _client.send(_ctx, req)) {
-            @Assert(rsp.status, 404) // PATCH 路由未定义
+            @Assert(rsp.status, 405) // PATCH 路由未定义
         }
     }
 
@@ -518,7 +518,7 @@ public class FrameworkTestCaseSuit {
     public func testHeadRequest() {
         let req = JoyHttpRequest.of("/test_ok").method("HEAD")
         try (rsp = _client.send(_ctx, req)) {
-            @Assert(rsp.status, 404) // HEAD 路由未定义
+            @Assert(rsp.status, 405) // HEAD 路由未定义
         }
     }
 
@@ -529,8 +529,9 @@ public class FrameworkTestCaseSuit {
     public func testOptionsRequest() {
         let req = JoyHttpRequest.of("/test_ok").method("OPTIONS")
         try (rsp = _client.send(_ctx, req)) {
-            // OPTIONS 可能会被 CORS 中间件处理
-            @Assert(rsp.status > 0, true)
+            // /test_ok 显式注册了 OPTIONS handler
+            @Assert(rsp.status, 200)
+            @Assert(rsp.text, "ok")
         }
     }
 

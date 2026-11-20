@@ -10,7 +10,7 @@
 
 package cjoy.framework
 
-import std.regex.Regex
+import std.regex.{Regex, RegexFlag}
 import std.sort.sort
 import std.collection.{ArrayList, HashMap}
 import cjoy.log.macros.*
@@ -126,6 +126,9 @@ public class TreeNode<T> {
     // 节点类型
     var _type: NodeType = 0
 
+    // 是否进行大小写不敏感匹配
+    var _caseInsensitive: Bool = false
+
     // 前缀的第一个字节
     var _label: Byte = b'\0'
     // 子前缀的第一个字节
@@ -138,12 +141,14 @@ public class TreeNode<T> {
      * @param label 前缀的第一个字节
      * @param prefix 此节点的公共前缀
      * @param tail 子前缀的第一个字节
+     * @param caseInsensitive 是否进行大小写不敏感匹配
      */
-    init(cat: NodeType, label: Byte, prefix: String, tail!: Byte = b'\0') {
+    init(cat: NodeType, label: Byte, prefix: String, tail!: Byte = b'\0', caseInsensitive!: Bool = false) {
         _type = cat
         _label = label
         _prefix = prefix
         _tail = tail
+        _caseInsensitive = caseInsensitive
     }
 
     /**
@@ -196,12 +201,18 @@ public class TreeNode<T> {
     private func addChild(child: TreeNode<T>, prefix: String): TreeNode<T> {
         var search = prefix
         var hn = child
+        // 子节点继承大小写匹配配置
+        child._caseInsensitive = _caseInsensitive
 
         // 解析下一个段
         let seg = Segment.parseNext(search)
         if (seg.typ == NT_REGEXP) {
             child._prefix = seg.rex
-            child._regex = Regex(seg.rex)
+            child._regex = if (_caseInsensitive) {
+                Regex(seg.rex, [RegexFlag.IgnoreCase])
+            } else {
+                Regex(seg.rex)
+            }
         }
 
         if (seg.typ != NT_STATIC) {
@@ -296,6 +307,7 @@ public class TreeNode<T> {
             }
 
             let child = TreeNode<T>(NT_STATIC, search[0], search[0..nprefix])
+            child._caseInsensitive = _caseInsensitive
             parent.replaceChild(search[0], seg.tail, child)
 
             // restorethe existing node 
@@ -448,6 +460,21 @@ public class TreeNode<T> {
 
             var xsearch = search
             if (nt == NT_STATIC) {
+                if (_caseInsensitive) {
+                    // 大小写不敏感时，相同前缀可能对应多个静态节点（如 Foo/foobar），
+                    // 需要逐个尝试，避免只尝试第一个而漏掉正确路由。
+                    for (n in nds) {
+                        if (!startsWithIgnoreCase(search, n._prefix)) {
+                            continue
+                        }
+                        let remain = search[n._prefix.size..search.size]
+                        let fin = findRouteByMethod(ri, n, method, remain)
+                        if (fin.isSome()) {
+                            return fin
+                        }
+                    }
+                    continue
+                }
                 (node, xsearch) = findStaticRoute(nds, search, label)
                 if (node.isNone()) {
                     continue
@@ -462,6 +489,13 @@ public class TreeNode<T> {
                     return node
                 }
             } else {
+                // 如果更具体的路由已经匹配到路径但方法不允许，则不要回退到通配路由，
+                // 否则 405 会被通配 handler（例如分组默认 handler）掩盖。
+                // OPTIONS 是例外：需要让分组默认 handler 继续执行，以便分组中间件
+                // （如 CORS）能够处理预检请求。
+                if (ri.methodNotAllowed && method != JoyHttpConsts.METHOD_OPTIONS) {
+                    continue
+                }
                 ri.routeParamValues.add(search)
                 node = nds[0]
                 xsearch = ""
@@ -658,6 +692,38 @@ public class TreeNode<T> {
             }
         }
         idx
+    }
+
+    /**
+     * 将 ASCII 大写字母转换为小写
+     *
+     * @param v 原始字节
+     * @return 转换后的字节
+     */
+    private static func lowerAsciiByte(v: Byte): Byte {
+        if (v >= b'A' && v <= b'Z') {
+            return UInt8(Int64(v) + 32)
+        }
+        v
+    }
+
+    /**
+     * 判断字符串是否以指定前缀开头（仅 ASCII 字母大小写不敏感）
+     *
+     * @param s 要检查的字符串
+     * @param prefix 前缀
+     * @return 如果匹配返回 True，否则返回 False
+     */
+    private static func startsWithIgnoreCase(s: String, prefix: String): Bool {
+        if (s.size < prefix.size) {
+            return false
+        }
+        for (i in 0..prefix.size) {
+            if (lowerAsciiByte(s[i]) != lowerAsciiByte(prefix[i])) {
+                return false
+            }
+        }
+        true
     }
 }
 
