@@ -22,6 +22,18 @@ public func createMcpSseClient(url: String, features!: McpClientFeatures = McpCl
     DefaultMcpClient(features, transport)
 }
 
+/**
+ * 创建基于 Streamable HTTP 传输的 MCP 客户端
+ *
+ * @param url MCP Streamable HTTP 端点地址
+ * @param features 客户端配置
+ * @return MCP 客户端实例
+ */
+public func createMcpStreamableClient(url: String, features!: McpClientFeatures = McpClientFeatures()): McpClient {
+    let transport = McpStreamableClientTransport(url)
+    DefaultMcpClient(features, transport)
+}
+
 public class McpClientFeatures {
     public var protocolVesions: Array<String> = [McpConsts.LASTEST_PROTOCOL_VERSION]
     public var requestTimeout = Duration.second * 30
@@ -91,6 +103,21 @@ class DefaultMcpClient <: McpClient {
 
     private func doInitialize(): InitializeResult {
         let request = InitializeRequest(capabilities: _features.clientCapabilities, clientInfo: _features.clientInfo)
+        // 从客户端支持列表中选出最高的协议版本发起协商，而不是始终使用服务器默认值
+        let supported = McpConsts.supportedProtocolVersions()
+        var bestIndex = -1
+        var preferredVersion = McpConsts.LASTEST_PROTOCOL_VERSION
+        for (version in _features.protocolVesions) {
+            for (i in 0..supported.size) {
+                if (supported[i] == version && i > bestIndex) {
+                    bestIndex = i
+                    preferredVersion = version
+                }
+            }
+        }
+        if (bestIndex >= 0) {
+            request.protocolVersion = preferredVersion
+        }
         let result: InitializeResult = _session.sendRequest(McpConsts.METHOD_INITIALIZE, request)
         _serverCapabilities = result.capabilities
         _serverInfo = result.serverInfo

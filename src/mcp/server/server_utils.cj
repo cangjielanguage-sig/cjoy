@@ -26,13 +26,18 @@ import cjoy.jsonrpc.api.{JSONRPCResponse, JSONRPCError, JSONRPCConsts}
  * @return 如果是回环地址返回 true
  */
 func isLoopbackAddress(address: String): Bool {
-    let addr = address
-    return addr.startsWith("127.0.0.1") || 
-        addr.startsWith("localhost") || 
-        addr.startsWith("[::1]") || 
-        addr.contains("localhost:") || 
-        addr.contains("127.0.0.1:") || 
-        addr.contains("[::1]:")
+    // 去掉可选的端口部分，必须精确匹配主机名，避免 "notlocalhost:8080" 之类的子串绕过保护
+    var host = address.trimAscii()
+    if (host.startsWith("[")) {
+        // IPv6 字面量，如 [::1]:8080
+        if (let Some(pos) <- host.indexOf(b']')) {
+            host = host[0..pos + 1]
+        }
+    } else if (host.contains(":")) {
+        // IPv4 / 主机名，如 127.0.0.1:8080
+        host = host.split(":")[0]
+    }
+    return host == "localhost" || host == "127.0.0.1" || host == "[::1]"
 }
 
 
@@ -171,7 +176,9 @@ public struct McpPaginationUtils {
      * 解析分页游标
      */
     private func parseCursor(request: PaginatedRequest): Int {
-        return request.cursor.map { it: String =>Int.tryParse(it) ?? 0 } ?? 0
+        // 非法或负数游标按首页处理，避免分页时出现负索引
+        let value = request.cursor.map { it: String => Int.tryParse(it) ?? 0 } ?? 0
+        return if (value < 0) { 0 } else { value }
     }
 
     /**

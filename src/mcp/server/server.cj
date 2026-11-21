@@ -132,13 +132,18 @@ public class McpServer {
      * @param eventStore 用于持久化事件的可选事件存储（默认为 None）
      * @param serverFeatures 服务器功能配置（默认为 McpServerFeatures()）
      * @param disableLocalhostProtection 是否禁用 localhost 的 DNS 重绑定保护（默认为 false）
+     * @param statelessMode 是否启用无状态模式（默认为 false）
+     * @param sessionTimeoutMs 会话超时时间（毫秒），小于等于 0 表示禁用（默认为 30 分钟）
+     * @param sessionCheckIntervalMs 超时检查间隔（毫秒），默认为 5 分钟
      */
     public static func registerStreamableTo(joy: Joy, path!: String = "/mcp", isJsonResp!: Bool = false,
         eventStore!: ?EventStore = None, serverFeatures!: McpServerFeatures = McpServerFeatures(),
-        disableLocalhostProtection!: Bool = false): Unit {
+        disableLocalhostProtection!: Bool = false, statelessMode!: Bool = false,
+        sessionTimeoutMs!: Int64 = 30 * 60 * 1000, sessionCheckIntervalMs!: Int64 = 5 * 60 * 1000): Unit {
         updateFeatures(serverFeatures)
         let transport = McpStreamableServerTransport(isJsonResp, eventStore: eventStore,
-            disableLocalhostProtection: disableLocalhostProtection)
+            sessionTimeoutMs: sessionTimeoutMs, sessionCheckIntervalMs: sessionCheckIntervalMs,
+            statelessMode: statelessMode, disableLocalhostProtection: disableLocalhostProtection)
 
         let rg = joy.router.findGroup(path)
         let rpath = path[rg.basePath().size..]

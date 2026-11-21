@@ -111,13 +111,12 @@ public class InMemoryEventStore <: EventStore {
                     i += 1
                 }
 
-                // 移除过期事件
+                // 用哨兵占位替换过期事件，而不是从列表中删除：
+                // 事件索引（Last-Event-ID）必须保持单调，否则 GC 后新事件会复用旧 ID
                 if (!expiredIndices.isEmpty()) {
                     @JoyLogInfo("[EventStore] Removing ${expiredIndices.size} expired events from session: ${sessionId}, stream: ${streamId}")
-                    var j = expiredIndices.size - 1
-                    while (j >= 0) {
-                        events.remove(at: expiredIndices[j])
-                        j -= 1
+                    for (index in expiredIndices) {
+                        events[index] = (DateTime.UnixEpoch, ByteBuffer())
                     }
                 }
             }
@@ -171,8 +170,11 @@ public class InMemoryEventStore <: EventStore {
 
                     var i = lastIndex + 1
                     while (i < streamEvents.size) {
-                        let (_, data) = streamEvents[i]
-                        result.add((i, data))
+                        let (timestamp, data) = streamEvents[i]
+                        // 跳过 GC 留下的占位项，但保留原始索引
+                        if (timestamp != DateTime.UnixEpoch) {
+                            result.add((i, data))
+                        }
                         i += 1
                     }
 

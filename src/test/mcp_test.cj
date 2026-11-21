@@ -14,8 +14,13 @@ import cjoy.*
 import cjoy.macros.*
 import cjoy.mcp.*
 import cjoy.mcp.client.createMcpSseClient
+import cjoy.mcp.client.createMcpStreamableClient
 import cjoy.mcp.client.McpClientFeatures
+import cjoy.jsonrpc.*
+import std.io.StringReader
 import stdx.encoding.base64.toBase64String
+import stdx.net.http.*
+import std.sync.AtomicInt32
 
 // Tool-----------
 
@@ -58,6 +63,11 @@ public func add(param: McpAddParam): Int {
 @Tool[name = "add4", description = "add two number"]
 public func add(param: ?McpAddParam): Int {
     (param?.a ?? 0) + (param?.b ?? 0)
+}
+
+@Tool[name = "greet", description = "greet with default name"]
+public func greet(@ToolParam[default = "world"] who: String): String {
+    "hello ${who}"
 }
 
 @Tool[description = "image"]
@@ -144,7 +154,7 @@ public class McpServerTestCaseSuit {
             let _ = client.initialize()
 
             let listResult = client.listTools()
-            @Assert(listResult.tools.size, 9)
+            @Assert(listResult.tools.size, 10)
 
             let check = {
                 result: CallToolResult, value: String =>
@@ -341,6 +351,75 @@ public class McpServerTestCaseSuit {
     }
 
     /**
+     * 测试工具参数默认值 - 验证 @ToolParam[default] 在缺少参数时生效
+     */
+    @TestCase
+    public func testToolParamDefault(): Unit {
+        try (client = createMcpSseClient("http://127.0.0.1:18881/sse")) {
+            let _ = client.initialize()
+
+            let result = client.callTool(CallToolRequest(name: "greet", arguments: HashMap<String, String>()))
+            @Assert(result.content.size, 1)
+            @Assert((result.content[0] as TextContent).getOrThrow().text, "hello world")
+        }
+    }
+
+    /**
+     * 测试提示词参数的 required 标记 - 验证必需/可选参数的区分
+     */
+    @TestCase
+    public func testPromptArgumentRequired(): Unit {
+        try (client = createMcpSseClient("http://127.0.0.1:18881/sse")) {
+            let _ = client.initialize()
+            let prompts = client.listPrompts().prompts
+
+            var checkedTopic = false
+            var checkedDefault = false
+            for (prompt in prompts) {
+                for (arg in prompt.arguments) {
+                    if (prompt.name == "askUserTopic" && arg.name == "topic") {
+                        @Assert(arg.required, true)
+                        checkedTopic = true
+                    }
+                    if (prompt.name == "analyze_data_request" && arg.name == "analysisType") {
+                        @Assert(arg.required, false)
+                        checkedDefault = true
+                    }
+                }
+            }
+            @Assert(checkedTopic, true)
+            @Assert(checkedDefault, true)
+        }
+    }
+
+    /**
+     * 测试仅支持旧协议版本的客户端 - 验证 InitializeRequest 使用配置的协议版本
+     */
+    @TestCase
+    public func testProtocolNegotiationWithOlderVersion(): Unit {
+        let features = McpClientFeatures()
+        features.protocolVesions = ["2025-03-26"]
+        try (client = createMcpSseClient("http://127.0.0.1:18881/sse", features: features)) {
+            let result = client.initialize()
+            @Assert(result.protocolVersion, "2025-03-26")
+        }
+    }
+
+    /**
+     * 测试并发请求 - 验证每个请求获得唯一的 JSON-RPC ID 与响应等待器
+     */
+    @TestCase
+    public func testConcurrentRequests(): Unit {
+        try (client = createMcpSseClient("http://127.0.0.1:18881/sse")) {
+            let _ = client.initialize()
+            let tools = spawn { client.listTools() }
+            let prompts = spawn { client.listPrompts() }
+            @Assert(tools.get().tools.size, 10)
+            @Assert(prompts.get().prompts.size, 2)
+        }
+    }
+
+    /**
      * 测试 MCP 协议协商功能 - 验证客户端和服务器之间的协议版本协商
      */
     @TestCase
@@ -357,6 +436,185 @@ public class McpServerTestCaseSuit {
         try (client = createMcpSseClient("http://127.0.0.1:18881/sse", features: features2)) {
             let result = client.initialize()
             @Assert(result.protocolVersion, McpConsts.LASTEST_PROTOCOL_VERSION)
+        }
+    }
+}
+
+/**
+ * 测试 MCP Streamable HTTP 传输 - 验证会话管理与协议头校验
+ */
+@Test
+public class McpStreamableServerTestCaseSuit {
+    var _instance: ?Joy = None
+    let _client = ClientBuilder().build()
+
+    @BeforeAll
+    func setup(): Unit {
+        spawn {
+            let joy = Joy.default()
+            _instance = joy
+            McpServer.registerStreamableTo(joy, path: "/mcp", isJsonResp: true)
+            joy.run("127.0.0.1", 18884)
+        }
+        sleep(2 * Duration.second)
+    }
+
+    @AfterAll
+    func tearDown(): Unit {
+        _client.close()
+        _instance?.shutdown()
+    }
+
+    private func post(body: Array<Byte>, sid!: ?String = None, accept!: String = "application/json, text/event-stream"): (UInt16, String, ?String) {
+        let builder = HttpRequestBuilder().url("http://127.0.0.1:18884/mcp").method("POST")
+            .header("Content-Type", "application/json")
+            .header("Accept", accept)
+            .header("Mcp-Protocol-Version", McpConsts.LASTEST_PROTOCOL_VERSION)
+            .body(body)
+        if (let Some(id) <- sid) {
+            builder.header(McpConsts.HEADER_MCP_SESSION_ID, id)
+        }
+        let rsp = _client.send(builder.build())
+        let status = rsp.status
+        let text = StringReader(rsp.body).readToEnd()
+        let sessionId = rsp.headers.getFirst(McpConsts.HEADER_MCP_SESSION_ID)
+        (status, text, sessionId)
+    }
+
+    private func initBody(): Array<Byte> {
+        JSONRPCTool.serialize(
+            JSONRPCRequest(id: "init-1", method: McpConsts.METHOD_INITIALIZE,
+                params: InitializeRequest(protocolVersion: McpConsts.LASTEST_PROTOCOL_VERSION,
+                    capabilities: ClientCapabilities(), clientInfo: Implementation(name: "test", version: "1")))).bytes()
+    }
+
+    /**
+     * 测试初始化、会话复用与会话终止 - 验证 mcp-session-id 生命周期
+     */
+    @TestCase
+    public func testSessionLifecycle(): Unit {
+        let (status, body, sid) = post(initBody())
+        @Assert(status, 200)
+        @Assert(body.contains(McpConsts.LASTEST_PROTOCOL_VERSION), true)
+        @Assert(sid.isSome(), true)
+        let sessionId = sid.getOrThrow()
+        @Assert(sessionId != "", true)
+
+        let toolsBody = JSONRPCTool.serialize(JSONRPCRequest(id: "tools-1", method: McpConsts.METHOD_TOOLS_LIST,
+            params: PaginatedRequest())).bytes()
+        let (listStatus, listBody, _) = post(toolsBody, sid: sessionId)
+        @Assert(listStatus, 200)
+        @Assert(listBody.contains("tools"), true)
+
+        // 未知会话ID返回404
+        let (badStatus, _, _) = post(toolsBody, sid: "unknown-session")
+        @Assert(badStatus, 404)
+
+        // DELETE 终止会话后，原 ID 不再可用
+        let delReq = HttpRequestBuilder().url("http://127.0.0.1:18884/mcp").method("DELETE")
+            .header(McpConsts.HEADER_MCP_SESSION_ID, sessionId).build()
+        let delRsp = _client.send(delReq)
+        let _ = StringReader(delRsp.body).readToEnd()
+        @Assert(delRsp.status, 200)
+
+        let (afterStatus, _, _) = post(toolsBody, sid: sessionId)
+        @Assert(afterStatus, 404)
+    }
+
+    /**
+     * 测试缺少会话 ID - 验证普通请求必须携带 mcp-session-id
+     */
+    @TestCase
+    public func testMissingSessionId(): Unit {
+        let body = JSONRPCTool.serialize(JSONRPCRequest(id: "tools-2", method: McpConsts.METHOD_TOOLS_LIST,
+            params: PaginatedRequest())).bytes()
+        let (status, _, _) = post(body)
+        @Assert(status, 400)
+    }
+
+    /**
+     * 测试不接受 SSE - 验证 Accept 头必须同时包含 JSON 与 event-stream
+     */
+    @TestCase
+    public func testNotAcceptable(): Unit {
+        let (status, _, _) = post(initBody(), accept: "application/json")
+        @Assert(status, 406)
+    }
+
+    /**
+     * 测试错误的内容类型 - 验证 POST 只接受 application/json
+     */
+    @TestCase
+    public func testUnsupportedMediaType(): Unit {
+        let builder = HttpRequestBuilder().url("http://127.0.0.1:18884/mcp").method("POST")
+            .header("Content-Type", "text/plain")
+            .header("Accept", "application/json, text/event-stream")
+            .body("{}")
+        let rsp = _client.send(builder.build())
+        @Assert(rsp.status, 415)
+    }
+}
+
+/**
+ * 测试 MCP Streamable HTTP 客户端 - 验证内置客户端可完成完整会话流程
+ */
+@Test
+public class McpStreamableClientTestCaseSuit {
+    var _instance: ?Joy = None
+
+    @BeforeAll
+    func setup(): Unit {
+        spawn {
+            let joy = Joy.default()
+            _instance = joy
+            McpServer.registerStreamableTo(joy, path: "/mcp", isJsonResp: true)
+            joy.run("127.0.0.1", 18885)
+        }
+        sleep(2 * Duration.second)
+    }
+
+    @AfterAll
+    func tearDown(): Unit {
+        _instance?.shutdown()
+    }
+
+    /**
+     * 测试流模式客户端的初始化、工具列表与调用 - 验证会话 ID 在后续请求中携带
+     */
+    @TestCase
+    public func testStreamableClient(): Unit {
+        try (client = createMcpStreamableClient("http://127.0.0.1:18885/mcp")) {
+            let result = client.initialize()
+            @Assert(result.protocolVersion, McpConsts.LASTEST_PROTOCOL_VERSION)
+
+            @Assert(client.listTools().tools.size, 10)
+            let callResult = client.callTool(
+                CallToolRequest(name: "add1", arguments: HashMap<String, Int64>([("a", 1), ("b", 2)])))
+            @Assert(callResult.content.size, 1)
+            @Assert((callResult.content[0] as TextContent).getOrThrow().text, "3")
+            client.ping()
+        }
+    }
+
+    /**
+     * 测试流模式客户端处理 SSE 响应 - 验证非 JSON 模式下仍能完成请求
+     */
+    @TestCase
+    public func testStreamableClientWithSseResponse(): Unit {
+        let joy = Joy.default()
+        spawn {
+            McpServer.registerStreamableTo(joy, path: "/mcp", isJsonResp: false)
+            joy.run("127.0.0.1", 18886)
+        }
+        sleep(2 * Duration.second)
+        try {
+            try (client = createMcpStreamableClient("http://127.0.0.1:18886/mcp")) {
+                let result = client.initialize()
+                @Assert(result.protocolVersion, McpConsts.LASTEST_PROTOCOL_VERSION)
+                @Assert(client.listPrompts().prompts.size, 2)
+            }
+        } finally {
+            joy.shutdown()
         }
     }
 }

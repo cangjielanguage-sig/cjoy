@@ -37,10 +37,11 @@ class PromptParamInfo <: ParamInfo {
     func genPromptArgTokens(): Tokens {
         if (isJoyContext()) {
             Tokens()
-        } else if (isOption()) {
-            quote(PromptArgument(name: $(getName()), description: $description, required: true))
-        } else {
+        } else if (isOption() || default.isSome()) {
+            // 可选类型或带默认值的参数都不是必需的
             quote(PromptArgument(name: $(getName()), description: $description, required: false))
+        } else {
+            quote(PromptArgument(name: $(getName()), description: $description, required: true))
         }
     }
 }

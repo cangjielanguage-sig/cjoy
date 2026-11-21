@@ -63,12 +63,16 @@ class McpSseClientTransport <: McpClientTransport {
         _lastInitTime = DateTime.now()
         _sseStream = JoySimpleHttpClient.sseConnect(_url)
         let seeStream_ = this.seeStream
-        if (let Some(evt) <- seeStream_.next()) {
-            if (evt.event != McpConsts.EVENT_ENDPOINT) {
+        match (seeStream_.next()) {
+            case Some(evt) =>
+                if (evt.event != McpConsts.EVENT_ENDPOINT) {
+                    throw JSONRPCException(
+                        JSONRPCError(code: JSONRPCConsts.ERR_INTERNAL_ERROR, message: "invalid endpoint event ${evt}"))
+                }
+                _endpoint = evt.data
+            case None =>
                 throw JSONRPCException(
-                    JSONRPCError(code: JSONRPCConsts.ERR_INTERNAL_ERROR, message: "invliad endpoint event ${evt}"))
-            }
-            _endpoint = evt.data
+                    JSONRPCError(code: JSONRPCConsts.ERR_INTERNAL_ERROR, message: "sse stream closed before endpoint event"))
         }
         _connected.store(true)
 

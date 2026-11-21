@@ -12,6 +12,8 @@ package cjoy.mcp.server
 
 import std.collection.ArrayList
 import std.io.{ByteBuffer, SeekPosition}
+import std.time.*
+import std.sync.AtomicInt32
 import std.unittest.testmacro.*
 import cjoy.jsonrpc.JSONRPCTool
 import cjoy.jsonrpc.*
@@ -154,6 +156,63 @@ public class McpServerSessionTestCaseSuit {
 
         // 验证无状态模式已启用
         @Assert(true, true)
+    }
+
+    /**
+     * 测试事件 GC 后事件 ID 不复用 - 验证重放索引保持单调
+     */
+    @TestCase
+    public func testGcKeepsEventIndexMonotonic() {
+        let store = InMemoryEventStore(expirationMs: 50, gcIntervalMs: 0)
+        let session = DefaultMcpServerSession("test-gc-index", McpStreamableServerTransport(false), false, true,
+            eventStore: Some(store))
+
+        @Assert(session.storeEvent(JSONRPCTool.serialize(JSONRPCNotification(method: "e1"))), "default_0")
+        @Assert(session.storeEvent(JSONRPCTool.serialize(JSONRPCNotification(method: "e2"))), "default_1")
+
+        sleep(Duration.millisecond * 100)
+        store.gc()
+
+        // 过期事件被 GC 后，新事件仍使用递增的 ID
+        @Assert(session.storeEvent(JSONRPCTool.serialize(JSONRPCNotification(method: "e3"))), "default_2")
+        let events = session.retrieveEvents("default_1")
+        @Assert(events.size, 1)
+        @Assert(events[0][0], "default_2")
+
+        session.close()
+        store.stopGcTask()
+    }
+
+    /**
+     * 测试流完成回调 - 验证流完成后不关闭会话且回调只触发一次
+     */
+    @TestCase
+    public func testStreamCompletionCallbacks() {
+        let session = DefaultMcpServerSession("test-stream-callback", McpStreamableServerTransport(false), false, true)
+        let calls = AtomicInt32(0)
+        session.addStreamCompletionHandler({ => calls.fetchAdd(1) })
+
+        session.markStreamCompleted()
+        session.markStreamCompleted()
+        @Assert(calls.load(), 1)
+        @Assert(session.isStreamCompleted())
+        @Assert(session.isClosed(), false)
+
+        // 完成后注册的回调立即执行
+        session.addStreamCompletionHandler({ => calls.fetchAdd(1) })
+        @Assert(calls.load(), 2)
+    }
+
+    /**
+     * 测试传输关闭状态 - 验证 close 后 isClosed 返回 true
+     */
+    @TestCase
+    public func testTransportClosedState() {
+        let transport = McpStreamableServerTransport(false, sessionTimeoutMs: 100, sessionCheckIntervalMs: 50)
+        @Assert(transport.isClosed(), false)
+        transport.close()
+        @Assert(transport.isClosed(), true)
+        transport.close()
     }
 
     /**
@@ -482,8 +541,12 @@ public class EventStoreSessionTestCaseSuit {
 
         @Assert(store.getEventCount("test-cleanup-session", "default"), 1)
 
-        // 关闭传输
+        // 仅关闭流不应清理事件，客户端仍可恢复
         session.closeTransport()
+        @Assert(store.getEventCount("test-cleanup-session", "default"), 1)
+
+        // 终止会话才清理持久化事件
+        session.close()
 
         // 验证 EventStore 已清理
         @Assert(store.getEventCount("test-cleanup-session", "default"), 0)

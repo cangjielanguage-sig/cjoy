@@ -111,12 +111,23 @@ class ToolParamInfo <: ParamInfo {
                 )
             }
         } else {
+            // 使用 @ToolParam[default = ...] 声明的默认值初始化参数
             if (isOption()) {
-                quote(var $(pid): $(getType()) = None
-                )
+                if (default.isSome()) {
+                    quote(var $(pid): $(getType()) = Some($(getDefault()))
+                    )
+                } else {
+                    quote(var $(pid): $(getType()) = None
+                    )
+                }
             } else {
-                quote(var $(pid): Option<$(getType())> = None
-                )
+                if (default.isSome()) {
+                    quote(var $(pid): Option<$(getType())> = Some($(getDefault()))
+                    )
+                } else {
+                    quote(var $(pid): Option<$(getType())> = None
+                    )
+                }
             }
         }
     }
@@ -142,9 +153,16 @@ class ToolParamInfo <: ParamInfo {
             match (paramType.getOrThrow()) {
                 case x: PrefixType => quote(properties.add($(getName()), $(getType()).toJsonSchema($description))
                     )
-                case _ => quote(properties.add($(getName()), $(getType()).toJsonSchema($description))
-                    required.add($(getName()))
-                    )
+                case _ =>
+                    if (default.isSome()) {
+                        // 带默认值的参数不是必需的
+                        quote(properties.add($(getName()), $(getType()).toJsonSchema($description))
+                        )
+                    } else {
+                        quote(properties.add($(getName()), $(getType()).toJsonSchema($description))
+                            required.add($(getName()))
+                        )
+                    }
             }
         }
     }

@@ -122,6 +122,16 @@ class DefaultMcpServerSession <: McpServerSession & McpRequestHandler & McpRespo
     private let _eventStore: ?EventStore
 
     /**
+     * 流是否已结束
+     */
+    private var _streamCompleted: Bool = false
+
+    /**
+     * 流结束回调列表
+     */
+    private let _streamCompletionHandlers: ArrayList<() -> Unit> = ArrayList()
+
+    /**
      * Keepalive interval in milliseconds
      */
     private var _keepaliveIntervalMs: Int64 = 0
@@ -156,32 +166,33 @@ class DefaultMcpServerSession <: McpServerSession & McpRequestHandler & McpRespo
      * 将流标记为已完成
      */
     public func markStreamCompleted(): Unit {
-        // 这里可以添加流完成时的逻辑，例如清理资源、关闭连接等
+        if (_streamCompleted) {
+            return
+        }
+        _streamCompleted = true
         @JoyLogInfo("[MCP] Stream completed, sessionId: ${_sessionId}")
-        // 标记会话状态为流完成
-        // 如果使用 McpServerSessionState，可以在这里调用其方法
-        // 例如：_state.markStreamCompleted()
-        // 同时，可以通知所有流完成处理程序
-        close()
+        // 通知所有流完成回调，但不关闭会话（会话可能仍需恢复/重放事件）
+        for (handler in _streamCompletionHandlers) {
+            handler()
+        }
     }
 
     /**
      * 检查流是否已完成
      */
     public func isStreamCompleted(): Bool {
-        // 这里可以添加检查流是否已完成的逻辑
-        // 如果使用 McpServerSessionState，可以在这里调用其方法
-        // 例如：_state.isStreamCompleted()
-        _isClosed
+        _streamCompleted || _isClosed
     }
 
     /**
      * 添加流完成处理程序
      */
-    public func addStreamCompletionHandler(_: () -> Unit): Unit {
-        // 这里可以添加流完成处理程序的逻辑
-        // 如果使用 McpServerSessionState，可以在这里调用其方法
-        // 例如：_state.addStreamCompletionHandler(handler)
+    public func addStreamCompletionHandler(handler: () -> Unit): Unit {
+        if (_streamCompleted) {
+            handler()
+        } else {
+            _streamCompletionHandlers.add(handler)
+        }
     }
 
     /**
@@ -358,12 +369,8 @@ class DefaultMcpServerSession <: McpServerSession & McpRequestHandler & McpRespo
      */
     func closeTransport(): Unit {
         @JoyLogInfo("[MCP] close SSE transport, sessionId=${_sessionId}")
+        // 仅关闭传输，不清理事件存储：流结束后客户端仍可通过 Last-Event-ID 恢复
         _transport.close()
-        if (let Some(store) <- _eventStore) {
-            let streamId = "default"
-            store.sessionClosed(_sessionId)
-            @JoyLogDebug("[MCP] close event stream, streamId: ${streamId}, sessionId: ${_sessionId}")
-        }
     }
 
     /**
@@ -563,6 +570,11 @@ class DefaultMcpServerSession <: McpServerSession & McpRequestHandler & McpRespo
         }
         _transport.close()
         _isClosed = true
+        // 会话终止时才清理持久化事件
+        if (let Some(store) <- _eventStore) {
+            store.sessionClosed(_sessionId)
+            @JoyLogDebug("[MCP] close event stream, sessionId: ${_sessionId}")
+        }
     }
 
     /**

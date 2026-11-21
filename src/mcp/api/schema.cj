@@ -220,7 +220,7 @@ public class ToolAnnotations <: BaseMessage {
     /**
      * 指示工具是否与开放世界（外部系统）交互
      */
-    public var opneWorldHint: Bool = true
+    public var openWorldHint: Bool = true
 }
 
 /**

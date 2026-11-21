@@ -41,7 +41,7 @@ class DefaultMcpClientSession <: McpClientSession & McpResponseHandler & McpNoti
     }
 
     private func genReqId(): String {
-        "${_sessPefix}-${_reqCount.fetchAnd(1)}"
+        "${_sessPefix}-${_reqCount.fetchAdd(1)}"
     }
 
     public func connect(): Unit {

@@ -79,6 +79,11 @@ class McpStreamableServerTransport <: McpServerTransport {
     private let _disableLocalhostProtection: Bool
 
     /**
+     * 标志位，指示传输是否已关闭
+     */
+    private var _isClosed: Bool = false
+
+    /**
      * 初始化新的 McpStreamableServerTransport
      *
      * @param isJsonResp 是否返回 JSON 响应而不是 SSE 流
@@ -146,10 +151,9 @@ class McpStreamableServerTransport <: McpServerTransport {
             return
         }
 
-        // Handle resumability: check Last-Event-ID
+        // Handle resumability: 先重放事件，然后继续保持 SSE 流打开
         if (let Some(id) <- ctx.getHeader(McpConsts.HEADER_LAST_EVENT_ID)) {
             relayEvents(ctx, id)
-            return
         }
 
         updateTransport(ctx, session)
@@ -246,9 +250,7 @@ class McpStreamableServerTransport <: McpServerTransport {
                 let elapsedTime = currentTime - activityTime
                 if (elapsedTime > timeoutThreshold) {
                     @JoyLogInfo("[MCP] session timeout, sessionId: ${sessionId}, elapsed: ${elapsedTime}ms, threshold: ${timeoutThreshold}ms")
-                    // Cleanup session
-                    _sessions.remove(sessionId)
-                    _sessionTimestamps.remove(sessionId)
+                    // 统一在 terminateSession 中清理会话及时间戳
                     terminateSession(sessionInfo.session)
                 }
             } else {
@@ -327,17 +329,16 @@ class McpStreamableServerTransport <: McpServerTransport {
                     return None
                 }
                 return info.session
-            } else {
+            } else if (mustExist) {
                 @JoyLogError("[MCP] not found streamable session, sessionId: ${id}")
                 let err = createErrorMsg("Not Found: Invalid or expired session id")
                 ctx.status(HttpStatusCode.STATUS_NOT_FOUND).json(err)
             }
-        } else {
-            if (mustExist) {
-                @JoyLogError("[MCP] not found `${McpConsts.HEADER_MCP_SESSION_ID}` in header")
-                let err = createErrorMsg("Bad Request: Missing session id")
-                ctx.status(HttpStatusCode.STATUS_BAD_REQUEST).json(err)
-            }
+            // initialize 请求携带的过期会话 ID 直接忽略，由调用方创建新会话
+        } else if (mustExist) {
+            @JoyLogError("[MCP] not found `${McpConsts.HEADER_MCP_SESSION_ID}` in header")
+            let err = createErrorMsg("Bad Request: Missing session id")
+            ctx.status(HttpStatusCode.STATUS_BAD_REQUEST).json(err)
         }
 
         return None
@@ -351,6 +352,8 @@ class McpStreamableServerTransport <: McpServerTransport {
     private func terminateSession(session: McpServerSession): Unit {
         session.close()
         _sessions.remove(session.sessionId)
+        // 同时清理时间戳，避免过期会话残留导致内存泄漏
+        _sessionTimestamps.remove(session.sessionId)
     }
 
     /**
@@ -361,7 +364,7 @@ class McpStreamableServerTransport <: McpServerTransport {
      */
     private func checkAcceptHeader(ctx: JoyContext): (Bool, Bool) {
         let accept = ctx.getHeader("accept") ?? ""
-        let types = accept.split(",") |> map {s => s.trimAscii()} |> collectArrayList
+        let types = accept.split(",") |> map {s => s.trimAscii().toAsciiLower()} |> collectArrayList
         let hasJson = types |> any {s => s.startsWith(JoyHttpConsts.MIME_APP_JSON)}
         let hasSse = types |> any {s => s.startsWith(JoyHttpConsts.MIME_TEXT_EVENT_STREAM)}
         (hasJson, hasSse)
@@ -375,7 +378,7 @@ class McpStreamableServerTransport <: McpServerTransport {
      */
     private func checkContentType(ctx: JoyContext): Bool {
         let contentType = ctx.getHeader("Content-Type") ?? ""
-        let parts = contentType.split(";")[0].split(",") |> map {s => s.trimAscii()} |> collectArrayList
+        let parts = contentType.split(";")[0].split(",") |> map {s => s.trimAscii().toAsciiLower()} |> collectArrayList
         parts |> any {s => s == JoyHttpConsts.MIME_APP_JSON}
     }
 
@@ -389,9 +392,13 @@ class McpStreamableServerTransport <: McpServerTransport {
         match (message) {
             case m: JSONRPCRequest => handleRequest(ctx, m)
             case _ =>
+                // 通知/响应必须携带有效会话 ID；校验失败时不再覆盖错误状态
                 let session = validateSession(ctx)
+                if (session.isNone()) {
+                    return
+                }
                 ctx.status(HttpStatusCode.STATUS_ACCEPTED)
-                session?.handle(ctx, message)
+                session.getOrThrow().handle(ctx, message)
         }
     }
 
@@ -416,25 +423,9 @@ class McpStreamableServerTransport <: McpServerTransport {
      * @return DefaultMcpServerSession 实例
      */
     private func createSession(ctx: JoyContext, sessionId: String): DefaultMcpServerSession {
-        if (_isJsonResp) {
-            DefaultMcpServerSession(sessionId, this, _isJsonResp, true, eventStore: _eventStore)
-        } else {
-            let transport = createTransport(ctx, sessionId)
-            DefaultMcpServerSession(sessionId, transport, _isJsonResp, true, eventStore: _eventStore)
-        }
-    }
-
-    /**
-     * 关闭会话的传输
-     *
-     * @param session 要关闭传输的会话
-     */
-    private func closeTransport(session: ?McpServerSession): Unit {
-        if (let Some(s) <- session) {
-            if (let Some(sess) <- (s as DefaultMcpServerSession)) {
-                sess.closeTransport()
-            }
-        }
+        // initialize 的响应始终是 JSON，不能为该请求创建 SSE 发射器，
+        // 否则响应会被标记为 text/event-stream；GET 或后续 POST 会另行设置传输
+        DefaultMcpServerSession(sessionId, this, _isJsonResp, true, eventStore: _eventStore)
     }
 
     /**
@@ -488,21 +479,27 @@ class McpStreamableServerTransport <: McpServerTransport {
 
         // 处理请求
         if (let Some(s) <- session) {
-            if (!_isJsonResp && !isInitializeRequest) {
-                updateTransport(ctx, session)
-            }
-
-            s.handle(ctx, m)
-
-            if (!_isJsonResp && isInitializeRequest) {
-                closeTransport(session)
+            if (_isJsonResp || isInitializeRequest) {
+                s.handle(ctx, m)
+            } else if (let Some(sess) <- (s as DefaultMcpServerSession)) {
+                // 请求响应走本次 POST 连接，不能替换会话的 GET 长连接传输，
+                // 否则后续服务器主动推送会写到已结束的响应上
+                let original = sess._transport
+                let temp = createTransport(ctx, s.sessionId)
+                sess._transport = temp
+                try {
+                    s.handle(ctx, m)
+                } finally {
+                    sess._transport = original
+                    temp.close()
+                }
+            } else {
+                s.handle(ctx, m)
             }
 
             // 无状态模式下，处理完请求后立即关闭会话
             if (_statelessMode) {
-                s.close()
-                _sessions.remove(s.sessionId)
-                _sessionTimestamps.remove(s.sessionId)
+                terminateSession(s)
             }
         }
     }
@@ -601,23 +598,37 @@ class McpStreamableServerTransport <: McpServerTransport {
     private func sendEvent(ctx: JoyContext, eventId: String, data: ByteBuffer): Unit {
         let emitter = ctx.eventEmitter()
         let eventBuilder = JoySseBuilder()
+        eventBuilder.event(McpConsts.EVENT_MESSAGE)
         eventBuilder.id(eventId)
         eventBuilder.data(String.fromUtf8(data.bytes()))
         emitter.sendEvent(eventBuilder)
     }
 
     /**
-     * 关闭传输
+     * 关闭传输，停止后台清理任务并终止所有会话
      */
     public func close(): Unit {
+        if (_isClosed) {
+            return
+        }
+        _isClosed = true
+        _sessionTimeoutTaskRunning = false
+
+        let iter = _sessions.iterator()
+        while (let Some((sid, info)) <- iter.next()) {
+            info.session.close()
+            _sessions.remove(sid)
+            _sessionTimestamps.remove(sid)
+        }
+        @JoyLogInfo("[MCP] streamable transport closed")
     }
 
     /**
      * 检查传输是否已关闭
      *
-     * @return 对于可流式传输始终返回 false
+     * @return 如果已关闭返回 true
      */
     public func isClosed(): Bool {
-        false
+        _isClosed
     }
 }
