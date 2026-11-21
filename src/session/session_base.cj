@@ -187,7 +187,7 @@ public abstract class AbstractSessionStorage <: JoySessionStorage {
      * @param sid 要检查的会话 ID
      * @return 如果会话存在返回 true
      */
-    public func exists(sid: String): Bool {
+    public open func exists(sid: String): Bool {
         _sessions.contains(sid)
     }
 
