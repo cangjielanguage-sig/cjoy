@@ -14,6 +14,7 @@ import std.collection.{HashSet}
 import std.regex.Regex
 import std.convert.Parsable
 import std.time.DateTime
+import std.sync.AtomicBool
 import cjoy.log.macros.*
 
 /**
@@ -21,12 +22,14 @@ import cjoy.log.macros.*
  */
 public class CronJob <: Equatable<CronJob> & ToString {
     private static let REG_SPACES = Regex(##"\s+"##)
-    private static let REG_N = Regex(##"(.*)/(\d+)"##)
+    private static let REG_N = Regex(##"^(.*)/(\d+)$"##)
     private static let REG_RANGE = Regex(##"^(\d+)-(\d+)$"##)
 
     private let _fn: ScheduleFunc
     private let _name: String
     private let _context: ScheduleContext = ScheduleContext()
+    // 防止同一任务的重叠执行
+    private let _running = AtomicBool(false)
 
     private var _sec: HashSet<Int>
     private var _min: HashSet<Int>
@@ -131,10 +134,15 @@ public class CronJob <: Equatable<CronJob> & ToString {
      * @param start 任务开始时间
      */
     public func run(start: DateTime): Unit {
+        if (!_running.compareAndSwap(false, true)) {
+            @JoyLogWarn("[Schedule] skip overlapping cron job: ${_name}")
+            return
+        }
         @JoyLogInfo("[Schedule] starting cron job: ${_name}")
         try {
             _fn(_context)
         } finally {
+            _running.store(false)
             let dt: Duration = (DateTime.now().toUnixTimeStamp() - start.toUnixTimeStamp())
             @JoyLogInfo("[Schedule] fininish cron job: ${_name} in ${dt}")
         }
@@ -175,12 +183,16 @@ public class CronJob <: Equatable<CronJob> & ToString {
                 "parse step failed, ${match1} in ${str}")
             lmax = Int.tryParse(rng[0].matchString(2)) ?? throw ScheduleException(
                 "parse step failed, ${match1} in ${str}")
-            if (lmin < min || lmax > max) {
+            if (lmin < min || lmax > max || lmin > lmax) {
                 throw ScheduleException(OutOfRange(rangeVal: match1, input: str, min: min, max: max).toString())
             }
         }
 
         let n = Int.tryParse(match2).getOrThrow({=> ScheduleException("parse step failed, ${match2} in ${str}")})
+        if (n <= 0) {
+            // 步长为 0 会导致 getDefaultJobField 死循环
+            throw ScheduleException(ParsingErr(match2, base: str).toString())
+        }
         getDefaultJobField(lmin, lmax, n)
     }
 
@@ -214,7 +226,7 @@ public class CronJob <: Equatable<CronJob> & ToString {
                 "parse single or range failed, ${part}")
             let lmax = Int.tryParse(rng[0].matchString(2)) ?? throw ScheduleException(
                 "parse single or range failed, ${part}")
-            if (lmin < min || lmax > max) {
+            if (lmin < min || lmax > max || lmin > lmax) {
                 throw ScheduleException(OutOfRange(rangeVal: part, input: part, min: min, max: max).toString())
             }
             for (i in lmin..=lmax) {

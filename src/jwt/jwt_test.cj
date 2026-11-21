@@ -709,5 +709,44 @@ public class JwtTestCaseSuit {
 
         let parsed = Jwt.parse(token).verifyWith(key)
         @Assert(parsed.headers.getString("customHeader").getOrThrow() == "customValue")
+        @Assert(parsed.headers.getValue<String>("customHeader").getOrThrow() == "customValue")
+    }
+
+    /**
+     * 测试 exp 边界 - 验证 now == exp 时 token 已过期
+     */
+    @TestCase
+    public func testExpirationBoundary() {
+        let key = "abcd".toArray()
+        let exp = DateTime.now().addSeconds(10)
+        let jwt = Jwt.create()
+        jwt.alg("HS256")
+        jwt.claims.expirationTime(exp)
+        let token = jwt.signWith(key)
+
+        try {
+            Jwt.parse(token, config: ParserConfig(timeFunc: {=> exp})).verifyWith(key)
+            @Fail("token should be expired when now equals exp")
+        } catch (ex: JwtException) {
+            @Assert(ex.message.contains("token is expired"))
+        }
+    }
+
+    /**
+     * 测试非 base64url 字符 - 验证标准 base64 的 + / 不被接受
+     */
+    @TestCase
+    public func testRejectNonBase64UrlSegment() {
+        let jwt = Jwt.create()
+        jwt.alg("HS256")
+        let token = jwt.signWith("abcd".toArray())
+        let segs = token.split(".")
+        let badToken = "+" + segs[0][1..] + "." + segs[1] + "." + segs[2]
+        try {
+            Jwt.parse(badToken)
+            @Fail("should reject non base64url header segment")
+        } catch (ex: JwtException) {
+            @Assert(ex.message.contains("could not base64 decode"))
+        }
     }
 }

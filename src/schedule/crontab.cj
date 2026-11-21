@@ -10,7 +10,7 @@
 
 package cjoy.schedule
 
-import std.sync.{Timer}
+import std.sync.{Timer, CatchupStyle}
 import std.collection.{ArrayList}
 import std.collection.concurrent.ConcurrentHashMap
 import std.time.DateTime
@@ -30,9 +30,10 @@ public class Crontab <: Resource {
     public init() {
         let jobs = ConcurrentHashMap<String, CronJob>()
         _jobs = jobs
+        // 使用 Skip 防止任务延迟后 Burst 补发导致同一秒重复触发
         _timer = Timer.repeat(Duration.second, Duration.second, {
             => runScheduled(jobs)
-        })
+        }, style: CatchupStyle.Skip)
     }
 
     ~init() {

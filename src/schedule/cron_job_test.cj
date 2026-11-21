@@ -413,7 +413,9 @@ public class CronJobTestCaseSuit {
                     "* * * 0-22 *",
                     "* * * * 0-7",
                     "* * 1-40/2 * *",
-                    "60 * * * *"
+                    "60 * * * *",
+                    "5-1 * * * *",
+                    "10-1/2 * * * *"
                 ],
                 "out of range"
             ),
@@ -423,7 +425,11 @@ public class CronJobTestCaseSuit {
                     "* * ab/2 * *",
                     "* 1,2/10 * * *",
                     "* * 1,2,3,1-15/10 * *",
-                    "a b c d e"
+                    "a b c d e",
+                    "*/0 * * * *",
+                    "1-10/0 * * * *",
+                    "*/2abc * * * *",
+                    "1-5/2xyz * * * *"
                 ],
                 "unable to parse"
             )

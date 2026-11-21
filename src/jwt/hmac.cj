@@ -56,7 +56,13 @@ class SigningMethodHmac <: SigningMethod {
     public func verify(signing: String, sig: Array<Byte>, key: Any): Unit {
         if (key is Array<Byte>) {
             let signed = sign(signing, (key as Array<Byte>).getOrThrow())
-            if (signed != sig) {
+            // 常量时间比较，避免通过比较耗时逐字节推断正确签名
+            var diff: Int64 = Int64(signed.size ^ sig.size)
+            let n = if (signed.size < sig.size) { signed.size } else { sig.size }
+            for (i in 0..n) {
+                diff |= Int64(signed[i] ^ sig[i])
+            }
+            if (diff != 0) {
                 throw JwtException("signature is invalid")
             }
         } else {

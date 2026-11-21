@@ -126,7 +126,8 @@ public class Jwt {
         validateMethod(cfg)
 
         let sig = decodeSegemnt(_signature)
-        _method?.verify(_text, sig, key)
+        _method.getOrThrow({=> JwtException("token is unverifiable, signing method is unspecified")})
+            .verify(_text, sig, key)
 
         if (cfg.skipClaimsValidation) {
             _valid = true
@@ -172,7 +173,7 @@ public class Jwt {
      */
     private func validateExpirationTime(cfg: ParserConfig, now: DateTime): Unit {
         if (let Some(v) <- _claims.getExpirationTime()) {
-            if ((v.value + cfg.leeway) < now) {
+            if ((v.value + cfg.leeway) <= now) {
                 throw JwtException("token is expired")
             }
         } else {
@@ -333,6 +334,14 @@ public class Jwt {
     }
 
     private func decodeSegemnt(seg: String): Array<Byte> {
+        // JWT 必须使用无填充的 base64url 字母表，拒绝标准 base64 的 + / 和填充符
+        for (c in seg.toArray()) {
+            let valid = c >= b'A' && c <= b'Z' || c >= b'a' && c <= b'z' || c >= b'0' && c <= b'9' ||
+                c == b'-' || c == b'_'
+            if (!valid) {
+                throw JwtException("token is malformed, could not base64 decode")
+            }
+        }
         rawBase64URLDecode(seg).getOrThrow({=> JwtException("token is malformed, could not base64 decode")})
     }
 }

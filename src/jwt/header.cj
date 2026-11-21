@@ -61,7 +61,6 @@ extend MapHeaders <: Headers {
 
     public func getValue<T>(name: String): ?T {
         (get(name) ?? Option<JsonSerializable>.None) as T
-        None
     }
 
     public prop alg: String {

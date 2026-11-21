@@ -42,7 +42,7 @@ class FuncInfo {
 
     func genTokens(): Tokens {
         quote(
-            let _: Unit = Crontab.INSTANCE.addJob($(getName()), $cron, $(decl.identifier))
+            let _: Unit = Crontab.INSTANCE.addJobIfAbsent($(getName()), $cron, $(decl.identifier))
         )
     }
 
