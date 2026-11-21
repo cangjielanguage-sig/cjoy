@@ -102,9 +102,14 @@ public class Security <: JoyMiddlewareHandler {
             return true
         }
 
-        let host = ctx.url.host
+        // 普通 HTTP/1.1 请求的 URL 由 request-target 构造，不含 host，必须从 Host 头读取
+        let hostHeader = ctx.getHeader(JoyHttpConsts.HEADER_HOST) ?? return false
+        var host = hostHeader.trimAscii().toAsciiLower()
+        if (let Some(pos) <- host.lastIndexOf(b':')) {
+            host = host[..pos]
+        }
         for (h in allowedHosts) {
-            if (h == host) {
+            if (h.trimAscii().toAsciiLower() == host) {
                 return true
             }
         }

@@ -39,7 +39,22 @@ public class CorsWildcard {
      * @return: 如果匹配返回 true，否则返回 false
      */
     public func canMatch(str: String): Bool {
-        str.size >= prefix.size + suffix.size && str.startsWith(prefix) && str.endsWith(suffix)
+        // Origin 可能带端口，匹配时忽略末尾的 :port
+        var value = str
+        if (let Some(idx) <- value.lastIndexOf(b':')) {
+            let port = value[idx + 1..value.size]
+            var digits = true
+            for (c in port.toArray()) {
+                if (c < b'0' || c > b'9') {
+                    digits = false
+                    break
+                }
+            }
+            if (digits && !port.isEmpty()) {
+                value = value[..idx]
+            }
+        }
+        value.size >= prefix.size + suffix.size && value.startsWith(prefix) && value.endsWith(suffix)
     }
 }
 
@@ -210,7 +225,8 @@ public class Cors <: JoyMiddlewareHandler {
             reqHeader = headers.toArray()
         }
 
-        if (_allowedOriginsAll) {
+        // 携带凭据时浏览器不接受 "*"，必须回显具体来源
+        if (_allowedOriginsAll && !_allowCredentials) {
             ctx.header(JoyHttpConsts.HEADER_ACCESS_CONTROL_ALLOW_ORIGIN, "*")
         } else {
             ctx.header(JoyHttpConsts.HEADER_ACCESS_CONTROL_ALLOW_ORIGIN, origin)
@@ -248,7 +264,8 @@ public class Cors <: JoyMiddlewareHandler {
             return
         }
 
-        if (_allowedOriginsAll) {
+        // 携带凭据时浏览器不接受 "*"，必须回显具体来源
+        if (_allowedOriginsAll && !_allowCredentials) {
             ctx.header(JoyHttpConsts.HEADER_ACCESS_CONTROL_ALLOW_ORIGIN, "*")
         } else {
             ctx.header(JoyHttpConsts.HEADER_ACCESS_CONTROL_ALLOW_ORIGIN, origin)

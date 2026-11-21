@@ -87,6 +87,20 @@ public class TokenAuthTestCaseSuit {
     }
 
     /**
+     * 测试大小写不敏感的认证方案 - 验证 bearer/Bearer 均可认证
+     */
+    @TestCase
+    public func testHeaderCaseInsensitiveScheme() {
+        let req = HttpRequestBuilder()
+            .url("http://127.0.0.1:18881/token_auth/header")
+            .method("GET")
+            .header(JoyHttpConsts.HEADER_AUTHORIZATION, "bearer abc")
+            .build()
+        let rsp = _client.send(req)
+        assertResp(rsp, "ok-header")
+    }
+
+    /**
      * 测试查询参数 Token 认证 - 验证通过查询参数传递 Token 的认证
      */
     @TestCase

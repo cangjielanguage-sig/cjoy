@@ -85,7 +85,7 @@ public class CorsTestCaseSuit {
             .build()
         let rsp = _client.send(req)
         @Assert(rsp.status, 200)
-        @Assert(rsp.headers.getFirst("Access-Control-Allow-Origin"), Some("*"))
+        @Assert(rsp.headers.getFirst("Access-Control-Allow-Origin"), Some("http://any-origin.com"))
         @Assert(rsp.headers.getFirst("Access-Control-Allow-Credentials"), Some("true"))
     }
 
@@ -102,7 +102,7 @@ public class CorsTestCaseSuit {
             .build()
         let rsp = _client.send(req)
         @Assert(rsp.status, 200)
-        @Assert(rsp.headers.getFirst("Access-Control-Allow-Origin"), Some("*"))
+        @Assert(rsp.headers.getFirst("Access-Control-Allow-Origin"), Some("http://any-origin.com"))
         @Assert(rsp.headers.getFirst("Access-Control-Allow-Methods"), Some("DELETE"))
     }
 
@@ -118,7 +118,7 @@ public class CorsTestCaseSuit {
             .build()
         let rsp = _client.send(req)
         @Assert(rsp.status, 200)
-        @Assert(rsp.headers.getFirst("Access-Control-Allow-Origin"), Some("*"))
+        @Assert(rsp.headers.getFirst("Access-Control-Allow-Origin"), Some("http://any-origin.com"))
         @Assert(rsp.headers.getFirst("Access-Control-Allow-Credentials"), Some("true"))
         let reader = StringReader(rsp.body)
         @Assert(reader.readToEnd(), "allow_all")
@@ -306,7 +306,7 @@ public class CorsTestCaseSuit {
             .build()
         let rsp = _client.send(req)
         @Assert(rsp.status, 200)
-        @Assert(rsp.headers.getFirst("Access-Control-Allow-Origin"), Some("*"))
+        @Assert(rsp.headers.getFirst("Access-Control-Allow-Origin"), Some("http://test.com"))
         let reader = StringReader(rsp.body)
         @Assert(reader.readToEnd(), "allow_all_post")
     }

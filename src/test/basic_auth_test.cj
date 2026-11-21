@@ -24,7 +24,8 @@ public class BasicAuthTestCaseSuit {
 
     @BeforeAll
     func setup() {
-        let basicAuth = BasicAuth("test", HashMap<String, String>([("xiao", "xiao"), ("lanling", "lanling")]))
+        let basicAuth = BasicAuth("test", HashMap<String, String>([("xiao", "xiao"), ("lanling", "lanling"),
+            ("colon", "xiao:extra")]))
         let basicAuthWithValFunc = BasicAuth("test", HashMap<String, String>(), validateFunc: {
             ctx: JoyContext, username: String, password: String => username == "xiao" && password == "xiao"
         })
@@ -96,6 +97,34 @@ public class BasicAuthTestCaseSuit {
     }
 
     /**
+     * 测试密码包含冒号 - 验证只在第一个冒号处拆分凭据
+     */
+    @TestCase
+    public func testPasswordWithColon() {
+        let req = HttpRequestBuilder()
+            .url("http://127.0.0.1:18881/basic_auth")
+            .method("GET")
+            .header(JoyHttpConsts.HEADER_AUTHORIZATION, "Basic " + toBase64String("colon:xiao:extra".toArray()))
+            .build()
+        let rsp = _client.send(req)
+        @Assert(rsp.status, 200)
+    }
+
+    /**
+     * 测试大小写不敏感的认证方案 - 验证 basic 与 Basic 等价
+     */
+    @TestCase
+    public func testCaseInsensitiveScheme() {
+        let req = HttpRequestBuilder()
+            .url("http://127.0.0.1:18881/basic_auth")
+            .method("GET")
+            .header(JoyHttpConsts.HEADER_AUTHORIZATION, "basic " + toBase64String("xiao:xiao".toArray()))
+            .build()
+        let rsp = _client.send(req)
+        @Assert(rsp.status, 200)
+    }
+
+    /**
      * 测试基本认证失败 - 验证使用错误的密码进行基本认证会返回 401 状态码
      */
     @TestCase
@@ -107,6 +136,6 @@ public class BasicAuthTestCaseSuit {
             .build()
         let rsp = _client.send(req)
         @Assert(rsp.status, 401)
-        @Assert(rsp.headers.getFirst(JoyHttpConsts.HEADER_WWW_AUTHENTICATE), "Basic realm=test")
+        @Assert(rsp.headers.getFirst(JoyHttpConsts.HEADER_WWW_AUTHENTICATE), "Basic realm=\"test\"")
     }
 }

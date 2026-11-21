@@ -59,5 +59,10 @@ public class CorsTestCaseSuit {
         if (w.canMatch("foof")) {
             @Fail("foo*oof should not match foof")
         }
+
+        w = CorsWildcard("http://", ".example.com")
+        if (!w.canMatch("http://sub.example.com:8080")) {
+            @Fail("origin with port should match wildcard")
+        }
     }
 }

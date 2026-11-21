@@ -973,7 +973,7 @@ class JoyHttpContext <: JoyContext {
         }
 
         let b64 = auth.getOrThrow().split(" ")
-        if (b64.size != 2 || b64[0].trimAscii() != 'Basic') {
+        if (b64.size != 2 || b64[0].trimAscii().toAsciiLower() != "basic") {
             return None
         }
 
@@ -983,11 +983,9 @@ class JoyHttpContext <: JoyContext {
         }
 
         let upStr = String.fromUtf8(decode.getOrThrow())
-        let up = upStr.split(":")
-        if (up.size != 2) {
-            return None
-        }
-        (up[0], up[1])
+        // 用户名不能包含冒号，但密码可以，只能在第一个冒号处拆分
+        let pos = upStr.indexOf(b':') ?? return None
+        (upStr[..pos], upStr[pos + 1..])
     }
 
     /**

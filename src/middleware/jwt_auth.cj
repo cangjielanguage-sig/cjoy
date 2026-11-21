@@ -147,9 +147,12 @@ public class JwtAuth <: JoyMiddlewareHandler {
                     let value = ctx.getHeader(sn[1])
                     if (let Some(v) <- value) {
                         if (tokenHeadName != "") {
-                            if (v.startsWith("${tokenHeadName} ")) {
-                                return v[(tokenHeadName.size + 1)..]
+                            let prefix = "${tokenHeadName} "
+                            if (v.size < prefix.size ||
+                                v.toAsciiLower()[0..prefix.size] != prefix.toAsciiLower()) {
+                                return None
                             }
+                            return v[prefix.size..]
                         }
                     }
                     value

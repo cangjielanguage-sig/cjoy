@@ -72,7 +72,7 @@ public class BasicAuth <: JoyMiddlewareHandler {
 
     private func basicAuthFailed(ctx: JoyContext) {
         @JoyLogError("[BasicAuth] auth failed, ${ctx.getClientIP()}, ${ctx.method} ${ctx.url}")
-        ctx.header(JoyHttpConsts.HEADER_WWW_AUTHENTICATE, "Basic realm=${realm}")
+        ctx.header(JoyHttpConsts.HEADER_WWW_AUTHENTICATE, "Basic realm=\"${realm}\"")
         ctx.status(HttpStatusCode.STATUS_UNAUTHORIZED)
     }
 }

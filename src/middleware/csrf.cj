@@ -20,6 +20,7 @@ import cjoy.utils.{secureRandStr, rawBase64URLEncode}
 
 const csrfSecretCtxKey = "__csrf_secret__"
 const csrfTokenCtxKey = "__csrf_token__"
+const csrfTokenSecretCtxKey = "__csrf_token_secret__"
 const csrfSaltCtxKey = "__csrf_salt__"
 
 // 提取令牌的函数
@@ -31,7 +32,7 @@ class DefaultCsrfErrorHandler <: JoyRequestHandler {
 
     public func handle(ctx: JoyContext): Unit {
         @JoyLogError("[CSRF] verify failed, ${ctx.getClientIP()}, ${ctx.method} ${ctx.url}")
-        ctx.status(HttpStatusCode.STATUS_UNAUTHORIZED)
+        ctx.status(HttpStatusCode.STATUS_FORBIDDEN)
     }
 }
 
@@ -43,7 +44,9 @@ public func getCsrfToken(ctx: JoyContext): String {
     let secret = session.get<String>(csrfSecretCtxKey).getOrThrow()
 
     if (let Some(t) <- session.get<String>(csrfTokenCtxKey)) {
-        return t
+        if (session.get<String>(csrfTokenSecretCtxKey) == secret) {
+            return t
+        }
     }
 
     let salt = if (let Some(s) <- session.get<String>(csrfSaltCtxKey)) {
@@ -56,6 +59,7 @@ public func getCsrfToken(ctx: JoyContext): String {
 
     let token = CsrfProtect.tokenize(secret, salt)
     session.set(csrfTokenCtxKey, token)
+    session.set(csrfTokenSecretCtxKey, secret)
     token
 }
 

@@ -132,10 +132,13 @@ public class TokenAuth <: JoyMiddlewareHandler {
                     let value = ctx.getHeader(sn[1])
                     if (let Some(v) <- value) {
                         if (!authSchema.isEmpty()) {
-                            if (!v.startsWith("${authSchema} ")) {
+                            // HTTP 认证方案名大小写不敏感
+                            let prefix = "${authSchema} "
+                            if (v.size < prefix.size ||
+                                v.toAsciiLower()[0..prefix.size] != prefix.toAsciiLower()) {
                                 return false
                             }
-                            return validator(ctx, v[(authSchema.size + 1)..])
+                            return validator(ctx, v[prefix.size..])
                         }
                         return validator(ctx, v)
                     }
