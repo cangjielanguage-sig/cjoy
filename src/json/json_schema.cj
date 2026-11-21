@@ -267,12 +267,14 @@ extend DateTime <: Jsonable {
 
 extend BigInt <: Jsonable {
     public static func toSchema(): JsonSchemaType {
-        JsonSchemaType.Str
+        // BigInt 序列化为 JSON 数字而非字符串
+        JsonSchemaType.Number
     }
 }
 
 extend Decimal <: Jsonable {
     public static func toSchema(): JsonSchemaType {
-        JsonSchemaType.Str
+        // Decimal 序列化为 JSON 数字而非字符串
+        JsonSchemaType.Number
     }
 }

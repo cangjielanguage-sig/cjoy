@@ -13,7 +13,13 @@ package cjoy.json
 import std.io.ByteBuffer
 import std.collection.{ArrayList, HashMap}
 import std.convert.Parsable
+import std.math.numeric.BigInt
 import stdx.encoding.json.stream.{JsonDeserializable, JsonSerializable, JsonReader, JsonWriter, JsonToken}
+
+private func isFloatNumber(value: String): Bool {
+    // JSON 数字允许指数形式，如 1e3 / 1E-2，不能按整数解析
+    value.indexOf(b'.').isSome() || value.indexOf(b'e').isSome() || value.indexOf(b'E').isSome()
+}
 
 /**
  * JSON 工具类，用于序列化和反序列化。
@@ -136,11 +142,14 @@ public class JsonTool {
                 case JsonString => return reader.readValue<String>()
                 case JsonNumber =>
                     let value = reader.readValue<String>()
-                    if (value.indexOf(b'.').isSome()) {
+                    if (isFloatNumber(value)) {
                         return Float64.parse(value)
-                    } else {
-                        return Int64.parse(value)
                     }
+                    if (let Some(i) <- Int64.tryParse(value)) {
+                        return i
+                    }
+                    // 超出 Int64 范围的整数用 BigInt 表示，避免直接抛异常
+                    return BigInt.parse(value)
                 case JsonNull =>
                     reader.readValue<String>()
                     return Option<String>.None
@@ -183,11 +192,14 @@ public class JsonTool {
                 case JsonString => return reader.readValue<String>()
                 case JsonNumber =>
                     let value = reader.readValue<String>()
-                    if (value.indexOf(b'.').isSome()) {
+                    if (isFloatNumber(value)) {
                         return Float64.parse(value)
-                    } else {
-                        return Int64.parse(value)
                     }
+                    if (let Some(i) <- Int64.tryParse(value)) {
+                        return i
+                    }
+                    // 超出 Int64 范围的整数用 BigInt 表示，避免直接抛异常
+                    return BigInt.parse(value)
                 case JsonNull =>
                     reader.readValue<String>()
                     return Option<String>.None
@@ -206,10 +218,11 @@ public class JsonTool {
      */
     public static func readRune(reader: JsonReader): Rune {
         let str = reader.readValue<String>()
-        if (str.toRuneArray().size != 1) {
+        let runes = str.toRuneArray()
+        if (runes.size != 1) {
             throw Exception("the json value is not Rune")
         }
-        Rune(str[0])
+        runes[0]
     }
 
     /**

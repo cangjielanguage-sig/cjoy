@@ -15,6 +15,7 @@ import cjoy.json.macros.*
 import std.collection.*
 import std.unittest.testmacro.*
 import std.math.numeric.{BigInt, Decimal}
+import stdx.encoding.json.stream.JsonSerializable
 
 @Json
 public struct S0 {
@@ -57,6 +58,12 @@ public struct SOmitempty {
 @Json
 public struct SDataNull {
     var a: Option<String> = None
+}
+
+@Json
+public struct IsoTimeData {
+    @JsonField[timeformat = "ISO8601"]
+    var t: DateTime = DateTime.parse("2023-01-20T11:25:26+08:00")
 }
 
 @Json
@@ -751,5 +758,83 @@ public class JsonTestCaseSuit {
 
         @Assert(schemaStr.contains("\"format\":\"email\""), true)
         @Assert(schemaStr.contains("\"description\":\"user email address\""), true)
+    }
+
+    /**
+     * 测试指数形式数字 - 验证 1e3 等 JSON 数字被解析为 Float64
+     */
+    @TestCase
+    public func testExponentNumbers(): Unit {
+        let str = ###"{"a":1e3,"b":1E-2,"c":-2.5e2}"###
+        let buffer = ByteBuffer()
+        unsafe { buffer.write(str.rawData()) }
+        let any = JsonTool.fromJsonToAny(JsonReader(buffer))
+        match (any) {
+            case map: HashMap<String, Any> =>
+                @Assert((map.get("a").getOrThrow() as Float64).getOrThrow(), 1000.0)
+                @Assert((map.get("b").getOrThrow() as Float64).getOrThrow(), 0.01)
+                @Assert((map.get("c").getOrThrow() as Float64).getOrThrow(), -250.0)
+            case _ => @Fail("should be object")
+        }
+
+        let serializable = JsonTool.fromJsonToSerializable(str)
+        match (serializable) {
+            case smap: HashMap<String, JsonSerializable> =>
+                @Assert((smap.get("a").getOrThrow() as Float64).getOrThrow(), 1000.0)
+            case _ => @Fail("should be object")
+        }
+    }
+
+    /**
+     * 测试多字节 Rune 读取 - 验证非 ASCII 字符不会被按 UTF-8 首字节截断
+     */
+    @TestCase
+    public func testReadMultibyteRune(): Unit {
+        let json = ###"{"rune":"你"}"###
+        let stream = ByteBuffer()
+        unsafe { stream.write(json.rawData()) }
+        let reader = JsonReader(stream)
+        reader.startObject()
+        reader.readName()
+        @Assert(JsonTool.readRune(reader), r'你')
+        reader.endObject()
+    }
+
+    /**
+     * 测试超大整数 - 验证超出 Int64 的 JSON 整数用 BigInt 表示
+     */
+    @TestCase
+    public func testBigIntegerFallback(): Unit {
+        let str = ###"{"n":99999999999999999999999999}"###
+        let buffer = ByteBuffer()
+        unsafe { buffer.write(str.rawData()) }
+        let any = JsonTool.fromJsonToAny(JsonReader(buffer))
+        match (any) {
+            case map: HashMap<String, Any> =>
+                let value = map.get("n").getOrThrow() as BigInt
+                @Assert(value.getOrThrow().toString(), "99999999999999999999999999")
+            case _ => @Fail("should be object")
+        }
+    }
+
+    /**
+     * 测试 ISO8601 时间格式 - 验证该别名不会被当作仓颉格式串处理
+     */
+    @TestCase
+    public func testIso8601TimeFormat(): Unit {
+        let data = IsoTimeData()
+        let json = JsonTool.toJson(data)
+        @Assert(json.contains("2023-01-20T11:25:26"), true)
+        let parsed = JsonTool.fromJson<IsoTimeData>(json)
+        @Assert(parsed.t.toUnixTimeStamp().toSeconds(), data.t.toUnixTimeStamp().toSeconds())
+    }
+
+    /**
+     * 测试 BigInt/Decimal 的 schema 类型 - 验证它们作为 JSON number 描述
+     */
+    @TestCase
+    public func testNumericSchemaTypes(): Unit {
+        @Assert(JsonTool.toJson(JsonTool.getSchema<BigInt>().toJson()).contains("number"), true)
+        @Assert(JsonTool.toJson(JsonTool.getSchema<Decimal>().toJson()).contains("number"), true)
     }
 }

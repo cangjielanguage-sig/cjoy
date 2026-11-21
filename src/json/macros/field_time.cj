@@ -18,7 +18,8 @@ class DateTimeJsonFieldGenerator <: JsonFieldGenerator {
     }
 
     public override func genSerializeTokens(): Tokens {
-        if (info.timeformat != "") {
+        // ISO8601 不是仓颉 DateTime 格式串，使用默认的 ISO 序列化/反序列化
+        if (info.timeformat != "" && info.timeformat != "ISO8601") {
             return quote(
                 writer.writeName($(info.jsonKeyName())).writeValue($(varId).format($(info.timeformat)))
          )
@@ -28,7 +29,7 @@ class DateTimeJsonFieldGenerator <: JsonFieldGenerator {
     }
 
     public override func genDeserializeTokens(): Tokens {
-        if (info.timeformat != "") {
+        if (info.timeformat != "" && info.timeformat != "ISO8601") {
             return quote(case $(info.jsonKeyName()) => obj.$(varId) = DateTime.parse(reader.readValue<String>(), $(info.timeformat))
             )
         }
