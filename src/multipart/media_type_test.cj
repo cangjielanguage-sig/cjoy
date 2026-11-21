@@ -245,6 +245,10 @@ public class ParseMediaTypeTestCaseSuit {
 		MediaTypeTest(#"attachment; filename*=''foo-%c3%a4-%e2%82%ac.html"#,
 			"attachment",
 			m()).doTest()
+		// 单个 RFC 2231 分片解码后仅为一个空格时不应被丢弃
+		MediaTypeTest(#"attachment; filename*0*=UTF-8''%20; filename*1="a""#,
+			"attachment",
+			m("filename", " a")).doTest()
 		// #attwithfn2231utf8comp
 		MediaTypeTest(#"attachment; filename*=UTF-8''foo-a%cc%88.html"#,
 			"attachment",

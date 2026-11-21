@@ -21,8 +21,6 @@ import cjoy.framework.{JoyContext, JoyHttpConsts}
  * 它支持部分的内存储存和基于磁盘的存储。
  */
 public class JoyMultiPartForm <: JoyMultiPartHandler & Resource & Iterable<JoyMultiPart> {
-    private static let INSTANCE: JoyMultiPartForm = JoyMultiPartForm()
-
     private let _handlers = HashMap<String, JoyMultiPartHandler>()
     private var _parser: ?JoyMultiPartParser = None
     private var _memoryHandler: ?JoyMemoryMultiPartHandler = None
@@ -49,8 +47,11 @@ public class JoyMultiPartForm <: JoyMultiPartHandler & Resource & Iterable<JoyMu
      */
     public static func create(request: HttpRequest, config: JoyMultiPartConfig): JoyMultiPartForm {
         if (let Some(header) <- request.headers.getFirst(JoyHttpConsts.HEADER_CONTENT_TYPE)) {
-            if (!header.startsWith("multipart/form-data")) {
-                return JoyMultiPartForm.INSTANCE
+            let prefix = "multipart/form-data"
+            let lower = header.toAsciiLower()
+            if (!lower.startsWith(prefix) ||
+                (lower.size > prefix.size && lower[prefix.size] != b';' && lower[prefix.size] != b' ')) {
+                return JoyMultiPartForm()
             }
 
             let mtype = JoyMediaType.parse(header)
@@ -64,7 +65,7 @@ public class JoyMultiPartForm <: JoyMultiPartHandler & Resource & Iterable<JoyMu
                 throw MultiPartParseException("not found boundary in header: ${header}")
             }
         }
-        return JoyMultiPartForm.INSTANCE
+        return JoyMultiPartForm()
     }
 
     private static func createForm(request: HttpRequest, config: JoyMultiPartConfig, boundary: String): JoyMultiPartForm {

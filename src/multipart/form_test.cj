@@ -200,4 +200,44 @@ value3
             }
         }
     }
+
+    /**
+     * 测试大小写不敏感的 Content-Type - 验证 HTTP 媒体类型大小写不敏感
+     */
+    @TestCase
+    public func testCaseInsensitiveContentType() {
+        let byteBuffer = ByteBuffer()
+        byteBuffer.write("--B\r\nContent-Disposition: form-data; name=\"x\"\r\n\r\nvalue\r\n--B--\r\n".toArray())
+        let request = HttpRequestBuilder()
+            .post()
+            .url("http://127.0.0.1:18881/test")
+            .body(byteBuffer)
+            .header("Content-type", "MULTIPART/FORM-DATA; boundary=B")
+            .build()
+        let config = JoyMultiPartConfig()
+        try (form = JoyMultiPartForm.create(request, config)) {
+            if (!form.isFormData) {
+                @Fail("content type should be case insensitive")
+            }
+        }
+    }
+
+    /**
+     * 测试非 multipart 表单实例独立 - 关闭一个表单不应影响后续创建的表单
+     */
+    @TestCase
+    public func testNonMultipartFormInstancesAreIndependent() {
+        let request = HttpRequestBuilder()
+            .post()
+            .url("http://127.0.0.1:18881/test")
+            .header("Content-type", "text/plain")
+            .build()
+        let config = JoyMultiPartConfig()
+        let first = JoyMultiPartForm.create(request, config)
+        first.close()
+        let second = JoyMultiPartForm.create(request, config)
+        if (second.isClosed()) {
+            @Fail("a closed non-multipart form must not be reused")
+        }
+    }
 }

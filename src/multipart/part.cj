@@ -128,7 +128,7 @@ public class JoyMultiPart {
                 break
             }
 
-            if (isEmptyLine(linebs) && _nextState == PS_HEADER) {
+            if (isEmptyLine(linebs, r.lineEnding) && _nextState == PS_HEADER) {
                 _nextState = PS_BODY
                 continue
             }
@@ -152,7 +152,7 @@ public class JoyMultiPart {
                 r._handler.onPart(this, lastCache.bytes())
                 lastCache.clear()
             }
-            if (containEndLetter(linebs)) { // 可能是结束行
+            if (containEndLetter(linebs, r.lineEnding)) { // 可能是结束行
                 lastCache.write(linebs)
             } else {
                 r._handler.onPart(this, linebs)
@@ -160,9 +160,10 @@ public class JoyMultiPart {
         }
 
         checkIsEnd()
-        if (lastCache.length > 2) {
+        let nlSize = r.lineEnding.size
+        if (lastCache.length > nlSize) {
             let bs = lastCache.bytes()
-            r._handler.onPart(this, bs[..bs.size - 2])
+            r._handler.onPart(this, bs[..bs.size - nlSize])
         }
     }
 
@@ -198,12 +199,12 @@ public class JoyMultiPart {
         }
     }
 
-    private func isEmptyLine(line: Array<Byte>): Bool {
-        line.size == 2 && line[0] == b'\r' && line[1] == b'\n'
+    private func isEmptyLine(line: Array<Byte>, nl: Array<Byte>): Bool {
+        line == nl
     }
 
-    private func containEndLetter(line: Array<Byte>): Bool {
-        line.size >= 2 && line[line.size - 2] == b'\r' && line[line.size - 1] == b'\n'
+    private func containEndLetter(line: Array<Byte>, nl: Array<Byte>): Bool {
+        line.size >= nl.size && line[line.size - nl.size..] == nl
     }
 
     private func readHeaderKey(line: Array<Byte>): Array<Byte> {

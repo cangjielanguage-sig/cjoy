@@ -119,7 +119,9 @@ class JoyDiskMultiPartHandler <: JoyMultiPartHandler & Resource {
     private var _isClosed = false
     private let _config: JoyMultiPartConfig
     private let _tempPath: Path
-    private var _size: Int = 0
+    // 按 part 名称统计大小，maxFileSize 限制的是单个部分而不是全部文件总量
+    private let _sizes = HashMap<String, Int>()
+    private var _nextFileId: Int = 0
 
     /**
      * 初始化 JoyDiskMultiPartHandler 的新实例
@@ -142,10 +144,11 @@ class JoyDiskMultiPartHandler <: JoyMultiPartHandler & Resource {
      * @throws MultiPartLimitReachedException 如果达到文件大小限制
      */
     public func onPart(part: JoyMultiPart, data: Array<Byte>): Unit {
-        _size += data.size
-        if (_size > _config.maxFileSize.value) {
-            throw MultiPartLimitReachedException("file size limit reached, ${_size} > ${_config.maxFileSize.value}")
+        let size = (_sizes.get(part.name) ?? 0) + data.size
+        if (size > _config.maxFileSize.value) {
+            throw MultiPartLimitReachedException("file size limit reached, ${size} > ${_config.maxFileSize.value}")
         }
+        _sizes[part.name] = size
 
         if (let Some(f) <- _cache.get(part.name)) {
             f.write(data)
@@ -153,16 +156,37 @@ class JoyDiskMultiPartHandler <: JoyMultiPartHandler & Resource {
             return
         }
 
-        let fileName = _tempPath.join(part.fileName)
-        let file = File(fileName, OpenMode.ReadWrite)
+        let fileName = _tempPath.join("${_nextFileId}_${safeFileName(part.fileName)}")
+        _nextFileId++
+        let file = File(fileName, OpenMode.Write)
         try {
             file.write(data)
             file.flush()
             part._diskHandler = this
             _cache.add(part.name, file)
-        } catch (_: Exception) {
+        } catch (e: Exception) {
             file.close()
+            _sizes.remove(part.name)
+            removeIfExists(fileName, recursive: false)
+            throw e
         }
+    }
+
+    /**
+     * 仅保留文件名部分，防止客户端通过 filename 越出缓存目录
+     */
+    private func safeFileName(name: String): String {
+        var value = name
+        if (let Some(idx) <- value.lastIndexOf("/")) {
+            value = value[idx + 1..value.size]
+        }
+        if (let Some(idx) <- value.lastIndexOf("\\")) {
+            value = value[idx + 1..value.size]
+        }
+        if (value.isEmpty() || value == "." || value == "..") {
+            return "part"
+        }
+        value
     }
 
     /**

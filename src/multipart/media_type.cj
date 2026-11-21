@@ -129,7 +129,7 @@ public class JoyMediaType {
                 if (let Some(v) <- pieceMap.get(encodedPart)) {
                     valid = true
                     if (n == 0) {
-                        if (let decv <- decode2231Enc(v) && decv != " ") {
+                        if (let decv <- decode2231Enc(v) && decv != "") {
                             buf.append(decv)
                         }
                     } else {

@@ -168,7 +168,6 @@ content
      * 测试无效边界字符串 - 验证当边界字符串不匹配时抛出 MultiPartParseException 异常
      */
     @TestCase
-    @Skip
     func testInvalidBoundary() {
         let str = #"--InvalidBoundary
 Content-Disposition: form-data; name="test"
@@ -303,5 +302,50 @@ value with spaces and special chars: !@#$%^&*()_+
         if (rc != "value with spaces and special chars: !@#$%^&*()_+") {
             @Fail("the part content is not match, expect=value with spaces and special chars: !@#$%^&*()_+, real=${rc}")
         }
+    }
+
+    /**
+     * 测试 LF 换行 - 验证仅使用 LF 的 multipart 数据仍能正确解析出分块内容
+     */
+    @TestCase
+    func testLfLineEndings() {
+        let str = #"
+--B
+Content-Disposition: form-data; name="text"
+
+value
+--B--
+"#
+
+        let config = JoyMultiPartConfig()
+        let handler = JoyMemoryMultiPartHandler(config)
+        let byteBuffer = ByteBuffer()
+        byteBuffer.write(str.toArray())
+
+        let parser = JoyMultiPartParser(config, handler, byteBuffer, "B")
+        parser.parseParts()
+        checkPart("text", "value", parser, handler)
+    }
+
+    /**
+     * 测试以边界字符串开头的正文 - 验证非完整边界行会被当作正文数据保存
+     */
+    @TestCase
+    func testBodyLineStartingWithBoundary() {
+        let str = #"--B
+Content-Disposition: form-data; name="text"
+
+--BXYZ
+--B--
+"#
+
+        let config = JoyMultiPartConfig()
+        let handler = JoyMemoryMultiPartHandler(config)
+        let byteBuffer = ByteBuffer()
+        byteBuffer.write(str.replace("\n", "\r\n").toArray())
+
+        let parser = JoyMultiPartParser(config, handler, byteBuffer, "B")
+        parser.parseParts()
+        checkPart("text", "--BXYZ", parser, handler)
     }
 }

@@ -11,6 +11,7 @@
 package cjoy.multipart
 
 import std.io.ByteBuffer
+import std.fs.{Path, exists, remove}
 import std.unittest.testmacro.*
 
 @Test
@@ -133,6 +134,74 @@ public class MultiPartHandlerTestCaseSuit {
         }
         if (String.fromUtf8(content3.getOrThrow().bytes()) != "data3") {
             @Fail("part3 content mismatch")
+        }
+    }
+
+    /**
+     * 测试磁盘文件大小限制按单个分块计算 - 多个小于限制的文件不应因总量超限而失败
+     */
+    @TestCase
+    public func testDiskHandlerSizeLimitPerPart() {
+        var config = JoyMultiPartConfig()
+        config.maxFileSize = JoyDataSize(10)
+        config.fileCacheDir = "./test_tmp_handler"
+        let handler = JoyDiskMultiPartHandler(config)
+        let str = #"--B
+Content-Disposition: form-data; name="a"; filename="x.txt"
+
+123456
+--B
+Content-Disposition: form-data; name="b"; filename="x.txt"
+
+abcdef
+--B--
+"#
+        let byteBuffer = ByteBuffer()
+        byteBuffer.write(str.replace("\n", "\r\n").toArray())
+        let parser = JoyMultiPartParser(config, handler, byteBuffer, "B")
+        try {
+            parser.parseParts()
+            let fa = handler.getFile("a").getOrThrow()
+            let fb = handler.getFile("b").getOrThrow()
+            if (fa.info.path == fb.info.path) {
+                @Fail("file parts with same filename should use different cache files")
+            }
+        } finally {
+            handler.close()
+            if (exists(Path(config.fileCacheDir))) {
+                remove(config.fileCacheDir, recursive: true)
+            }
+        }
+    }
+
+    /**
+     * 测试上传文件名中的路径穿越 - 缓存文件必须保留在配置的缓存目录内
+     */
+    @TestCase
+    public func testDiskHandlerRejectsUnsafeFileName() {
+        var config = JoyMultiPartConfig()
+        config.fileCacheDir = "./test_tmp_handler"
+        let handler = JoyDiskMultiPartHandler(config)
+        let str = #"--B
+Content-Disposition: form-data; name="a"; filename="../../evil.txt"
+
+content
+--B--
+"#
+        let byteBuffer = ByteBuffer()
+        byteBuffer.write(str.replace("\n", "\r\n").toArray())
+        let parser = JoyMultiPartParser(config, handler, byteBuffer, "B")
+        try {
+            parser.parseParts()
+            let path = handler.getFile("a").getOrThrow().info.path.toString()
+            if (path.contains("..")) {
+                @Fail("uploaded file escaped cache dir: ${path}")
+            }
+        } finally {
+            handler.close()
+            if (exists(Path(config.fileCacheDir))) {
+                remove(config.fileCacheDir, recursive: true)
+            }
         }
     }
 }

@@ -36,6 +36,7 @@ public class JoyMultiPartParser <: Iterable<JoyMultiPart> {
     private let _dashBoundary: Array<Byte> // "--boundary"
 
     private var _partsRead: Int = 0
+    private var _sawBoundary = false
     private let _parts = ArrayList<JoyMultiPart>()
 
     /**
@@ -74,6 +75,10 @@ public class JoyMultiPartParser <: Iterable<JoyMultiPart> {
                 return
             }
         }
+
+        if (!_sawBoundary) {
+            throw MultiPartParseException("no multipart boundary found in input")
+        }
     }
 
     /**
@@ -81,10 +86,12 @@ public class JoyMultiPartParser <: Iterable<JoyMultiPart> {
      */
     private func processLine(line: Array<Byte>): Bool {
         if (isFinalBoundary(line)) {
+            _sawBoundary = true
             return false
         }
 
         if (isBoundaryDelimiterLine(line)) {
+            _sawBoundary = true
             _partsRead += 1
             checkParts()
             let part = JoyMultiPart()
@@ -119,7 +126,7 @@ public class JoyMultiPartParser <: Iterable<JoyMultiPart> {
         }
 
         var rest = line[_dashBoundaryDash.size..]
-        rest = skipLWSPChar(rest)
+        rest = adaptLineEnding(skipLWSPChar(rest))
         rest.size == 0 || rest == _nl
     }
 
@@ -129,26 +136,48 @@ public class JoyMultiPartParser <: Iterable<JoyMultiPart> {
         }
 
         var rest = line[_dashBoundary.size..]
-        rest = skipLWSPChar(rest)
-
-        if (_partsRead == 0 && rest.size == 1 && rest[0] == b'\n') {
-            _nl = _nl[1..]
-            _nldashBoundary = _nldashBoundary[1..]
-        }
+        rest = adaptLineEnding(skipLWSPChar(rest))
+        // 只有第一个边界之前允许 LF 换行，后续行必须与首个边界一致
         rest == _nl
     }
 
+    /**
+     * 首个边界使用 LF 时，将解析器期待的换行从 CRLF 调整为 LF
+     */
+    private func adaptLineEnding(rest: Array<Byte>): Array<Byte> {
+        if (_partsRead == 0 && rest.size == 1 && rest[0] == b'\n' && _nl.size > 1) {
+            _nl = _nl[1..]
+            _nldashBoundary = _nldashBoundary[1..]
+        }
+        rest
+    }
+
+    /**
+     * 判断 body 中的行是否为完整边界行，而不是仅以边界字符串开头
+     */
     func isDashLine(line: Array<Byte>): Bool {
-        if (line.size < _dashBoundary.size) {
+        if (line.size < _dashBoundary.size || line[.._dashBoundary.size] != _dashBoundary) {
             return false
         }
 
-        for (i in 0.._dashBoundary.size) {
-            if (line[i] != _dashBoundary[i]) {
-                return false
-            }
+        var rest = skipLWSPChar(line[_dashBoundary.size..])
+        if (rest.isEmpty() || rest == _nl) {
+            return true
         }
-        return true
+        if (rest.size >= 2 && rest[0] == b'-' && rest[1] == b'-') {
+            rest = skipLWSPChar(rest[2..])
+            return rest.isEmpty() || rest == _nl
+        }
+        return false
+    }
+
+    /**
+     * 当前输入流使用的行分隔符（CRLF 或 LF）
+     */
+    prop lineEnding: Array<Byte> {
+        get() {
+            _nl
+        }
     }
 
     private func skipLWSPChar(b: Array<Byte>): Array<Byte> {
