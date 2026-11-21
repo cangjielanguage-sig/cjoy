@@ -109,6 +109,16 @@ class BeanDependManager {
             bt.depends.add(dep)
             dep.depons.add(bt)
         }
+        resetDepth()
+    }
+
+    /**
+     * 依赖关系变化后清除已计算的深度，避免后续查询使用过期结果
+     */
+    private func resetDepth(): Unit {
+        for ((_, bd) in _beanTypes) {
+            bd.depth = Int.Max
+        }
     }
 
     /**
@@ -125,6 +135,7 @@ class BeanDependManager {
                 case _ => _extends.add(it, HashSet([beanType]))
             }
         }
+        resetDepth()
     }
 
     /**

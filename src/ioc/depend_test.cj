@@ -253,4 +253,22 @@ public class BeanDependManagerTestCaseSuit {
             @Assert(ex.message.contains("not found class `x` implements interface `i2a`"))
         }
     }
+
+    /**
+     * 测试依赖变化后重新计算深度 - 验证新注册的无依赖 Bean 排在已有依赖者之前
+     */
+    @TestCase
+    public func testDepthInvalidatedOnRegister(): Unit {
+        let manager = BeanDependManager()
+        manager.addDepends("a", [])
+        manager.addDepends("b", ["a"])
+        let first = manager.getSortedBeanDepends()
+        @Assert(first.size, 2)
+
+        manager.addDepends("c", [])
+        let second = manager.getSortedBeanDepends()
+        @Assert(second.size, 3)
+        @Assert(second[1].beanType, "c")
+        @Assert(second[2].beanType, "b")
+    }
 }

@@ -103,7 +103,7 @@ class DefaultApplicationContext <: ApplicationContext {
             let factory = _factories.get(bt)
             match (factory) {
                 case Some(f) =>
-                    let bean = getBeanByTypeNameInner(f, bt, classTypes.size)
+                    let bean = getBeanByTypeNameInner(f, bt, classTypes.size, allowPrototype: false)
                     if (let Some(b) <- bean) {
                         res.add(b)
                     }
@@ -128,7 +128,8 @@ class DefaultApplicationContext <: ApplicationContext {
      * @return Bean 生命周期，如果未找到则返回 None
      * @throws IocException 如果存在多个候选者
      */
-    private func getBeanByTypeNameInner(f: BeanFactory, bt: String, classTypeSize: Int): ?BeanLifecycle {
+    private func getBeanByTypeNameInner(f: BeanFactory, bt: String, classTypeSize: Int,
+        allowPrototype!: Bool = false): ?BeanLifecycle {
         if (f.beanScope == SINGLETON) {
             let bean = _beansByTypes.get(bt)
             match (bean) {
@@ -136,8 +137,8 @@ class DefaultApplicationContext <: ApplicationContext {
                 case _ => return None
             }
         } else {
-            // 原型 Bean 仅支持单次获取
-            if (classTypeSize == 1) {
+            // 单值查询在候选者不唯一时拒绝原型 Bean；复数查询应返回全部实现
+            if (classTypeSize == 1 || allowPrototype) {
                 let (_, bean) = f.create(this)
                 bean.afterInit()
                 return bean
@@ -173,7 +174,7 @@ class DefaultApplicationContext <: ApplicationContext {
             let factory = _factories.get(bt)
             match (factory) {
                 case Some(f) =>
-                    let bean = getBeanByTypeNameInner(f, bt, classTypes.size)
+                    let bean = getBeanByTypeNameInner(f, bt, classTypes.size, allowPrototype: true)
                     if (let Some(b) <- bean) {
                         res.add(b)
                     }
@@ -273,5 +274,12 @@ class DefaultApplicationContext <: ApplicationContext {
         while (let Some((k, _)) <- iter.next()) {
             _beans.remove(k)
         }
+        // 同时清理按类型缓存，并允许后续重新初始化
+        let typeIter = _beansByTypes.iterator()
+        while (let Some((k, _)) <- typeIter.next()) {
+            _beansByTypes.remove(k)
+        }
+        _inited.store(false)
+        BeanFactoryManager.EXECUTED.store(false)
     }
 }

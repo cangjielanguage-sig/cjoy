@@ -28,7 +28,7 @@ class ControllerClassInfo <: ComponentClassInfo {
     }
 
     func getHanldersTokens(): (Tokens, Tokens) {
-        let methods = ["Get", "Post", "Put", "Patch", "Patch", "Delete", "Handler"]
+        let methods = ["Get", "Post", "Put", "Patch", "Delete", "Head", "Handler"]
         var handlerFuns = Tokens()
         var register = Tokens()
         for (m in methods) {

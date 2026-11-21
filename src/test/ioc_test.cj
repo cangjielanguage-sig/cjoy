@@ -80,6 +80,14 @@ class BeanController {
     func post(ctx: JoyContext, @PathParam name: String): Unit {
     }
 
+    @Patch[path = "/p3"]
+    func patch(ctx: JoyContext): Unit {
+    }
+
+    @Head[path = "/p4"]
+    func head(ctx: JoyContext): Unit {
+    }
+
     @Scheduled[cron = "*/20 3-5/2 22 */5 4"]
     func schuedule(ctx: ScheduleContext): Unit {
     }
