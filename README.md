@@ -7,7 +7,7 @@
 </div>
 
 <p align="center">
-  <img alt="Release" src="https://img.shields.io/badge/release-v1.0.3-brightgreen" />
+  <img alt="Release" src="https://img.shields.io/badge/release-v1.0.4-brightgreen" />
   <img alt="Cangjie Version" src="https://img.shields.io/badge/cjc-v1.2.0-brightgreen" />
   <img alt="Code Coverage" src="https://img.shields.io/badge/cjcov-70%25+-brightgreen" />
   <img alt="State" src="https://img.shields.io/badge/state-孵化-brightgreen" />
@@ -127,7 +127,7 @@ cjoy = { git = "https://gitcode.com/Cangjie-SIG/cjoy.git", branch = "main" }
 或者（在https://pkg.cangjie-lang.cn/index 搜索最新发布版本）
 ```toml
 [dependencies]
-cjoy = { version = "1.0.2" } 
+cjoy = { version = "1.0.3" } 
 ```
 
 ---
