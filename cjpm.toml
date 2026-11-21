@@ -2,7 +2,7 @@
   cjlog = { version = "0.1.2" } 
 
 [package]
-  cjc-version = "1.1.0"
+  cjc-version = "1.2.0"
   compile-option = "-Woff unused --diagnostic-format=noColor"
   description = "a fast, lightweight and joy web framework"
   link-option = ""

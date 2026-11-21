@@ -22,6 +22,8 @@ public class JoyHttpResponse <: Resource {
     private let _response: HttpResponse
     private var _sseStream: ?JoySSEventStream = None
     private var _isClosed = false
+    // 是否已将响应体作为流交给调用方，流式响应关闭时需要释放底层连接
+    private var _streaming = false
 
     /**
      * 创建 HTTP 响应包装器
@@ -33,7 +35,10 @@ public class JoyHttpResponse <: Resource {
     }
 
     ~init() {
-        _response.close()
+        if (!_isClosed) {
+            _response.close()
+            _isClosed = true
+        }
     }
 
     /**
@@ -75,6 +80,8 @@ public class JoyHttpResponse <: Resource {
      */
     public prop data: InputStream {
         get() {
+            // 只有长度未知的流式响应需要在关闭时释放连接
+            _streaming = _response.bodySize.isNone()
             _response.body
         }
     }
@@ -120,6 +127,7 @@ public class JoyHttpResponse <: Resource {
                 if (contentType != JoyHttpConsts.MIME_TEXT_EVENT_STREAM) {
                     throw IllegalArgumentException("the response is not event stream")
                 }
+                _streaming = true
                 let stream = JoySSEventStream(_response.stream)
                 _sseStream = stream
                 stream
@@ -134,7 +142,23 @@ public class JoyHttpResponse <: Resource {
         if (_isClosed) {
             return
         }
-        _response.close()
+        if (_streaming) {
+            // 流式响应由调用方控制读取进度，直接释放底层连接
+            _response.close()
+        } else {
+            // stdx 的 HttpResponse.close() 会关闭连接，即使是已读完并归还连接池的响应。
+            // 这里只将未读完的响应体读取到末尾，让 stdx 自动归还连接到连接池。
+            try {
+                let buffer = Array<Byte>(8192, {_ => 0})
+                while (true) {
+                    if (_response.body.read(buffer) <= 0) {
+                        break
+                    }
+                }
+            } catch (_: Exception) {
+                _response.close()
+            }
+        }
         _isClosed = true
     }
 

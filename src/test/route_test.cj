@@ -159,7 +159,6 @@ public class RouteTestCaseSuit {
         let rsp = _client.get("http://127.0.0.1:18881/users/xiao")
         let reader = StringReader(rsp.body)
         @Assert(reader.readToEnd(), "/users/xiao")
-        rsp.close()
     }
 
     /**
@@ -170,7 +169,6 @@ public class RouteTestCaseSuit {
         let rsp = _client.get("http://127.0.0.1:18881/users/xiao/posts/1")
         let reader = StringReader(rsp.body)
         @Assert(reader.readToEnd(), "/users/xiao/posts/1")
-        rsp.close()
     }
 
     /**
@@ -181,7 +179,6 @@ public class RouteTestCaseSuit {
         let rsp = _client.get("http://127.0.0.1:18881/users?name=xiao")
         let reader = StringReader(rsp.body)
         @Assert(reader.readToEnd(), "/users?name=xiao")
-        rsp.close()
     }
 
     /**
@@ -192,7 +189,6 @@ public class RouteTestCaseSuit {
         let rsp = _client.get("http://127.0.0.1:18881/posts?id=1&id=2&id=3")
         let reader = StringReader(rsp.body)
         @Assert(reader.readToEnd(), "/posts?id=1&id=2&id=3")
-        rsp.close()
     }
 
     /**
@@ -209,7 +205,6 @@ public class RouteTestCaseSuit {
         let rsp = _client.send(req)
         let reader = StringReader(rsp.body)
         @Assert(reader.readToEnd(), "id=1")
-        rsp.close()
     }
 
     /**
@@ -230,7 +225,6 @@ public class RouteTestCaseSuit {
         let rsp = _client.send(req)
         let reader = StringReader(rsp.body)
         @Assert(reader.readToEnd(), JsonTool.toJson(userInfo))
-        rsp.close()
     }
 
     /**
@@ -241,7 +235,6 @@ public class RouteTestCaseSuit {
         let rsp = _client.get("http://127.0.0.1:18881/mw-num")
         let reader = StringReader(rsp.body)
         @Assert(reader.readToEnd(), "2")
-        rsp.close()
     }
 
     /**
@@ -252,7 +245,6 @@ public class RouteTestCaseSuit {
         let rsp = _client.get("http://127.0.0.1:18881/mw-num-inline")
         let reader = StringReader(rsp.body)
         @Assert(reader.readToEnd(), "3")
-        rsp.close()
     }
 
     /**
@@ -262,7 +254,6 @@ public class RouteTestCaseSuit {
     public func testRouteGroup() {
         let rsp = _client.get("http://127.0.0.1:18881/group")
         @Assert(rsp.status, 200)
-        rsp.close()
     }
 
     /**
@@ -273,7 +264,6 @@ public class RouteTestCaseSuit {
         let rsp = _client.get("http://127.0.0.1:18881/group/")
         let reader = StringReader(rsp.body)
         @Assert(reader.readToEnd(), "/group/,3")
-        rsp.close()
     }
 
     /**
@@ -284,6 +274,5 @@ public class RouteTestCaseSuit {
         let rsp = _client.get("http://127.0.0.1:18881/group/path")
         let reader = StringReader(rsp.body)
         @Assert(reader.readToEnd(), "/group/path,4")
-        rsp.close()
     }
 }

@@ -53,13 +53,11 @@ public class Base64TestCaseSuit {
      * 测试解码无效的 Base64 URL 编码字符串 - 验证无效编码会正确处理
      */
     @TestCase
-    @Skip
     public func testRawBase64URLDecodeInvalid() {
-        // 测试无效的 base64 字符串
-        let invalidEncoded = "InvalidBase64String"
+        // 测试无效的 base64 字符串，解码失败时返回 None
+        let invalidEncoded = "InvalidBase64String!"
         let decoded = rawBase64URLDecode(invalidEncoded)
-        @Assert(decoded.isSome(), true)
-        @Assert(decoded.getOrThrow().size, 0)
+        @Assert(decoded.isNone(), true)
     }
 
     /**

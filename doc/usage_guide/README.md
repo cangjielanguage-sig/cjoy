@@ -20,14 +20,14 @@
 $HOME
 ├── cangjie          # 仓颉 SDK 目录
 └── cangjiestdx      # 新建此目录
-    └── linux_x86_64_llvm  # 解压对应的 stdx 包，不同 OS 目录名称不同
+    └── linux_x86_64_cjnative  # 解压对应的 stdx 包，不同 OS 目录名称不同
 ```
 
 **配置环境变量**（Linux 与 MacOS）：
 
 ```bash
 # 修改用户家目录的 .bashrc 或 .zshrc（取决于采用 bash 还是 zsh）
-export CANGJIE_STDX_PATH=$HOME/cangjiestdx
+export CANGJIE_STDX_PATH=$HOME/cangjiestdx/linux_x86_64_cjnative/static/stdx
 ```
 
 ### 添加依赖

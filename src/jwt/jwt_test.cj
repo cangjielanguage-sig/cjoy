@@ -496,7 +496,7 @@ public class JwtTestCaseSuit {
         }
 
         try {
-            Jwt.parse("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.invalidjson.invalidbase64")
+            Jwt.parse("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.bm90IGpzb24.invalidbase64")
             @Fail("should throw jwt exception for invalid json")
         } catch (ex: JwtException) {
             @Assert(ex.message.contains("could not JSON decode"))

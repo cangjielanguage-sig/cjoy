@@ -8,7 +8,7 @@
 
 <p align="center">
   <img alt="Release" src="https://img.shields.io/badge/release-v1.0.3-brightgreen" />
-  <img alt="Cangjie Version" src="https://img.shields.io/badge/cjc-v1.0.4-brightgreen" />
+  <img alt="Cangjie Version" src="https://img.shields.io/badge/cjc-v1.2.0-brightgreen" />
   <img alt="Code Coverage" src="https://img.shields.io/badge/cjcov-70%25+-brightgreen" />
   <img alt="State" src="https://img.shields.io/badge/state-孵化-brightgreen" />
   <img alt="Domain" src="https://img.shields.io/badge/domain-cloud-brightgreen" />
@@ -73,7 +73,7 @@ CJoy 借鉴了多种语言 Web 开源框架的设计优点，基于仓颉语言�
 
 ### 环境要求
 
-仓颉版本：`v1.1.0`
+仓颉版本：`v1.2.0`
 
 本项目依赖仓颉 stdx 包，请先下载对应版本的 stdx 包，使用说明参见 [仓颉编程语言 stdx](https://gitcode.com/Cangjie/Cangjie-STDX)。
 
@@ -124,7 +124,7 @@ cjpm run --name examples.tls
 cjoy = { git = "https://gitcode.com/Cangjie-SIG/cjoy.git", branch = "main" }
 ```
 
-或者
+或者（在https://pkg.cangjie-lang.cn/index 搜索最新发布版本）
 ```toml
 [dependencies]
 cjoy = { version = "1.0.2" } 
