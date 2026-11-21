@@ -99,8 +99,14 @@ class JoyHttpRange {
                     throw IllegalArgumentException("invalid http range, ${str}")
                 }
                 var i = Int.parse(end, radix: 10)
+                if (i <= 0) {
+                    throw IllegalArgumentException("invalid http range, ${str}")
+                }
                 if (i > size) {
                     i = size
+                }
+                if (i == 0) {
+                    throw IllegalArgumentException("invalid http range, ${str}")
                 }
                 JoyHttpRange(start: size - i, length: i)
             } else {
@@ -127,6 +133,9 @@ class JoyHttpRange {
                         iend = size - 1
                     }
                     ilen = iend - istart + 1
+                }
+                if (ilen <= 0) {
+                    throw IllegalArgumentException("invalid http range, ${str}")
                 }
                 JoyHttpRange(start: istart, length: ilen)
             }

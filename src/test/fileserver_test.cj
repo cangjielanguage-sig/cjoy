@@ -93,6 +93,7 @@ public class FileServerTestCaseSuit {
         // 验证状态码为 206 Partial Content
         @Assert(rsp.status, 206)
         @Assert(rsp.headers.getFirst("Accept-Ranges"), "bytes")
+        @Assert(rsp.headers.getFirst("Content-Type").isSome(), true)
 
         // 验证 Content-Range 头
         let contentRange = rsp.headers.getFirst("Content-Range")
@@ -342,7 +343,6 @@ public class FileServerTestCaseSuit {
      * 测试 HEAD 方法的范围请求 - 验证使用 HEAD 方法进行范围请求的功能（已跳过）
      */
     @TestCase
-    @Skip
     public func testRangeRequestHeadMethod() {
         // 测试 HEAD 方法与 Range 请求
         let req = HttpRequestBuilder()
@@ -413,5 +413,57 @@ public class FileServerTestCaseSuit {
         let range = contentRange.getOrThrow()
         @Assert(range.startsWith("bytes 0-99/"), true)
         rsp.close()
+    }
+
+    /**
+     * 测试越界 Range 请求 - 验证越界范围被忽略并返回完整文件
+     */
+    @TestCase
+    public func testOutOfRangeRequestIgnored() {
+        let req = HttpRequestBuilder()
+            .url("http://127.0.0.1:18882/static/imgs/logo.png")
+            .header("Range", "bytes=999999999-")
+            .build()
+        let rsp = _client.send(req)
+        @Assert(rsp.status, 200)
+        @Assert(rsp.headers.getFirst("Content-Type").isSome(), true)
+        @Assert(rsp.headers.getFirst("Content-Range").isNone(), true)
+        drain(rsp)
+    }
+
+    /**
+     * 测试响应 Content-Type 不受请求头影响 - 防止客户端通过请求头伪造响应类型
+     */
+    @TestCase
+    public func testContentTypeFromRequestHeaderIgnored() {
+        let req = HttpRequestBuilder()
+            .url("http://127.0.0.1:18882/static/imgs/logo.png")
+            .header("Content-Type", "text/html")
+            .build()
+        let rsp = _client.send(req)
+        @Assert(rsp.status, 200)
+        @Assert(rsp.headers.getFirst("Content-Type") ?? "", "image/png")
+        drain(rsp)
+    }
+
+    /**
+     * 测试 If-Range 不匹配 - 验证条件不满足时忽略 Range 并返回完整文件
+     */
+    @TestCase
+    public func testIfRangeMismatchIgnoresRange() {
+        let req = HttpRequestBuilder()
+            .url("http://127.0.0.1:18882/static/imgs/logo.png")
+            .header("Range", "bytes=0-99")
+            .header("If-Range", "\"not-the-current-etag\"")
+            .build()
+        let rsp = _client.send(req)
+        @Assert(rsp.status, 200)
+        @Assert(rsp.headers.getFirst("Content-Range").isNone(), true)
+        drain(rsp)
+    }
+
+    private func drain(rsp: HttpResponse): Unit {
+        let buf = Array<Byte>(8192, repeat: 0)
+        while (rsp.body.read(buf) > 0) {}
     }
 }

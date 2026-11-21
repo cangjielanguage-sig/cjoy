@@ -104,28 +104,17 @@ public class JoyFileServer {
         // 设置ETag头
         ctx.header(JoyHttpConsts.HEADER_ETAG, realETag)
 
-        // 检查预条件
-        let (done, _) = checkPreconditions(ctx, realModTime, realETag)
+        // 检查预条件，并取回实际需要处理的 Range 头（If-Range 不匹配时会被置空）
+        let (done, rangeStr) = checkPreconditions(ctx, realModTime, realETag)
         if (done) {
             return
         }
 
-        // 设置Content-Type
-        let contentType = if (let Some(ct) <- ctx.getHeader(JoyHttpConsts.HEADER_CONTENT_TYPE)) {
-            ct
-        } else {
-            getMimeTypeByExt(".${filePath.extensionName}") ?? JoyHttpConsts.MIME_APP_OCTET_STREAM
-        }
-
-        // 处理Range请求
-        let rangeHeader = ctx.getHeader(JoyHttpConsts.HEADER_RANGE)
-        let rangeStr = rangeHeader ?? ""
+        // Content-Type 必须根据文件扩展名判断，不能读取客户端请求头
+        let contentType = getMimeTypeByExt(".${filePath.extensionName}") ?? JoyHttpConsts.MIME_APP_OCTET_STREAM
 
         if (rangeStr.isEmpty()) {
-            // 没有Range请求，发送整个文件
-            ctx.header(JoyHttpConsts.HEADER_CONTENT_TYPE, contentType)
-            ctx.header(JoyHttpConsts.HEADER_CONTENT_LENGTH, "${size}")
-            sendFile(ctx, filePath, 0, size)
+            sendWholeFile(ctx, filePath, size, contentType)
         } else {
             // 处理Range请求
             handleRangeRequest(ctx, filePath, rangeStr, size, contentType)
@@ -192,6 +181,16 @@ public class JoyFileServer {
     }
 
     /**
+     * 忽略 Range 头，返回完整文件
+     */
+    private static func sendWholeFile(ctx: JoyContext, filePath: Path, size: Int64, contentType: String): Unit {
+        ctx.status(HttpStatusCode.STATUS_OK)
+        ctx.header(JoyHttpConsts.HEADER_CONTENT_TYPE, contentType)
+        ctx.header(JoyHttpConsts.HEADER_CONTENT_LENGTH, "${size}")
+        sendFile(ctx, filePath, 0, size)
+    }
+
+    /**
      * 处理 Range 请求
      *
      * @param ctx joy 上下文
@@ -223,6 +222,12 @@ public class JoyFileServer {
             ranges = JoyHttpRangs()
         }
 
+        if (ranges.isEmpty()) {
+            // 越界范围或总大小异常时按 RFC 忽略 Range，返回 200 完整文件
+            sendWholeFile(ctx, filePath, size, contentType)
+            return
+        }
+
         if (ranges.size == 1) {
             // 单个Range请求
             // RFC 7233, Section 4.1:
@@ -230,11 +235,12 @@ public class JoyFileServer {
             // 所选表示的封装内容，以及一个负载包含范围数据。
             // 服务器必须不生成多部分响应请求单个范围，因为客户端不请求多个部分可能不支持多部分响应
             let r = ranges[0]
+            ctx.header(JoyHttpConsts.HEADER_CONTENT_TYPE, contentType)
             ctx.header(JoyHttpConsts.HEADER_CONTENT_LENGTH, "${r.length}")
+            ctx.header(JoyHttpConsts.HEADER_ACCEPT_RANGES, "bytes")
+            ctx.header(JoyHttpConsts.HEADER_CONTENT_RANGE, r.contentRange(size))
             ctx.status(HttpStatusCode.STATUS_PARTIAL_CONTENT)
             if (ctx.method != JoyHttpConsts.METHOD_HEAD) {
-                ctx.header(JoyHttpConsts.HEADER_ACCEPT_RANGES, "bytes")
-                ctx.header(JoyHttpConsts.HEADER_CONTENT_RANGE, r.contentRange(size))
                 sendFile(ctx, filePath, r.start, r.length)
             }
         } else {
@@ -359,9 +365,9 @@ public class JoyFileServer {
         // 检查If-Range
         let rangeHeader = ctx.getHeader(JoyHttpConsts.HEADER_RANGE) ?? ""
         if (!rangeHeader.isEmpty()) {
-            let _ = checkIfRange(ctx, modTime, eTag)
-            match (ifNoneMatchResult) {
-                case MatchFalse => return (false, "") // 忽略Range头
+            let ifRangeResult = checkIfRange(ctx, modTime, eTag)
+            match (ifRangeResult) {
+                case MatchFalse => return (false, "") // If-Range 不匹配，忽略 Range 头
                 case _ => ()
             }
         }
@@ -558,7 +564,8 @@ public class JoyFileServer {
         }
 
         let pt = parsedTime.getOrThrow()
-        if (modTime.toUnixTimeStamp() == pt.toUnixTimeStamp()) {
+        // HTTP 日期只有秒级精度，必须使用秒进行比较
+        if (modTime.toUnixTimeStamp().toSeconds() == pt.toUnixTimeStamp().toSeconds()) {
             return JoyCondResult.MatchTrue
         }
 
@@ -647,13 +654,16 @@ public class JoyFileServer {
         // 列出目录内容
         let files = Directory.readFrom(dirPath)
         let parentPath = getParentPath(requestPath)
+        let separator = if (parentPath.endsWith("/")) { "" } else { "/" }
         for (file in files) {
             let name = file.name
-            var path = parentPath + '/' + name
+            var path = parentPath + separator + name
+            var label = name
             if (file.isDirectory()) {
                 path += "/"
+                label += "/"
             }
-            sb.append("<a href=\"${path}\">${name}/</a>\n")
+            sb.append("<a href=\"${escapeHtml(path)}\">${escapeHtml(label)}</a>\n")
         }
 
         sb.append("</pre>\n")

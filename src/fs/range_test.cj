@@ -46,7 +46,10 @@ public class RangeTestCaseSuit {
             ("bytes=Ran-dom, garbage", 10),
             ("bytes=0x01-0x02", 10),
             ("bytes=         ", 10),
-            ("bytes= , , ,   ", 10)
+            ("bytes= , , ,   ", 10),
+            ("bytes=-0", 10),
+            ("bytes=10-", 10),
+            ("bytes=0-", 0)
         ]
 
         for ((s, length) in invalidCases) {

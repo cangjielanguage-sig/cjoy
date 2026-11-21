@@ -13,7 +13,7 @@ package cjoy.fs
 
 import stdx.net.http.{HttpStatusCode}
 import cjoy.framework.{JoyFileHandlerFactory, JoyRequestHandler, JoyConfig, JoyContext}
-import std.fs.{Path, FileInfo, exists}
+import std.fs.{Path, FileInfo, exists, canonicalize}
 import cjoy.ioc.*
 import cjoy.ioc.macros.Component
 import cjoy.log.macros.*
@@ -128,20 +128,27 @@ class JoyFileSystemServeHandler <: JoyRequestHandler {
             return
         }
 
-        let fi = FileInfo(filePath)
+        // normalize 不解析符号链接，必须 realpath 后才能判断是否越出根目录
+        let realPath = canonicalize(filePath)
+        if (!isWithinRoot(root, realPath)) {
+            @JoyLogWarn("forbidden to donwnload file ${filePath}")
+            ctx.status(HttpStatusCode.STATUS_FORBIDDEN)
+            return
+        }
+
+        let fi = FileInfo(realPath)
         if (fi.isDirectory() || fi.isHidden() || !fi.canRead()) {
             @JoyLogWarn("forbidden to donwnload file ${filePath}")
             ctx.status(HttpStatusCode.STATUS_FORBIDDEN)
             return
         }
 
-        let fp = filePath.toString()
-        if (!fp.startsWith(root.toString())) {
-            @JoyLogWarn("forbidden to donwnload file ${filePath}")
-            ctx.status(HttpStatusCode.STATUS_FORBIDDEN)
-            return
-        }
+        JoyFileServer.serveFile(ctx, realPath)
+    }
 
-        JoyFileServer.serveFile(ctx, filePath)
+    private func isWithinRoot(root: Path, path: Path): Bool {
+        let realRoot = canonicalize(root).toString().trimEnd("/")
+        let realFile = path.toString()
+        realFile == realRoot || realFile.startsWith(realRoot + "/")
     }
 }
