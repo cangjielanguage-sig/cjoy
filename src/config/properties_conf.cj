@@ -25,7 +25,7 @@ public class PropertiesConfigLoader <: ConfigLoader {
         try (fs: File = File(filePath, OpenMode.Read)) {
             var reader = StringReader(fs)
             while (let Some(line) <- reader.readln()) {
-                if (!line.trimAscii().startsWith("#") && let Some(pos) <- line.indexOf("=") && pos > 1) {
+                if (!line.trimAscii().startsWith("#") && let Some(pos) <- line.indexOf("=") && pos > 0) {
                     let key = line[0..pos].trimAscii()
                     // 需要考虑value中存在=
                     let value = line[(pos + 1)..].trimAscii()

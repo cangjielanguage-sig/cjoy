@@ -50,7 +50,15 @@ private func addSubToDataExist(sm: Any, key: String, cfgKey: ConfigKey, subKey: 
                     x.add(HashMap<String, Any>())
                 }
             }
-            let map = (x[cfgKey.arrIdx] as Map<String, Any>) ?? throw ConfigException(
+            let slot = x[cfgKey.arrIdx]
+            if (slot is Option<Any>) {
+                // 空槽位可以回填子 map，与叶子节点的空槽处理保持一致
+                let map = HashMap<String, Any>()
+                x[cfgKey.arrIdx] = map
+                addToData(map, key, subKey, value)
+                return
+            }
+            let map = (slot as Map<String, Any>) ?? throw ConfigException(
                 "invalid config, the key `${key}` is conflict")
             addToData(map, key, subKey, value)
         case _ => throw ConfigException("invalid config, the key `${key}` is conflict")
@@ -168,30 +176,42 @@ private func getLastDataValue(data: Map<String, Any>, cfgKey: ConfigKey): ?Any {
 
 private func getLastDataValueFromArray(val: ?Any, cfgKey: ConfigKey): ?Any {
     match (val) {
-        case Some(v) => match (v) {
-            case x: List<Any> =>
-                if (cfgKey.arrIdx < x.size) {
-                    return x.get(cfgKey.arrIdx)
-                }
-                None
-            case _ => None
-        }
+        case Some(v) =>
+            if (v is Option<Any>) {
+                // 数组空洞中的 Option.None 哨兵不代表有效配置
+                return None
+            }
+            match (v) {
+                case x: List<Any> =>
+                    if (cfgKey.arrIdx < x.size) {
+                        let elem = x[cfgKey.arrIdx]
+                        if (elem is Option<Any>) {
+                            return None
+                        }
+                        return Some(elem)
+                    }
+                    None
+                case _ => None
+            }
         case _ => None
     }
 }
 
 func getStringValue(val: ?Any): ?String {
     match (val) {
-        case Some(v) => match (v) {
-            case x: ToString => x.toString()
-            case _ => None
-        }
+        case Some(v) =>
+            if (v is Option<Any>) {
+                return None
+            }
+            match (v) {
+                case x: ToString => x.toString()
+                case _ => None
+            }
         case _ => None
     }
 }
 
 class ResolveHelp {
-    private var num = 0
     ResolveHelp(let cfg: Config) {}
 
     /**
@@ -200,9 +220,13 @@ class ResolveHelp {
      * @throws ConfigException the config express is invalid
      */
     func resolveString(str: String): String {
-        if (num > 10) {
-            // 循环引用或者变量太多
-            throw ConfigException("the config express is invalid, reference num is over 10, ${str}")
+        resolveString(str, 0)
+    }
+
+    private func resolveString(str: String, depth: Int): String {
+        if (depth > 10) {
+            // 循环引用
+            throw ConfigException("the config express is invalid, circular reference, ${str}")
         }
         if (str.isEmpty()) {
             return str
@@ -232,17 +256,15 @@ class ResolveHelp {
             throw ConfigException("the config express is invalid, ${str}")
         }
 
-        num++
-
-        let resolved = resolveToValue(str[(start + 2)..end])
-        let suffix = resolveString(str[end + 1..])
+        let resolved = resolveToValue(str[(start + 2)..end], depth)
+        let suffix = resolveString(str[end + 1..], depth)
         str[..start] + resolved + suffix
     }
 
     /**
      * @throws ConfigException if the config express is invalid
      */
-    private func resolveToValue(key: String): String {
+    private func resolveToValue(key: String, depth: Int): String {
         let start = key.indexOf(":") ?? -1
         var rk = key
         var defVal = "//@@//"
@@ -258,7 +280,7 @@ class ResolveHelp {
             throw ConfigException("the config express is invalid, circular reference, ${key}")
         }
         if (val != "//@@//") {
-            return resolveString(val)
+            return resolveString(val, depth + 1)
         }
         ""
     }

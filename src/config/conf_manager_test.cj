@@ -323,6 +323,92 @@ public class ConfigManagerTestCaseSuit {
         @Assert(manager.resolve(#"${nonexistent:default_value}"#), "default_value")
         @Assert(manager.resolve(#"${missing.config:123}"#), "123")
     }
+
+    /**
+     * 测试数组空洞回填 - 验证先设置高索引再设置低索引的子键不会报错
+     */
+    @TestCase
+    public func testArrayGapNestedKey(): Unit {
+        let loader = ArgConfigLoader(["-Da.b[1].x=1", "-Da.b[0].y=2"])
+        let manager = ConfigManager()
+        manager.addLoader(loader)
+        @Assert(manager.getValue("a.b[0].y", ""), "2")
+        @Assert(manager.getValue("a.b[1].x", ""), "1")
+    }
+
+    /**
+     * 测试数组空洞不存在 - 验证未设置的索引不会报告为已存在
+     */
+    @TestCase
+    public func testArrayGapIsAbsent(): Unit {
+        let loader = ArgConfigLoader(["-Da[1]=2"])
+        let manager = ConfigManager()
+        manager.addLoader(loader)
+        @Assert(manager.hashKey("a[0]"), false)
+        @Assert(manager.getValue("a[0]").isNone(), true)
+    }
+
+    /**
+     * 测试值中嵌入的占位符 - 验证 getValue 与 resolve 行为一致
+     */
+    @TestCase
+    public func testEmbeddedPlaceholder(): Unit {
+        let loader = ArgConfigLoader([#"-Da=prefix-${HOME}"#])
+        let manager = ConfigManager()
+        manager.addLoader(loader)
+        let val = manager.getValue("a", "")
+        @Assert(val.startsWith("prefix-"), true)
+        @Assert(val.contains(#"${"#), false)
+    }
+
+    /**
+     * 测试数组按优先级合并 - 验证高优先级只覆盖对应元素而不是整个数组
+     */
+    @TestCase
+    public func testArrayMergeByElement(): Unit {
+        let low = ArgConfigLoader(["-Da[0]=1", "-Da[1]=2"], priorityNum: 1)
+        let high = ArgConfigLoader(["-Da[1]=20"], priorityNum: 2)
+        let manager = ConfigManager()
+        manager.addLoader([low, high])
+        @Assert(manager.getValue("a[0]", ""), "1")
+        @Assert(manager.getValue("a[1]", ""), "20")
+    }
+
+    /**
+     * 测试数组中对象的键名转换 - 验证嵌套对象的 camelCase 键可被查询
+     */
+    @TestCase
+    public func testConvertKeysInsideArray(): Unit {
+        let loader = ArgConfigLoader(["-Ditems[0].userName=bob"])
+        let manager = ConfigManager()
+        manager.addLoader(loader)
+        @Assert(manager.getValue("items[0].userName", ""), "bob")
+    }
+
+    /**
+     * 测试转换键名不覆盖已有键 - 保证相同语义的两种写法结果确定
+     */
+    @TestCase
+    public func testConvertedKeyDoesNotOverwrite(): Unit {
+        let loader = ArgConfigLoader(["-DmaxConnections=100", "-Dmax-connections=200"])
+        let manager = ConfigManager()
+        manager.addLoader(loader)
+        @Assert(manager.getValue("max-connections", ""), "200")
+    }
+
+    /**
+     * 测试多个占位符 - 验证无循环引用时不受总数量限制
+     */
+    @TestCase
+    public func testManyPlaceholders(): Unit {
+        let manager = ConfigManager()
+        let keys = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k"]
+        let args = keys.map {k => "-D" + k + "=" + k}
+        manager.addLoader(ArgConfigLoader(args))
+        let parts = keys.map {k => #"${KEY}"#.replace("KEY", k)}
+        let exp = String.join(parts, delimiter: "")
+        @Assert(manager.resolve(exp), "abcdefghijk")
+    }
 }
 
 @Bind

@@ -10,7 +10,7 @@
 
 package cjoy.config
 
-import std.collection.{Map, HashMap}
+import std.collection.{Map, List, HashMap, ArrayList}
 import std.convert.Parsable
 import cjoy.utils.snakeCase
 import cjoy.log.macros.*
@@ -51,17 +51,32 @@ func convertKey(key: String): String {
 public func convertKeys(data: Map<String, Any>): Unit {
     let iter = data.iterator()
     let map = HashMap<String, Any>()
+    let removed = ArrayList<String>()
     while (let Some((k, v)) <- iter.next()) {
         let tk = convertKey(k)
         if (k != tk) {
-            map.add(tk, data[k])
+            removed.add(k)
+            map.add(tk, v)
         }
         match (v) {
             case x: Map<String, Any> => convertKeys(x)
+            case x: List<Any> =>
+                // 数组中的对象同样需要转换键名
+                for (item in x) {
+                    match (item) {
+                        case m: Map<String, Any> => convertKeys(m)
+                        case _ => ()
+                    }
+                }
             case _ => ()
         }
     }
-    data.add(all: map)
+    for (k in removed) {
+        data.remove(k)
+    }
+    for ((k, v) in map) {
+        data.addIfAbsent(k, v)
+    }
 }
 
 /**

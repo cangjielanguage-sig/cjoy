@@ -24,7 +24,7 @@ public class ArgConfigLoader <: ConfigLoader {
     public func load(): Map<String, Any> {
         let data = HashMap<String, Any>()
         for (arg in args) {
-            if (arg.startsWith("-D") && let Some(pos) <- arg.indexOf("=") && pos > 1) {
+            if (arg.startsWith("-D") && let Some(pos) <- arg.indexOf("=") && pos > 2) {
                 // 需要考虑value中存在=
                 let key = arg[2..pos]
                 let value = arg[(pos + 1)..]

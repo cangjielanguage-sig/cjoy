@@ -123,6 +123,7 @@ public class StringTestCaseSuit {
         @Assert(snakeCase("HelloWorldTest"), "hello-world-test")
         @Assert(snakeCase("HELLoWorld"), "hello-world")
         @Assert(snakeCase("Hello"), "hello")
+        @Assert(snakeCase("aB"), "a-b")
         @Assert(snakeCase(""), "")
     }
 

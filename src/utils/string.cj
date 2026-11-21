@@ -88,7 +88,7 @@ protected func snakeCase(str: String): String {
     var upper = false
     for (a in arr) {
         if (a.isAsciiUpperCase()) {
-            if (!upper && builder.size > 1) {
+            if (!upper && builder.size > 0) {
                 builder.append("-")
             }
             builder.append(a.toAsciiLowerCase())

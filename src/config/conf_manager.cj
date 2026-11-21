@@ -10,7 +10,7 @@
 
 package cjoy.config
 
-import std.collection.{ArrayList, HashMap, Map}
+import std.collection.{ArrayList, HashMap, Map, List}
 import std.sort.sort
 import std.env.getVariables
 import cjoy.bind.{JoyBindable, MapContainer}
@@ -48,6 +48,37 @@ class ConfigData <: ToString {
                         let m = HashMap<String, Any>()
                         dest[k] = m
                         copy(x, m)
+                }
+                case x: List<Any> => match (dest.get(k)) {
+                    case Some(y: List<Any>) =>
+                        // 数组按元素合并，避免高优先级的单个元素覆盖整个低优先级数组
+                        let merged = ArrayList<Any>()
+                        for (item in y) {
+                            merged.add(item)
+                        }
+                        for (i in 0..x.size) {
+                            let nv = x[i]
+                            if (i >= merged.size) {
+                                merged.add(nv)
+                                continue
+                            }
+                            let oldMap = merged[i] as Map<String, Any>
+                            let newMap = nv as Map<String, Any>
+                            match (oldMap) {
+                                case Some(ov) =>
+                                    match (newMap) {
+                                        case Some(nd) =>
+                                            let m = HashMap<String, Any>()
+                                            m.add(all: ov)
+                                            copy(nd, m)
+                                            merged[i] = m
+                                        case _ => merged[i] = nv
+                                    }
+                                case _ => merged[i] = nv
+                            }
+                        }
+                        dest[k] = merged
+                    case _ => dest[k] = x
                 }
                 case _ => dest[k] = v
             }
@@ -96,7 +127,7 @@ public class ConfigManager <: Config {
     public func getValue(key: String): ?String {
         match (getValueInner(key)) {
             case Some(val) =>
-                if (val.startsWith(#"${"#)) {
+                if (val.contains(#"${"#)) {
                     resolve(val)
                 } else {
                     val

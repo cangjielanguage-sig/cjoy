@@ -81,6 +81,18 @@ public class PropertiesConfigTestCaseSuit {
     }
 
     /**
+     * 测试单字符键 - 验证只有一个字符的配置键也能被解析
+     */
+    @TestCase
+    public func testSingleCharKey(): Unit {
+        let loader = PropertiesConfigLoader("./testdata/single-char.properties")
+        let manager = ConfigManager()
+        manager.addLoader(loader)
+        @Assert(manager.getValue("a", ""), "1")
+        @Assert(manager.getValue("b", ""), "two=three")
+    }
+
+    /**
      * 测试 Properties 加载器优先级 - 验证 Properties 配置加载器的优先级设置功能
      */
     @TestCase
