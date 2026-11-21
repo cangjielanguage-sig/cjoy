@@ -32,6 +32,23 @@ public struct SQueryBind {
 }
 
 @Bind
+public struct SDefaultBind {
+    @BindField[default = "5"]
+    var num: Int = 0
+    var arr: Array<String> = ["x", "y"]
+}
+
+@Bind
+public class SInnerBind {
+    var x: Int = 0
+}
+
+@Bind
+public struct SNestedArrayBind {
+    var items: Array<SInnerBind> = []
+}
+
+@Bind
 public struct SQueryBind2 {
     let str: String
     let str2: ?String
@@ -531,5 +548,43 @@ public class BindTestCaseSuit {
 
         @Assert(obj.boolValue, true)
         @Assert(obj.optionalBool, false)
+    }
+
+    /**
+     * 测试默认值 - 验证非法标量回退到 default，缺失数组保留字段初始值
+     */
+    @TestCase
+    public func testDefaultFallback() {
+        let map = HashMap<String, Any>()
+        map.add("num", "bad")
+        let obj = SDefaultBind.bind(MapContainer(map), "").getOrThrow()
+        @Assert(obj.num, 5)
+        @Assert(obj.arr, ["x", "y"])
+    }
+
+    /**
+     * 测试嵌套对象数组 - 验证数组中的 map 元素能绑定到对象字段
+     */
+    @TestCase
+    public func testNestedArrayBind() {
+        let inner = HashMap<String, Any>()
+        inner.add("x", 42)
+        let items = ArrayList<Any>()
+        items.add(inner)
+        let map = HashMap<String, Any>()
+        map.add("items", items)
+        let obj = SNestedArrayBind.bind(MapContainer(map), "").getOrThrow()
+        @Assert(obj.items.size, 1)
+        @Assert(obj.items[0].x, 42)
+    }
+
+    /**
+     * 测试字符串来源的列表 - 验证逗号分隔的字符串可绑定为数组
+     */
+    @TestCase
+    public func testStringMapList() {
+        let map = HashMap<String, String>()
+        map.add("ids", "1,2,3")
+        @Assert(Array<String>.bind(map, "ids", None, None).getOrThrow(), ["1", "2", "3"])
     }
 }

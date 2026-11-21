@@ -72,6 +72,10 @@ func testNotEmptyConstraint(@NotEmpty str: String): Unit {
 }
 
 @Validated
+func testNotEmptyArrayConstraint(@NotEmpty arr: Array<String>): Unit {
+}
+
+@Validated
 func testNotBlankConstraint(@NotBlank str: String): Unit {
 }
 
@@ -379,6 +383,34 @@ public class ValidateTestCaseSuit {
     public func testEmailOk() {
         testEmailConstraint("12@163.com")
         testEmailConstraint("xiao@163.com")
+        testEmailConstraint("john.doe+tag@example.com")
+    }
+
+    /**
+     * 测试集合 NotEmpty 约束 - 验证空数组会抛出异常
+     */
+    @TestCase
+    public func testNotEmptyArray() {
+        testNotEmptyArrayConstraint(["a"])
+        try {
+            testNotEmptyArrayConstraint([])
+            @Fail("should throw a validate exception")
+        } catch (ex: JoyValidationException) {
+            @Assert(ex.message != "", true)
+        }
+    }
+
+    /**
+     * 测试函数参数错误字段 - 验证异常中包含参数名
+     */
+    @TestCase
+    public func testFunctionParamFieldName() {
+        try {
+            testLengthConstraint("abcdefg")
+            @Fail("should throw a validate exception")
+        } catch (ex: JoyValidationException) {
+            @Assert(ex.field, "str")
+        }
     }
 
     /**

@@ -49,6 +49,23 @@ public class LocalEventBusTestCase {
     }
 
     /**
+     * 测试同名订阅者重复注册 - 验证新订阅者替换旧订阅者，事件只处理一次
+     */
+    @TestCase
+    public func testDuplicateSubscriberName(): Unit {
+        let bs = LocalEventBus()
+        let calls = ArrayList<String>()
+        bs.onEvent("e1", "same", {
+            _: Context, evt: Event => calls.add("old")
+        })
+        bs.onEvent("e1", "same", {
+            _: Context, evt: Event => calls.add("new")
+        })
+        bs.fireEvent(MapContext(), Event.of("e1"))
+        @Assert(calls.toArray(), ["new"])
+    }
+
+    /**
      * 测试事件优先级 - 验证高优先级的订阅者会先接收到事件
      */
     @TestCase

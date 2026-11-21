@@ -79,6 +79,8 @@ public class LocalEventBus <: EventBus {
         let item = EventSubscriberItem(name, subcriber, pr)
         let existed = _subcribers.addIfAbsent(pattern, EventSubscriberGroup.of(item))
         if (let Some(group) <- existed) {
+            // 同名订阅者重复注册时替换旧订阅者，避免事件被处理多次
+            group.del(name)
             group.add(item)
         }
         @JoyLogInfo("[EventBus] register subscriber, pattern=${pattern},name=${name},priority=${pr}")

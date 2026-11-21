@@ -255,7 +255,7 @@ public class EmailConstraint <: JoyConstraint {
     /**
      * 邮箱验证的正则表达式。
      */
-    public static let REGEX: Regex = Regex(#"^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$"#)
+    public static let REGEX: Regex = Regex(#"^[A-Za-z0-9._%+\-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)+$"#)
 
     /**
      * 创建 EmailConstraint。

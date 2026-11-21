@@ -58,6 +58,12 @@ public class MapContainer <: JoyBindSource & ToString {
         }
         if (let Some(val) <- value) {
             match (val) {
+                case xl: Collection<HashMap<String, Any>> => for (x in xl) {
+                    match (x as T) {
+                        case Some(v) => res.add(v)
+                        case _ => ()
+                    }
+                }
                 case xl: Collection<Any> => for (x in xl) {
                     match (x) {
                         case x: T => res.add(x)
@@ -227,9 +233,17 @@ extend HashMap<String, String> <: JoyBindSource {
      * @param _ 键名称（未使用）
      * @return 空集合
      */
-    public func getList<T>(_: String): Collection<T> {
-        @JoyLogWarn("[Bind] get list from HashMap<String, String> return empty")
-        ArrayList<T>()
+    public func getList<T>(name: String): Collection<T> {
+        let res = ArrayList<T>()
+        if (let Some(v) <- this.get(name)) {
+            // 字符串来源用逗号表示多个值（如 path/cookie 参数）
+            for (part in v.split(",")) {
+                if (let Some(x) <- getValue<String, T>(part, name)) {
+                    res.add(x)
+                }
+            }
+        }
+        res
     }
 }
 

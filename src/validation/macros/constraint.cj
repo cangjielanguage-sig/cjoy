@@ -55,10 +55,12 @@ open class FieldInfo {
     }
 
     private func validateInFunc(constraints: Tokens): Tokens {
+        // 函数参数没有父字段路径，直接用参数名作为错误字段
+        let fieldName = Token(TokenKind.IDENTIFIER, "\"${name()}\"")
         if (constraints.size == 0) {
-            quote($id.validate("", $nestedValid) )
+            quote($id.validate($fieldName, $nestedValid) )
         } else {
-            quote($id.validate("", $nestedValid, $constraints))
+            quote($id.validate($fieldName, $nestedValid, $constraints))
         }
     }
 
@@ -77,7 +79,7 @@ open class FieldInfo {
         } else {
             if (name() == "Any") {
                 quote(match($id) {
-                    case x: JoyValidatable => x.$id.validate({=> if(field.isEmpty()) {$(name())} else { $fieldName } }(), $nestedValid, $constraints) 
+                    case x: JoyValidatable => x.validate({=> if(field.isEmpty()) {$(name())} else { $fieldName } }(), $nestedValid, $constraints) 
                     case _ => ()
                 })
             } else {

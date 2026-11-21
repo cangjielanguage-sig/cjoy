@@ -87,7 +87,7 @@ extend String <: JoyValidatable {
                         throw JoyValidationException(c.message, field, c)
                     }
                     let arr = this.split("@")
-                    if (arr.size != 2 || arr[0].size > 64 || arr[1].size > 256) {
+                    if (arr.size != 2 || arr[0].size > 64 || arr[1].size > 255) {
                         throw JoyValidationException(c.message, field, c)
                     }
                 case c: IPV4Constraint =>
@@ -276,6 +276,10 @@ func validateCollection<T>(col: Collection<T>, field: String, nestedValid: Bool,
         match (condition) {
             case c: SizeConstraint =>
                 if (col.size < c.min || col.size > c.max) {
+                    throw JoyValidationException(c.message, field, c)
+                }
+            case c: NotEmptyConstraint =>
+                if (col.isEmpty()) {
                     throw JoyValidationException(c.message, field, c)
                 }
             case _ => ()

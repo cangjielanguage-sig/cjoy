@@ -72,7 +72,14 @@ private func bindParsable<T>(source: JoyBindSource, name: String, defaultValue: 
 private func bindParsable<T>(val: ?ToString, defaultValue: ?String): ?T where T <: Parsable<T> {
     let v = getString(val, defaultValue)
     match (v) {
-        case Some(x) => T.tryParse(x)
+        case Some(x) => match (T.tryParse(x)) {
+            case Some(parsed) => Some(parsed)
+            case _ => match (defaultValue) {
+                // 源值存在但无法解析时，回退到 @BindField[default=...]
+                case Some(d) => T.tryParse(d)
+                case _ => None
+            }
+        }
         case _ => None
     }
 }
@@ -308,6 +315,10 @@ extend<T> Array<T> <: JoyBindable<Array<T>> where T <: JoyBindable<T> {
      * @return 数组值，如果未找到则返回 None
      */
     public static func bind(source: JoyBindSource, name: String, _: ?String, _: ?String): ?Array<T> {
+        // 键不存在时返回 None，让宏应用字段默认值（而不是返回空数组）
+        if (source.getOne<Any>(name).isNone()) {
+            return None
+        }
         // 尝试通过相同类型获取，例如 Array<String>
         let arr: Collection<T> = source.getList<T>(name)
         if (!arr.isEmpty()) {
@@ -326,8 +337,13 @@ private func bindCollection<T>(col: Collection<Any>): ArrayList<T> where T <: Jo
     let container = MapContainer(map)
     let res = ArrayList<T>()
     for (a in col) {
-        map[""] = a
-        let val = T.bind(container, "", None, None)
+        let val = match (a) {
+            // 元素本身是对象时，用它的字段直接绑定嵌套对象
+            case m: HashMap<String, Any> => T.bind(MapContainer(m), "", None, None)
+            case _ =>
+                map[""] = a
+                T.bind(container, "", None, None)
+        }
         if (let Some(v) <- val) {
             res.add(v)
         }
@@ -350,6 +366,9 @@ extend<T> ArrayList<T> <: JoyBindable<ArrayList<T>> where T <: JoyBindable<T> {
      * @return 数组列表值，如果未找到则返回 None
      */
     public static func bind(source: JoyBindSource, name: String, _: ?String, _: ?String): ?ArrayList<T> {
+        if (source.getOne<Any>(name).isNone()) {
+            return None
+        }
         let arr: Collection<T> = source.getList<T>(name)
         if (!arr.isEmpty()) {
             return ArrayList(arr)
@@ -376,9 +395,20 @@ extend DateTime <: JoyBindable<DateTime> {
     public static func bind(source: JoyBindSource, name: String, defaultValue: ?String, timeformat: ?String): ?DateTime {
         func parse(str: ?ToString): ?DateTime {
             match (str) {
-                case Some(v) => match (timeformat) {
-                    case Some(f) => DateTime.parse(v.toString(), f)
-                    case _ => DateTime.parse(v.toString())
+                case Some(v) => try {
+                    match (timeformat) {
+                        case Some(f) => DateTime.parse(v.toString(), f)
+                        case _ => DateTime.parse(v.toString())
+                    }
+                } catch (_: Exception) {
+                    // 非法日期回退到默认值
+                    match (defaultValue) {
+                        case Some(d) => match (timeformat) {
+                            case Some(f) => DateTime.parse(d, f)
+                            case _ => DateTime.parse(d)
+                        }
+                        case _ => None
+                    }
                 }
                 case _ => None
             }
