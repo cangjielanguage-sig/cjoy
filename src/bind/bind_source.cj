@@ -13,6 +13,7 @@ package cjoy.bind
 import std.collection.{Map, HashMap, ArrayList}
 import stdx.encoding.url.Form
 import stdx.net.http.HttpHeaders
+import cjoy.utils.snakeCase
 import cjoy.log.macros.*
 
 /**
@@ -35,7 +36,11 @@ public class MapContainer <: JoyBindSource & ToString {
      * @return 值，如果未找到则返回 None
      */
     public func getOne<T>(name: String): ?T {
-        let v = data.get(name)
+        var v = data.get(name)
+        if (v.isNone()) {
+            // 配置键会被统一转换为连字符形式，绑定字段名仍为 camelCase
+            v = data.get(snakeCase(name))
+        }
         getValue<Any, T>(v, name)
     }
 
@@ -47,7 +52,11 @@ public class MapContainer <: JoyBindSource & ToString {
      */
     public func getList<T>(name: String): Collection<T> {
         let res = ArrayList<T>()
-        if (let Some(val) <- data.get(name)) {
+        var value = data.get(name)
+        if (value.isNone()) {
+            value = data.get(snakeCase(name))
+        }
+        if (let Some(val) <- value) {
             match (val) {
                 case xl: Collection<Any> => for (x in xl) {
                     match (x) {

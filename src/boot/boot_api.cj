@@ -13,7 +13,7 @@ package cjoy.boot
 import std.fs.{Path, exists}
 import std.fs.{File, OpenMode}
 import std.io.{readToEnd}
-import std.collection.HashMap
+import std.collection.{HashMap, ArrayList}
 import stdx.net.tls.{TlsClientIdentificationMode, TlsServerConfig}
 import stdx.net.tls.common.{CertificateVerifyMode, TlsVersion}
 import stdx.net.http.{ServerBuilder, ServicePoolConfig}
@@ -195,7 +195,7 @@ public class JoyBoot {
         configureLoggers(properties.loggers)
 
         let joyCfg = createJoyConfig(properties)
-        let joy = Joy.create(name: name)
+        let joy = Joy.create(joyCfg, name: name)
 
         // 注册生成的handlers
         JoyMiddlewares.registerTo(joy)
@@ -228,19 +228,23 @@ private func loadConfig(args: Array<String>, cfgPath: String, extendConfig: ?Con
     // 命令行参数
     let argLoader = ArgConfigLoader(args)
     config.addLoader(argLoader)
-    let profile = config.getValue("joy.profile", "")
-    @JoyLogInfo("joy config profile=${profile}")
 
-    // Properties & Json
-    loadPropertiesConfig(config, cfgRootPath, profile)
-    loadJsonConfig(config, cfgRootPath, profile)
+    // 先加载基础配置，再读取 profile，最后用 profile 专属配置覆盖
+    loadPropertiesConfig(config, cfgRootPath, "")
+    loadJsonConfig(config, cfgRootPath, "")
+    let fileProfile = config.getValue("joy.profile", "")
+    @JoyLogInfo("joy config profile=${fileProfile}")
+    if (!fileProfile.isEmpty()) {
+        loadPropertiesConfig(config, cfgRootPath, fileProfile, priorityOffset: 10)
+        loadJsonConfig(config, cfgRootPath, fileProfile, priorityOffset: 10)
+    }
 
     extendConfig?(config, cfgRootPath)
 
     config
 }
 
-private func loadPropertiesConfig(config: Config, cfgRootPath: String, profile: String): Unit {
+private func loadPropertiesConfig(config: Config, cfgRootPath: String, profile: String, priorityOffset!: Int = 0): Unit {
     let fileName = if (profile.isEmpty()) {
         "joy.properties"
     } else {
@@ -251,15 +255,15 @@ private func loadPropertiesConfig(config: Config, cfgRootPath: String, profile: 
     let filePath2 = Path(cfgRootPath).join("config").join(fileName)
     if (exists(filePath2)) {
         @JoyLogInfo("find properties config file ${filePath2}")
-        config.addLoader(PropertiesConfigLoader(filePath2.toString(), priorityNum: 1))
+        config.addLoader(PropertiesConfigLoader(filePath2.toString(), priorityNum: 2 + priorityOffset))
     }
     if (exists(filePath)) {
         @JoyLogInfo("find properties config file ${filePath}")
-        config.addLoader(PropertiesConfigLoader(filePath.toString(), priorityNum: 2))
+        config.addLoader(PropertiesConfigLoader(filePath.toString(), priorityNum: 1 + priorityOffset))
     }
 }
 
-private func loadJsonConfig(config: Config, cfgRootPath: String, profile: String): Unit {
+private func loadJsonConfig(config: Config, cfgRootPath: String, profile: String, priorityOffset!: Int = 0): Unit {
     let fileName = if (profile.isEmpty()) {
         "joy.json"
     } else {
@@ -270,24 +274,30 @@ private func loadJsonConfig(config: Config, cfgRootPath: String, profile: String
     let filePath2 = Path(cfgRootPath).join("config").join(fileName)
     if (exists(filePath2)) {
         @JoyLogInfo("find json config file ${filePath2}")
-        config.addLoader(JsonConfigLoader(filePath2.toString(), priorityNum: 5))
+        config.addLoader(JsonConfigLoader(filePath2.toString(), priorityNum: 6 + priorityOffset))
     }
     if (exists(filePath)) {
         @JoyLogInfo("find json config file ${filePath}")
-        config.addLoader(JsonConfigLoader(filePath.toString(), priorityNum: 6))
+        config.addLoader(JsonConfigLoader(filePath.toString(), priorityNum: 5 + priorityOffset))
     }
 }
 
-private func createJoyConfig(properties: JoyProperties): JoyConfig {
+func createJoyConfig(properties: JoyProperties): JoyConfig {
     @JoyLogInfo("server.http.caseInsensitive=${properties.server.http.caseInsensitive}")
     @JoyLogInfo("server.http.escapeAddedRoutes=${properties.server.http.escapeAddedRoutes}")
     @JoyLogInfo("server.http.remoteIpHeaders=${properties.server.http.remoteIpHeaders}")
     @JoyLogInfo("server.http.maxRequestBodySize=${properties.server.http.maxRequestBodySize}")
     let caseInsensitive = properties.server.http.caseInsensitive
     let escapeAddedRoutes = properties.server.http.escapeAddedRoutes
-    let remoteIpHeaders = properties.server.http.remoteIpHeaders.split(",")
+    let remoteIpHeaders = ArrayList<String>()
+    for (h in properties.server.http.remoteIpHeaders.split(",")) {
+        let header = h.trimAscii()
+        if (!header.isEmpty()) {
+            remoteIpHeaders.add(header)
+        }
+    }
     let maxRequestBodySize = properties.server.http.maxRequestBodySize
-    JoyConfig(remoteIPHeaders: remoteIpHeaders, caseInsensitive: caseInsensitive, escapeAddedRoutes: escapeAddedRoutes,
+    JoyConfig(remoteIPHeaders: remoteIpHeaders.toArray(), caseInsensitive: caseInsensitive, escapeAddedRoutes: escapeAddedRoutes,
         maxRequestBodySize: maxRequestBodySize)
 }
 
@@ -384,7 +394,7 @@ private func configureLoggers(loggers: Array<JoyLoggerProperties>): Unit {
     }
 }
 
-private func parseLogLevel(levelStr: String): LogLevel {
+func parseLogLevel(levelStr: String): LogLevel {
     match (levelStr.toAsciiLower()) {
         case "off" => LogLevel.OFF
         case "fatal" => LogLevel.FATAL
@@ -407,7 +417,7 @@ private func readPermFile(path: String): String {
     ""
 }
 
-private func loadTlsConfig(tlsCfg: JoyServerTlsProperties): TlsServerConfig {
+func loadTlsConfig(tlsCfg: JoyServerTlsProperties): TlsServerConfig {
     @JoyLogInfo("server.tls.certFile=${tlsCfg.certFile}")
     let certText = readPermFile(tlsCfg.certFile)
     @JoyLogInfo("server.tls.keyFile=${tlsCfg.keyFile}")
@@ -434,19 +444,25 @@ private func loadTlsConfig(tlsCfg: JoyServerTlsProperties): TlsServerConfig {
     }
 
     @JoyLogInfo("server.tls.ciphers=${tlsCfg.ciphers}")
-    let ciphers = tlsCfg.ciphers.split(",")
+    let ciphers = ArrayList<String>()
+    for (c in tlsCfg.ciphers.split(",")) {
+        let cipher = c.trimAscii()
+        if (!cipher.isEmpty()) {
+            ciphers.add(cipher)
+        }
+    }
     @JoyLogInfo("server.tls.version=${tlsCfg.version}")
     match (tlsCfg.version) {
         case "1.2" =>
             tlsServerCfg.supportedVersions = [TlsVersion.V1_2]
             if (ciphers.size > 0) {
-                tlsServerCfg.supportedCipherSuites = HashMap([(TlsVersion.V1_2, ciphers)])
+                tlsServerCfg.supportedCipherSuites = HashMap([(TlsVersion.V1_2, ciphers.toArray())])
             }
 
         case "1.3" =>
             tlsServerCfg.supportedVersions = [TlsVersion.V1_3]
             if (ciphers.size > 0) {
-                tlsServerCfg.supportedCipherSuites = HashMap([(TlsVersion.V1_3, ciphers)])
+                tlsServerCfg.supportedCipherSuites = HashMap([(TlsVersion.V1_3, ciphers.toArray())])
             }
         case _ => ()
     }
