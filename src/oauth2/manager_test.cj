@@ -11,7 +11,30 @@
 package cjoy.oauth2
 
 import std.unittest.mock.*
+import std.collection.HashMap
+import std.time.DateTime
 import cjoy.framework.*
+
+class AcceptPwVerifier <: ClientPasswordVerifier {
+    public func verifyPassword(client: ClientInfo, pwd: String): Bool {
+        pwd == "pw"
+    }
+}
+
+class SimpleTokenStore <: TokenStore {
+    let data = HashMap<String, TokenInfo>()
+    public func create(tokenInfo: TokenInfo): Unit {
+        if (tokenInfo.code != "") { data[tokenInfo.code] = tokenInfo }
+        if (tokenInfo.access != "") { data[tokenInfo.access] = tokenInfo }
+        if (tokenInfo.refresh != "") { data[tokenInfo.refresh] = tokenInfo }
+    }
+    public func removeByCode(code: String): Unit { data.remove(code) }
+    public func removeByAccess(access: String): Unit { data.remove(access) }
+    public func removeByRefresh(refresh: String): Unit { data.remove(refresh) }
+    public func getByCode(code: String): ?TokenInfo { data.get(code) }
+    public func getByAccess(access: String): ?TokenInfo { data.get(access) }
+    public func getByRefresh(refresh: String): ?TokenInfo { data.get(refresh) }
+}
 
 @Test
 public class DefaultOAuth2ManagerTestCaseSuit {
@@ -139,6 +162,7 @@ public class DefaultOAuth2ManagerTestCaseSuit {
         let at = manager.loadAccessToken(token.access)
         @Assert(at.refresh == token.refresh)
         @Assert(at.refreshExpiredIn == 0)
+        @Assert(at.accessExpiredIn, (Duration.hour * 5).toSeconds())
     }
 
     /**
@@ -203,5 +227,127 @@ public class DefaultOAuth2ManagerTestCaseSuit {
         } catch (ex: OAuthException) {
             @Assert(ex.errorInfo.code, OAuthErrors.INVALID_REFRESH_TOKEN.code)
         }
+    }
+
+    /**
+     * 测试自定义客户端密码验证器 - 验证器返回 true 时不应再强制比对原始 secret
+     */
+    @TestCase
+    public func testCustomClientPasswordVerifier() {
+        let clientStore = MemoryClientStore()
+        clientStore.add(ClientInfo(id: "1", secret: "hashed-secret", domain: "http://localhost"))
+        let manager = DefaultOAuth2Manager(clientStore: clientStore, clientPasswordVerifier: AcceptPwVerifier())
+        let tgr = TokenGenerateRequest(request: mock<JoyContext>(), clientId: "1", clientSecret: "pw")
+        let token = manager.generateAccessToken(OAuthConsts.GRANT_TYPE_CLIENT_CREDENTIALS, tgr)
+        @Assert(token.access != "")
+    }
+
+    /**
+     * 测试刷新配置中的刷新令牌有效期 - 验证 refreshTokenExp 在刷新时生效
+     */
+    @TestCase
+    public func testRefreshConfigRefreshExpiry() {
+        let manager = (createManager() as DefaultOAuth2Manager).getOrThrow()
+        let tgr = TokenGenerateRequest(request: mock<JoyContext>(), clientId: "1", clientSecret: "11",
+            redirectURI: "http://localhost/oauth2", scope: "all")
+        let codeToken = manager.generateAuthToken(OAuthConsts.RESPONSE_TYPE_CODE, tgr)
+        let atgr = TokenGenerateRequest(request: mock<JoyContext>(), clientId: "1", clientSecret: "11",
+            redirectURI: tgr.redirectURI, code: codeToken.code)
+        let token = manager.generateAccessToken(OAuthConsts.GRANT_TYPE_AUTHORIZATION_CODE, atgr)
+
+        manager.setRefreshingConfig(RefreshingConfig(Duration.hour, Duration.day, true, false, true, true))
+        let refreshed = manager.refreshAccessToken(TokenGenerateRequest(request: mock<JoyContext>(), refresh: token.refresh))
+        @Assert(refreshed.refreshExpiredIn, Duration.day.toSeconds())
+    }
+
+    /**
+     * 测试 PKCE 校验失败不清空授权码 - 验证验证器错误后仍可用正确 verifier 兑换
+     */
+    @TestCase
+    public func testPkceFailureDoesNotConsumeCode() {
+        let manager = createManager()
+        let challenge = "ThisIsAFourtyThreeCharactersLongStringThing"
+        let tgr = TokenGenerateRequest(request: mock<JoyContext>(), clientId: "1", clientSecret: "11",
+            redirectURI: "http://localhost/oauth2", scope: "all")
+        tgr.codeChallenge = challenge
+        tgr.codeChallengeMethod = OAuthConsts.CODE_CHALLENGE_PLAIN
+        let codeToken = manager.generateAuthToken(OAuthConsts.RESPONSE_TYPE_CODE, tgr)
+
+        let bad = TokenGenerateRequest(request: mock<JoyContext>(), clientId: "1", clientSecret: "11",
+            redirectURI: tgr.redirectURI, code: codeToken.code, codeVerifier: "wrong-verifier")
+        try {
+            manager.generateAccessToken(OAuthConsts.GRANT_TYPE_AUTHORIZATION_CODE, bad)
+            @Fail("should reject wrong code verifier")
+        } catch (ex: OAuthException) {
+            @Assert(ex.errorInfo.code, OAuthErrors.INVALID_CODE_CHALLENGE.code)
+        }
+
+        let good = TokenGenerateRequest(request: mock<JoyContext>(), clientId: "1", clientSecret: "11",
+            redirectURI: tgr.redirectURI, code: codeToken.code, codeVerifier: challenge)
+        let token = manager.generateAccessToken(OAuthConsts.GRANT_TYPE_AUTHORIZATION_CODE, good)
+        @Assert(token.access != "")
+    }
+
+    /**
+     * 测试重定向 URI 校验 - 必须使用精确 host，避免后缀域名绕过
+     */
+    @TestCase
+    public func testRedirectUriExactHostMatch() {
+        defaultValidateURIFunc("http://localhost", "http://localhost/cb")
+        try {
+            defaultValidateURIFunc("http://localhost", "http://evil-localhost/cb")
+            @Fail("should reject host that only shares a suffix")
+        } catch (ex: OAuthException) {
+            @Assert(ex.errorInfo.code, OAuthErrors.INVALID_REDIRECT_URI.code)
+        }
+    }
+
+    /**
+     * 测试 access token 有效性不受 refresh token 过期影响
+     */
+    @TestCase
+    public func testLoadAccessTokenIgnoresExpiredRefresh() {
+        let store = SimpleTokenStore()
+        let manager = DefaultOAuth2Manager(clientStore: MemoryClientStore(), tokenStore: store)
+        let info = TokenInfo(clientId: "1", userId: "u")
+        info.access = "valid-access"
+        info.accessCreateAt = DateTime.now()
+        info.accessExpiredIn = (Duration.hour * 2).toSeconds()
+        info.refresh = "expired-refresh"
+        info.refreshCreateAt = DateTime.now().addSeconds(-10)
+        info.refreshExpiredIn = 1
+        store.create(info)
+
+        let loaded = manager.loadAccessToken(info.access)
+        @Assert(loaded.access, info.access)
+    }
+
+    /**
+     * 测试刷新令牌与客户端绑定 - 不允许用其他客户端的 clientId 刷新
+     */
+    @TestCase
+    public func testRefreshTokenClientBinding() {
+        let store = MemoryTokenStore()
+        let manager = DefaultOAuth2Manager(clientStore: createManagerClientStore(), tokenStore: store)
+        let info = TokenInfo(clientId: "1", userId: "u")
+        info.refresh = "refresh-token"
+        info.refreshCreateAt = DateTime.now()
+        info.refreshExpiredIn = (Duration.hour).toSeconds()
+        store.create(info)
+
+        let tgr = TokenGenerateRequest(request: mock<JoyContext>(), clientId: "2", refresh: info.refresh)
+        try {
+            manager.refreshAccessToken(tgr)
+            @Fail("should reject refresh token from another client")
+        } catch (ex: OAuthException) {
+            @Assert(ex.errorInfo.code, OAuthErrors.INVALID_CLIENT.code)
+        }
+    }
+
+    private func createManagerClientStore(): ClientStore {
+        let clientStore = MemoryClientStore()
+        clientStore.add(ClientInfo(id: "1", secret: "11", domain: "http://localhost"))
+        clientStore.add(ClientInfo(id: "2", secret: "22", domain: "http://localhost"))
+        clientStore
     }
 }

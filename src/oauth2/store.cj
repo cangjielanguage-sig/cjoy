@@ -184,7 +184,7 @@ public class MemoryTokenStore <: TokenStore {
         }
 
         if (tokenInfo.access != "") {
-            if (tokenInfo.refresh != "" && tokenInfo.codeExpiredIn > 0) {
+            if (tokenInfo.refresh != "" && tokenInfo.refreshExpiredIn > 0) {
                 let rexp = tokenInfo.refreshCreateAt.addSeconds(tokenInfo.refreshExpiredIn) - DateTime.now()
                 if (tokenInfo.accessExpiredIn > rexp.toSeconds()) {
                     tokenInfo.accessExpiredIn = rexp.toSeconds()

@@ -16,6 +16,16 @@ import stdx.encoding.url.Form
 import cjoy.framework.*
 import cjoy.httpx.*
 import cjoy.oauth2.*
+import cjoy.json.*
+import cjoy.json.macros.*
+
+@Json
+class ScopeTokenBody {
+    @JsonField[name = "access_token"]
+    public var accessToken: String = ""
+    @JsonField[name = "scope"]
+    public var scope: String = ""
+}
 
 @Test
 public class OAuth2ServerTestCaseSuit {
@@ -342,7 +352,8 @@ public class OAuth2ServerTestCaseSuit {
         form.add("scope", "all")
         try (rsp = c.postform(ctx, "/token", form)) {
             @Assert(rsp.status, 200)
-            let token = rsp.json<TokenBody>().getOrThrow()
+            let token = rsp.json<ScopeTokenBody>().getOrThrow()
+            @Assert(token.scope, "all")
             validateAccessToken(ctx, token.accessToken)
         }
     }
@@ -372,7 +383,8 @@ public class OAuth2ServerTestCaseSuit {
         form.add("scope", "all")
         try (rsp = _client.postform(ctx, "/token", form)) {
             @Assert(rsp.status, 200)
-            let token = rsp.json<TokenBody>().getOrThrow()
+            let token = rsp.json<ScopeTokenBody>().getOrThrow()
+            @Assert(token.scope, "all")
             validateAccessToken(ctx, token.accessToken)
         }
     }
@@ -522,7 +534,6 @@ public class OAuth2ServerTestCaseSuit {
      * 测试无效的重定向URI - 验证服务器对不匹配域名的重定向URI的响应
      */
     @TestCase
-    @Skip
     public func testInvalidRedirectUri() {
         _server.setUserAuthorizationHandleFunc({
             ctx: JoyContext => _clientId
@@ -581,6 +592,35 @@ public class OAuth2ServerTestCaseSuit {
         form.add("scope", "all")
         try (rsp = c.postform(ctx, "/token", form)) {
             @Assert(rsp.status, 401)  // 预期返回401错误
+        }
+    }
+
+    /**
+     * 测试通过 Cookie 解析刷新令牌 - 验证自定义刷新令牌解析器可以被正确安装
+     */
+    @TestCase
+    public func testRefreshTokenCookieResolver() {
+        _server.setClientInfoHandleFunc(clientFormHandleFunc)
+        _server.setRefreshTokenResolveHandleFunc(refreshTokenCookieResolveHandleFunc)
+        let cli = ClientInfo(id: "cookie-client", secret: "cookie-secret", domain: "http://127.0.0.1:31888",
+            isPublic: false)
+        _clientStore.add(cli)
+
+        let ctx = mock<JoyContext>()
+        let tgr = TokenGenerateRequest(request: ctx, clientId: cli.id, clientSecret: cli.secret,
+            redirectURI: "http://127.0.0.1:31888/oauth2_cb_1")
+        let codeToken = _manager.generateAuthToken(OAuthConsts.RESPONSE_TYPE_CODE, tgr)
+        let atgr = TokenGenerateRequest(request: ctx, clientId: cli.id, clientSecret: cli.secret,
+            redirectURI: tgr.redirectURI, code: codeToken.code)
+        let token = _manager.generateAccessToken(OAuthConsts.GRANT_TYPE_AUTHORIZATION_CODE, atgr)
+
+        let req = JoyHttpRequest.of("/token")
+            .post()
+            .header("Content-Type", "application/x-www-form-urlencoded")
+            .header("Cookie", "refresh_token=${token.refresh}")
+            .body("grant_type=refresh_token&client_id=${cli.id}&client_secret=${cli.secret}")
+        try (rsp = _client.send(ctx, req)) {
+            @Assert(rsp.status, 200)
         }
     }
 }

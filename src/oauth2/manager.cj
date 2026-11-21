@@ -12,6 +12,7 @@ package cjoy.oauth2
 
 import std.collection.HashMap
 import std.time.DateTime
+import std.sync.Mutex
 import cjoy.log.macros.*
 
 @JoyCreateLogger("cjoy.oauth2")
@@ -109,6 +110,8 @@ public class DefaultOAuth2Manager <: OAuth2Manager {
     private var _extractExtension: ?ExtractExtensionHandler = None
 
     private let _codeExpire: Duration
+    // 授权码校验与删除必须原子执行，防止同一授权码被并发兑换两次
+    private let _codeMutex = Mutex()
 
     public init(
         clientStore!: ClientStore = MemoryClientStore(),
@@ -251,9 +254,11 @@ public class DefaultOAuth2Manager <: OAuth2Manager {
      */
     public func generateAccessToken(gt: GrantType, request: TokenGenerateRequest): TokenInfo {
         let client = getClient(request.clientId)
-        if (!(_clientPasswordVerifier?.verifyPassword(client, request.clientSecret) ?? true)) {
-            @JoyLogError("[OAuth2] verify password failed")
-            throw OAuthException(OAuthErrors.INVALID_CLIENT)
+        if (let Some(verifier) <- _clientPasswordVerifier) {
+            if (!verifier.verifyPassword(client, request.clientSecret)) {
+                @JoyLogError("[OAuth2] verify password failed")
+                throw OAuthException(OAuthErrors.INVALID_CLIENT)
+            }
         } else if (client.secret != "" && request.clientSecret != client.secret) {
             @JoyLogError("[OAuth2] invalid client, client secret is invalid")
             throw OAuthException(OAuthErrors.INVALID_CLIENT)
@@ -272,7 +277,6 @@ public class DefaultOAuth2Manager <: OAuth2Manager {
         match (gt) {
             case "authorization_code" =>
                 let token = getAndDelAuthorizationCode(request)
-                validateCodeChallenge(token, request.codeVerifier)
                 request.userId = token.userId
                 request.scope = token.scope
                 if (token.accessExpiredIn > 0) {
@@ -318,6 +322,10 @@ public class DefaultOAuth2Manager <: OAuth2Manager {
      */
     public func refreshAccessToken(request: TokenGenerateRequest): TokenInfo {
         let token = loadRefreshToken(request.refresh)
+        if (request.clientId != "" && request.clientId != token.clientId) {
+            @JoyLogError("[OAuth2] refresh token belongs to another client")
+            throw OAuthException(OAuthErrors.INVALID_CLIENT)
+        }
         let client = getClient(token.clientId)
         var (oa, or) = (token.access, token.refresh)
 
@@ -327,8 +335,8 @@ public class DefaultOAuth2Manager <: OAuth2Manager {
         if (_rfcfg.accessTokenExp > Duration.Zero) {
             token.accessExpiredIn = _rfcfg.accessTokenExp.toSeconds()
         }
-        if (_rfcfg.accessTokenExp > Duration.Zero) {
-            token.accessExpiredIn = _rfcfg.accessTokenExp.toSeconds()
+        if (_rfcfg.refreshTokenExp > Duration.Zero) {
+            token.refreshExpiredIn = _rfcfg.refreshTokenExp.toSeconds()
         }
         if (_rfcfg.isResetRefreshTime) {
             token.refreshCreateAt = td.createAt
@@ -342,10 +350,10 @@ public class DefaultOAuth2Manager <: OAuth2Manager {
 
         _tokenStore.create(token)
 
-        if (_rfcfg.isRemoveRefreshing) {
+        if (_rfcfg.isRemoveAccess) {
             _tokenStore.removeByAccess(oa)
         }
-        if (_rfcfg.isRemoveRefreshing && at != "") {
+        if (_rfcfg.isRemoveRefreshing) {
             _tokenStore.removeByRefresh(or)
         }
         if (rt == "") {
@@ -414,11 +422,8 @@ public class DefaultOAuth2Manager <: OAuth2Manager {
             throw OAuthException(OAuthErrors.INVALID_ACCESS_TOKEN)
         }
 
-        if (token.refresh != "" && token.refreshExpiredIn != 0 &&
-            token.refreshCreateAt.addSeconds(token.refreshExpiredIn) < ct) {
-            @JoyLogError("[OAuth2] expired refresh token, create at ${token.refreshCreateAt}")
-            throw OAuthException(OAuthErrors.EXPIRED_REFRESHT_OKEN)
-        } else if (token.accessExpiredIn != 0 && token.accessCreateAt.addSeconds(token.accessExpiredIn) < ct) {
+        // 资源访问只校验 access token 本身，refresh token 过期不影响仍有效的 access token
+        if (token.accessExpiredIn != 0 && token.accessCreateAt.addSeconds(token.accessExpiredIn) < ct) {
             @JoyLogError("[OAuth2] expired access token, create at ${token.accessCreateAt}")
             throw OAuthException(OAuthErrors.EXPIRED_ACCESS_TOKEN)
         }
@@ -462,18 +467,22 @@ public class DefaultOAuth2Manager <: OAuth2Manager {
     }
 
     private func getAndDelAuthorizationCode(request: TokenGenerateRequest): TokenInfo {
-        let code = request.code
-        let token = getAuthorizationCode(code)
-        if (token.clientId != request.clientId) {
-            @JoyLogError("[OAuth2] the clientId is not same, token's ${token.clientId} != ${request.clientId} in request")
-            throw OAuthException(OAuthErrors.INVALID_AUTHORIZE_CODE)
-        } else if (token.redirectURI != "" && token.redirectURI != request.redirectURI) {
-            @JoyLogError("[OAuth2] the redirectURI is not same, token's ${token.redirectURI} != ${request.redirectURI} in request")
-            throw OAuthException(OAuthErrors.INVALID_AUTHORIZE_CODE)
-        }
+        synchronized(_codeMutex) {
+            let code = request.code
+            let token = getAuthorizationCode(code)
+            if (token.clientId != request.clientId) {
+                @JoyLogError("[OAuth2] the clientId is not same, token's ${token.clientId} != ${request.clientId} in request")
+                throw OAuthException(OAuthErrors.INVALID_AUTHORIZE_CODE)
+            } else if (token.redirectURI != "" && token.redirectURI != request.redirectURI) {
+                @JoyLogError("[OAuth2] the redirectURI is not same, token's ${token.redirectURI} != ${request.redirectURI} in request")
+                throw OAuthException(OAuthErrors.INVALID_AUTHORIZE_CODE)
+            }
 
-        removeAuthorizationCode(code)
-        token
+            // 先校验 PKCE，失败时保留授权码，避免一次错误请求使合法客户端无法再次兑换
+            validateCodeChallenge(token, request.codeVerifier)
+            removeAuthorizationCode(code)
+            token
+        }
     }
 
     private func getAuthorizationCode(code: String): TokenInfo {

@@ -154,8 +154,8 @@ public class OAuth2Server {
      *
      * @param fn 刷新令牌验证函数
      */
-    public func setRefreshTokenResolveHandleFunc(fn: RefreshingValidationHandleFunc): Unit {
-        _refreshingValidationHandleFunc = fn
+    public func setRefreshTokenResolveHandleFunc(fn: RefreshTokenResolveHandleFunc): Unit {
+        _refreshTokenResolveHandleFunc = fn
     }
 
     /**
@@ -292,7 +292,7 @@ public class OAuth2Server {
 
     private func getErrorData(ctx: JoyContext, ei: ErrorInfo): HashMap<String, JsonSerializable> {
         var err = ei
-        if (err.description == "") {
+        if (err.code == "") {
             _internalErrorHandleFunc(ctx, err)
             err = OAuthErrors.SERVER_ERROR
         }
@@ -509,7 +509,7 @@ public class OAuth2Server {
         let data = HashMap<String, JsonSerializable>(
             [("access_token", token.access), ("token_type", _cfg.tokenType), ("expires_in", token.accessExpiredIn)])
         if (token.scope != "") {
-            data["code"] = token.scope
+            data["scope"] = token.scope
         }
         if (token.refresh != "") {
             data["refresh_token"] = token.refresh
@@ -595,7 +595,7 @@ public class OAuth2Server {
      * @throws OAuthException
      */
     private func validatePassword(tgr: TokenGenerateRequest, ctx: JoyContext): Unit {
-        tgr.code = ctx.getForm("scope") ?? ""
+        tgr.scope = ctx.getForm("scope") ?? ""
         let username = ctx.getForm("username") ?? ""
         let pwd = ctx.getForm("password") ?? ""
         if (pwd == "" || username == "") {

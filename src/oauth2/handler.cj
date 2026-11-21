@@ -47,8 +47,9 @@ public type ValidateURIFunc = (baseURI: String, redirectURI: String) -> Unit
 func defaultValidateURIFunc(baseURI: String, redirectURI: String): Unit {
     let base = URL.parse(baseURI)
     let redirect = URL.parse(redirectURI)
-    // @JoyLogInfo("${base.host} --- ${redirect.host}")
-    if (!redirect.host.endsWith(base.host)) {
+    // 必须精确匹配 scheme 与 host（含端口），否则 evil-example.com 之类的后缀域名可绕过校验
+    if (base.host == "" || redirect.host == "" || base.scheme.toAsciiLower() != redirect.scheme.toAsciiLower() ||
+        base.host.toAsciiLower() != redirect.host.toAsciiLower()) {
         @JoyLogWarn("[OAuth2] invalid redirect uri, baseURI=${baseURI}, redirectURI=${redirectURI}")
         throw OAuthException(OAuthErrors.INVALID_REDIRECT_URI)
     }
